@@ -1,0 +1,15 @@
+# Output build, sinh lại bằng bai-hoc/_build.py
+site/
+bai-hoc/dist/
+
+# Cấu hình cục bộ của Claude Code
+.claude/
+
+# Rác hệ điều hành và editor
+.DS_Store
+Thumbs.db
+desktop.ini
+*.tmp
+.vscode/
+.idea/
+__pycache__/

@@ -1,0 +1,732 @@
+<title>SAA 第11週 ドメイン別演習</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky mục lục bên trái (desktop), cột nội dung 760px bên phải; xếp một cột ở màn hẹp. */
+:root{
+  --bg:#f2f4f7; --surface:#ffffff; --surface-2:#e9edf2; --line:#d3dae3;
+  --fg:#172030; --muted:#5a6676; --accent:#1c6e8c; --accent-soft:#dcecf3;
+  --warm:#b35a00; --warm-soft:#fbe9d6; --ok:#2a7d4f; --ok-soft:#dcf0e4; --bad:#b3362b; --bad-soft:#f8dedb;
+  --display:"Manrope","IBM Plex Sans",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+a{color:var(--accent)}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:800}
+h2{font-size:1.5rem;font-weight:800;padding-top:8px}
+h3{font-size:1.12rem;font-weight:700}
+h4{font-size:.95rem;font-weight:700}
+p{margin:0}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+pre{font-family:var(--mono);font-size:.84rem;line-height:1.5;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:0}
+pre code{background:none;padding:0;font-size:inherit}
+em{color:var(--warm);font-style:italic}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* Header */
+.hero{max-width:1120px;margin:0 auto;padding-block:36px 20px;display:flex;flex-direction:column;gap:12px}
+.hero .lead{max-width:62ch;color:var(--muted);font-size:1.02rem}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.88rem;color:var(--muted)}
+.meta b{color:var(--fg);font-weight:600}
+.progress{display:flex;align-items:center;gap:12px;font-size:.88rem;color:var(--muted)}
+.bar{flex:1;max-width:320px;height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+
+/* Two columns */
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;align-items:start}
+.toc{position:sticky;top:max(12px,env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:2px;font-size:.9rem}
+.toc a{color:var(--muted);text-decoration:none;padding:6px 10px;border-left:2px solid var(--line);display:block}
+.toc a:hover,.toc a.active{color:var(--fg);border-left-color:var(--accent)}
+.toc .grp{margin-top:10px}
+main{display:flex;flex-direction:column;gap:56px;min-width:0;max-width:780px}
+section{display:flex;flex-direction:column;gap:18px;scroll-margin-top:16px}
+@media (max-width:860px){ .wrap{grid-template-columns:1fr;gap:24px} .toc{position:static;flex-direction:row;flex-wrap:wrap;gap:6px} .toc a{border:1px solid var(--line);border-radius:99px;padding:4px 10px} .toc .grp{margin:0} .toc a.active{border-color:var(--accent)} }
+
+/* Blocks */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.block{display:flex;flex-direction:column;gap:8px}
+.block > .eyebrow{color:var(--accent)}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:5px}
+li::marker{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.kw{display:flex;flex-wrap:wrap;gap:8px}
+.kw span{background:var(--warm-soft);color:var(--warm);border-radius:4px;padding:3px 9px;font-size:.86rem;font-style:italic}
+.kw span b{font-style:normal;font-weight:600;color:var(--fg)}
+.note{border-left:3px solid var(--warm);background:var(--warm-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.94rem}
+.note.ok{border-color:var(--ok);background:var(--ok-soft)}
+.note.bad{border-color:var(--bad);background:var(--bad-soft)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;font-size:.84rem}
+tr:last-child td{border-bottom:0}
+td.c{text-align:center}
+
+/* Checklist */
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:6px;cursor:pointer}
+.check:hover{background:var(--surface-2)}
+.check input{margin-top:5px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.check.done{color:var(--muted);text-decoration:line-through}
+
+/* Quiz reveal */
+.q{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.q .qt{font-weight:500}
+.q button{align-self:flex-start;font:inherit;font-size:.86rem;padding:5px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer}
+.q button:hover{background:var(--accent);color:var(--surface)}
+.q button:focus-visible,.check input:focus-visible,.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.q .ans{font-size:.94rem;border-top:1px dashed var(--line);padding-top:8px}
+.q .ans b{color:var(--ok)}
+
+/* Steps */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:12px;padding:0;list-style:none}
+.steps li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:start}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--mono);font-size:.8rem;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:500;margin-top:2px}
+.steps li > div{display:flex;flex-direction:column;gap:6px;min-width:0}
+
+/* Flow diagram */
+.flow{display:flex;flex-direction:column;gap:0;align-items:stretch;max-width:520px}
+.flow .n{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:.94rem}
+.flow .n .tag{font-family:var(--mono);font-size:.74rem;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.tag.deny{background:var(--bad-soft);color:var(--bad)} .tag.allow{background:var(--ok-soft);color:var(--ok)} .tag.next{background:var(--surface-2);color:var(--muted)}
+.flow .arrow{height:22px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--mono);font-size:.78rem}
+.flow .arrow::before{content:"";width:1px;height:100%;background:var(--line);position:absolute}
+.flow .arrow{position:relative} .flow .arrow span{background:var(--bg);padding:0 6px;position:relative}
+
+svg text{font-family:var(--body)}
+.diag{overflow-x:auto}
+.diag svg{width:100%;max-width:700px;height:auto;display:block}
+.sv-region{fill:var(--surface);stroke:var(--accent)} .sv-az{fill:var(--accent-soft);stroke:var(--accent)} .sv-edge{fill:var(--warm-soft);stroke:var(--warm)}
+.sv-t{fill:var(--fg);font-size:13px} .sv-m{fill:var(--muted);font-size:11px} .sv-line{stroke:var(--line)}
+@media (prefers-reduced-motion: reduce){ .bar i{transition:none} }
+</style>
+
+
+<header class="hero">
+  <span class="eyebrow">AWS SAA-C03 · 12週間ロードマップ · 第11週</span>
+  <h1>Domain別の模試演習</h1>
+  <p class="lead">第10週ではサービス比較表を復習し、最初の3つの模試を解きました。今週は模試演習のメインの週です。Tutorials Dojoの模試4回分（模試2〜5）を解き、それぞれに対応するdomainの深掘り復習を1回ずつ組み合わせ、さらに第10週で80%未満だった模試を解き直します。週末の目標は、連続する2回の模試で80%以上を取ること、最も弱いdomainを10ポイント以上伸ばすこと、誤答ノートで誤答の原因を分類し終えることです。</p>
+  <div class="meta"><span>学習ペース: <b>1日2〜3時間</b>（65問の模試1回で約100分）</span><span>関連Domain: <b>4つすべて</b>（SEC 30%、RES 26%、PERF 24%、COST 20%）</span><span>今週のlab費用: <b>0 USD</b></span></div>
+  <div class="progress"><span>チェックリスト進捗</span><div class="bar"><i id="bar"></i></div><span id="pct">0/16</span></div>
+</header>
+
+<div class="wrap">
+<nav class="toc" aria-label="目次">
+  <a href="#ke-hoach">7日間の計画</a>
+  <span class="grp eyebrow">Domain別の深掘り</span>
+  <a href="#domain-sec">1. Secure 30%</a>
+  <a href="#domain-res">2. Resilient 26%</a>
+  <a href="#domain-perf">3. High-Performing 24%</a>
+  <a href="#domain-cost">4. Cost-Optimized 20%</a>
+  <a href="#phan-tich-sai">5. 誤答の分析</a>
+  <span class="grp eyebrow">模試演習</span>
+  <a href="#handson">第11週の模試スケジュール</a>
+  <a href="#moc">確認ポイント</a>
+  <a href="#tukhoa">混同しやすいペア表</a>
+  <a href="#checklist">週のチェックリスト</a>
+</nav>
+
+<main>
+
+<section id="ke-hoach">
+  <h2>7日間の計画</h2>
+  <p>毎日、模試1回とそのdomainの深掘り復習を組み合わせます。採点したときに、直前に復習した内容が身についたかをすぐ確認できるようにするためです。3日目と7日目は新しい模試を解かず、誤答ノートの読み返しだけにします。Tutorials Dojoの模試は1回65問、130分です。本番の時間的なプレッシャーに慣れるため、<b>timed mode</b>で解きます。</p>
+  <div class="tbl"><table>
+    <tr><th>日</th><th>深掘り復習（午前、45〜60分）</th><th>模試（夜）</th></tr>
+    <tr><td>1</td><td><a href="#domain-sec">Domain SEC</a>: policy evaluation、KMS、S3 security、SG/NACL、endpoint</td><td>Tutorials Dojo 模試2、timed mode、採点、ノート記入、domain別の%を計算</td></tr>
+    <tr><td>2</td><td><a href="#domain-res">Domain RES</a>: Multi-AZとMulti-Region、RDS/AuroraのHA、SQS、4つのDR戦略</td><td>Tutorials Dojo 模試3、timed mode、採点、ノート記入、domain別の%を計算</td></tr>
+    <tr><td>3</td><td>模試2と3の<a href="#phan-tich-sai">誤答の分析</a>: 各問に原因を付け、サービス別にノートを絞り込む</td><td>新しい模試は解きません。最も誤答の多いサービス群について、sessionで「Ôn lại chỗ yếu」promptを使います</td></tr>
+    <tr><td>4</td><td><a href="#domain-perf">Domain PERF</a>: EBS type、S3 performance、CloudFrontとGlobal Accelerator、DynamoDB、Kinesis</td><td>Tutorials Dojo 模試4、timed mode、採点、ノート記入、domain別の%を計算</td></tr>
+    <tr><td>5</td><td><a href="#domain-cost">Domain COST</a>: EC2 pricing、S3 class、data transfer、NAT Gateway、DynamoDB mode</td><td>Tutorials Dojo 模試5、timed mode、採点、ノート記入、domain別の%を計算</td></tr>
+    <tr><td>6</td><td>最も弱いdomain（直近4回の%で判断）の落とし穴表を読み返す</td><td>第10週で80%未満だった模試（AWS-SAA-quiz-01、Official Practice Question Set、Tutorials Dojo 模試1）を解き直し、1回目と2回目の点数を比べる</td></tr>
+    <tr><td>7</td><td>休む、または<code>so-ghi-cau-sai.md</code>を一通り読む</td><td>連続する2回の模試で80%以上を取れていれば、第12週で受験日を予約します。まだなら、第12週にTutorials Dojo 模試6を解いてから判断します</td></tr>
+  </table></div>
+  <div class="note">今週の模試はsession内では採点しません（Tutorials Dojoが自動採点します）。第11週のClaude sessionの役割は、送られた誤答リストを受け取り、原因の分類を手伝い、<code>so-ghi-cau-sai.md</code>に記入し、弱いサービス群を説明し直すことです。<code>PROMPT-session-tuan.md</code>の「Ôn lại chỗ yếu」promptを使います。</div>
+</section>
+
+<!-- ============ 1. DOMAIN SEC ============ -->
+<section id="domain-sec">
+  <span class="eyebrow">Domain別の深掘り 1 / 4</span>
+  <h2>Design Secure Architectures (30%)</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">exam guideにおける配点とtask statement</span>
+      <p>最も比重の大きいdomainで、65問中およそ20問です。SAA-C03の3つのtask statementを言い換えると次のとおりです。</p>
+      <ul>
+        <li><b>1.1 AWS resourceへの安全なアクセスを設計する</b>: IAM user/group/role、policy evaluation、cross-account、federation（Identity Center、SAML、Cognito）、MFA、least privilege、OrganizationsとSCP、root account。</li>
+        <li><b>1.2 安全なworkloadとアプリケーションを設計する</b>: VPC（Security Group、NACL、public/private subnet、NAT、VPC endpoint）、WAF、Shield、Network Firewall、Secrets ManagerとParameter Store、検出系サービス（GuardDuty、Inspector、Macie、Detective）、記録（CloudTrail、Config、VPC Flow Logs）。</li>
+        <li><b>1.3 適切なデータセキュリティ統制を選ぶ</b>: 保存時の暗号化（KMS、SSE-S3/SSE-KMS/SSE-C、EBS、RDS）、転送時の暗号化（TLS、ACM）、S3 security（Block Public Access、bucket policy、Object Lock、versioning、MFA Delete）、key rotation、data classification、complianceに沿った保持とbackup。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">必ず覚えるfact</span>
+      <ul>
+        <li>policyの評価順: <b>explicit deny</b>がすべてに優先 → SCPがAllowしている必要がある → resource-based policyのAllowで足りる（同一account） → permissions boundary → session policy → identity-based policy。どこもAllowしなければimplicit denyです。</li>
+        <li>SCPは権限を付与せず、上限を決めるだけです。member account内のrootを含むすべてのprincipalに適用されますが、<b>management accountには適用されません</b>。</li>
+        <li>Permissions boundaryも権限を付与しません。実際の権限 = identity policy ∩ boundary。「developerに自分でroleを作らせたいがXを超えさせたくない」と問われたらboundaryです。</li>
+        <li>Cross-account: <b>両側</b>のAllow（呼び出し側accountのidentity policyと所有側accountのresource policy）が必要です。または role + <code>sts:AssumeRole</code>を使います。</li>
+        <li>STS AssumeRole: sessionはdefault 1時間、roleの設定で最大12時間。role chainingは最大1時間です。</li>
+        <li>IAM Identity Center: 社員が複数accountへSSOするためのもので、permission setを使い、identity sourceはIdentity Center directory、AD、SAML IdPのいずれかです。Cognitoは<b>アプリケーションのユーザー</b>向けです。User Poolが認証（JWTを返す）、Identity Poolがtokenを一時的なAWS credentialに交換します（unauthenticated identityもあり）。</li>
+        <li>KMS keyは<b>regional</b>です。multi-Region keyは同じkey IDとkey materialを持つ複製で、あるRegionで暗号化し別のRegionで復号するために使います。暗号化されたEBS snapshotを別Regionへcopyするには、コピー先Regionのkeyで再暗号化します。</li>
+        <li>KMS: AWS managed keyは毎年自動でrotateされ、無効にできません。customer managed keyはautomatic rotationを有効にできます（defaultは毎年、周期は設定可能。日数の範囲はAWSドキュメントで要確認）。imported key materialのkeyは自動rotateしません。直接暗号化できるのは4 KBまでなので、<code>GenerateDataKey</code>による<b>envelope encryption</b>を使います。</li>
+        <li>KMS keyのkey policyはprincipalを許可する（またはIAMに委ねる）必要があります。cross-accountでKMS keyを使うには、key policyと呼び出し側のIAM policyの両方が必要です。</li>
+        <li>S3の暗号化: SSE-S3（AES-256、AWSがkeyを管理、2023年初めから新しいobjectで<b>default有効</b>）、SSE-KMS（CloudTrailでaudit可能、KMSのquotaでthrottleされることがあり、<b>S3 Bucket Key</b>を有効にしてKMS呼び出しを減らす）、SSE-C（利用者がheaderでkeyを送る、HTTPS必須）、client-side encryption（AWSはkeyを見ない）。</li>
+        <li>upload時の暗号化を強制: header <code>s3:x-amz-server-side-encryption</code>がない場合にDenyするbucket policy。HTTPSを強制: <code>aws:SecureTransport</code> = falseのときDeny。</li>
+        <li>S3 Block Public Accessはaccountまたはbucketの単位で設定し、どのbucket policyやACLよりも優先されます。新しいbucketのObject Ownershipは<b>Bucket owner enforced</b>（ACL無効）がdefaultです。</li>
+        <li>S3 Object Lock: versioningが必要です。<b>Governance mode</b>（特別な権限を持つuserは削除可能）と<b>Compliance mode</b>（retention period中はrootを含め誰も削除不可）、さらに期限のないLegal Holdがあります。Glacier Vault Lockは旧来のGlacier vault向けのWORMです。</li>
+        <li>MFA Delete: <b>root</b>だけがCLIで有効化でき、versioningが必要です。versionの削除やversioningの停止時にMFAを要求します。</li>
+        <li>Pre-signed URLは作成者のcredentialを使い、パラメータで指定した時間で失効します。CloudFrontのsigned URL/cookieとOACを組み合わせ、S3への直接アクセスを防ぎます。</li>
+        <li>Security Group: <b>stateful</b>で、Allow ruleしかなく、defaultでinboundはすべて拒否、outboundはすべて許可、他のSGを参照できます。NACL: <b>stateless</b>でDenyがあり、番号付きruleを小さい順に評価し、defaultはallow all。特定IPをブロックしたい → NACL。statelessなので、戻りの通信用にephemeral port 1024〜65535を開ける必要があります。</li>
+        <li>VPC endpoint: <b>Gateway endpoint</b>はS3とDynamoDBのみ、無料で、route tableにrouteを追加します。<b>Interface endpoint</b>（PrivateLink）はprivate IPを持つENIを作り、時間とGBで課金され、残りのほとんどのサービスとS3にも使えます。endpoint policyでendpoint経由のresourceを制限でき、bucket policyでは<code>aws:SourceVpce</code>を使えます。</li>
+        <li>WAFはCloudFront、ALB、API Gateway、AppSync、Cognito User Poolに付けられます。<b>NLBやEC2には付けられません</b>。ruleはIP、geo、rate-based、SQL injection、XSS、managed rule groupなど。Shield Standardは無料で自動適用（L3/L4）。Shield Advancedは月額有料で、DDoS Response Team、cost protectionがあり、EC2/ELB/CloudFront/Global Accelerator/Route 53を保護します。Firewall ManagerはOrganizations全体でWAF、Shield、SGを一元管理します。</li>
+        <li>GuardDuty: CloudTrail、VPC Flow Logs、DNS logs、S3 data events、EKS audit logsから脅威を検出し、agent不要です。Inspector: EC2、ECR image、Lambdaの脆弱性スキャン。Macie: MLでS3内のPIIや機密データを探します。Detective: GuardDutyの検出後に詳しく調査します。Security Hub: findingを集約し、基準に沿ってスコア化します。</li>
+        <li>CloudTrail: <b>API call</b>（誰が、何を、いつ）を記録します。Event historyは90日間無料。trailでS3に送れば長期保存でき、log file validationで改ざんを検知できます。data events（S3 object-level、Lambda invoke）は<b>default無効</b>です。AWS Config: <b>resourceの構成</b>を時系列で記録し、ruleでcomplianceを評価し、SSM Automationでremediationします。Configは変更を防がず、検出するだけです。</li>
+        <li>Secrets Manager: secretを保存し、Lambdaで<b>自動rotate</b>します。RDS/Redshift/DocumentDBとの統合が組み込まれ、secret数とAPI callで課金されます。SSM Parameter Store SecureString: KMSで暗号化し、Standard tierは無料ですが、<b>自動rotationはありません</b>。</li>
+        <li>ACM: public証明書を<b>無料</b>で発行し、自動更新し、ELB、CloudFront、API Gatewayに付けます。<b>private keyはexportできず</b>、EC2に直接インストールできません。CloudFront用の証明書は<b>us-east-1</b>に置く必要があります。社内向け証明書にはACM Private CAを使います。</li>
+        <li>EBS: Region単位で「encryption by default」を有効にできます。暗号化済みvolumeは解除できません。未暗号化volume → snapshot → 暗号化を有効にしてsnapshotをcopy → 新しいvolumeを作成。RDS: 暗号化は作成時にしか有効にできません。未暗号化DB → snapshot → 暗号化付きでcopy → restore。暗号化DBのread replicaも暗号化が必須です。</li>
+        <li>defaultで転送時に暗号化されるもの: VPN（IPsec）、CloudFront HTTPS、S3 HTTPS。<b>Direct Connectは暗号化されません</b>（VPN over DXかMACsecが必要）。Nitro instance間のVPC trafficは物理層で暗号化されますが、試験ではアプリケーションのTLSを答えに期待することが多いです。</li>
+        <li>VPC Flow LogsはVPC、subnet、ENIの単位でmetadata（送信元/宛先IP、port、accept/reject）を記録します。payloadは記録せず、Route 53 Resolver、metadata 169.254.169.254、DHCPへのtrafficも記録しません。payloadを取得できるのはTraffic Mirroringです。</li>
+        <li>Root account: MFAを有効にし、access keyを作らず、限られた作業（support planの変更、accountの解約、MFA Deleteの有効化）にだけ使います。Credential reportはuserとkey/MFAの状態を一覧化します。Access Advisorはサービスの最終利用を示します。Access Analyzerは外部に共有されたresourceを見つけ、CloudTrailからpolicyを生成します。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">よくある落とし穴</span>
+      <div class="tbl"><table>
+        <tr><th>設問</th><th>選びがちな誤答</th><th>正解</th><th>理由</th></tr>
+        <tr><td>EC2を攻撃している特定のIPアドレスをブロックする</td><td>Security GroupにDeny ruleを追加</td><td>番号の小さいNACLのDeny rule</td><td>SGにはDenyがありません。設問にALB/CloudFrontがあればWAFのIP setも正解です。</td></tr>
+        <tr><td>private subnetのEC2が<em>Internetを経由せず</em>にS3を読む、<em>most cost-effective</em></td><td>Interface endpointまたはNAT Gateway</td><td>S3用のGateway endpoint</td><td>Gateway endpointは無料です。Interface endpointは費用がかかり、NATはpublicな経路を通りGB単位で課金されます。</td></tr>
+        <tr><td>RDSのパスワードを自動rotateする、<em>least operational overhead</em></td><td>Parameter Store SecureString</td><td>Secrets Manager</td><td>Parameter Storeには組み込みのrotationがありません。設問に「rotate」とあればSecrets Managerです。</td></tr>
+        <tr><td>社員が既存のADでAWSにサインインする、複数account</td><td>Cognito User Pool</td><td>IAM Identity Center（またはSAML federation）</td><td>Cognitoはアプリケーションの顧客向けです。社員と複数accountならIdentity Centerです。</td></tr>
+        <tr><td>logが改ざんされていないことを証明し、S3のlog fileを7年間削除不可で保存する</td><td>Versioningとbucket policy</td><td>CloudTrail log file validation + S3 Object Lock Compliance mode</td><td>Governance modeもbucket policyも解除できる人がいます。Compliance modeならretention中はrootでも削除できません。</td></tr>
+        <tr><td>AdministratorAccessを持つuserが、あるRegionでresourceを作成できない</td><td>IAM権限が不足しているのでpolicyを追加</td><td>OrganizationsのSCPがそのRegionをブロックしている</td><td>Allowをどれだけ広げてもSCPの上限で止められます。Allowを追加する前にDenyやSCPを探します。</td></tr>
+        <tr><td>NLBの背後で動くweb appをSQL injectionから守る</td><td>NLBにWAFを付ける</td><td>ALBに切り替える（または前段にCloudFrontを置く）うえでWAFを付ける</td><td>WAFはNLBに付けられません。ShieldはDDoS対策だけで、SQL injectionは扱いません。</td></tr>
+        <tr><td>S3を暗号化し、keyを使うたびの<em>audit trail</em>と自前のkey管理が必要</td><td>SSE-S3</td><td>customer managed keyによるSSE-KMS</td><td>SSE-S3ではkeyの使用がCloudTrailに記録されず、key policyも制御できません。</td></tr>
+        <tr><td>漏洩したkeyで悪意あるIPから不審なAPIが呼ばれていることを検出する</td><td>InspectorまたはMacie</td><td>GuardDuty</td><td>Inspectorはソフトウェアの脆弱性をスキャンし、MacieはS3内のPIIを探します。account単位の異常な振る舞いはGuardDutyです。</td></tr>
+        <tr><td>誰がいつSecurity Groupを変更したかを追跡し、SGがport 22を0.0.0.0/0に開けたら警告する</td><td>CloudTrailだけ</td><td>CloudTrail（誰が変更したか）+ AWS Config rule（誤った構成の検出）</td><td>Configは構成の状態を評価し、CloudTrailはAPIを記録します。両方を問われたら両方を含む選択肢を選びます。</td></tr>
+        <tr><td>暗号化されていない稼働中のRDSを暗号化する</td><td>Modifyでencryptionを有効にする</td><td>Snapshot → 暗号化付きでcopy → 新しいDBにrestore → appの接続先を切り替え</td><td>RDSは稼働中のinstanceで暗号化を有効にできません。EBSも同様にsnapshot経由です。</td></tr>
+        <tr><td>mobile appから一時的なcredentialでS3に直接画像をuploadさせる</td><td>IAM userのaccess keyをappに埋め込む</td><td>Cognito Identity PoolがIAM roleから一時credentialを発行する</td><td>app内のaccess keyは漏洩します。設問に<em>mobile</em>、<em>temporary credentials</em>があればCognito Identity Poolです。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">1. ある会社は財務報告書をS3に保存しています。監査で、administratorを含め誰も5年間はfileを削除または変更できないことが求められています。どの解決策が要件を満たしますか?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>versioningを有効にし、retention 5年のCompliance modeでS3 Object Lockを使う。</b> Governance modeはよく誤って選ばれますが、<code>s3:BypassGovernanceRetention</code>権限を持つuserは削除できます。bucket policyのDenyはadminがpolicyを変更できます。MFA Deleteはversionの削除を守るだけで、rootを止めません。</p></div>
+      <div class="q"><p class="qt">2. private subnetのLambdaが、trafficを<em>AWSネットワークの外に出さず</em>にDynamoDBとSecrets Managerを呼び出す必要があり、<em>most cost-effective</em>にしたい。2つ選んでください。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>DynamoDBにはGateway endpoint、Secrets ManagerにはInterface endpoint。</b> DynamoDBには無料のgateway endpointがあるので、interface endpointは使いません。Secrets Managerにはinterface endpointしかありません。NAT Gatewayはtrafficがpublicに出るうえ費用がかかります。</p></div>
+      <div class="q"><p class="qt">3. Account Aのbucket policyはaccount Bの読み取りを許可しています。account Bのuserはそのbucketに対する<code>s3:GetObject</code>をAllowするidentity policyを持っていますが、AccessDeniedになります。最も考えられる原因は?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>account BがOrganizations内にあり、S3を許可しないSCPがある。またはobjectがaccount AのKMS keyで暗号化されていて、key policyがaccount Bの利用を許可していない。</b> 両側でAllow済みなので通常の権限不足は除外され、SCP、boundary、KMSを考える必要があります。「評価の連鎖を最後までたどる」習慣を練習する問題です。</p></div>
+      <div class="q"><p class="qt">4. ALBの背後のweb appが多数のIPからHTTP floodを受けており、各IPが毎分数千のrequestを送ってきます。<em>least operational overhead</em>でブロックしたい。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>ALBに付けたAWS WAFのrate-based rule。</b> NACLはIPごとに手作業で更新する必要があり、defaultで20 ruleしかありません。Shield Standardは有効ですがL3/L4を扱い、L7のHTTP floodにはWAFが必要です。Shield Advancedでも防げますが費用がかかり、設問はDRTが必要とは言っていません。</p></div>
+      <div class="q"><p class="qt">5. us-east-1のEC2で動くアプリケーションが、customer managed KMS keyで暗号化されたS3 objectを読みます。ap-northeast-1へDRしたいと考えており、bucketをreplicateしても読めるようにしたい。何に注意が必要ですか?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>KMS keyはregionalです。CRRを有効にする際はコピー先RegionのKMS keyを指定して複製を暗号化し、replication roleにはコピー元keyのdecrypt権限とコピー先keyのencrypt権限が必要です。</b> または、multi-Region keyを使って両Regionで同じkey materialを持たせます。よくある誤答は「KMS keyは自動的にどのRegionでも使える」です。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. DOMAIN RES ============ -->
+<section id="domain-res">
+  <span class="eyebrow">Domain別の深掘り 2 / 4</span>
+  <h2>Design Resilient Architectures (26%)</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">exam guideにおける配点とtask statement</span>
+      <p>65問中およそ17問です。task statementは2つです。</p>
+      <ul>
+        <li><b>2.1 拡張性があり疎結合（loosely coupled）なアーキテクチャを設計する</b>: ELB、Auto Scaling、<em>decouple</em>のためのSQS/SNS/EventBridge、API Gateway、Lambda、container（ECS/EKS/Fargate）、microservice、scaleに適したstorageとdatabaseの選択、caching、event-driven。</li>
+        <li><b>2.2 高可用性と耐障害性（highly available, fault-tolerant）を備えたアーキテクチャを設計する</b>: Multi-AZとMulti-Region、Route 53のroutingとhealth check、RDS Multi-AZとread replica、Aurora、DynamoDB Global Tables、RPO/RTOに応じた4つのDR戦略、AWS Backup、S3 replication、EFS、Storage Gateway、Direct ConnectとバックアップのVPN、immutable infrastructure、single point of failure。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">必ず覚えるfact</span>
+      <ul>
+        <li><b>Multi-AZ</b>は1つのAZ障害に耐え、費用は低めです。<b>Multi-Region</b>はRegion全体の障害に耐え、DRやグローバルユーザー向けに使います。設問が<em>highly available</em>と言うなら通常Multi-AZで十分で、<em>disaster recovery</em>、<em>Region failure</em>ならMulti-Regionです。</li>
+        <li><b>High availability</b>は停止時間を減らすこと（failover時に短い中断はありうる）。<b>Fault tolerance</b>は一切中断しないこと（より高価で、例えば複数AZでN+1を動かす）。fault-tolerantを問う設問は、requestを1つも失わないレベルの冗長化を求めていることが多いです。</li>
+        <li>RDS Multi-AZ instance: 別AZのstandbyへ<b>同期</b>レプリケーションし、standbyは<b>読み取り不可</b>です。failoverはDNSを自動で切り替え、約60〜120秒かかります。AZ障害、OSのpatch、instance typeの変更時に使われます。RDS Multi-AZ DB cluster: 読み取り可能なstandbyが2つあり、failoverがより速い（時間はAWSドキュメントで要確認）。</li>
+        <li>RDS read replica: <b>非同期</b>で読み取り可能、最大15個（engineによる、AWSドキュメントで要確認）、cross-Regionも可能で、独立したDBにpromoteできます（手動DRに使う）。read replicaにはソースでautomated backupの有効化が必要です。</li>
+        <li>Aurora: データを3 AZに6コピー保持し、自己修復します。writerとstorageを共有するAurora Replicaは最大15個で、replicaはfailover先となり、lagは通常1秒未満です。failoverは約30秒。Reader endpointが自動で負荷分散します。<b>Aurora Global Database</b>: primary Region 1つ、secondary Region最大5つ、replication lagは通常1秒未満、RPOは約1秒、promote時のRTOは1分未満（AWS公表値、AWSドキュメントで要確認）。</li>
+        <li>DynamoDB Global Tables: 複数Regionで<b>multi-active</b>、DynamoDB Streamsの有効化が必要で、競合はlast writer winsで解決します。PITRは35日以内の任意の時点に復元でき、on-demand backupは無期限に保持します。</li>
+        <li>ELB: <b>ALB</b>はlayer 7（HTTP/HTTPS、path/host routing、WebSocket、targetはinstance、IP、Lambda）。<b>NLB</b>はlayer 4（TCP/UDP/TLS、<b>static IPとElastic IP</b>、毎秒数百万request、送信元IPを保持）。<b>Gateway Load Balancer</b>はサードパーティの仮想firewall向け（GENEVE）。Cross-zone load balancing: ALBはdefault有効で無料、NLBはdefault無効で、有効にするとAZ間のdataに課金されます。</li>
+        <li>ELBのhealth checkは異常なtargetを外します。deregistration delay（connection draining）はdefault 300秒。ALBのsticky sessionはcookieで実現します。ALBにはstatic IPがないので、固定IPが必要ならALBの前にNLBを置くかGlobal Acceleratorを使います。</li>
+        <li>Auto Scaling Group: 複数AZにまたがり、min/desired/maxを持ちます。health check typeはEC2（default）またはELB（ELB health checkに失敗したinstanceを置き換える。「unhealthyなinstanceがなぜ置き換えられないか」はよく出題され、答えはASGがEC2 health checkを使っているから）。grace periodはdefault 300秒、cooldownはdefault 300秒。</li>
+        <li>Scaling policy: <b>target tracking</b>（CPU 50%を維持など、最も簡単）、alarmに基づくstep/simple scaling、<b>scheduled</b>（ピーク時間が事前にわかる）、<b>predictive</b>（履歴からMLで予測）。lifecycle hookでservice投入前やterminate前にscriptを実行します。instance refreshで新しいAMIへrollingします。</li>
+        <li>ASGのdefault termination policy: instanceが最も多いAZを選ぶ → 最も古いlaunch template/configを使うinstance → 次の課金時間に最も近いもの。scale-in protectionで長いjobを処理中のinstanceを守ります。</li>
+        <li>Route 53のrouting policy: simple、<b>weighted</b>（負荷を%で分配、blue/green）、<b>latency</b>（最も速く応答するRegion）、<b>failover</b>（health check付きのactive-passive）、<b>geolocation</b>（ユーザーの国に基づく、コンテンツのcompliance）、<b>geoproximity</b>（biasを付けた距離に基づく、Traffic Flowが必要）、<b>multivalue answer</b>（healthyなrecordを最大8つ、ELBの代わりにはならない）、IP-based。Alias recordは無料で、apex domainをELB/CloudFront/S3 websiteに向けられます。CNAMEはapexを指せません。</li>
+        <li>Route 53 health check: publicなendpointを確認し、private IPは直接確認できません。private resourceにはCloudWatch alarmに基づくhealth checkを作ります。failoverではrecordにhealth checkを付けられます。</li>
+        <li>SQS Standard: throughput無制限、<em>at-least-once</em>、順序はbest-effort。SQS FIFO: message group内で順序を保証し、deduplicationで<em>exactly-once</em>、300 msg/秒（batchingで3,000。high throughput modeではさらに高い、AWSドキュメントで要確認）。messageは最大256 KB（それより大きければS3を使うExtended Client Library）。retentionはdefault 4日、最大14日。visibility timeoutはdefault 30秒、最大12時間。long pollingは最大20秒でempty receiveを減らします。delay queueは最大15分。dead-letter queueはmaxReceiveCount回失敗したmessageを受け取ります。</li>
+        <li>SNSはSQS、Lambda、HTTP、email、SMSへのpub/sub fan-outです。SNS FIFOはSQS FIFOへfan-outします。EventBridge: 内容でfilterするruleを持つevent bus、cron schedule、SaaS統合、schema registry。「SNS → 複数のSQS」パターンで、1つのeventを複数の方法で並列処理します。</li>
+        <li>4つのDR戦略（RTO/RPOが小さく、費用が高くなる順）: <b>Backup and restore</b>（RPO/RTOは数時間）、<b>Pilot light</b>（DBは常時replicate、appは停止、RTOは数十分）、<b>Warm standby</b>（縮小版が稼働中、RTOは数分）、<b>Multi-site active-active</b>（RTO/RPOはほぼ0、最も高価）。<b>RPO</b>は許容できるデータ損失量、<b>RTO</b>は許容できる停止時間です。</li>
+        <li>AWS Backup: backup planでEBS、RDS、Aurora、DynamoDB、EFS、FSx、Storage Gateway、EC2のbackupを一元管理します。cross-Region、cross-accountのcopyに対応し、Backup Vault LockでWORMにできます。設問が<em>centrally manage backups</em>、<em>compliance retention</em>と言ったらAWS Backupです。</li>
+        <li>S3 replication（CRRまたはSRR）: <b>両方のbucketでversioning</b>が必要です。有効化後の新しいobjectだけを複製し（既存objectはS3 Batch Replication）、<b>delete markerはdefaultで複製しません</b>。連鎖的な複製はしません（A→B→Cは自動では動かない）。Replication Time Controlは15分を保証します。S3のdurabilityはどのclassでも11 nineで、Standardは最低3 AZ、One Zone-IAは1 AZのみです。</li>
+        <li>EBSは1つのAZに紐付きます。snapshotはincrementalでRegion単位のS3に保存され、別Regionへcopyできます。Data Lifecycle Managerがsnapshotを自動で作成・削除します。別AZでvolumeが必要なら、snapshot → 新しいvolumeを作成します。</li>
+        <li>EFS StandardはRegion内の複数AZにまたがり、数千のEC2がNFSで同時にmountできます。EFS One Zoneは安価ですが1 AZです。EFS Replicationで別Regionへ複製できます。instance storeとEBSは複数instanceで共有できません（同一AZ内のEBS multi-attach io1/io2を除く）。</li>
+        <li>Storage Gateway: <b>File Gateway</b>（NFS/SMB → S3 object、ローカルcache）、<b>Volume Gateway</b>（iSCSI。cached: 主データはS3、頻繁に使うデータをローカルにcache。stored: 全データをローカルに置き、S3へsnapshotしてEBS snapshotにする）、<b>Tape Gateway</b>（磁気テープに代わるVTL、Glacierに保存）。設問が<em>on-premises backup to cloud with existing backup software</em>ならTape Gateway、<em>low-latency access to frequently used data, rest in S3</em>ならcached volumeかFile Gatewayです。</li>
+        <li>Direct Connect: 専用接続で帯域が安定しますが、<b>自動では暗号化されず</b>、構築に数週間〜数か月かかり、1本だけではsingle point of failureです。冗長化: 異なる2つのlocationに2本のDX（maximum resiliency）、またはメインのDX + <b>バックアップのSite-to-Site VPN</b>（最も安価）。Direct Connect Gatewayで1本のDXを複数Regionの複数VPCに接続します。</li>
+        <li>Site-to-Site VPN: IPsec tunnelが2本、tunnelごとに約1.25 Gbps、数分で構築できます。Transit Gateway経由ならECMPで複数VPNの帯域を束ねられます。Transit Gatewayは複数VPCとon-premisesをつなぐhubで、mesh型のVPC peering（peeringはtransitiveでない）の代わりになります。</li>
+        <li>Immutable infrastructure: その場でpatchせず、新しいAMIを作り（EC2 Image Builder）、ASGのinstance refreshやCodeDeployでrollingまたはblue/greenします。状態はinstanceの外（S3、EFS、DynamoDB、ElastiCache session）に置きます。statelessなinstanceは、ASGが自由にinstanceを置き換えるための前提です。</li>
+        <li>Lambdaの非同期呼び出しは2回retryし、DLQまたはdestinationを持てます。SQS triggerはvisibility timeoutに従ってretryします。Step Functionsはretry/catch付きで長いworkflowを調整します。設問が<em>orchestrate multiple Lambda with retry</em>ならStep Functionsです。</li>
+        <li>手動failover時にElastic IPを別instanceへremapする、2つ目のENIを同一AZのinstance間で移す。これらは古いタイプのHAで、<em>least operational overhead</em>の設問では通常EIPのremapではなくELB + ASGを選びます。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">よくある落とし穴</span>
+      <div class="tbl"><table>
+        <tr><th>設問</th><th>選びがちな誤答</th><th>正解</th><th>理由</th></tr>
+        <tr><td>レポート用の読み取りクエリが多くRDSが過負荷</td><td>Multi-AZを有効にする</td><td>read replicaを追加し、レポートをreplicaに向ける</td><td>Multi-AZのstandbyは読み取りを処理しません。Multi-AZはHA、read replicaは読み取りのscaleです。</td></tr>
+        <tr><td>RDSが<em>minimal downtime</em>でAZ障害に耐える必要があり、appは変更しない</td><td>別AZのread replica</td><td>Multi-AZ</td><td>read replicaは手動でpromoteしendpointを変える必要があります。Multi-AZは自動failoverでendpointが変わりません。</td></tr>
+        <tr><td>注文処理で、各注文を1回だけ、顧客ごとに正しい順序で処理する</td><td>SQS Standard</td><td>message group ID = 顧客IDのSQS FIFO</td><td>Standardは重複や順序の乱れがありえます。逆の落とし穴: 設問が<em>unlimited throughput</em>を求めるならStandardです。</td></tr>
+        <tr><td>S3 CRRを有効にしたがコピー先bucketが空のまま</td><td>replicationが遅いのでさらに待つ</td><td>CRRは新しいobjectにだけ適用される。既存objectにはS3 Batch Replicationが必要</td><td>replicationは遡及しません。両方のbucketでversioningが有効かも確認します。</td></tr>
+        <tr><td>重要システムのDR、RTOは数分、RPOは数秒、費用はほどほどに抑えたい</td><td>Multi-site active-active</td><td>Warm standby</td><td>active-activeでも要件は満たしますが最も高価で、設問は費用をほどほどにと言っています。Pilot lightはRTOが数十分で要件を満たしません。</td></tr>
+        <tr><td>顧客がfirewallでwhitelistできるよう、アプリケーションに固定IPが必要</td><td>Elastic IP付きのALB</td><td>NLB（EIP付き）またはALBの前段にGlobal Accelerator</td><td>ALBにはEIPを付けられません。設問にさらに<em>global users</em>があればGlobal Acceleratorです。</td></tr>
+        <tr><td>ASG内のinstanceがALBのhealth checkに失敗しているのに置き換えられない</td><td>grace periodを延ばす</td><td>ASGのhealth check typeをELBに変更する</td><td>defaultのASGはEC2 status checkしか見ないので、appが固まったinstanceもEC2としては「healthy」です。</td></tr>
+        <tr><td>trafficの10%を新しいバージョンに振り分けて試す</td><td>Route 53 failover</td><td>Route 53 weighted（またはALBのweighted target group）</td><td>failoverはactive-passiveで、割合では分けません。</td></tr>
+        <tr><td>Direct Connectが切れてon-premisesとの接続が失われた。<em>cost-effective</em>なバックアップが必要</td><td>2本目のDX</td><td>DXのバックアップとしてSite-to-Site VPN</td><td>2本目のDXはmaximum resiliencyですが高価です。設問が費用を言うならVPNです。</td></tr>
+        <tr><td>複数AZの多数のEC2が同じデータディレクトリに書き込む必要がある</td><td>EBS multi-attach</td><td>EFS</td><td>multi-attachはio1/io2で1つのAZ内に限られ、cluster対応のfile systemも必要です。EFSは複数AZからmountできます。</td></tr>
+        <tr><td>on-premisesのbackupソフトが現在テープに書き込んでおり、手順を変えずにcloudへ移したい</td><td>File Gateway</td><td>Tape Gateway</td><td>Tape Gatewayはテープライブラリ（VTL）をエミュレートするので、backupソフトの変更は不要です。</td></tr>
+        <tr><td>Lambdaのevent処理が失敗するとeventが失われる</td><td>timeoutを延ばす</td><td>LambdaにDLQ（SQS/SNS）またはon-failure destinationを設定する</td><td>async invokeは2回retryしたあと破棄します。DLQに残せば後で処理できます。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">6. チケット予約システムがASG付きのALBの背後のEC2で動き、databaseはRDS MySQL Single-AZです。1つのAZ障害に<em>commit済みデータを失わず</em>に耐え、appが自動で復旧するようにしたい。必要な作業を2つ選んでください。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>RDS Multi-AZを有効にし、ASGを少なくとも2つのAZにまたがらせ、ALBもそれらのAZに置く。</b> 別AZのread replicaは非同期なので最後のトランザクションを失う可能性があり、「commit済みデータを失わない」を満たしません。定期的なsnapshotではRPOが数時間になります。</p></div>
+      <div class="q"><p class="qt">7. 画像uploadアプリケーション: web tierがfileを受け取り、画像処理serviceを直接呼び出します。uploadが急増すると処理serviceが過負荷になり、requestが失われます。<em>decouple</em>して、requestを失わないようにしたい。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>web tierがSQSにmessageを送り、処理serviceはqueue内のmessage数（ApproximateNumberOfMessagesVisible）に応じてscaleするASGで動かす。</b> SNSはconsumerが忙しいときにmessageを保持しません。Kinesisは継続的なstreaming向けで、job queueではありません。instance sizeを上げても急増には対応できません。</p></div>
+      <div class="q"><p class="qt">8. Tokyoの会社が、Aurora MySQLを使うアプリケーションのDRをOsakaに置きたい。RPOは1分未満、RTOは5分未満で、Osakaは関西のユーザーへの読み取りも提供します。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Osakaをsecondary RegionとするAurora Global Database。</b> replication lagは通常1秒未満、promoteは1分未満で、secondary clusterは読み取り可能です。RDS MySQLのcross-Region read replicaでも通常は要件を満たしますが、lagが大きく手動promoteも遅くなります。cross-Regionのsnapshot copyはRPOが数時間です。設問がAuroraに触れているならAuroraの機能を優先します。</p></div>
+      <div class="q"><p class="qt">9. websiteが2つのRegionにあり、primary Regionが全trafficを処理し、secondary Regionはprimaryが障害のときだけ受けます。Route 53をどう使いますか?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Failover routing policy: PRIMARY recordはhealth check付きでprimary Regionを、SECONDARY recordはsecondary Regionを指す。</b> latency routingはレイテンシーでユーザーを分けるので、secondary Regionも平常時にtrafficを受けてしまい、active-passiveになりません。weighted 100/0は障害時に自動で切り替わりません。</p></div>
+      <div class="q"><p class="qt">10. workerがSQSからmessageを取得し、処理に約5分かかります。運用担当者は、1つのmessageが2つの異なるworkerで2回処理されているのに気付きました。最も簡単な修正は?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>visibility timeoutを処理時間より長く（例えば10分に）する。</b> defaultは30秒なので、最初のworkerが終わる前にmessageが再び見えるようになります。FIFOに変えてもこれは直りません（FIFOは送信時の重複を防ぐもので、timeoutによる再表示は防ぎません）。DLQは失敗したmessage向けで、遅いmessage向けではありません。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. DOMAIN PERF ============ -->
+<section id="domain-perf">
+  <span class="eyebrow">Domain別の深掘り 3 / 4</span>
+  <h2>Design High-Performing Architectures (24%)</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">exam guideにおける配点とtask statement</span>
+      <p>65問中およそ16問です。task statementは5つで、いずれも「…に対して高性能で拡張可能な解決策を選ぶ」という形です。</p>
+      <ul>
+        <li><b>3.1 Storage</b>: EBS type、instance store、EFS mode、FSx（Lustre、Windows、ONTAP）、S3 performanceとaccess patternに応じたstorage class。</li>
+        <li><b>3.2 Compute</b>: EC2 family、placement group、enhanced networking、Auto Scaling、Lambda、container、batch、workloadに応じたcomputeの選択。</li>
+        <li><b>3.3 Database</b>: RDSとAurora、read replica、ElastiCache、DAX、DynamoDBのthroughputとindex、Redshift、access patternに応じたengineの選択。</li>
+        <li><b>3.4 Network</b>: CloudFrontとGlobal Accelerator、Route 53、VPC endpoint、Direct Connect、Transit Gateway、ELB type、低レイテンシーのための配置。</li>
+        <li><b>3.5 Data ingestionとtransformation</b>: Kinesis（Data Streams、Firehose、Managed Service for Apache Flink）、Glue、Athena、EMR、Lake Formation、DataSync、Transfer Family、Snow family。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">必ず覚えるfact</span>
+      <ul>
+        <li>EC2 familyは文字で見分けます: <b>C</b> compute（batch、encoding）、<b>R</b> memory（in-memory DB、cache）、<b>M</b> general、<b>T</b> burstable（CPU credit、Unlimitedを有効にすると頭打ちにならない）、<b>I</b> storage optimized（NVMe instance store、NoSQL、data warehouse）、<b>D/H</b> 大容量HDD、<b>P/G</b> GPU（ML、render）、<b>X/u</b> high memory（SAP HANA）、<b>Hpc</b>。Graviton（接尾辞g）は、ARMで動かせるworkloadなら同等性能で約20%安くなります。</li>
+        <li>Placement group: <b>Cluster</b>は1つのAZにまとめ、レイテンシーが最も低く帯域が高いのでHPC向けですが、グループ全体が同じリスクを負います。<b>Spread</b>は各instanceを別々のrackに置き、groupごとにAZあたり最大7 instanceで、少数の重要なinstance向けです。<b>Partition</b>はrackのグループに分け（AZあたり最大7 partition）、Hadoop、Cassandra、Kafka向けです。設問が<em>tightly coupled HPC, low latency</em>ならCluster、<em>reduce correlated failure</em>ならSpreadです。</li>
+        <li>EBS gp3: baseline 3,000 IOPSと125 MB/sで<b>容量に依存しません</b>。追加購入で最大16,000 IOPSと1,000 MB/s、gp2より約20%安価です。gp2: 3 IOPS/GB、burst 3,000、最大16,000。io1: 最大64,000 IOPS（Nitro）、50 IOPS/GB。io2 Block Express: 最大256,000 IOPS、4,000 MB/s、より高いdurability（99.999%）。st1: throughput最大500 MB/sのHDDでlogやbig data向け。sc1: 最大250 MB/sのcold HDDで最も安価。boot volumeはgp2/gp3/io1/io2のみ。数値は試験日前にAWSドキュメントで要確認です。</li>
+        <li>EBS multi-attachはio1/io2のみ、同一AZ、最大16のNitro instanceで、同時書き込みはapp側で処理する必要があります。EBS-optimized instanceはEBS専用の帯域を持ちます。</li>
+        <li>Instance store: hostに付いた物理ディスクでIOPSが非常に高いですが、<b>stop、hibernate、terminate、host障害でデータが消えます</b>。rebootでは残ります。buffer、cache、scratch、すでにreplicateされているデータ（Cassandra）に使います。snapshotは取れません。</li>
+        <li>EFS performance mode: <b>General Purpose</b>（default、低レイテンシー）と<b>Max I/O</b>（throughputとIOPSが高い代わりにレイテンシーも高い、数千のclient）。Throughput mode: <b>Elastic</b>（自動で伸縮、推奨）、Bursting（容量に比例）、Provisioned（固定）。storage classはStandard、Infrequent Access、Archiveでlifecycleあり。Linux（NFS v4）のみで、WindowsにはFSx for Windowsを使います。</li>
+        <li>FSx for Lustre: HPC向けfile systemで、数百GB/s、sub-millisecond、<b>S3と連携</b>（lazy load、S3へ書き戻し）。Scratch（一時的、安価）とPersistent（AZ内でreplicate）。FSx for Windows: SMB、NTFS、Active Directory、DFS、Multi-AZ。FSx for NetApp ONTAP: NFS/SMB/iSCSIのマルチプロトコル、snapshot、dedupで、NetAppからの移行向け。FSx for OpenZFS: 高性能なNFS。</li>
+        <li>S3 performance: <b>prefixごとに</b>毎秒少なくとも3,500 PUT/COPY/POST/DELETEと5,500 GET/HEAD。prefix数は無制限なので、prefixを分けてthroughputを上げます。Multipart uploadは100 MBから推奨、5 GB超で必須、objectは最大5 TB。<b>Transfer Acceleration</b>はユーザーに近いedge locationへuploadしてからAWSネットワークを通します。<b>Byte-range fetch</b>で部分ごとに並列でダウンロードしたり、fileの先頭だけを取得したりできます。S3 SelectはCSV/JSON/Parquetの内容をserver側でfilterし、転送データを減らします。</li>
+        <li>CloudFront: edgeでcacheし、originはS3、ALB、EC2、任意のHTTP。<b>Origin Access Control</b>でS3への直接アクセスを防ぎます。有料コンテンツにはsigned URL/cookie、geo restriction、field-level encryption。<b>CloudFront Functions</b>（header変更など、非常に軽量、edgeで実行）と<b>Lambda@Edge</b>（より重いロジック、Node/Python、regional edge cacheで実行）。Origin Shieldでoriginの負荷を減らします。TTLはdefault 24時間。AWSのbackboneを使うので動的コンテンツも高速化します。</li>
+        <li>Global Accelerator: 2つのanycast <b>static IP</b>を持ち、ネットワーク層で最も近く健全なendpoint（ALB、NLB、EC2、EIP）へroutingします。<b>cacheはしません</b>。failoverは数秒程度で、HTTP以外のTCP/UDP（game、VoIP、IoT）や、顧客がIPをwhitelistする必要がある場合に向いています。CloudFrontはcache付きのHTTP向け、Global Acceleratorはcacheなしで任意のプロトコル向けです。</li>
+        <li>ElastiCache <b>Redis</b>: replication、Multi-AZ failover、persistence、sorted set（leaderboard）、pub/sub、Redis AUTH、cluster mode。<b>Memcached</b>: マルチスレッドでシンプル、persistence・backup・replicationなし、shardingはclient側。web session store → Redis（またはDynamoDB）。cache戦略: lazy loading（cache missのときだけ読み込む、データが古くなりうる）とwrite-through（DBへの書き込み時にcacheも更新、常に新しいが書き込みコストがかかる）、それにTTLを組み合わせます。</li>
+        <li>DAX: DynamoDB専用のin-memory cacheで、レイテンシーは<b>microsecond</b>。API互換なのでcodeをほとんど変えずに使え、read-heavyやhot keyに有効です。書き込みには効きません。設問が<em>microsecond</em> + DynamoDBならDAX、<em>microsecond</em> + RDSならElastiCacheです。</li>
+        <li>DynamoDB: 1 RCU = 4 KBのstrongly consistent読み取り1回/秒（eventually consistentなら2回）、1 WCU = 1 KBの書き込み1回/秒、transactionalは2倍消費します。itemは最大400 KB。hot partitionを避けるためpartition keyを均等に分散させます。<b>GSI</b>: 別のpartition key、いつでも作成可能、capacityは別、eventually consistentのみ。<b>LSI</b>: 同じpartition keyで別のsort key、テーブル作成時にしか作れない、strongly consistentが可能。DynamoDB Streamsは変更を24時間保持しLambdaで処理できます。TTLで期限切れitemを無料で削除。provisioned modeにはauto scaling。</li>
+        <li>RDS read replicaは最大15（engineによる、AWSドキュメントで要確認）、非同期で、cross-Regionも可能です。Aurora reader endpointが自動で負荷分散し、Aurora Replica auto scalingはCPUやconnection数に応じて動きます。custom endpointでレポート用のreplicaを分けられます。<b>RDS Proxy</b>はconnectionをpoolし（Lambdaは多数のconnectionを開く）、failover時間を短縮します。VPC内のみです。</li>
+        <li>Aurora Serverless v2はACU単位で細かくscaleし、不規則なworkloadに向いています。Aurora Parallel Queryは分析処理をstorage層に押し下げます。Aurora Multi-Masterは古い機能で、現在の試験ではほとんど問われません。</li>
+        <li>Redshift: 列指向のdata warehouseでOLAP向け。Redshift SpectrumでS3を直接query、concurrency scaling、RA3でcomputeとstorageを分離、Redshift Serverless。Athena: S3をSQLでqueryするserverlessサービスで、スキャンしたデータ量で課金されるため、圧縮したParquet/ORCとpartitionで費用を下げます。Glue Data Catalogがmetastore、Glue ETLはserverless、EMRは自前管理のSpark/Hadoop、OpenSearchはfull-text searchとlog analytics、Neptuneはgraph、Timestreamはtime series、QLDBはledger、DocumentDBはMongoDB互換、KeyspacesはCassandra互換です。</li>
+        <li>Kinesis Data Streams: shardごとに書き込み1 MB/秒または1,000 record/秒、読み取りは共有で2 MB/秒。<b>enhanced fan-out</b>はconsumerごとに専用の2 MB/秒。retentionはdefault 24時間、最大365日。on-demand modeはshardを自動でscaleします。<code>ProvisionedThroughputExceeded</code>エラー → shardを追加するか、偏ったpartition keyを直します。<b>Firehose</b>: near real-time（秒数またはMBでbuffer）、自動scale、Lambdaで変換、S3、Redshift、OpenSearch、Splunk、HTTPへ書き込み。<b>replay用にデータを保存せず</b>、任意のconsumerも持てません。<b>Managed Service for Apache Flink</b>（旧称Kinesis Data Analytics）: stream上でSQL/Flinkをリアルタイムに実行。動画にはKinesis Video Streams。</li>
+        <li>Lambda: timeoutは最大15分、memoryは最大10 GB（CPUはmemoryに比例）、/tmpは最大10 GB、同期payloadは6 MB、deploymentは解凍後250 MBまたはcontainer image 10 GB。concurrencyはRegionあたりdefault 1,000（引き上げ可能）。<b>reserved concurrency</b>は1つの関数の同時実行数を確保または制限します。<b>provisioned concurrency</b>は事前に温めておきcold startを避けます。JavaにはSnapStart。VPC内のLambdaはENIとENI作成権限が必要で、VPC内のLambdaからInternetへ出るにはNATが必要です。Lambda layerでライブラリを共有します。制限値はAWSドキュメントで要確認です。</li>
+        <li>API Gateway: REST API（cache、usage plan、API key、WAF、request validation）、HTTP API（安く速いが機能は少ない）、WebSocket API。cacheは0.5〜237 GB、TTLはdefault 300秒、最大3,600。throttleはdefaultでaccountごと・Regionごとに約10,000 request/秒、burst 5,000（AWSドキュメントで要確認）。endpoint typeはedge-optimized（CloudFront経由）、regional、private（interface endpoint経由）。統合のtimeoutはdefault 29秒です。</li>
+        <li>Enhanced networking: <b>ENA</b>は高帯域（instanceにより最大100 Gbps以上）、SR-IOVでCPU負荷を下げます。<b>EFA</b>はMPIを使うHPCやML向けでOSをbypassします。AMIにENA driverが必要です。設問が<em>low latency inter-node communication for HPC</em>ならcluster placement group + EFAです。</li>
+        <li>queueに応じたscaling: カスタムmetricのbacklog per instance = visibleなmessage数 ÷ instance数を、target trackingで目標値に保ちます。Kinesis consumerはshard数に応じてscaleします。ECS serviceはCPUまたはALB request count per targetでscaleします。</li>
+        <li>大量データの移行: <b>DataSync</b>（オンライン、on-premisesとAWS間のNFS/SMB/HDFS/S3、agentあたり最大10 Gbps、定期スケジュール、検証あり）。<b>Snowball Edge</b>（オフライン、1台あたり約80 TB、回線が遅いとき、数週間）。<b>Snowmobile</b>（exabyte級）。<b>Transfer Family</b>（S3/EFSへのmanagedなSFTP/FTPS/FTP）。<b>Storage Gateway</b>（継続的なhybrid）。目安: 100 Mbpsで10 TBを送ると約10日、回線がそれより遅ければSnowballを選びます。</li>
+        <li>設問が<em>reduce latency</em>や<em>reduce database load</em>と言うなら、各層にcacheを置きます: CloudFront（edge）、API Gateway cache、ElastiCache/DAX（database）、read replica（読み取りのscale）、DynamoDB adaptive capacity（ほどほどのhot partitionを自動で処理）。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">よくある落とし穴</span>
+      <div class="tbl"><table>
+        <tr><th>設問</th><th>選びがちな誤答</th><th>正解</th><th>理由</th></tr>
+        <tr><td>UDPのオンラインgameでプレイヤーは世界中、低レイテンシーと固定IPが必要</td><td>CloudFront</td><td>Global Accelerator</td><td>CloudFrontはHTTP/HTTPSのみで、UDPにも固定IPにも対応しません。</td></tr>
+        <tr><td>静的websiteとAPI、ユーザーは世界中、コンテンツを<em>cache</em>する</td><td>Global Accelerator</td><td>CloudFront</td><td>Global Acceleratorはcacheしません。設問に<em>cache</em>、<em>static content</em>があればCloudFrontです。</td></tr>
+        <tr><td>読み取りの多いDynamoDBで、<em>microsecond latency</em>、<em>minimal code change</em>が必要</td><td>ElastiCache Redis</td><td>DAX</td><td>Redisはcacheを自前で管理するためcodeの変更が必要です。DAXはDynamoDBとAPI互換です。</td></tr>
+        <tr><td>処理jobの一時database、IOPSが非常に高く、データは失われてもよい</td><td>io2 EBS</td><td>Instance store（I family）</td><td>instance storeの方がIOPSが高く追加費用もかかりません。「失われてもよい」がヒントです。</td></tr>
+        <tr><td>複数の国から1つのS3 bucketへの大きなfileのuploadが遅い</td><td>CloudFront</td><td>S3 Transfer Acceleration + multipart upload</td><td>CloudFrontはダウンロード向けです（PUTも可能ですが、S3へのuploadの設問ならTransfer Acceleration）。</td></tr>
+        <tr><td>MLのHPC trainingで、S3からデータを読む並列file systemが必要</td><td>EFS</td><td>S3と連携したFSx for Lustre</td><td>EFSは数百GB/sのthroughputに届かず、S3とも連携しません。LustreはHPCのキーワードです。</td></tr>
+        <tr><td>数百のsensorがデータを送り、<em>real-time</em>の分析と、複数のアプリケーションによるstreamの再読み込みが必要</td><td>FirehoseまたはSQS</td><td>Kinesis Data Streams</td><td>Firehoseは任意の複数consumerもreplayもできません。SQSはstreamingではなく、1つのmessageを1つのconsumerが処理します。</td></tr>
+        <tr><td>logをnear real-timeでS3に集めるだけ、<em>least operational overhead</em>、独自の処理は不要</td><td>Kinesis Data Streams + Lambda</td><td>Kinesis Data Firehose</td><td>Firehoseは自動でscaleしS3へ書き込むので、shardの管理が不要です。</td></tr>
+        <tr><td>Lambdaのcold startでピーク時にAPIが遅くなる</td><td>Reserved concurrency</td><td>Provisioned concurrency</td><td>Reservedはslot数を制限または確保するだけで、温めはしません。Provisionedは初期化済みのinstanceを保持します。</td></tr>
+        <tr><td>別の関数がaccountのconcurrencyを使い切り、Lambdaがthrottleされる</td><td>Provisioned concurrency</td><td>重要な関数にReserved concurrency（またはもう一方の関数を制限）</td><td>Reservedは関数専用のquotaを切り出します。</td></tr>
+        <tr><td>DynamoDBのテーブルをpartition key以外の属性でqueryする必要があり、テーブルにはすでにデータがある</td><td>LSI</td><td>GSI</td><td>LSIはテーブル作成時にしか作れず、partition keyも変えられません。GSIは後から追加できます。</td></tr>
+        <tr><td>100 Mbps回線のdata centerから500 TBを2週間で移す</td><td>DataSync</td><td>Snowball Edge（複数台）</td><td>100 Mbpsで500 TBを送ると1年以上かかります。DataSyncは回線が十分速い場合だけです。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">11. log分析アプリケーションが大きなfileをEBSに順次書き込み、高いthroughputが必要で、<em>most cost-effective</em>にしたい。IOPSは重要ではありません。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>st1（Throughput Optimized HDD）。</b> gp3でも要件は満たしますが、大きな順次workloadには割高です。io2は無駄です。sc1はより安価ですがthroughputが低く、設問が「アクセスが少ない」と言う場合に選びます。</p></div>
+      <div class="q"><p class="qt">12. EコマースサイトがRDS PostgreSQLを使っています。トップページが売れ筋商品リストのqueryを毎秒数千回実行し、データは1時間ごとに変わります。<em>least effort</em>でDBの負荷を減らすには?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>queryの結果をlazy loadingとTTL 1時間でElastiCache（Redis）にcacheする。</b> read replicaでも負荷は減りますが、queryは依然として毎秒数千回実行されます。DAXはDynamoDB専用です。instance sizeを上げると費用がかかり、無限にはscaleしません。</p></div>
+      <div class="q"><p class="qt">13. あるDynamoDBテーブルのpartition keyは<code>date</code>です。セール日に、合計WCUには十分な余裕があるのにアプリケーションで<code>ProvisionedThroughputExceededException</code>が発生します。原因と修正は?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Hot partition: その日のすべての書き込みが1つのpartition keyに集中している。WCUを増やすのではなく、均等に分散するpartition key（ランダムな接尾辞を付ける、取引IDを使うなど）に変更する。</b> 合計WCUを増やしても、partitionごとの上限（1,000 WCU）に達するので効果がありません。DAXは書き込みには効きません。</p></div>
+      <div class="q"><p class="qt">14. ある会社は、MPIでnode間が絶えずデータを交換する200台のEC2で気象シミュレーションを動かしています。ネットワークのレイテンシーを最適化する設計は?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>1つのAZ内のcluster placement groupで、EFA対応のinstanceを使う。</b> Spread placement groupはAZあたり最大7 instanceで互いを離して配置するので、目的と逆です。Multi-AZはレイテンシーを増やします。Partition placement groupはHadoopのような耐障害性のある分散システム向けです。</p></div>
+      <div class="q"><p class="qt">15. video on demandアプリケーション: 大きなMP4 fileがS3にあり、ユーザーはよく動画の途中まで早送りします。file全体をダウンロードせずに速く再生するには?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>S3をoriginとするCloudFront経由でbyte-range request（HTTP Range）を使う。</b> S3 SelectはCSV/JSON/Parquet専用で、動画には使えません。Transfer Accelerationはupload向けです。Multipartはuploadの方法で、読み取りの方法ではありません。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. DOMAIN COST ============ -->
+<section id="domain-cost">
+  <span class="eyebrow">Domain別の深掘り 4 / 4</span>
+  <h2>Design Cost-Optimized Architectures (20%)</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">exam guideにおける配点とtask statement</span>
+      <p>65問中およそ13問です。task statementは4つで、いずれも<em>cost-optimized</em>という語を含みます。</p>
+      <ul>
+        <li><b>4.1 Storage</b>: S3 storage classとlifecycle、Intelligent-Tiering、Glacier retrieval、EBS typeとsnapshot、EFS class、backupの保持期間、data transfer cost。</li>
+        <li><b>4.2 Compute</b>: EC2 pricing（On-Demand、Spot、Reserved、Savings Plans、Dedicated）、right sizing、Auto Scaling、Lambda、FargateとEC2、Graviton、Compute Optimizer。</li>
+        <li><b>4.3 Database</b>: RDS Reserved、Aurora Serverless、DynamoDBのon-demandとprovisioned、I/Oを減らすためのcaching、より安価なengineの選択、使わないDBの停止。</li>
+        <li><b>4.4 Network</b>: NAT Gateway、NATの代わりのVPC endpoint、CloudFrontによるegress削減、Direct ConnectとVPNの比較、同一AZと別AZ、Transit Gatewayの費用、Route 53。</li>
+      </ul>
+      <p>さらにツールとして: Cost Explorer、Budgets、Cost and Usage Report、Cost Anomaly Detection、cost allocation tags、Organizationsのconsolidated billing。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">必ず覚えるfact</span>
+      <ul>
+        <li><b>On-Demand</b>: Linuxは秒単位（最低60秒）、Windowsや一部のOSは時間単位で課金。契約不要で、短期間や予測できないworkload向けです。</li>
+        <li><b>Reserved Instance</b>: 1年または3年、最大約72%割引（3年all upfront）。<b>Standard RI</b>は割引が最も大きく、同じfamily内でAZとsizeを変更でき（Linux）、<b>familyは変更できず</b>、RI Marketplaceで売却できます。<b>Convertible RI</b>は割引が小さめ（最大約66%）ですが、family、OS、tenancyを変更できます。支払いはall upfront、partial、no upfront。scopeは<b>regional</b>（AZに柔軟、capacityは確保しない）または<b>zonal</b>（特定AZのcapacityを確保）。</li>
+        <li><b>Savings Plans</b>: 1年または3年で、1時間あたりのUSD額を約束します。<b>Compute SP</b>はEC2のあらゆるfamily、Region、Fargate、Lambdaに適用され最大66%割引。<b>EC2 Instance SP</b>はfamilyとRegionが固定で最大72%割引。設問が<em>flexible across instance family, Region, Fargate, Lambda</em>ならCompute Savings Plansです。%はAWSドキュメントで要確認です。</li>
+        <li><b>Spot</b>: 最大90%割引。AWSが必要なときに2分前の通知で回収します。batch、CI、big data、render、ASG mixedのstatelessなweb向けで、databaseや中断に耐えられないworkloadには<b>使いません</b>。Spot FleetやASGのmixed instances policyで、On-DemandとSpotを複数のinstance typeで組み合わせ、回収リスクを下げます。戦略はprice-capacity-optimized。</li>
+        <li><b>Dedicated Host</b>: 物理マシン丸ごとで、socket/coreが見えるのでsocket単位のlicense（Windows Server、SQL Server BYOL）に使えます。最も高価です。<b>Dedicated Instance</b>: 専用hardwareで動きますが、配置は制御できずsocketも見えません。<b>Capacity Reservation</b>: 1つのAZでOn-Demandのcapacityを確保します。割引はないので、regional RIやSPと組み合わせてcapacityと安さを両立させます。</li>
+        <li>Right sizing: <b>Compute Optimizer</b>はCloudWatchに基づいてEC2、ASG、EBS、Lambda、ECS Fargateのsizeを提案します（over-provisioned、under-provisioned）。<b>Trusted Advisor</b>はidleなload balancer、低稼働のEC2、未関連付けのEIP、低稼働のEBSを報告します（多くのcheckにはBusiness/Enterprise supportが必要）。Cost Explorerにもright sizing recommendationがあります。</li>
+        <li>S3 storage class: <b>Standard</b>（頻繁なアクセス）。<b>Intelligent-Tiering</b>（アクセスに応じて自動でtierを移動、objectごとに少額の監視料金、<b>retrieval料金なし</b>、128 KB未満のobjectはtier移動されないが保存はされる、Archive AccessとDeep Archive Access tierはopt-in）。<b>Standard-IA</b>（GB単位のretrieval料金、最低30日と128 KBで課金、複数AZ）。<b>One Zone-IA</b>（IAより約20%安い、1 AZ、再作成できるデータ向け）。<b>Glacier Instant Retrieval</b>（ミリ秒、最低90日、四半期に1回程度アクセスするデータ向け）。<b>Glacier Flexible Retrieval</b>（Expedited 1〜5分、Standard 3〜5時間、Bulk 5〜12時間、最低90日）。<b>Glacier Deep Archive</b>（Standard 12時間、Bulk 48時間、最低180日、最も安価）。最低日数はAWSドキュメントで要確認です。</li>
+        <li>Lifecycle rule: objectの経過日数によるtransition（Standard → IAはStandardで最低30日が必要）、expiration、N日後のnoncurrent versionの削除、<b>abort incomplete multipart upload</b>（隠れた費用の原因）、expired delete markerの削除。lifecycleでGlacierからStandardへ戻すことはできません（restoreしてからcopyする）。どのclassに移すべきかは<b>S3 Storage Class Analysis</b>と<b>Storage Lens</b>で把握します。設問が<em>unknown or changing access pattern</em>ならIntelligent-Tieringです。</li>
+        <li>Glacierのrestoreは、指定した日数だけ一時的なStandardのコピーを作り、両方の料金がかかります。Expeditedはprovisioned capacityを購入してthroughputを確実に確保できます。</li>
+        <li>EBS: gp3はgp2より約20%安くbaselineも高いので、ほとんどの場合<em>cost-effective</em>です。io2は16,000 IOPSを超える場合や高いdurabilityが必要な場合のみ。st1/sc1は大きなthroughputや冷たいデータ向け。snapshotはincrementalで、変更されたblockだけ課金されます。<b>EBS Snapshots Archive</b>は90日以上保持するsnapshotで約75%安く、restoreに24〜72時間かかります。Data Lifecycle Managerで古いsnapshotを削除します。terminate後に残った孤立volumeを削除します（Delete on terminationを確認）。</li>
+        <li>Data transfer: <b>AWSへの受信は無料</b>。同一AZ内のprivate IP経由は無料。<b>同一Region内の別AZ間は双方向それぞれに課金</b>（各方向約0.01 USD/GB）。別Region間（約0.02 USD/GB）。Internetへの送信は約0.09 USD/GBで段階的に下がり、毎月最初の100 GBは無料。S3やEC2からCloudFrontへは無料で、CloudFrontからInternetへの方が安価です。同一AZのinstance間でもpublic IPやEIPを使うとregionalとして課金されます。価格はAWSドキュメントで要確認です。</li>
+        <li><b>NAT Gateway</b>: 約0.045 USD/時間 + 処理量約0.045 USD/GB（Tokyoは少し高い）。HAとAZ間料金の回避のため、AZごとにNATを1つ置きます。private subnetからS3/DynamoDBへのtrafficはNATを通るとGB単位で課金されるので、<b>無料のGateway endpoint</b>に置き換えます。Interface endpointはAZごとに約0.01 USD/時間 + 0.01 USD/GBで、通信量が多ければやはりNATより安価です。NAT instanceは安価ですが自前管理でHAがありません。</li>
+        <li>CloudFrontはegressとoriginの負荷を減らします。Global Acceleratorは時間単位の固定料金 + GB単位のpremium。Direct Connect: portの時間料金があり、egressはInternetよりかなり安く、大量で安定した通信に向いています。VPNは安く素早く構築でき、少量の通信向けです。Transit GatewayはattachmentとGBで課金、VPC peeringはdata transferだけ課金されます。</li>
+        <li>RDS Reserved Instanceは1年または3年で最大約69%割引（AWSドキュメントで要確認）、同じengineとfamily内でsize-flexibleです。RDSのinstanceは最大7日間<b>stop</b>でき、その後自動で起動します（Multi-AZとread replicaはstopできない）。dev DBはInstance SchedulerやLambdaで時間外に停止するスケジュールにします。Multi-AZは費用が2倍になり、dev/testには不要です。</li>
+        <li><b>Aurora Serverless v2</b>はACU時間で課金され、不規則なworkloadやあまり使わないworkloadに向いています。Aurora StandardはI/Oを別途課金し、<b>Aurora I/O-Optimized</b>はI/Oを課金しません。I/Oが請求額の約25%を超えるなら後者を選びます。replicaがstorageを共有するため、多くのreplicaが必要な場合は同じengineのRDSよりAuroraの方が安価です。</li>
+        <li>DynamoDB <b>on-demand</b>: request単位で支払い、不規則なtrafficや予測できないtraffic向けで、requestあたりの単価はprovisionedの数倍です。<b>provisioned</b> + auto scalingは安定したtraffic向けで、1年または3年の<b>reserved capacity</b>を購入するとさらに安くなります。<b>Standard-IA table class</b>はアクセスが少なくデータが多いテーブル向けです（storageは安く、throughputは高い）。modeの切り替えは24時間に最大1回です。</li>
+        <li><b>Lambda</b>はrequest数とGB秒で課金されます。Free Tierは毎月100万requestと400,000 GB秒（always free、AWSドキュメントで要確認）。arm64のGravitonは約20%安価。memoryを増やすと速く終わるため、かえって安くなることもあります。Compute Savings PlansはLambdaにも適用できます。</li>
+        <li><b>Fargate</b>はvCPUとGBを秒単位で課金し、serverの管理が不要です。<b>Fargate Spot</b>は中断に耐えるtaskで最大70%割引。<b>EC2上のECS</b>はclusterを使い切りRI/Spotがあれば安価ですが、hostの管理が必要です。設問が<em>least operational overhead</em>ならFargate、<em>高い稼働率が続く場合のmost cost-effective</em>ならRIまたはSavings Plans付きのEC2です。</li>
+        <li>ツール: <b>Cost Explorer</b>（費用の表示とfilter、予測、RI/SPの推奨、right sizing、APIあり）。<b>AWS Budgets</b>（cost、usage、RI/SPのutilizationとcoverage、実績と予測によるアラート、<b>budget action</b>でpolicyを付与したりEC2/RDSを停止したりする）。<b>Cost and Usage Report</b>（最も詳細、S3に出力、Athenaでquery）。<b>Cost Anomaly Detection</b>（MLで異常な支出を検出、SNSでアラート）。<b>cost allocation tags</b>（BillingでtagをActivateしないとCost Explorerに表示されない）。<b>Cost Categories</b>はteam別に費用をまとめます。<b>Pricing Calculator</b>は事前の見積もりです。</li>
+        <li>Organizationsの<b>Consolidated billing</b>: 全accountで請求書が1つになり、<b>usageを合算して段階的な価格</b>（S3、data transfer）の恩恵を受け、<b>RIとSavings Plansをaccount間で共有</b>します（特定accountでRI sharingを無効化可能）。支払いはmanagement accountです。SCPは費用とは無関係ですが、高価なresourceの作成を防ぐことはできます（例: 大きなinstance typeをDeny）。</li>
+        <li>よく出題される手軽な節約策: dev/testを時間外に停止する（scheduled scaling、Instance Scheduler）、関連付けのないEIPを解放する、targetのないELBを削除する、CloudWatch Logsにretentionを設定する（defaultは無期限保存）、大きなデータを共有するbucketにS3 Requester Pays、可能ならWindowsからLinuxへ、Graviton、batchにSpot。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">よくある落とし穴</span>
+      <div class="tbl"><table>
+        <tr><th>設問</th><th>選びがちな誤答</th><th>正解</th><th>理由</th></tr>
+        <tr><td>3年間安定したworkloadだが、将来instance familyやRegionを変える可能性がある</td><td>Standard RI</td><td>Compute Savings Plans（またはConvertible RI）</td><td>Standard RIはfamilyもRegionも変更できません。設問に<em>flexibility</em>があればCompute SPです。</td></tr>
+        <tr><td>夜間に動く画像処理のbatchで、失敗したら再実行できる、<em>most cost-effective</em></td><td>Reserved Instance</td><td>Spot Instances</td><td>「中断に耐える」「再実行できる」はSpotのヒントです。RIは常時稼働向けです。</td></tr>
+        <tr><td>アクセスが予測できないデータで、頻繁にアクセスされるfileと長く放置されるfileが混在</td><td>Standard-IA</td><td>S3 Intelligent-Tiering</td><td>Standard-IAは読み取りのたびにretrieval料金がかかり、頻繁に読むとStandardより高くなります。Intelligent-Tieringにはretrieval料金がありません。</td></tr>
+        <tr><td>法令で7年間保存、ほぼ読まない、必要なときは1日待てる</td><td>Glacier Flexible Retrieval</td><td>Glacier Deep Archive</td><td>Deep Archiveが最も安価で、Standard retrievalの12時間は「1日」以内です。Flexibleを選ぶのは5時間未満やExpeditedが必要な場合だけです。</td></tr>
+        <tr><td>logをS3にuploadして30日以内に分析し、その後はめったに読まないが<em>instant</em>に読めることが必要</td><td>30日後にlifecycleでGlacier Flexibleへ</td><td>30日後にlifecycleでStandard-IAまたはGlacier Instant Retrievalへ</td><td>Glacier Flexibleは取り出しに数分〜数時間かかり、「instant」ではありません。</td></tr>
+        <tr><td>private subnetのEC2がNAT Gateway経由でS3から数TBをダウンロードし、請求額が急増</td><td>NAT Gatewayを増強する、または別AZにNATを追加</td><td>S3用のGateway endpointを追加し、route tableでS3をendpoint経由にする</td><td>Gateway endpointは無料で、NAT経由のGB料金が完全になくなります。</td></tr>
+        <tr><td>同一Region内のweb tierとDB tierの間のdata transfer費用が高い</td><td>料金を避けるためにpublic IPを使う</td><td>同じAZに置くかやり取り（chatty）を減らし、private IPを使う。public/EIPでも課金される</td><td>料金は別AZであることで双方向に発生します。HAとのトレードオフに注意します。</td></tr>
+        <tr><td>DynamoDBテーブルのtrafficが24時間365日安定しているのにon-demandを使っていて高い</td><td>Standard-IA table class</td><td>auto scalingとreserved capacity付きのProvisioned</td><td>安定したtrafficではon-demandは何倍も高くなります。IA classはアクセスが少ない場合向けで、安定している場合向けではありません。</td></tr>
+        <tr><td>業務時間だけ使うdev/test用DBがRDS Multi-AZ</td><td>Reserved Instance</td><td>Multi-AZを外し、時間外は停止またはstopをスケジュールする（またはAurora Serverless v2）</td><td>RIは24時間365日分を支払います。devにMulti-AZは不要です。</td></tr>
+        <tr><td>毎月の費用を事前に把握し、予測が予算を超えたら警告したい</td><td>Cost Explorer</td><td>forecast alert付きのAWS Budgets</td><td>Cost Explorerは表示と分析用で、しきい値によるアラートはBudgetsです。</td></tr>
+        <tr><td>あるサービスの支出が1日で300%異常に増えた。手動でしきい値を決めずに自動で検出したい</td><td>Budgets</td><td>Cost Anomaly Detection</td><td>Budgetsは固定のしきい値が必要です。Anomaly DetectionはMLで支出パターンを学習します。</td></tr>
+        <tr><td>複数accountで、account Aで購入したRIをaccount Bに適用し、S3の段階的な価格も合算で受けたい</td><td>各accountでRIを購入</td><td>Organizationsのconsolidated billing（RI sharingはdefault有効）</td><td>consolidated billingはusageを合算し、RI/SPを共有します。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">16. ある会社は、web用にm5.largeのEC2 20台を1年中安定して動かし、さらに中断に耐える不定期のrender clusterを持っています。<em>most cost-effective</em>な組み合わせは?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>web instance 20台にはEC2 Instance Savings Plans（またはStandard RI）、render clusterにはSpot。</b> 落とし穴: webにSpotを選ぶ（回収される可能性がある）、renderにRIを選ぶ（動いていないときも支払う）。設問が柔軟性を強調するならCompute SPも正解です。</p></div>
+      <div class="q"><p class="qt">17. 医療画像をS3に保存するアプリケーション: 最初の30日間は医師が頻繁に閲覧し、その後はめったに見ないが必要なときはすぐ開ける必要があり、1年後は法令で10年間保持するだけで、12時間待つことは許容されます。lifecycleの設計は?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Standardで30日 → Standard-IA（またはGlacier Instant Retrieval） → 365日後にGlacier Deep Archive → 10年後にexpiration。</b> One Zone-IAは、医療データはAZ障害で失われてはならないので誤りです。30日後にGlacier Flexibleへ直接移すのは「すぐ開ける」を満たさないので誤りです。</p></div>
+      <div class="q"><p class="qt">18. VPCに3つのAZがあり、AZごとにNAT Gatewayが1つあります。private subnetのEC2が毎月50 TBをS3へ、2 TBを外部APIへ送っています。ネットワーク費用を最も大きく減らすには?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>S3用のGateway endpointを作成して50 TBがNATを通らないようにし、残りの2 TBのためにNATは残す。</b> NAT Gatewayを1つにまとめると時間料金は減りますが、AZ間料金が増えHAも失い、50 TBの問題も解決しません。S3用のInterface endpointでもGB料金がかかります。</p></div>
+      <div class="q"><p class="qt">19. microserviceアプリケーションがECSで動き、負荷は不均一で、少人数のteamはserverを管理したくありません。重要でないtaskが多数常時動いているため月額費用が高い。<em>least operational overhead</em>を保ったまま費用を下げるには?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Fargateのまま、中断に耐えるtaskをFargate Spotに移し、安定して動く部分にはCompute Savings Plansを購入する。</b> EC2上のECSとRIに移すと安くはなりますが、hostの管理が必要になり要件に反します。taskのsizeを下げるのはright sizingにすぎず、十分ではありません。</p></div>
+      <div class="q"><p class="qt">20. 財務部門は、共有accountの中で各teamが自分の費用を見られるようにし、Data teamの予測費用が5,000 USDを超えたらemailを受け取りたいと考えています。2つ選んでください。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>resourceにTeam tagを付けてcost allocation tagをActivateする。tag Team=Dataでfilterしたforecast alert付きのAWS Budgetを作成する。</b> accountを分けても費用は分けられますが、設問は共有accountと言っています。Cost Explorerは表示はできますが、しきい値でemailを送りません。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. PHÂN TÍCH CÂU SAI ============ -->
+<section id="phan-tich-sai">
+  <span class="eyebrow">深掘り 5 / 5 · 方法</span>
+  <h2>誤答の分析方法</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">なぜ分類するのか</span>
+      <p>模試の回数を増やして点数が上がるのは、1問ごとの誤答を具体的な行動に変えたときだけです。「12問間違えた」では何もわかりません。「7問はMulti-AZとread replicaの混同、3問は<em>cost</em>の読み落とし」なら、明日何を学べばよいかがすぐわかります。今週は、誤答の1問1問に下の4種類の原因のうちちょうど1つを付けます。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">4つの誤答原因</span>
+      <div class="tbl"><table>
+        <tr><th>コード</th><th>原因</th><th>見分け方</th><th>やること</th></tr>
+        <tr><td><b>KB</b></td><td>サービスや機能を知らない</td><td>解説を読んで初めて名前を聞いた（例: Gateway Load Balancer、S3 Batch Replication、Vault Lock）</td><td>そのサービスのTutorials Dojo cheat sheetを10分読み、「何か、いつ使うか、最も近いサービスとの違い」を3行で誤答理由列に書く</td></tr>
+        <tr><td><b>NH</b></td><td>知っているが近いサービスと混同した</td><td>2つの選択肢がどちらも「正しそう」で、もう一方を選んだ（CloudFrontとGlobal Accelerator、SQSとKinesis、Multi-AZとread replica、Parameter StoreとSecrets Manager）</td><td>サービスのペアを「AとB」の形でキーワード列に書き、該当する週の「混同しやすい点」の表を読み返し、このページ末尾の混同しやすいペア表に1行追加する</td></tr>
+        <tr><td><b>SOT</b></td><td>キーワードや制約の読み落とし</td><td>解説が、設問中の自分が気付かなかった語を指摘している（<em>cost-effective</em>、<em>no code change</em>、<em>within 2 weeks</em>、<em>Windows</em>、<em>UDP</em>、「select TWO」）</td><td>読み落としたキーワードをそのままキーワード列に書き写す。次の模試では選択肢を読む前にキーワードに下線を引く</td></tr>
+        <tr><td><b>BEST</b></td><td>「最適」の落とし穴での判断ミス</td><td>自分の選んだ選択肢も動くが、正解の方が安い、運用が少ない、またはある制約により合っている</td><td>勝敗を分けた基準を誤答理由列に書く（「どちらも要件を満たすが、設問はleast operational overheadを求めている → managed」）。まず誤りの2つを消し、残りの2つを設問の基準で比べる練習をする</td></tr>
+      </table></div>
+      <div class="note">時間切れや押し間違いによる誤答は、<b>SOT</b>に「thời gian」と添えて記録します。1回の模試でこの種類が3問以上あれば、問題は解答のペースです。130分で65問なら1問2分なので、3分を超えた問題はマークして先へ進みます。</div>
+    </div>
+
+    <div class="block"><span class="eyebrow">so-ghi-cau-sai.mdへの書き方</span>
+      <p>fileの7列はそのままにし、検索で絞り込めるよう書き方のルールだけを加えます。</p>
+      <div class="tbl"><table>
+        <tr><th>列</th><th>書く内容</th><th>例</th></tr>
+        <tr><td>日付（Ngày）</td><td>yyyy-mm-dd</td><td>2026-10-29</td></tr>
+        <tr><td>週（Tuần）</td><td>週と模試を略記</td><td>T11 TD2 Q37</td></tr>
+        <tr><td>サービス（Dịch vụ）</td><td>正解の主なサービス名。絞り込めるようAWSの正式名で書く</td><td>Global Accelerator</td></tr>
+        <tr><td>自分の選択（Mình chọn）</td><td>自分が選んだサービスや方法</td><td>CloudFront</td></tr>
+        <tr><td>正解（Đáp án đúng）</td><td>正しいサービスや方法</td><td>NLBの前段にGlobal Accelerator</td></tr>
+        <tr><td>誤答理由（Vì sao sai）</td><td><b>原因コード</b>と理由を一文で</td><td>NH: CloudFrontはHTTPのみ、設問はUDPでstatic IPが必要</td></tr>
+        <tr><td>キーワード（Từ khóa）</td><td>正解を決めた設問中のキーワード、英語で</td><td>UDP, static IP, global users</td></tr>
+      </table></div>
+      <p style="font-size:.92rem">fileのMarkdown形式どおりの記入例（ノートはベトナム語で記入）:</p>
+<pre><code>| 2026-10-29 | T11 TD2 Q37 | Global Accelerator | CloudFront | Global Accelerator trước NLB | NH: CloudFront chỉ HTTP, đề là UDP và cần static IP | UDP, static IP, global users |</code></pre>
+      <p style="font-size:.92rem">最も速い方法: 採点後、「Q37: chọn B, đúng D」のような一覧と設問の要約を一文ずつsessionに貼り、「ghi vào sổ câu sai với mã nguyên nhân」と伝えます。Claudeが7列すべてを埋めるので、原因コードが違うと思ったところだけ直します。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">ノートを絞り込んで弱いサービス群を見つける</span>
+      <ol>
+        <li>模試2回ごとに、サービス列を数えます。3回以上出てくるサービスが弱いサービス群です。AWSフォルダーでPowerShellを使います:
+<pre><code>Select-String -Path so-ghi-cau-sai.md -Pattern '^\| 20' |
+  ForEach-Object { ($_.Line -split '\|')[3].Trim() } |
+  Group-Object | Sort-Object Count -Descending | Select-Object Count, Name -First 10</code></pre>
+        このコマンドはサービス列（区切り線の後の3列目）を切り出して数えます。原因コードで数えるには、添字<code>[3]</code>を<code>[6]</code>に変え、先頭の2〜4文字を取ります。</li>
+        <li>原因コードで数える: <b>KB</b>が多ければサービスの追加学習（cheat sheetを読む）、<b>NH</b>が多ければ比較表（「混同しやすい点」を復習）、<b>SOT</b>が多ければ設問の読み方（キーワードに下線、最後の問いを先に読む）、<b>BEST</b>が多ければ基準のルール（ページ末尾のキーワード表）が必要です。</li>
+        <li>模試ごとにdomain別の%を計算します。Tutorials Dojoはreviewページにdomain別の結果を表示します。その4つの数値を「TD2: SEC 75 / RES 82 / PERF 90 / COST 70」の形でchecklistのメモに書きます。連続する2回で最も低いdomainが、翌日に深掘りするdomainです。</li>
+        <li>2回間違えた問題（同じサービスで同じ混同ペアの行が2つある）は、自分で読むのをやめ、sessionで説明し直してもらいます。</li>
+      </ol>
+    </div>
+
+    <div class="block"><span class="eyebrow">「Ôn lại chỗ yếu」promptのテンプレート（PROMPT-session-tuan.mdに収録）</span>
+<pre><code>Tôi làm quiz tuần 11 được __/__. Các câu sai nằm ở dịch vụ: ____.
+Hãy giảng lại đúng các chỗ đó, so sánh với dịch vụ dễ nhầm, rồi cho tôi 10 câu mini quiz chỉ về phần này.</code></pre>
+      <p style="font-size:.92rem">第11週では、「quiz tuần 11」の部分を模試名（例:「Tutorials Dojo đề 2 được 48/65」）に置き換え、ノートの絞り込みで見つかった弱いサービス群を、多数を占める原因コードと一緒に挙げます。例:「Các câu sai nằm ở dịch vụ: RDS Multi-AZ với read replica (NH, 3 câu), S3 storage class (BEST, 2 câu)」。Claudeはそのペアを説明し直し、すぐに確認できるよう10問のmini quizを出します。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">80%未満の模試を解き直すルール</span>
+      <ul>
+        <li>1回目から<b>ちょうど1週間後</b>に解き直し、それより早くはしません。早すぎると理解ではなく答えの記憶になり、遅すぎるとペースが崩れます。</li>
+        <li>解き直しもtimed modeで行い、直前にノートを見返しません。</li>
+        <li>checklistに2つの点数を並べて書きます: 「TD1: 72% → 86%」。2回目で80%以上を取って初めてその模試は完了です。</li>
+        <li>2回とも間違えた問題: 週列に「LẦN 2」と書いた新しい行をノートに追加し、必ずsessionに持ち込んで説明し直してもらいます。</li>
+        <li>2回目もまだ80%未満なら、すぐ3回目は解きません。このページでその模試の最も低いdomainの深掘りに戻り、それから新しい模試を解きます。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LỊCH LÀM ĐỀ ============ -->
+<section id="handson">
+  <span class="eyebrow">模試演習</span>
+  <h2>第11週の模試スケジュール</h2>
+  <p>模試は5回で、どの回も同じ6ステップの手順で進めます。1回あたりの合計は約3時間で、解答130分、採点とノート記入に40〜60分です。今週はAWS resourceを一切作成しません。</p>
+
+  <div class="card">
+    <h3>模試回1. Tutorials Dojo 模試2（1日目、domain SECの復習後）</h3>
+    <ol class="steps">
+      <li><div><p>Tutorials Dojo SAA-C03のセットを開き、<b>Practice Test 2</b>を<b>Timed mode</b>（65問、130分）で選びます。スマートフォンを切り、調べものはしません。4つの選択肢を読む前に、頭の中でキーワードと制約に下線を引きます。</p></div></li>
+      <li><div><p>提出して、reviewページで総合点と<b>domain別の点数</b>を確認します。当てずっぽうで正解した問題も多いので、<b>正解した問題も含めて</b>解説を読みます。</p></div></li>
+      <li><div><p>誤答ごとに原因コード（KB、NH、SOT、BEST）を付け、sessionに送って<code>so-ghi-cau-sai.md</code>へ7列どおりに記入します。週列は<code>T11 TD2 Qxx</code>です。</p></div></li>
+      <li><div><p>domain別の%を計算し、<code>TD2: SEC __ / RES __ / PERF __ / COST __</code>の形でメモします。第10週と比べ、復習したばかりのSECが伸びたかを見ます。</p></div></li>
+      <li><div><p>sessionで「TD đề 2 được __%」と伝え、<code>AWS-SAA-checklist.md</code>の<code>Tutorials Dojo đề 2: ____%</code>の行にチェックを付けてもらいます。</p></div></li>
+      <li><div><p>80%未満: 第12週の1日目に解き直す予定をすぐ書き込みます。80%以上: これを「連続2回」の1回目として記録します。</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>模試回2. Tutorials Dojo 模試3（2日目、domain RESの復習後）</h3>
+    <ol class="steps">
+      <li><div><p><b>Practice Test 3</b>、Timed mode。始める前に、模試2の誤答ノートの先頭5行を読み返し、引っかかったばかりの落とし穴を思い出します。</p></div></li>
+      <li><div><p>採点し、正解した問題も含めて解説を読みます。復習したばかりのdomainなので、RESの問題（Multi-AZ、read replica、SQS、DR）に特に注意します。</p></div></li>
+      <li><div><p>誤答を原因コード付きでノートに記入します。週列は<code>T11 TD3 Qxx</code>です。</p></div></li>
+      <li><div><p>domain別の%を計算し、<code>TD3: SEC __ / RES __ / PERF __ / COST __</code>と書きます。第11週の模試が2回分そろったので、「誤答の分析」の絞り込みコマンドを実行し、3日目用の弱いサービス群を見つけます。</p></div></li>
+      <li><div><p>sessionで点数を伝え、checklistにチェックを付けてもらいます。</p></div></li>
+      <li><div><p>80%未満: 第12週の2日目に解き直す予定を入れます。模試2と模試3がともに80%以上なら、確認ポイント1は達成です。</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>模試回3. Tutorials Dojo 模試4（4日目、domain PERFの復習後）</h3>
+    <ol class="steps">
+      <li><div><p><b>Practice Test 4</b>、Timed mode。3日目に身につけた新しい習慣を使います。2つの選択肢がどちらも動く問題では、選ぶ前に設問の基準（<em>cost</em>、<em>operational overhead</em>、<em>latency</em>、<em>no code change</em>）を探します。</p></div></li>
+      <li><div><p>採点し、正解した問題も含めて解説を読みます。PERFの問題（EBS type、cache、Kinesis、placement group）に注意します。</p></div></li>
+      <li><div><p>誤答をノートに記入します。週列は<code>T11 TD4 Qxx</code>です。模試2や3とサービスが重なる問題は、誤答理由列に「lặp」と書き足します。</p></div></li>
+      <li><div><p>domain別の%を計算し、<code>TD4: ...</code>と書きます。3回分を比べ、一貫して最も低いdomainが6日目に復習するdomainです。</p></div></li>
+      <li><div><p>sessionで点数を伝え、checklistにチェックを付けてもらいます。</p></div></li>
+      <li><div><p>80%未満: 第12週の4日目に解き直す予定を入れます。</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>模試回4. Tutorials Dojo 模試5（5日目、domain COSTの復習後）</h3>
+    <ol class="steps">
+      <li><div><p><b>Practice Test 5</b>、Timed mode。今週最後の模試です。1問2分のペースを守り、最後の10分はマークした問題の見直しに残すよう努めます。</p></div></li>
+      <li><div><p>採点し、正解した問題も含めて解説を読みます。COSTの問題（pricing model、S3 class、NATとendpoint）に注意します。</p></div></li>
+      <li><div><p>誤答をノートに記入します。週列は<code>T11 TD5 Qxx</code>です。</p></div></li>
+      <li><div><p>domain別の%を計算し、<code>TD5: ...</code>と書きます。模試4回 × 4 domainの表を作り、domainごとの平均を出して第10週と比べ、確認ポイント2（最も弱いdomainが10ポイント以上上昇）を確認します。</p></div></li>
+      <li><div><p>sessionで点数を伝え、checklistにチェックを付けてもらいます。模試4と5がともに80%以上なら（または任意の連続2回が80%以上なら）、確認ポイント1にチェックを付けるため「hai đề liên tiếp đạt 80%」とはっきり伝えます。</p></div></li>
+      <li><div><p>80%未満: 第12週の5日目に解き直す予定を入れます。</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>模試回5. 第10週で80%未満だった模試の解き直し（6日目）</h3>
+    <ol class="steps">
+      <li><div><p>第10週で80%未満だった模試を書き出します。<code>AWS-SAA-quiz-01.md</code>、AWS Official Practice Question Set、Tutorials Dojo 模試1のいずれかでしょう。1回目から7日たった模試だけを解き直します。3つとも80%未満なら、解説が最も充実しているTutorials Dojo 模試1を優先し、次にquiz-01を解きます。</p></div></li>
+      <li><div><p>timed modeで解き直し、直前に誤答ノートは読みません。<code>AWS-SAA-quiz-01.md</code>は解答をsessionに送り、第10週と同じようにClaudeに採点してもらいます。</p></div></li>
+      <li><div><p>2つの点数を並べて書きます: <code>TD1: 72% → 86%</code>。2回目のdomain別%を計算し直し、domainごとに1回目と比べます。</p></div></li>
+      <li><div><p>ノートと照合します。2回とも間違えた問題は、週列に<code>T11 LẦN 2 TD1 Qxx</code>と書いた新しい行を追加します。このリストは自分で読まず、必ずsessionに持ち込んで説明し直してもらいます。</p></div></li>
+      <li><div><p>2回目で80%以上なら、checklistの「Làm lại các đề dưới 80% sau 1 tuần」の行にチェックを付けます（第10週のすべての模試が80%を超えたとき）。2回目もまだ80%未満なら、3回目は解かず、最も低いdomainの深掘りに戻ってから、第12週で新しい模試に進みます。</p></div></li>
+      <li><div><p>1日の終わりに、ノートを開いて確認ポイント3を確認します。第11週のすべての行で、誤答理由列に原因コードがあること。欠けている行はすぐに補います。</p></div></li>
+    </ol>
+    <div class="note ok">今週はAWS resourceを作成しません。それでも7日目に一度Billingを開き、これまでのlabのresource（NAT Gateway、ALB、RDS、Elastic IP、孤立したEBS volume）が残っていないことを確認します。</div>
+  </div>
+</section>
+
+<!-- ============ MỐC KIỂM TRA ============ -->
+<section id="moc">
+  <span class="eyebrow">確認ポイント</span>
+  <h2>第12週に進む前に達成すべき3つの確認ポイント</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>1. 連続する2回の模試で80%以上</h3>
+      <p style="font-size:.94rem">自己チェックの目安:</p>
+      <ul style="font-size:.94rem">
+        <li><b>解いた順に隣り合う</b>2回（TD2とTD3、TD3とTD4、またはTD4とTD5）で、解き直しは数えません。</li>
+        <li>どちらもtimed modeで、調べものもノートの事前確認もなし。</li>
+        <li>点数はその模試を初めて解いたときのもの。</li>
+        <li>このポイントの達成が第12週に受験日を予約する条件です。未達なら第12週にTD模試6と解き直しをしてから判断します。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>2. 最も弱いdomainが第10週より10ポイント以上上昇</h3>
+      <p style="font-size:.94rem">自己チェックの目安:</p>
+      <ul style="font-size:.94rem">
+        <li>第10週の統計（quiz-01、Official set、TD1）で最も低いdomainを選び、元の数値を記録する。</li>
+        <li>第11週の模試4回（TD2〜TD5）でのそのdomainの平均%を出す。</li>
+        <li>差が10ポイント以上なら達成（例: COST 60% → 72%）。</li>
+        <li>未達なら、第12週の1日目と2日目を使い、TD6の前にこのページの落とし穴表でそのdomainを復習し直す。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>3. 誤答ノートの原因分類が完了</h3>
+      <p style="font-size:.94rem">自己チェックの目安:</p>
+      <ul style="font-size:.94rem">
+        <li><code>so-ghi-cau-sai.md</code>の第11週のすべての行で、誤答理由列の先頭にKB、NH、SOT、BESTのいずれかがある。</li>
+        <li>最も多いコードと対応する行動を言える（KB → cheat sheet、NH → 比較表、SOT → キーワードに下線、BEST → 基準）。</li>
+        <li>ノートの絞り込み結果から、最も誤答の多いサービス群を3つ挙げられる。</li>
+        <li>2回間違えた問題はsessionで説明し直してもらい、10問のmini quizで確認済み。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TỪ KHÓA ============ -->
+<section id="tukhoa">
+  <span class="eyebrow">クイックレビュー</span>
+  <h2>混同しやすいペア表</h2>
+  <p style="font-size:.94rem;color:var(--muted)">各行は、本番の試験がわざと並べてくるペアです。左の列を読み、括弧内も含めて右の列を声に出して言います。</p>
+  <div class="tbl"><table>
+    <tr><th>設問に出てくる言葉</th><th>すぐ思い浮かべるもの（Xではない）</th></tr>
+    <tr><td><em>highly available</em>、survive AZ failure、<em>minimal downtime</em></td><td>Multi-AZ（Multi-Regionでもread replicaでもない）</td></tr>
+    <tr><td><em>read-heavy</em>、offload reporting queries</td><td>Read replica（Multi-AZではない）</td></tr>
+    <tr><td><em>disaster recovery</em>、Region failure、具体的なRPO/RTO</td><td>4つのDR戦略に沿ったMulti-Region（Multi-AZだけではない）</td></tr>
+    <tr><td><em>decouple</em>、buffer、spike、requestを失わない</td><td>SQS（SNSでもKinesisでもない）</td></tr>
+    <tr><td><em>fan-out</em>、1つのeventを複数が受け取る</td><td>SNS → 複数のSQS（SQS単体ではない）</td></tr>
+    <tr><td><em>real-time streaming</em>、replay、複数consumer</td><td>Kinesis Data Streams（FirehoseでもSQSでもない）</td></tr>
+    <tr><td><em>near real-time</em>でS3/Redshift/OpenSearchへload、<em>no management</em></td><td>Kinesis Data Firehose（Data Streamsではない）</td></tr>
+    <tr><td><em>exactly-once</em>、<em>ordered</em></td><td>SQS FIFO（Standardではない）。<em>unlimited throughput</em>ならその逆</td></tr>
+    <tr><td><em>static IP</em>、TCP/UDP、<em>fast failover</em>、global</td><td>Global Accelerator（CloudFrontではない）</td></tr>
+    <tr><td><em>cache</em>、static content、HTTP、<em>edge</em></td><td>CloudFront（Global Acceleratorではない）</td></tr>
+    <tr><td><em>microsecond</em> + DynamoDB、<em>no code change</em></td><td>DAX（ElastiCacheではない）</td></tr>
+    <tr><td><em>microsecond</em>または<em>sub-millisecond</em> + RDS、session、leaderboard</td><td>ElastiCache Redis（DAXではなく、persistenceが必要ならMemcachedでもない）</td></tr>
+    <tr><td><em>shared file system</em>、Linux、複数AZ</td><td>EFS（EBS multi-attachではない）</td></tr>
+    <tr><td><em>Windows file share</em>、SMB、Active Directory</td><td>FSx for Windows（EFSではない）</td></tr>
+    <tr><td><em>HPC</em>、<em>high throughput</em>、ML training、S3 linked</td><td>FSx for Lustre（EFS Max I/Oではない）</td></tr>
+    <tr><td><em>rotate credentials</em>、database password</td><td>Secrets Manager（Parameter Storeではない）</td></tr>
+    <tr><td><em>configuration values</em>、free、hierarchy</td><td>SSM Parameter Store（Secrets Managerではない）</td></tr>
+    <tr><td><em>audit API calls</em>、who did what</td><td>CloudTrail（ConfigでもCloudWatch Logsでもない）</td></tr>
+    <tr><td><em>configuration drift</em>、compliance rule、resource history</td><td>AWS Config（CloudTrailではない）</td></tr>
+    <tr><td><em>threat detection</em>、compromised credentials、malicious IP</td><td>GuardDuty（InspectorでもMacieでもない）</td></tr>
+    <tr><td>EC2、container image、Lambdaの<em>vulnerabilities</em></td><td>Inspector（GuardDutyではない）</td></tr>
+    <tr><td>S3内の<em>PII</em>、sensitive data</td><td>Macie（GuardDutyではない）</td></tr>
+    <tr><td>IPを1つBlock、Deny rule、stateless</td><td>NACL（Security Groupではない）</td></tr>
+    <tr><td>SQL injection、XSS、HTTPのrate limit</td><td>ALB/CloudFront/API Gateway上のWAF（Shieldではなく、NLBには付けられない）</td></tr>
+    <tr><td>S3/DynamoDBへの<em>private access</em>、<em>no Internet</em>、free</td><td>Gateway endpoint（Interface endpointでもNATでもない）</td></tr>
+    <tr><td>その他のサービス、SaaSへの<em>private access</em>、PrivateLink</td><td>Interface endpoint（Gateway endpointではない）</td></tr>
+    <tr><td>社員、複数account、AD、SSO</td><td>IAM Identity Center（Cognitoではない）</td></tr>
+    <tr><td>web/mobile appのユーザー、sign-up、social login</td><td>Cognito User Pool。一時的なAWS credentialならIdentity Pool（IAM userではない）</td></tr>
+    <tr><td>developerが作るrole/userの権限上限</td><td>Permissions boundary（SCPではない）</td></tr>
+    <tr><td>root含むaccount全体の権限上限</td><td>SCP（permissions boundaryでもIAM policyでもない）</td></tr>
+    <tr><td><em>interruption OK</em>、batch、<em>lowest cost</em></td><td>Spot（Reservedではない）</td></tr>
+    <tr><td>Steady 1〜3年、<em>flexible family/Region</em></td><td>Compute Savings Plans（Standard RIではない）</td></tr>
+    <tr><td>socket/core単位のlicense、BYOL</td><td>Dedicated Host（Dedicated Instanceではない）</td></tr>
+    <tr><td><em>unknown access pattern</em>、retrieval料金を払いたくない</td><td>S3 Intelligent-Tiering（Standard-IAではない）</td></tr>
+    <tr><td><em>infrequent</em>だが<em>instant</em>、millisecond</td><td>Standard-IAまたはGlacier Instant Retrieval（Glacier Flexibleではない）</td></tr>
+    <tr><td><em>archive</em>、12時間以内にretrieve、最安</td><td>Glacier Deep Archive（Glacier Flexibleではない）</td></tr>
+    <tr><td>回線が遅い、数十TB以上、数週間ある</td><td>Snowball Edge（DataSyncではない）</td></tr>
+    <tr><td>テープに書き込むソフトによるon-premisesのbackup</td><td>Tape Gateway（File Gatewayではない）</td></tr>
+    <tr><td>支出のしきい値アラート、forecast</td><td>AWS Budgets（Cost Explorerではない）</td></tr>
+    <tr><td>異常な支出、しきい値を設定しない</td><td>Cost Anomaly Detection（Budgetsではない）</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ CHECKLIST ============ -->
+<section id="checklist">
+  <span class="eyebrow">進捗</span>
+  <h2>第11週チェックリスト</h2>
+  <p style="font-size:.94rem;color:var(--muted)">ここでチェックするとこの端末上で進捗を記録できます。項目が終わったら、sessionでClaudeに伝えて<code>AWS-SAA-checklist.md</code>にチェックを付けてもらいます。Markdownのchecklistでは、模試名のすぐ横に%を書きます。</p>
+  <div class="card">
+    <h4>Domain別の深掘り</h4>
+    <label class="check"><input type="checkbox" id="c1" data-ck><span>domain SECの復習: fact、落とし穴表を読み、確認クイズ5問を解く</span></label>
+    <label class="check"><input type="checkbox" id="c2" data-ck><span>domain RESの復習: fact、落とし穴表を読み、確認クイズ5問を解く</span></label>
+    <label class="check"><input type="checkbox" id="c3" data-ck><span>domain PERFの復習: fact、落とし穴表を読み、確認クイズ5問を解く</span></label>
+    <label class="check"><input type="checkbox" id="c4" data-ck><span>domain COSTの復習: fact、落とし穴表を読み、確認クイズ5問を解く</span></label>
+    <label class="check"><input type="checkbox" id="c5" data-ck><span>6日目に最も弱いdomain（模試4回の%で判断）をもう一度深掘りする</span></label>
+    <h4>模試</h4>
+    <label class="check"><input type="checkbox" id="c6" data-ck><span>Tutorials Dojo 模試2、timed mode、%を記録: ____%（SEC / RES / PERF / COST）</span></label>
+    <label class="check"><input type="checkbox" id="c7" data-ck><span>Tutorials Dojo 模試3、timed mode、%を記録: ____%</span></label>
+    <label class="check"><input type="checkbox" id="c8" data-ck><span>Tutorials Dojo 模試4、timed mode、%を記録: ____%</span></label>
+    <label class="check"><input type="checkbox" id="c9" data-ck><span>Tutorials Dojo 模試5、timed mode、%を記録: ____%</span></label>
+    <label class="check"><input type="checkbox" id="c10" data-ck><span>第10週で80%未満だった模試をちょうど1週間後に解き直し、1回目 → 2回目の点数を記録</span></label>
+    <h4>確認ポイント</h4>
+    <label class="check"><input type="checkbox" id="c11" data-ck><span>連続する2回の模試で80%以上</span></label>
+    <label class="check"><input type="checkbox" id="c12" data-ck><span>最も弱いdomainが第10週より10ポイント以上上昇</span></label>
+    <label class="check"><input type="checkbox" id="c13" data-ck><span>第11週の誤答ノートのすべての行に原因コード（KB / NH / SOT / BEST）がある</span></label>
+    <h4>その他</h4>
+    <label class="check"><input type="checkbox" id="c14" data-ck><span>模試4回と解き直しの誤答を7列すべてノートに記入し、2回間違えた問題はsessionで説明し直してもらった</span></label>
+    <label class="check"><input type="checkbox" id="c15" data-ck><span>各模試で正解した問題の解説も読んだ</span></label>
+    <label class="check"><input type="checkbox" id="c16" data-ck><span>連続2回で80%達成 → 第12週に進み受験日を予約</span></label>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  // Xem đáp án
+  document.querySelectorAll('[data-reveal]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var a=b.parentElement.querySelector('.ans');
+      a.hidden=!a.hidden; b.textContent=a.hidden?'答えを見る':'答えを隠す';
+    });
+  });
+  // Checklist lưu trên máy này
+  var boxes=document.querySelectorAll('[data-ck]'), KEY='saa-tuan-11';
+  var saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  function update(){
+    var n=0; boxes.forEach(function(c){ c.closest('.check').classList.toggle('done',c.checked); if(c.checked)n++; });
+    document.getElementById('bar').style.width=(n/boxes.length*100)+'%';
+    document.getElementById('pct').textContent=n+'/'+boxes.length;
+  }
+  boxes.forEach(function(c){
+    if(saved[c.id])c.checked=true;
+    c.addEventListener('change',function(){ saved[c.id]=c.checked; try{ localStorage.setItem(KEY,JSON.stringify(saved)); }catch(e){} update(); });
+  });
+  update();
+  // Đánh dấu mục đang đọc
+  var links=document.querySelectorAll('.toc a'), secs=[];
+  links.forEach(function(l){ var s=document.querySelector(l.getAttribute('href')); if(s)secs.push([s,l]); });
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ links.forEach(function(l){l.classList.remove('active')}); secs.forEach(function(p){ if(p[0]===e.target)p[1].classList.add('active'); }); } }); },{rootMargin:'-20% 0px -70% 0px'});
+    secs.forEach(function(p){ io.observe(p[0]); });
+  }
+})();
+</script>

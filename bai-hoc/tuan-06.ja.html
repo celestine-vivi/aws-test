@@ -1,0 +1,1008 @@
+<title>SAA 第6週 Database</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky mục lục bên trái (desktop), cột nội dung 760px bên phải; xếp một cột ở màn hẹp. */
+:root{
+  --bg:#f2f4f7; --surface:#ffffff; --surface-2:#e9edf2; --line:#d3dae3;
+  --fg:#172030; --muted:#5a6676; --accent:#1c6e8c; --accent-soft:#dcecf3;
+  --warm:#b35a00; --warm-soft:#fbe9d6; --ok:#2a7d4f; --ok-soft:#dcf0e4; --bad:#b3362b; --bad-soft:#f8dedb;
+  --display:"Manrope","IBM Plex Sans",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+a{color:var(--accent)}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:800}
+h2{font-size:1.5rem;font-weight:800;padding-top:8px}
+h3{font-size:1.12rem;font-weight:700}
+h4{font-size:.95rem;font-weight:700}
+p{margin:0}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+pre{font-family:var(--mono);font-size:.84rem;line-height:1.5;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:0}
+pre code{background:none;padding:0;font-size:inherit}
+em{color:var(--warm);font-style:italic}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* Header */
+.hero{max-width:1120px;margin:0 auto;padding-block:36px 20px;display:flex;flex-direction:column;gap:12px}
+.hero .lead{max-width:62ch;color:var(--muted);font-size:1.02rem}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.88rem;color:var(--muted)}
+.meta b{color:var(--fg);font-weight:600}
+.progress{display:flex;align-items:center;gap:12px;font-size:.88rem;color:var(--muted)}
+.bar{flex:1;max-width:320px;height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+
+/* Two columns */
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;align-items:start}
+.toc{position:sticky;top:max(12px,env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:2px;font-size:.9rem}
+.toc a{color:var(--muted);text-decoration:none;padding:6px 10px;border-left:2px solid var(--line);display:block}
+.toc a:hover,.toc a.active{color:var(--fg);border-left-color:var(--accent)}
+.toc .grp{margin-top:10px}
+main{display:flex;flex-direction:column;gap:56px;min-width:0;max-width:780px}
+section{display:flex;flex-direction:column;gap:18px;scroll-margin-top:16px}
+@media (max-width:860px){ .wrap{grid-template-columns:1fr;gap:24px} .toc{position:static;flex-direction:row;flex-wrap:wrap;gap:6px} .toc a{border:1px solid var(--line);border-radius:99px;padding:4px 10px} .toc .grp{margin:0} .toc a.active{border-color:var(--accent)} }
+
+/* Blocks */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.block{display:flex;flex-direction:column;gap:8px}
+.block > .eyebrow{color:var(--accent)}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:5px}
+li::marker{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.kw{display:flex;flex-wrap:wrap;gap:8px}
+.kw span{background:var(--warm-soft);color:var(--warm);border-radius:4px;padding:3px 9px;font-size:.86rem;font-style:italic}
+.kw span b{font-style:normal;font-weight:600;color:var(--fg)}
+.note{border-left:3px solid var(--warm);background:var(--warm-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.94rem}
+.note.ok{border-color:var(--ok);background:var(--ok-soft)}
+.note.bad{border-color:var(--bad);background:var(--bad-soft)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;font-size:.84rem}
+tr:last-child td{border-bottom:0}
+td.c{text-align:center}
+
+/* Checklist */
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:6px;cursor:pointer}
+.check:hover{background:var(--surface-2)}
+.check input{margin-top:5px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.check.done{color:var(--muted);text-decoration:line-through}
+
+/* Quiz reveal */
+.q{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.q .qt{font-weight:500}
+.q button{align-self:flex-start;font:inherit;font-size:.86rem;padding:5px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer}
+.q button:hover{background:var(--accent);color:var(--surface)}
+.q button:focus-visible,.check input:focus-visible,.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.q .ans{font-size:.94rem;border-top:1px dashed var(--line);padding-top:8px}
+.q .ans b{color:var(--ok)}
+
+/* Steps */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:12px;padding:0;list-style:none}
+.steps li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:start}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--mono);font-size:.8rem;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:500;margin-top:2px}
+.steps li > div{display:flex;flex-direction:column;gap:6px;min-width:0}
+
+/* Flow diagram */
+.flow{display:flex;flex-direction:column;gap:0;align-items:stretch;max-width:520px}
+.flow .n{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:.94rem}
+.flow .n .tag{font-family:var(--mono);font-size:.74rem;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.tag.deny{background:var(--bad-soft);color:var(--bad)} .tag.allow{background:var(--ok-soft);color:var(--ok)} .tag.next{background:var(--surface-2);color:var(--muted)}
+.flow .arrow{height:22px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--mono);font-size:.78rem}
+.flow .arrow::before{content:"";width:1px;height:100%;background:var(--line);position:absolute}
+.flow .arrow{position:relative} .flow .arrow span{background:var(--bg);padding:0 6px;position:relative}
+
+svg text{font-family:var(--body)}
+.diag{overflow-x:auto}
+.diag svg{width:100%;max-width:700px;height:auto;display:block}
+.sv-region{fill:var(--surface);stroke:var(--accent)} .sv-az{fill:var(--accent-soft);stroke:var(--accent)} .sv-edge{fill:var(--warm-soft);stroke:var(--warm)}
+.sv-t{fill:var(--fg);font-size:13px} .sv-m{fill:var(--muted);font-size:11px} .sv-line{stroke:var(--line)}
+.sv-ok{fill:var(--ok-soft);stroke:var(--ok)} .sv-accent{stroke:var(--accent)} .sv-warm{stroke:var(--warm)}
+@media (prefers-reduced-motion: reduce){ .bar i{transition:none} }
+</style>
+
+<header class="hero">
+  <span class="eyebrow">AWS SAA-C03 · 12週間ロードマップ · 第6週</span>
+  <h1>Database：RDS、Aurora、DynamoDB、ElastiCache と専用データベース</h1>
+  <p class="lead">今週は課題ごとに適切なデータベースを選ぶ方法を学びます。リレーショナル（RDS、Aurora）、key-value（DynamoDB）、キャッシュ（ElastiCache、DAX）、分析用データウェアハウス（Redshift）、データ移行（DMS、SCT）、そして専用データベース群の見分け方です。必ず押さえるべき点は2つです。Multi-AZ は <em>high availability</em> のため、Read Replica は <em>scale read</em> のためであること。そして問題文を読めば RDS、Aurora、DynamoDB、ElastiCache のどれを選ぶか判断できることです。</p>
+  <div class="meta"><span>学習ペース：<b>1日1.5〜2時間</b></span><span>関連ドメイン：<b>RES 26%</b>、<b>PERF 24%</b></span><span>今週のラボ費用：RDS を当日中に削除すれば <b>1〜3 USD</b></span></div>
+  <div class="progress"><span>チェックリスト進捗</span><div class="bar"><i id="bar"></i></div><span id="pct">0/15</span></div>
+</header>
+
+<div class="wrap">
+<nav class="toc" aria-label="目次">
+  <a href="#ke-hoach">7日間の計画</a>
+  <span class="grp eyebrow">理論</span>
+  <a href="#rds">1. RDS</a>
+  <a href="#aurora">2. Aurora</a>
+  <a href="#dynamodb">3. DynamoDB</a>
+  <a href="#elasticache">4. ElastiCache</a>
+  <a href="#redshift">5. Redshift</a>
+  <a href="#dms">6. DMS と SCT</a>
+  <a href="#nhandien">7. 専用DB（見分け方）</a>
+  <span class="grp eyebrow">ハンズオン</span>
+  <a href="#handson">ハンズオン 5つのラボ</a>
+  <a href="#moc">確認ポイント</a>
+  <a href="#tukhoa">試験キーワード表</a>
+  <a href="#checklist">今週のチェックリスト</a>
+</nav>
+
+<main>
+
+<section id="ke-hoach">
+  <h2>7日間の計画</h2>
+  <p>RDS Multi-AZ は時間単位で課金されるため、Lab 1 と Lab 2 は同じ日にまとめて行い、すぐに削除します。DynamoDB と Lambda は Free Tier の always free に含まれるので、余裕を持って進められます。</p>
+  <div class="tbl"><table>
+    <tr><th>日</th><th>理論</th><th>ハンズオン</th></tr>
+    <tr><td>1</td><td>RDS：Multi-AZ、Read Replica、backup、encryption、RDS Proxy</td><td>Lab 1 と Lab 2 を読み込むだけで、まだ何も作成しない。Budget が有効か確認する</td></tr>
+    <tr><td>2</td><td>Aurora：endpoint、Global Database、Serverless v2</td><td>Lab 1 で RDS Multi-AZ を作成して failover を強制、Lab 2 で read replica。両方とも当日中に削除</td></tr>
+    <tr><td>3</td><td>DynamoDB：capacity、GSI/LSI、DAX、Streams、TTL、Global Table</td><td>Lab 3 DynamoDB テーブル + Lambda で書き込みと読み取り</td></tr>
+    <tr><td>4</td><td>ElastiCache：Redis と Memcached、キャッシュ戦略</td><td>Lab 4 TTL と Streams を有効化し、期限切れ item が削除されるのを確認</td></tr>
+    <tr><td>5</td><td>Redshift、DMS と SCT、Neptune、DocumentDB、Keyspaces、Timestream、QLDB、MemoryDB の見分け方</td><td>Lab 5 すべて片付けて Billing を確認</td></tr>
+    <tr><td>6〜7</td><td>2つの確認ポイントを復習し、キーワード表と「問題文 → 選ぶサービス」表を読み直す</td><td>セッションで「クイズを出して」と伝えて <code>quiz/tuan-06.md</code>（30問）を受け取る。80% 以上が合格</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ 1. RDS ============ -->
+<section id="rds">
+  <span class="eyebrow">理論 1 / 7</span>
+  <h2>Amazon RDS：Multi-AZ、Read Replica、backup、encryption、RDS Proxy</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <ul>
+        <li><b>RDS</b> はマネージドなリレーショナルデータベースです。インストール、OS とエンジンのパッチ適用、backup、Multi-AZ、monitoring は AWS が担当します。サーバーに SSH はできず、DNS endpoint 経由で接続します。エンジン：<b>MySQL, PostgreSQL, MariaDB, Oracle, SQL Server, Db2</b>、さらに Aurora（第2項で学習）。</li>
+        <li>各 DB instance は instance class（<code>db.t3.micro</code>、<code>db.m6g.large</code>…）上で動作し、EBS storage は gp3 または io1/io2、VPC の subnet group 内に配置され、Security Group でポートを開けます（MySQL 3306、PostgreSQL 5432、SQL Server 1433）。</li>
+        <li><b>Storage autoscaling</b>：「maximum storage threshold」を設定すると、空き容量が10%を下回ったときに RDS が自動で拡張します。ダウンタイムはありません。拡張のみで、自動で縮小はしません。</li>
+        <li><b>RDS Custom</b>（Oracle、SQL Server）：OS と DB にアクセスしてエージェントの導入や詳細な調整ができる代わりに、運用の一部を自分で担います。RDS で <em>need OS access</em> や <em>customize the database environment</em> とあれば → RDS Custom。</li>
+      </ul>
+    </div>
+
+    <div class="block diag"><span class="eyebrow">イメージ：Multi-AZ と Read Replica</span>
+      <svg viewBox="0 0 700 330" role="img" aria-label="Region 内に同期 standby を持つ RDS Multi-AZ と、同一 Region および別 Region への非同期 Read Replica の図">
+        <rect x="20" y="40" width="430" height="270" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="36" y="64" class="sv-t" font-weight="600">Region ap-northeast-1</text>
+        <rect x="40" y="90" width="180" height="200" rx="8" class="sv-az" stroke-width="1.5"/>
+        <rect x="250" y="90" width="180" height="200" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="130" y="112" text-anchor="middle" class="sv-t" font-weight="600">AZ 1a</text>
+        <text x="340" y="112" text-anchor="middle" class="sv-t" font-weight="600">AZ 1c</text>
+        <rect x="60" y="130" width="140" height="56" rx="6" class="sv-ok" stroke-width="1.5"/>
+        <text x="130" y="152" text-anchor="middle" class="sv-t" font-weight="600">Primary</text>
+        <text x="130" y="170" text-anchor="middle" class="sv-m">読み取り + 書き込み</text>
+        <rect x="270" y="130" width="140" height="56" rx="6" class="sv-region" stroke-width="1.5" stroke-dasharray="5 3"/>
+        <text x="340" y="152" text-anchor="middle" class="sv-t" font-weight="600">Standby</text>
+        <text x="340" y="170" text-anchor="middle" class="sv-m">読み取り不可</text>
+        <line x1="200" y1="158" x2="270" y2="158" class="sv-accent" stroke-width="2"/>
+        <text x="235" y="150" text-anchor="middle" class="sv-m">sync</text>
+        <rect x="270" y="220" width="140" height="56" rx="6" class="sv-region" stroke-width="1.5"/>
+        <text x="340" y="242" text-anchor="middle" class="sv-t" font-weight="600">Read Replica</text>
+        <text x="340" y="260" text-anchor="middle" class="sv-m">読み取り専用・別 endpoint</text>
+        <line x1="130" y1="186" x2="130" y2="248" class="sv-warm" stroke-width="2" stroke-dasharray="4 4"/>
+        <line x1="130" y1="248" x2="270" y2="248" class="sv-warm" stroke-width="2" stroke-dasharray="4 4"/>
+        <text x="200" y="240" text-anchor="middle" class="sv-m">async</text>
+        <rect x="490" y="90" width="190" height="200" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="585" y="112" text-anchor="middle" class="sv-t" font-weight="600">Region us-east-1</text>
+        <rect x="510" y="150" width="150" height="56" rx="6" class="sv-region" stroke-width="1.5"/>
+        <text x="585" y="172" text-anchor="middle" class="sv-t" font-weight="600">Cross-Region RR</text>
+        <text x="585" y="190" text-anchor="middle" class="sv-m">DR 時に promote 可能</text>
+        <line x1="450" y1="248" x2="470" y2="248" class="sv-warm" stroke-width="2" stroke-dasharray="4 4"/>
+        <line x1="470" y1="248" x2="470" y2="178" class="sv-warm" stroke-width="2" stroke-dasharray="4 4"/>
+        <line x1="470" y1="178" x2="510" y2="178" class="sv-warm" stroke-width="2" stroke-dasharray="4 4"/>
+        <text x="585" y="240" text-anchor="middle" class="sv-m">async、数秒の lag</text>
+        <text x="130" y="210" text-anchor="middle" class="sv-m">app は単一の</text>
+        <text x="130" y="226" text-anchor="middle" class="sv-m">DNS endpoint に接続</text>
+        <text x="235" y="304" text-anchor="middle" class="sv-m">Failover：endpoint の DNS が standby に切り替わり、app は再接続するだけ</text>
+      </svg>
+    </div>
+
+    <div class="block"><span class="eyebrow">Multi-AZ（HA）と Read Replica（scale read）：確認ポイント 2</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>Multi-AZ instance</th><th>Read Replica</th></tr>
+        <tr><td>目的</td><td><em>High availability</em>、AZ 障害への耐性、メンテナンス時のダウンタイム短縮</td><td><em>Scale read</em>、レポート/分析を primary から分離、cross-Region DR</td></tr>
+        <tr><td>レプリケーション</td><td><b>Synchronous</b>：standby が確認してから app に応答を返す → failover 時にデータを失わない</td><td><b>Asynchronous</b>：replication lag があり、数秒古いデータが読まれることがある</td></tr>
+        <tr><td>読み取り可否</td><td>Standby は読み取りに<b>使えない</b>（Multi-AZ instance の場合）</td><td>可能。replica ごとに専用 endpoint があり、app 側で読み取りクエリを振り分ける</td></tr>
+        <tr><td>配置</td><td>別 AZ、同一 Region</td><td>同一 AZ、別 AZ、または<b>別 Region</b></td></tr>
+        <tr><td>台数</td><td>standby 1台</td><td>MySQL、MariaDB、PostgreSQL、Oracle、SQL Server で最大15（エンジンごとに AWSドキュメントで要確認）</td></tr>
+        <tr><td>Failover</td><td>自動、通常60〜120秒、<b>DNS endpoint は変わらない</b>（CNAME が standby を指す）</td><td>自動ではない。手動で独立した DB に<b>promote</b> する必要があり、その後レプリケーションは切断される</td></tr>
+        <tr><td>出題例</td><td><em>minimize downtime</em>, <em>survive AZ failure</em>, <em>maintenance without downtime</em></td><td><em>read-heavy</em>, <em>reporting queries slow down production</em>, <em>users in another Region read</em></td></tr>
+      </table></div>
+      <div class="note ok">両者は排他的ではありません。本番環境では Multi-AZ を有効化<b>し、さらに</b>1〜2台の read replica を置くのが一般的です。Read replica 自体に Multi-AZ を設定することもできます。稼働中の DB で Multi-AZ を有効化してもダウンタイムは不要です（RDS が snapshot を取得し、standby を構築してから同期します）。</div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Multi-AZ DB cluster（新しいタイプ、MySQL と PostgreSQL）</span>
+      <ul>
+        <li>writer 1台 + 別々の2つの AZ に<b>reader standby 2台</b>、レプリケーションは<b>semi-synchronous</b>（少なくとも1台の standby が受信した時点で書き込みが確定）。Multi-AZ instance との違いは standby が<b>読み取り可能</b>で、専用の reader endpoint があることです。</li>
+        <li>Failover は Multi-AZ instance より速く（AWS によると通常35秒未満、AWSドキュメントで要確認）、待つ standby が1台だけなので書き込みレイテンシも低くなります。</li>
+        <li><em>Multi-AZ with readable standbys</em>、<em>two readable standby instances</em> とあれば → Multi-AZ DB cluster。Aurora cluster と混同しないこと。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Backup と snapshot</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>Automated backup</th><th>Manual snapshot</th></tr>
+        <tr><td>作成者</td><td>RDS が backup window 内で毎日自動取得 + 5分ごとに transaction log を保存</td><td>自分で操作するか API を呼び出す</td></tr>
+        <tr><td>保持期間</td><td><b>Retention 0〜35日</b>（0 = 無効）。DB instance を削除すると消える（automated backup を保持する設定を選んだ場合を除く）</td><td>自分で削除する<b>まで保持</b>。DB instance の削除後も残る</td></tr>
+        <tr><td>Point-in-time recovery</td><td><b>可能</b>：transaction log により retention 内の任意の秒に復元</td><td>不可。取得した時点にのみ復元</td></tr>
+        <tr><td>復元先</td><td colspan="2">常に新しい endpoint を持つ<b>新しい DB instance</b> が作成されます。既存の instance を「上書き」することはありません。app の endpoint を変更するか、instance 名を変更します。</td></tr>
+        <tr><td>共有・コピー</td><td>直接共有はできない</td><td>別 Region へのコピー、他アカウントへの共有が可能（暗号化された snapshot は KMS key も共有が必要）</td></tr>
+      </table></div>
+      <ul>
+        <li>Multi-AZ の場合、automated backup は standby で実行されます。Single-AZ では backup window 中に数秒間 I/O が止まることがあります。</li>
+        <li><em>retain backups for 90 days</em> や <em>retain beyond 35 days</em> とあれば → manual snapshot（または AWS Backup）。automated は最大35日のためです。</li>
+        <li><em>restore to 5 minutes before the accidental DELETE</em> とあれば → automated backup からの PITR。Aurora なら新しい instance を作らずに済む Backtrack もあります（第2項）。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Encryption と authentication</span>
+      <ul>
+        <li>KMS による <b>at rest</b> 暗号化は instance の<b>作成時</b>にしか有効化できません。暗号化なしで作成済みの場合の手順：snapshot を取得 → <b>snapshot をコピーして暗号化を選択</b> → 暗号化済み snapshot から restore → app を新しい instance に向ける。逆に、暗号化された DB の snapshot を暗号化なしでコピーすることはできません。</li>
+        <li>暗号化された DB の read replica も暗号化されます。暗号化されていない primary から暗号化された replica は作成できません。</li>
+        <li><b>In transit</b>：SSL/TLS を使い、RDS の CA bundle をダウンロードします。MySQL/PostgreSQL ではパラメータ <code>require_secure_transport</code> または <code>rds.force_ssl</code> で強制できます。</li>
+        <li><b>IAM database authentication</b>（MySQL、PostgreSQL、MariaDB）：password の代わりに IAM が発行する token（有効期間15分）を使います。EC2/Lambda は role を使い、password を保持しません。<em>avoid storing database passwords</em>、<em>use IAM to connect</em> とあれば → IAM DB auth。<em>rotate password automatically</em> とあれば → Secrets Manager。</li>
+        <li><b>Transparent Data Encryption (TDE)</b>：Oracle と SQL Server 独自の暗号化方式で、KMS encryption と併用できます。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">RDS Proxy と Performance Insights</span>
+      <ul>
+        <li><b>RDS Proxy</b>：app と DB の間に置くマネージドな<b>connection pooling</b> 層です。<b>Lambda が数千の connection を開き</b>、DB の connection が枯渇する（"too many connections"）問題を解決します。failover 時は proxy が app 側の connection を保持したまま新しい instance に切り替えるため、体感ダウンタイムを最大66%削減できます（AWS の公表値、AWSドキュメントで要確認）。IAM auth と Secrets Manager に対応。VPC 内からのみアクセスでき、public にはできません。</li>
+        <li><b>Performance Insights</b>：wait event、SQL、ユーザー別に DB 負荷を可視化するダッシュボードで、どの SQL が負荷の原因か分かります。7日分のデータは無料です。<em>identify the SQL statements causing high load</em> とあれば → Performance Insights。<b>Enhanced Monitoring</b> は別物で、ホスト上のエージェントから OS メトリクス（プロセスごとの CPU、メモリ）を1秒間隔で取得します。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">RDS の使いどころ</span>
+      <ul>
+        <li>リレーショナルデータで SQL、join、transaction が必要な場合。既存の app が MySQL/PostgreSQL/Oracle/SQL Server 向けに書かれていて、OS を運用せずに <em>lift and shift</em> したい場合。</li>
+        <li>RDS を選ばないケース：OS へのアクセスが必要（EC2 に自前で構築するか RDS Custom）、リクエスト量が非常に多い非リレーショナルデータ（DynamoDB）、TB 級の分析基盤（Redshift）、書き込みをほぼ無限に水平スケールしたい（RDS の書き込みスケールは instance class の変更のみで、短いダウンタイムを伴う）。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>AZ 障害時も DB が稼働し、app の設定変更が不要</td><td>Multi-AZ</td><td>Read Replica（手動 promote が必要で endpoint も異なる）</td></tr>
+        <tr><td>重いレポートが app を遅くする</td><td>Read Replica を作り、レポートをそちらに向ける</td><td>Multi-AZ（standby は読み取り不可）</td></tr>
+        <tr><td>別 Region のユーザーが高速に読み取る</td><td>Cross-Region Read Replica</td><td>Multi-AZ（Region 内のみ）</td></tr>
+        <tr><td>稼働中の暗号化なし DB を暗号化する</td><td>Snapshot → 暗号化してコピー → restore</td><td>instance で encryption を有効化（そのボタンは存在しない）</td></tr>
+        <tr><td>Lambda が RDS の connection を枯渇させる</td><td>RDS Proxy</td><td>instance class の拡張（コストがかかり根本解決にならない）</td></tr>
+        <tr><td>backup を1年間保持する</td><td>Manual snapshot または AWS Backup</td><td>Automated backup retention（最大35日）</td></tr>
+        <tr><td>DB の password をコードに保存しない</td><td>IAM DB authentication または Secrets Manager</td><td>password を環境変数に入れる</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>synchronous replication, automatic failover <b>→ Multi-AZ</b></span><span>asynchronous, offload read traffic <b>→ Read Replica</b></span><span>readable standby <b>→ Multi-AZ DB cluster</b></span><span>point-in-time recovery <b>→ automated backup</b></span><span>retain beyond 35 days <b>→ manual snapshot</b></span><span>encrypt existing unencrypted DB <b>→ snapshot copy encrypted</b></span><span>connection pooling, Lambda <b>→ RDS Proxy</b></span><span>OS-level access on RDS <b>→ RDS Custom</b></span><span>which SQL causes load <b>→ Performance Insights</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">1. RDS MySQL Single-AZ を使うアプリケーションで、AWS が OS メンテナンスを行うたびに app が数分間停止します。<em>least operational overhead</em> で停止時間を減らす方法は？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Multi-AZ を有効化する。</b> RDS はまず standby にパッチを当て、failover してから旧 primary にパッチを当てるため、app は同じ endpoint への再接続で数十秒止まるだけです。Read Replica は役に立ちません。primary のメンテナンス中は書き込みが止まり、replica は自動でトラフィックを引き受けないためです。</p></div>
+      <div class="q"><p class="qt">2. RDS PostgreSQL を暗号化なしで作成しましたが、コンプライアンス上 at rest の暗号化が必要になりました。どうしますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>snapshot を取得し、KMS 暗号化オプション付きで snapshot をコピーし、新しい instance として restore して app を切り替える。</b> 稼働中の instance で encryption を有効化する方法はありません。暗号化なしの primary から暗号化された read replica を作ることもできません。</p></div>
+      <div class="q"><p class="qt">3. 数百の Lambda function が RDS MySQL を呼び出し、ピーク時に "Too many connections" エラーが発生します。何を選びますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>RDS Proxy。</b> Proxy が connection をまとめて Lambda 間で再利用し、failover 時間も短縮します。<code>max_connections</code> や instance class を上げても上限が上がるだけで、Lambda がスケールすればまた超えてしまいます。問題は connection 数であって読み取り負荷ではないため、Read Replica も効果がありません。</p></div>
+      <div class="q"><p class="qt">4. 正しい記述を2つ選んでください：(A) Multi-AZ instance の standby は読み取りに使える、(B) Read Replica は async replication を使う、(C) Automated backup は最大35日保持、(D) snapshot からの restore は既存の instance を上書きする。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>B と C。</b> A は Multi-AZ instance では誤りです（読み取り可能な standby を持つのは Multi-AZ DB cluster だけ）。D も誤りで、restore は常に新しい endpoint を持つ新しい instance を作成します。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. AURORA ============ -->
+<section id="aurora">
+  <span class="eyebrow">理論 2 / 7</span>
+  <h2>Amazon Aurora：cluster volume、endpoint、Global Database、Serverless</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <ul>
+        <li><b>Aurora</b> は AWS が独自に開発したリレーショナルエンジンで、<b>MySQL</b> と <b>PostgreSQL</b> に互換性があります（app は通常どおり接続でき、driver も変わりません）。AWS の公表では RDS 上の MySQL の最大5倍、PostgreSQL の最大3倍高速で、価格は同じサイズの RDS より約20%高くなります（AWSドキュメントで要確認）。</li>
+        <li>根本的な違いは<b>storage と compute の分離</b>です。データは共有の<b>cluster volume</b> に置かれ、<b>3つの AZ に6コピー</b>（各 AZ に2コピー）が自動で作られます。書き込みは6コピー中4つ、読み取りは3つの確認で成立するため、AZ を1つ丸ごと失っても読み書きできます。Volume は10 GB 単位で<b>128 TiB</b> まで自動拡張し（AWSドキュメントで要確認）、実際に使った容量分だけ課金されます。</li>
+        <li>1つの cluster は <b>writer 1台</b>（primary）と、同じ volume を読む最大<b>15台の Aurora Replica</b> で構成されます。そのため replica lag は通常100 ms 未満です（RDS Read Replica のようにデータをコピーしない）。Replica は standby も兼ねており、replica への failover は約30秒です。選ばれる順番は<b>priority tier 0〜15</b> で決まります（数字が小さいほど優先、同じ tier なら大きい instance）。</li>
+        <li>S3 への継続的な backup、秒単位の PITR、retention 1〜35日で、性能への影響はありません。KMS 暗号化も作成時にしか選べません。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">4種類の endpoint</span>
+      <div class="tbl"><table>
+        <tr><th>Endpoint</th><th>接続先</th><th>用途</th></tr>
+        <tr><td><b>Cluster (writer) endpoint</b></td><td>現在の writer instance。failover 時は DNS が新しい writer に自動で切り替わる</td><td>すべての書き込みと、最新データが必要な読み取り。HA にはこの endpoint 1つで十分</td></tr>
+        <tr><td><b>Reader endpoint</b></td><td>すべての replica 間で負荷分散（DNS round robin）</td><td>読み取りクエリ、レポート。RDS との違い：RDS は replica ごとに endpoint があり app 側で振り分けるが、Aurora にはまとめた endpoint が最初からある</td></tr>
+        <tr><td><b>Custom endpoint</b></td><td>自分で選んだ instance のグループ（例：分析用の大きな replica 2台）</td><td>ワークロードの分離：重い BI は大きい instance、Web app は小さい instance</td></tr>
+        <tr><td><b>Instance endpoint</b></td><td>特定の1台の instance</td><td>デバッグ用。試験ではあまり出ない</td></tr>
+      </table></div>
+      <div class="note">試験の罠：app が <b>reader endpoint</b> に書き込むと read-only エラーになります。app が writer endpoint 経由で読み取っても動作はしますが、スケールしません。<em>distribute read traffic without changing application logic</em> とあれば → reader endpoint。</div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Replica auto scaling、Global Database、Serverless v2</span>
+      <ul>
+        <li><b>Aurora Replica auto scaling</b>：replica の平均 CPU や connection 数に基づく policy を設定すると、Aurora が replica を自動で増減します（上限15）。Reader endpoint には新しい replica が自動で含まれます。<em>read traffic varies throughout the day</em> とあれば → replica auto scaling。</li>
+        <li><b>Aurora Global Database</b>：primary Region 1つ + secondary Region 最大5つ（AWSドキュメントで要確認）。<b>storage 層</b>でレプリケーションし、lag は通常1秒未満です。各 secondary には最大16台の読み取り replica を置けます。primary Region が停止した場合は secondary を promote（managed failover または detach）して <b>RPO 約1秒、RTO 1分未満</b>を実現します。<em>disaster recovery across Regions</em> や <em>low-latency global reads</em> に使います。<b>write forwarding</b> もあり、secondary Region の app が送った書き込みを Aurora が primary に転送します。</li>
+        <li><b>Aurora Serverless v2</b>：compute は <b>ACU</b>（Aurora Capacity Unit、1 ACU は約2 GiB RAM）で計測し、0.5 ACU から設定した上限まで即座にスケールします。スケール時に接続は切れません。同じ cluster 内で通常の instance と serverless を混在でき、Global Database や Multi-AZ にも対応します。<em>unpredictable</em>、<em>intermittent</em>、<em>spiky workload</em>、dev/test 環境、<em>pay only for capacity used</em> のときに選びます。旧 v1 はスケールが遅く、ひっかけの選択肢としてよく出るので「v2」という名前を覚えておきましょう。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Backtrack、cloning、Multi-Master</span>
+      <div class="tbl"><table>
+        <tr><th>機能</th><th>内容</th><th>違い</th></tr>
+        <tr><td><b>Backtrack</b>（Aurora MySQL）</td><td>最大72時間以内の時点に cluster を<b>その場で</b>「巻き戻す」。新しい cluster は作らず、数分で完了</td><td>PITR restore は新しい cluster を作り、endpoint が変わり、時間もかかる。<em>quickly undo a bad change</em>、<em>rewind without restoring</em> とあれば → Backtrack</td></tr>
+        <tr><td><b>Database cloning</b></td><td>稼働中の cluster から <b>copy-on-write</b> で新しい cluster をほぼ即座に作成。最初は追加の storage がかからない</td><td>snapshot からの restore は全データをコピーするので遅い。<em>test environment from production data quickly</em> とあれば → clone</td></tr>
+        <tr><td><b>Multi-Master</b>（見分け方）</td><td>1つの cluster に複数の writer を置き、writer の障害にも継続して耐える</td><td>旧バージョンの Aurora MySQL のみで、出題はまれ、AWS も推奨していない。試験で見かけたら「複数ノードで書き込める」と理解すればよい</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">RDS ではなく Aurora を選ぶとき</span>
+      <ul>
+        <li>問題文が <em>highest performance</em>、<em>highly available</em>、<em>minimal downtime</em>、<em>self-healing storage</em>、<em>automatic storage scaling</em> を強調している場合。5台を超える read replica、非常に低い replica lag、最初から用意された reader endpoint、または RPO 1秒の Global Database が必要な場合。</li>
+        <li>RDS を選ぶとき：エンジンが MySQL/PostgreSQL 以外（Oracle、SQL Server）、小規模ワークロードで予算が少ない（RDS db.t3.micro の方が安い）、または問題文が単純な「managed relational」だけを求めている場合。</li>
+        <li>データが非リレーショナルの場合や、書き込みを無制限にスケールしたい場合は Aurora を選びません（DynamoDB）。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>組み合わせ</th><th>違い</th></tr>
+        <tr><td>Aurora Replica と RDS Read Replica</td><td>Aurora replica は volume を共有して読む（lag は ms、最大15、failover の standby を兼ねる）。RDS replica は独立したコピー（lag は秒単位、エンジンにより最大15、自動 failover なし）。</td></tr>
+        <tr><td>Aurora Global Database と RDS cross-Region Read Replica</td><td>Global Database は storage 層でレプリケーションし、RPO は秒、RTO は分、managed failover あり。Cross-Region RR は論理レプリケーションで lag が大きく、promote は手動。</td></tr>
+        <tr><td>Backtrack と PITR</td><td>Backtrack はその場で、最大72時間、Aurora MySQL のみ。PITR は新しい cluster を作り、最大35日、全エンジン対応。</td></tr>
+        <tr><td>Clone と Snapshot restore</td><td>Clone は copy-on-write で高速、同一 Region 内。Snapshot は全データをコピーするので遅いが、別 Region へコピーできる。</td></tr>
+        <tr><td>Serverless v2 と provisioned</td><td>Serverless は負荷に応じて ACU をスケールし、使った分だけ課金。provisioned は instance class が固定で、負荷が一定なら安い。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>6 copies across 3 AZs <b>→ Aurora</b></span><span>reader endpoint, up to 15 replicas <b>→ Aurora</b></span><span>cross-Region DR, RPO 1 second <b>→ Aurora Global Database</b></span><span>unpredictable workload, pay per use <b>→ Aurora Serverless v2</b></span><span>rewind database in place <b>→ Backtrack</b></span><span>copy of production for testing quickly <b>→ Aurora cloning</b></span><span>MySQL or PostgreSQL compatible, 5x faster <b>→ Aurora</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">5. Aurora MySQL に writer 1台と replica 3台があります。レポート app はある replica の instance endpoint を指していますが、その replica が failover で writer になると、レポートが書き込みを遅くしてしまいます。最小限の変更で直すには？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>レポート app を reader endpoint に向ける</b>（または replica だけを含む custom endpoint）。Reader endpoint は常に writer を除外し、replica 間で自動的に負荷分散します。instance endpoint は特定のマシンに固定されるため、役割が変わると問題が起きます。</p></div>
+      <div class="q"><p class="qt">6. 東京とフランクフルトのユーザー向けに PostgreSQL DB が必要です。両方で高速に読み取れ、東京が停止したら数分以内にフランクフルトへ切り替え、<em>RPO</em> は1分未満にしたい。何を選びますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Aurora PostgreSQL Global Database</b>（primary は東京、secondary はフランクフルト）。RDS cross-Region Read Replica でもフランクフルトで読めますが、lag が大きく promote も手動なので、厳しい RPO/RTO を満たせません。Multi-AZ は1つの Region 内だけです。</p></div>
+      <div class="q"><p class="qt">7. 開発者が20分前、Aurora MySQL の本番環境で WHERE なしの UPDATE を誤って実行しました。<em>fastest</em> な復旧方法は？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>コマンド実行前の時点に cluster を Backtrack する。</b> 数分で、その場で完了し、endpoint も変わりません。PITR でも復旧できますが、新しい cluster を作って app を切り替える必要があり遅くなります。Backtrack は事前に有効化（cluster の作成時または変更時）しておく必要があり、Aurora MySQL だけで使えます。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. DYNAMODB ============ -->
+<section id="dynamodb">
+  <span class="eyebrow">理論 3 / 7</span>
+  <h2>DynamoDB：capacity、index、DAX、Streams、TTL、Global Table</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <ul>
+        <li><b>DynamoDB</b>：key-value と document の NoSQL です。完全な serverless（instance もパッチもなし）で、どんな規模でも1桁ミリ秒のレイテンシ、3つの AZ への自動レプリケーション、読み書きともほぼ無限にスケールします。常に at rest で暗号化されます。</li>
+        <li><b>Primary key</b>：<b>partition key</b> のみ（hash、一意である必要あり）、または <b>partition key + sort key</b>（組み合わせが一意、同じ partition key に複数の item が sort key 順に並ぶ）。Partition key は item が置かれる物理 partition を決めるため、<b>均等に分散する</b>キーを選ぶ必要があります（user ID は良い、「status = active」は悪い）。</li>
+        <li><b>item の最大サイズは400 KB</b> です。大きなオブジェクト（画像、ファイル）は <b>S3</b> に置き、DynamoDB には S3 のキーとメタデータを保存します。join はなく、キー以外に固定スキーマはありません。</li>
+        <li>クエリ：<b>Query</b>（partition key を指定し sort key で絞り込む、安価）と <b>Scan</b>（テーブル全体を読む、高コスト、避ける）。<b>GetItem/PutItem</b> はキー指定です。</li>
+        <li><b>Consistency</b>：読み取りはデフォルトで <b>eventually consistent</b>（1秒未満の遅れがありうる、RCU は半分）。<b>Strongly consistent</b> は最新データを返し、コストは2倍で、GSI では使えません。<b>Transactions</b>（TransactWriteItems、TransactGetItems）は最大100 item で ACID を提供し、capacity は2倍かかります。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Capacity mode</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>On-demand</th><th>Provisioned</th></tr>
+        <tr><td>課金方法</td><td>実際のリクエスト数で課金（read/write request unit）</td><td><b>RCU</b> と <b>WCU</b> を毎秒単位で事前に設定し、使わなくても時間単位で課金</td></tr>
+        <tr><td>1 WCU</td><td colspan="2">1 KB までの item の書き込み1回/秒（3 KB の item = 3 WCU）。Transaction の書き込みは2倍。</td></tr>
+        <tr><td>1 RCU</td><td colspan="2">4 KB までの item の strongly consistent read 1回/秒、または eventually consistent read <b>2</b>回。Transaction の読み取りは2倍。例：8 KB の item を毎秒10件 eventual で読む = 10 × 2 × 0.5 = 10 RCU。</td></tr>
+        <tr><td>使いどころ</td><td><em>unpredictable</em>、<em>spiky</em>、負荷が分からない新しいテーブル、<em>no capacity planning</em></td><td>負荷が一定で予測でき、より安くしたい（Reserved capacity も購入可）。<b>auto scaling</b> を加えると target utilization に合わせて RCU/WCU を自動調整</td></tr>
+        <tr><td>capacity 超過</td><td>まれ。直前のピークの2倍を超えて急増すると throttle されることがある</td><td><code>ProvisionedThroughputExceededException</code>、SDK が exponential backoff で自動リトライ。未使用 capacity を300秒分一時的に使える <b>burst capacity</b> あり</td></tr>
+        <tr><td>モード変更</td><td colspan="2">変更可能、24時間に1回（AWSドキュメントで要確認）。</td></tr>
+      </table></div>
+      <div class="note">合計 capacity に余裕があるのに throttle される → <b>hot partition</b>：1つの partition key にリクエストが集中しています。より分散する partition key を選ぶ、ランダムな接尾辞を付ける（write sharding）、読み取りならテーブルの前に DAX を置く、といった方法で解決します。partition ごとの上限は3,000 RCU と1,000 WCU（AWSドキュメントで要確認）なので、テーブル全体の RCU/WCU を増やしても通常は解決しません。</div>
+    </div>
+
+    <div class="block"><span class="eyebrow">GSI と LSI</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>Global Secondary Index (GSI)</th><th>Local Secondary Index (LSI)</th></tr>
+        <tr><td>Key</td><td>テーブルと<b>異なる</b> partition key（sort key は任意）</td><td>テーブルと<b>同じ</b> partition key、<b>異なる sort key</b></td></tr>
+        <tr><td>作成タイミング</td><td>いつでも可能。データ投入後でも作成できる</td><td><b>テーブル作成時のみ</b>、後から追加できない</td></tr>
+        <tr><td>数</td><td>テーブルあたり最大20（デフォルト、引き上げ申請可）</td><td>テーブルあたり最大5</td></tr>
+        <tr><td>Capacity</td><td><b>独自の RCU/WCU</b>。GSI が throttle されると、書き込み時にベーステーブルも throttle される</td><td>テーブルと capacity を共有</td></tr>
+        <tr><td>Consistency</td><td>eventually consistent のみ</td><td>strongly consistent も使える</td></tr>
+        <tr><td>サイズ制限</td><td>なし</td><td>partition key の値ごとに10 GB（テーブル + LSI の合計）</td></tr>
+        <tr><td>例</td><td>Orders テーブルのキーが OrderID で、CustomerEmail で検索したい → GSI</td><td>Orders テーブルのキーが CustomerID + OrderDate で、同じ顧客の中で Amount 順に並べたい → LSI</td></tr>
+      </table></div>
+      <p style="font-size:.92rem"><em>query by a different attribute</em>、<em>existing table</em> とあれば → GSI（LSI は後から追加できないため）。<em>same partition key, different sort order</em>、<em>strongly consistent read on index</em> とあれば → LSI。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">DAX、Streams、TTL</span>
+      <ul>
+        <li><b>DAX (DynamoDB Accelerator)</b>：<b>DynamoDB 専用</b>のインメモリキャッシュです。API 互換なので app は endpoint を変えるだけで、キャッシュのロジックを書く必要はありません。読み取りを ms から<b>マイクロ秒</b>に短縮し、GetItem だけでなく Query/Scan もキャッシュします。最大10ノードの Multi-AZ cluster。<em>read-heavy</em>、<em>microsecond latency</em>、<em>reduce read cost</em>、<em>minimal code changes</em> のときに選びます。書き込みや strongly consistent read はキャッシュしません。複数のデータソースで共有するキャッシュや、sorted set のような構造が必要なら → ElastiCache（第4項）。</li>
+        <li><b>DynamoDB Streams</b>：テーブルの変更（insert、update、delete）を順序どおりに記録するログで、<b>24時間</b>保持されます。view は KEYS_ONLY、NEW_IMAGE、OLD_IMAGE、NEW_AND_OLD_IMAGES から選びます。通常は <b>Lambda trigger</b> をつなぎ、新しいレコードの通知、OpenSearch へのコピー、集計、監査などを行います。<b>Kinesis Data Streams for DynamoDB</b> は代替手段で、最大1年保持、複数の consumer、Firehose 連携が可能ですが、順序は厳密には保証されず、レコードが重複することもあります。</li>
+        <li><b>TTL (Time to Live)</b>：<b>epoch 秒</b>を格納する number 型の attribute を指定します。期限切れの item は数日以内に削除され（通常48時間以内、AWSドキュメントで要確認）、<b>WCU を消費しません</b>。まだ削除されていない期限切れ item は、フィルターしなければ読み取れてしまいます。TTL で削除されたレコードは Streams 上で <code>userIdentity.principalId = dynamodb.amazonaws.com</code> となるため、手動削除と区別できます。セッション、OTP、一時ログ、N日後に削除すべきデータなどに使い、容量を減らします。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Global Table、PITR、backup</span>
+      <ul>
+        <li><b>Global Table</b>：複数の Region で <b>active-active</b> にレプリケーションされるテーブルです。app は最寄りの Region で読み書きし、lag は通常1秒未満です。<b>Streams の有効化が必須</b>（NEW_AND_OLD_IMAGES）。2つの Region で同じ item への書き込みが競合した場合は <b>last writer wins</b> で解決します。<em>multi-Region active-active</em>、<em>low latency for global users</em>、<em>Region failover for DynamoDB</em> に使います。Aurora Global Database（書き込みは1つの Region のみ）とは異なります。</li>
+        <li><b>Point-in-time recovery</b>：有効にすると35日間の継続 backup が取られ、任意の秒の時点に<b>新しいテーブル</b>として restore できます。<b>On-demand backup</b>：無期限に保持でき、性能への影響はありません。どちらも AWS Backup と統合されており、cross-Region、cross-account のコピーが可能です。</li>
+        <li>Export to S3（RCU を消費しない）で Athena による分析ができます。Import from S3 で大量のデータを投入できます。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">DynamoDB を選ぶとき</span>
+      <ul>
+        <li>問題文が <em>serverless</em>、<em>single-digit millisecond</em>、<em>millions of requests per second</em>、<em>key-value</em>、<em>session state</em>、<em>shopping cart</em>、<em>IoT data</em>、<em>leaderboard with simple lookup</em>、<em>schema flexible</em>、<em>no database administration</em> を強調している場合。</li>
+        <li>複雑な join、アドホックな SQL、多数のテーブルにまたがる transaction、400 KB を超える item（S3 と組み合わせる場合を除く）が必要なら選びません。その場合は RDS/Aurora です。TB 級の分析なら Redshift です。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>キー以外の attribute で item を検索したい、テーブルにはデータが既にある</td><td>GSI</td><td>LSI（テーブル作成時のみ）、Scan（高コスト）</td></tr>
+        <tr><td>読み取りレイテンシをマイクロ秒にしたい、コード変更は最小限</td><td>DAX</td><td>ElastiCache（キャッシュロジックを書く必要あり）、RCU の増加（ms のまま）</td></tr>
+        <tr><td>新しい item が入るたびに Lambda を実行</td><td>DynamoDB Streams + Lambda trigger</td><td>スケジュールでテーブルをポーリング（RCU を消費し、遅延もある）</td></tr>
+        <tr><td>30日後にデータを無料で自動削除</td><td>TTL</td><td>Lambda で定期的に scan して delete（WCU を消費）</td></tr>
+        <tr><td>複数の Region で読み書き、active-active</td><td>Global Table</td><td>Aurora Global Database（書き込みは primary のみ）</td></tr>
+        <tr><td>負荷が予測できず、capacity を計算したくない</td><td>On-demand</td><td>Provisioned + auto scaling（min/max の設定が必要で、反応も遅い）</td></tr>
+        <tr><td>2 MB の画像とメタデータを保存</td><td>画像は S3、DynamoDB にはキーとメタデータ</td><td>item に入れる（400 KB の制限）</td></tr>
+        <tr><td>capacity に余裕があるのに throttle される</td><td>partition key を見直す（hot partition）</td><td>テーブル全体の capacity を増やす</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>single-digit millisecond, serverless key-value <b>→ DynamoDB</b></span><span>microsecond read latency <b>→ DAX</b></span><span>react to item changes <b>→ Streams + Lambda</b></span><span>expire items automatically <b>→ TTL</b></span><span>multi-Region active-active <b>→ Global Table</b></span><span>query by non-key attribute later <b>→ GSI</b></span><span>unpredictable traffic <b>→ on-demand</b></span><span>hot partition, throttling <b>→ better partition key</b></span><span>items over 400 KB <b>→ S3 + DynamoDB</b></span><span>ACID across items <b>→ transactions</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">8. DynamoDB の Orders テーブルは partition key が OrderID です。カスタマーサポートが顧客のメールアドレスで注文を検索したいと考えています。テーブルには既に5,000万件の item があります。<em>least operational overhead</em> で実現するには？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>CustomerEmail を partition key とする GSI を作成する。</b> GSI はデータのある既存テーブルにも追加できます。LSI はテーブル作成後には追加できず、partition key も同じでなければなりません。filter 付きの Scan はテーブル全体を読むため、RCU を消費し遅くなります。</p></div>
+      <div class="q"><p class="qt">9. モバイルゲームのスコアを DynamoDB に保存しており、95% がランキングの読み取りです。現在のレイテンシは5 ms で、<em>minimal code changes</em> で1 ms 未満にしたい。何を選びますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>DAX。</b> DynamoDB API 互換なので SDK の endpoint を変えるだけで、マイクロ秒でキャッシュから読み取れます。ElastiCache Redis でもこのレイテンシは達成できますが、cache-aside のロジックを書く必要があり「minimal code changes」に反します。RCU を増やしてもレイテンシは下がりません。</p></div>
+      <div class="q"><p class="qt">10. セッションテーブルに TTL を設定しています。監査から、期限切れで削除されたセッションと、app が能動的に削除したセッションをどう区別するのか質問されました。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>DynamoDB Streams を有効にする。TTL による削除レコードは <code>userIdentity</code> が <code>dynamodb.amazonaws.com</code> になる。</b> 手動削除にはこのフィールドがありません（または app の principal になります）。Lambda をつないで監査ログに書き込むこともできます。</p></div>
+      <div class="q"><p class="qt">11. Global Table について正しい記述を2つ選んでください：(A) DynamoDB Streams の有効化が必要、(B) 書き込めるのは1つの Region だけ、(C) 競合は last writer wins で解決される、(D) レプリケーションは同期なので lag がない。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>A と C。</b> B は誤りです。Global Table は active-active で、すべての Region で書き込めます。D も誤りで、レプリケーションは非同期で lag は通常1秒未満です。だからこそ競合時の last writer wins というルールが必要になります。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. ELASTICACHE ============ -->
+<section id="elasticache">
+  <span class="eyebrow">理論 4 / 7</span>
+  <h2>ElastiCache：Redis と Memcached、cache-aside と write-through</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <ul>
+        <li><b>ElastiCache</b> はマネージドなインメモリキャッシュで、database の前に置いて読み取り負荷を減らし、レイテンシを1 ms 未満にします。エンジンは2つ：<b>Redis</b>（および Redis 互換のオープン版 Valkey）と <b>Memcached</b>。VPC 内に配置し、Security Group 経由でアクセスします。public にはできません。</li>
+        <li>キャッシュは<b>失われてもよいデータ</b>です。キャッシュが落ちたら app は DB から読み直します。データを<b>失ってはならず</b>、database 並みの耐久性が必要ならキャッシュでは不十分で、<b>MemoryDB for Redis</b>（第7項）か本物の DB を選びます。</li>
+        <li>試験でキャッシュが担う代表的な役割は3つです：<b>RDS の読み取り負荷軽減</b>（クエリ結果のキャッシュ）、ALB 配下の複数 instance で動く Web の <b>session store</b>（sticky session の代わり）、Redis のデータ構造を使った <b>leaderboard / リアルタイム処理</b>。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Redis と Memcached</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>Redis</th><th>Memcached</th></tr>
+        <tr><td>データ型</td><td>String、hash、list、set、<b>sorted set</b>（leaderboard）、geospatial、stream</td><td>string / 単純なオブジェクトのみ</td></tr>
+        <tr><td>HA</td><td><b>Replication</b>：primary + 最大5 replica、<b>Multi-AZ と auto failover</b></td><td>レプリケーションなし。ノードを失うとそのノードのデータも失う</td></tr>
+        <tr><td>永続性</td><td>あり：<b>snapshot (RDB)</b>、<b>AOF</b>、backup と restore</td><td>永続化なし、backup なし</td></tr>
+        <tr><td>スケール</td><td><b>Cluster mode</b>：データを最大500ノードに shard して書き込みをスケール。cluster mode disabled：1 shard、replica で読み取りをスケール</td><td>ノード追加で水平スケール、app 側でキーを hash（multi-node、<b>multithread</b>）</td></tr>
+        <tr><td>その他の機能</td><td><b>Pub/Sub</b>、Lua script、transaction、Auth token、in transit と at rest の暗号化、IAM auth（Redis 7）、cross-Region の Global Datastore</td><td>シンプルで機能は少ないが、純粋なキャッシュとしての性能は高い</td></tr>
+        <tr><td>問題文がこう言えば選ぶ</td><td><em>high availability</em>, <em>persistence</em>, <em>sorted set</em>, <em>leaderboard</em>, <em>pub/sub</em>, <em>backup</em>, <em>complex data types</em></td><td><em>simplest caching</em>, <em>multithreaded</em>, <em>horizontal scaling of cache nodes</em>, <em>no persistence needed</em></td></tr>
+      </table></div>
+      <div class="note">早見ルール：問題文に<b>耐久性、HA、データ構造、pub/sub</b> のいずれかの要件があれば → Redis。<b>最もシンプル、multithread、データが消えてもよい</b>を強調しているときだけ → Memcached。迷ったら Redis の方が正解になりやすいです。</div>
+    </div>
+
+    <div class="block"><span class="eyebrow">キャッシュ戦略</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>Cache-aside (lazy loading)</th><th>Write-through</th></tr>
+        <tr><td>動作</td><td>app はまずキャッシュを読み、<b>miss</b> なら DB から読んでキャッシュに書く。書き込みは DB のみ（TTL が切れるまでキャッシュは stale のまま）</td><td>DB に書くたびに<b>キャッシュにも書く</b>。読み取りはほぼ常に hit</td></tr>
+        <tr><td>長所</td><td>読まれたデータだけをキャッシュする。キャッシュが落ちても app は壊れない</td><td>キャッシュのデータは常に最新で、「miss penalty」がない</td></tr>
+        <tr><td>短所</td><td>初回の読み取りが遅い（3ステップ）、データが <b>stale</b> になりうる</td><td>書き込みが2倍になる。誰も読まないデータもキャッシュされる（<em>cache churn</em>）。一度も読まれない新規データも領域を占める</td></tr>
+        <tr><td>よくある組み合わせ</td><td colspan="2">両方を使い、さらに各キーに <b>TTL</b> を付けて stale が永久に残るのを防ぎ、使われないデータを自動で掃除します。変化の速いデータは短い TTL、静的なデータは長い TTL にします。</td></tr>
+      </table></div>
+      <ul>
+        <li><em>data in cache is stale</em>、<em>users see old data</em> とあれば → write-through を追加するか TTL を短くする。<em>cache miss penalty</em>、<em>first request slow</em> とあれば → write-through、または事前にキャッシュを warm しておく。</li>
+        <li><b>Session store</b>：ALB 配下の複数の EC2 で Web が動いており、instance が切り替わるとユーザーがログアウトされる → session を ElastiCache Redis（または DynamoDB）に保存します。sticky session でも動きますが、負荷分散が偏り、instance が落ちると session を失うため、<em>stateless</em> で <em>scalable</em> な正解は ElastiCache です。</li>
+        <li><b>リアルタイム leaderboard</b>：Redis の sorted set（ZADD、ZRANGE）で上位 N 件を O(log n) で返します。DynamoDB でも実現できますが自前の設計が必要で、<em>real-time leaderboard</em> とあれば正解にはなりません。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">選択表：ElastiCache、DAX、その他</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>RDS/Aurora のキャッシュ、読み取り負荷軽減</td><td>ElastiCache Redis、cache-aside</td><td>DAX（DynamoDB 専用）</td></tr>
+        <tr><td>DynamoDB のキャッシュ、コード変更なし</td><td>DAX</td><td>ElastiCache（キャッシュロジックを書く必要あり）</td></tr>
+        <tr><td>stateless な Web の session store</td><td>ElastiCache Redis（または DynamoDB）</td><td>sticky session、EBS に保存</td></tr>
+        <tr><td>リアルタイム leaderboard、sorted set</td><td>Redis</td><td>Memcached（sorted set がない）</td></tr>
+        <tr><td>シンプルなキャッシュ、multithread、耐久性は不要</td><td>Memcached</td><td>Redis（機能過多だが、選んでも完全な誤りではない）</td></tr>
+        <tr><td>インメモリだが <em>durable</em>、メインの DB として使う</td><td>MemoryDB for Redis</td><td>ElastiCache（キャッシュなので消えうる）</td></tr>
+        <tr><td>世界中のユーザー向けに静的コンテンツをキャッシュ</td><td>CloudFront</td><td>ElastiCache（アプリケーション層、VPC 内）</td></tr>
+        <tr><td>API レスポンスのキャッシュ</td><td>API Gateway cache（第7週）</td><td>ElastiCache（自前でコードを書く必要あり）</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>sub-millisecond, in-memory cache <b>→ ElastiCache</b></span><span>sorted set, leaderboard, pub/sub <b>→ Redis</b></span><span>multithreaded, simplest cache <b>→ Memcached</b></span><span>session state across instances <b>→ ElastiCache Redis</b></span><span>lazy loading <b>→ cache-aside</b></span><span>cache always up to date <b>→ write-through</b></span><span>stale data <b>→ 短い TTL / write-through</b></span><span>Redis with durability <b>→ MemoryDB</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">12. Web app が ALB 配下の Auto Scaling group で動いています。scale in するとユーザーがログアウトされてしまいます。app を <em>stateless</em> かつ <em>highly available</em> にするには？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>session を ElastiCache Redis（Multi-AZ）または DynamoDB に保存する。</b> sticky session はユーザーを1つの instance に固定するため、instance が落ちると session を失い、stateless でもありません。Memcached でも保存はできますが HA ではなく、ノードを失うと session も失われます。</p></div>
+      <div class="q"><p class="qt">13. 商品ページが RDS から読み込んでおり、各クエリに200 ms かかります。リクエストの90%は同じ商品の繰り返しです。ユーザーは最大5分古い価格が表示されても許容します。どう設計しますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>ElastiCache Redis で cache-aside を使い、各キーに TTL 300秒を設定する。</b> cache-aside は閲覧された商品だけをキャッシュし、TTL で stale を最大5分に抑えます。Read Replica は負荷を減らせますが、各クエリは200 ms のままです。DAX は RDS には使えません。</p></div>
+      <div class="q"><p class="qt">14. Memcached ではなく Redis を選ぶ理由を2つ選んでください：(A) multithread が必要、(B) キャッシュの backup と restore が必要、(C) Multi-AZ の auto failover が必要、(D) 最もシンプルなセットアップが必要。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>B と C。</b> A と D は Memcached の強みです。Redis は（コマンド処理が）シングルスレッドですが、replication、persistence、cluster mode でそれを補います。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. REDSHIFT ============ -->
+<section id="redshift">
+  <span class="eyebrow">理論 5 / 7</span>
+  <h2>Redshift と Redshift Spectrum</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <ul>
+        <li><b>Redshift</b> はマネージドな <b>data warehouse</b>（OLAP）です。PostgreSQL ベースで、<b>columnar</b>（列指向）で保存し圧縮効率も高いため、数十億行をスキャンする集計クエリ（SUM、GROUP BY）を RDS より何倍も速く処理できます。ペタバイト規模に対応。レポートや BI（QuickSight、Tableau）に使い、OLTP（1行ずつの継続的な書き込み、短い transaction）には使いません。</li>
+        <li>cluster の構成：<b>leader node 1台</b>が SQL を受け取って実行計画を立て、結果を集約します。<b>複数の compute node</b> がデータを slice に分割して並列実行します（MPP、massively parallel processing）。Node type の <b>RA3</b> は compute と storage を分離（データは managed S3 上）、<b>DC2</b> は小規模データ向けのローカル SSD です。</li>
+        <li>データ投入：S3 からの <b>COPY</b> コマンド（並列で最速）、DynamoDB や EMR から、または Kinesis Data Firehose 経由。1行ずつの INSERT は避けます。</li>
+        <li><b>1つの AZ に配置</b>されます（RA3 では Multi-AZ が新たに利用可能、AWSドキュメントで要確認）。Redshift の HA：故障ノードの自動交換、S3 への<b>自動 snapshot</b>、DR のための<b>別 Region への snapshot コピー</b>。<em>disaster recovery for Redshift</em> とあれば → cross-Region snapshot copy。</li>
+        <li><b>Enhanced VPC Routing</b>：COPY/UNLOAD のトラフィックをインターネットではなく VPC 内（endpoint 経由）に通すよう強制します。<b>Concurrency Scaling</b>：同時クエリが多いときに一時的な cluster を自動で追加します。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Redshift Spectrum と Redshift Serverless</span>
+      <ul>
+        <li><b>Redshift Spectrum</b>：<b>S3</b> 上のファイル（Parquet、ORC、CSV、JSON）に対して、<b>cluster にロードせずに</b>直接 SQL を実行し、Redshift 内のテーブルと join できます。稼働中の Redshift cluster が必要で、S3 のテーブルは external schema（Glue Data Catalog）で定義します。<em>query exabytes in S3 from Redshift</em>、<em>join historical data in S3 with warehouse data</em>、<em>without loading</em> のときに選びます。</li>
+        <li><b>Redshift Serverless</b>：cluster の管理が不要で、RPU で計測し、自動でスケールし、クエリの実行秒数で課金されます。<em>ad hoc</em>、<em>intermittent analytics</em>、<em>no cluster management</em> のときに選びます。中身は Redshift のままです（columnar、SQL、Spectrum も使える）。</li>
+        <li><b>Data sharing</b>：cluster やアカウント間でライブデータをコピーせずに共有します。Aurora から Redshift への <b>Zero-ETL</b>：自動でレプリケーションされ、パイプラインを書かずにほぼリアルタイムで分析できます。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Redshift、Athena、EMR、RDS の比較</span>
+      <div class="tbl"><table>
+        <tr><th>サービス</th><th>概要</th><th>問題文がこう言えば選ぶ</th></tr>
+        <tr><td><b>Redshift</b></td><td>data warehouse。データをロードし、繰り返しのクエリを高速に実行、BI 向け</td><td><em>data warehouse</em>, <em>complex joins on petabytes</em>, <em>BI dashboards</em>, <em>OLAP</em>、頻繁なクエリ</td></tr>
+        <tr><td><b>Athena</b></td><td>S3 に直接 serverless SQL、スキャンした TB 単位で課金、インフラ不要</td><td><em>ad hoc query on S3</em>, <em>log analysis</em>, <em>serverless</em>, <em>infrequent</em>, <em>pay per query</em>。Parquet + partition でコスト削減</td></tr>
+        <tr><td><b>EMR</b></td><td>マネージドな Hadoop/Spark/Hive cluster、コードで大規模データを処理</td><td><em>Spark</em>, <em>Hadoop</em>, <em>machine learning on big data</em>, <em>ETL at scale</em>, <em>existing Hadoop jobs</em></td></tr>
+        <tr><td><b>RDS / Aurora</b></td><td>OLTP、短い transaction、1行単位の読み書きが多い</td><td><em>transactional</em>, <em>application database</em>, <em>row-level</em>。RDS 上の重いレポート → Redshift か Read Replica に移す</td></tr>
+        <tr><td><b>Redshift Spectrum</b></td><td>Redshift から S3 のデータも追加でクエリ</td><td>Redshift を既に持っていて、S3 のコールドデータとロードせずに join したい</td></tr>
+      </table></div>
+      <p style="font-size:.92rem">コツ：Athena と Spectrum はどちらも S3 をクエリします。違いは、Athena は cluster 不要で Redshift を持っていない人向け、Spectrum は Redshift を既に持っていて warehouse 内のテーブルと join したい人向けという点です。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>組み合わせ</th><th>違い</th></tr>
+        <tr><td>Redshift と RDS</td><td>Redshift は OLAP 向けの columnar（多くの行・少ない列をスキャン）。RDS は OLTP 向けの row-based（小さな transaction が多数）。「月末のレポートが app を遅くする」とあれば → データを Redshift に移す。</td></tr>
+        <tr><td>Redshift と Athena</td><td>Redshift はデータを cluster 内に保持し、日常の BI に高速で安定、cluster 単位で課金。Athena は S3 上の serverless で、たまにクエリするだけなら安い。</td></tr>
+        <tr><td>Spectrum と Athena</td><td>どちらも S3 をクエリする。Spectrum は Redshift cluster が必要で、Redshift のテーブルと join できる。Athena は独立している。</td></tr>
+        <tr><td>Redshift と EMR</td><td>Redshift は SQL の warehouse。EMR は処理フレームワーク（Spark、Hadoop）で柔軟だが、ジョブは自分で管理する。</td></tr>
+        <tr><td>Redshift と OpenSearch</td><td>OpenSearch は全文検索、ログ分析、Kibana ダッシュボード向け。Redshift は構造化データの SQL 分析向け。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>data warehouse, OLAP, columnar <b>→ Redshift</b></span><span>query S3 without loading, join with warehouse <b>→ Redshift Spectrum</b></span><span>no cluster to manage, ad hoc analytics <b>→ Redshift Serverless</b></span><span>DR for Redshift <b>→ cross-Region snapshot copy</b></span><span>serverless SQL on S3, pay per query <b>→ Athena</b></span><span>Spark, Hadoop <b>→ EMR</b></span><span>fastest way to load data <b>→ COPY from S3</b></span><span>Aurora to Redshift without ETL <b>→ zero-ETL integration</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">15. 50 TB の販売データがあり、BI チームが複数テーブルの複雑な join を含むダッシュボードを毎時実行しています。現在は RDS PostgreSQL 上で動いており、非常に遅いです。何を選びますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Redshift。</b> columnar と MPP により、数十 TB に対する繰り返しの集計クエリに適しています。Athena はたまに実行するクエリ向けで、50 TB に毎時実行すると高コストで遅くなります。Read Replica も row-based のままなので根本解決になりません。</p></div>
+      <div class="q"><p class="qt">16. 2年分のデータを持つ Redshift cluster が既にあります。それ以前の8年分のデータは S3 に Parquet 形式で置かれています。ときどき両方を join する必要があります。<em>Most cost-effective</em> なのは？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Redshift Spectrum</b>：S3 を指す external table を作り、cluster 内のテーブルと join します。8年分のデータを cluster にロードすると storage とノードのコストがかかります。Athena でも S3 はクエリできますが、Redshift 内のテーブルと直接 join はできません。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. DMS VÀ SCT ============ -->
+<section id="dms">
+  <span class="eyebrow">理論 6 / 7</span>
+  <h2>DMS と Schema Conversion Tool</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <ul>
+        <li><b>Database Migration Service (DMS)</b>：<b>ソースを稼働させたまま</b>、ソース DB からターゲット DB へデータを移行します。<b>replication instance</b>（DMS が管理する EC2、サイズは自分で選択、Multi-AZ 可）上で、<b>source endpoint</b>、<b>target endpoint</b>、<b>migration task</b> を使って動作します。ソースはオンプレミス、EC2、RDS、S3。ターゲットは RDS、Aurora、DynamoDB、Redshift、S3、OpenSearch、Kinesis、DocumentDB など。</li>
+        <li>task は3種類です：<b>Full load</b>（1回だけコピー）、<b>Full load + CDC</b>（コピー後も変更を同期し続ける）、<b>CDC only</b>。<b>CDC (change data capture)</b> はソースの transaction log を読んで継続的にレプリケーションし、ダウンタイムをほぼゼロにします。両側が同期できてから app をターゲットに切り替えます。<em>minimal downtime migration</em>、<em>continuous replication</em>、<em>keep source running</em> とあれば → DMS と CDC。</li>
+        <li><b>Homogeneous</b>（同じエンジン、Oracle → Oracle、MySQL → Aurora MySQL）：DMS で直接移行します。<b>Heterogeneous</b>（エンジンの変更、Oracle → Aurora PostgreSQL、SQL Server → MySQL）：まず <b>SCT</b> で schema を変換し、その後 DMS でデータを移行します。</li>
+        <li><b>Schema Conversion Tool (SCT)</b>：PC にインストールするソフトウェアで、ソースの schema、stored procedure、view を分析してターゲットエンジンの構文に変換し、手作業で直す部分を示す評価レポートも出力します。SCT にはデータウェアハウス（Oracle、Teradata、Netezza）を Redshift に移す extractor もあります。現在は DMS コンソール内で SCT を実行することもできます（DMS Schema Conversion）。</li>
+        <li><b>大容量データまたは低帯域</b>：DMS と <b>Snowball Edge</b> を組み合わせます。SCT がデータを Snowball に抽出して AWS へ輸送し、DMS が S3 からターゲットにロード、輸送中に発生した変更は CDC で同期します。<em>terabytes</em>、<em>limited bandwidth</em>、<em>migrate database</em> とあれば → DMS + Snowball。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Heterogeneous migration の流れ</span>
+      <div class="flow">
+        <div class="n"><span>SCT がオンプレミス Oracle の schema を分析し、評価レポートを作成</span><span class="tag next">ステップ 1</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span>SCT が schema を変換して Aurora PostgreSQL 用の DDL を生成、SCT が自動変換できない部分は手で修正</span><span class="tag next">ステップ 2</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span>DMS replication instance：Oracle から Aurora への Full load + CDC task</span><span class="tag next">ステップ 3</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span>データを検証（DMS data validation）し、Aurora 上で app を試験運用</span><span class="tag next">ステップ 4</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span>Cutover：Oracle への書き込みを停止し、CDC の lag がなくなるのを待って app を Aurora に向ける</span><span class="tag allow">ダウンタイム数分</span></div>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">使うとき、使わないとき</span>
+      <ul>
+        <li>DMS を使う：DB を AWS へ移行（オンプレミス → RDS/Aurora）、エンジンの変更（SCT と併用）、分析用の継続レプリケーション（RDS → Redshift、RDS → S3 データレイク、RDS → Kinesis）、複数 DB の統合、1つの DB の分割。</li>
+        <li>DMS を使わない：同じエンジンで1回コピーするだけでダウンタイムも許容できるなら、dump/restore か snapshot を使います。同一 Region 内で HA のために RDS を継続同期する用途にも DMS は使いません（それは Multi-AZ / Read Replica の役割）。</li>
+        <li>DMS は heterogeneous の場合に <b>schema を変換しません</b>。基本的なテーブル（primary key）を作るだけで、セカンダリ index、FK、procedure は作りません。これが SCT が必要な理由です。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>オンプレミス MySQL → Aurora MySQL、ダウンタイム最小</td><td>DMS Full load + CDC</td><td>SCT（同じエンジンなので不要）、mysqldump（ダウンタイムが発生）</td></tr>
+        <tr><td>Oracle → Aurora PostgreSQL</td><td>SCT で schema を変換し、その後 DMS でデータを移行</td><td>DMS 単独（stored procedure を変換しない）</td></tr>
+        <tr><td>40 TB の DB、回線は 100 Mbps</td><td>SCT + Snowball Edge、その後 DMS CDC</td><td>ネットワーク経由の DMS（数か月かかる）</td></tr>
+        <tr><td>RDS を Redshift に継続レプリケーションして分析</td><td>DMS CDC（Aurora なら zero-ETL）</td><td>Read Replica（Redshift にはならない）</td></tr>
+        <tr><td>アプリケーションサーバーの移行（DB ではない）</td><td>Application Migration Service（MGN、第9週）</td><td>DMS</td></tr>
+        <tr><td>ファイル、NFS 共有の移行</td><td>DataSync（第3週）</td><td>DMS</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>migrate database, minimal downtime <b>→ DMS + CDC</b></span><span>different database engine <b>→ SCT、次に DMS</b></span><span>continuous replication <b>→ DMS CDC</b></span><span>large database, limited bandwidth <b>→ SCT + Snowball + DMS</b></span><span>Oracle to Redshift data warehouse <b>→ SCT extractor</b></span><span>replication instance <b>→ DMS</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">17. オンプレミスにある 5 TB の Oracle を、ダウンタイム1時間未満で Aurora PostgreSQL に移行したい。必要なステップを2つ選んでください：(A) SCT で schema を変換、(B) DMS と CDC を使う、(C) DataSync を使う、(D) AWS Backup を使う。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>A と B。</b> エンジンが変わるので SCT が必要です。CDC で両側を同期しておけば cutover を短くできます。DataSync はファイル転送用で、AWS Backup はエンジン間の移行をしません。</p></div>
+      <div class="q"><p class="qt">18. オンプレミスの MySQL 8 を RDS MySQL に移行します。帯域は十分で、週末のダウンタイムは許容されます。<em>simplest</em> な方法は？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>SCT なしで DMS full load（または mysqldump と restore）。</b> 同じエンジンなので SCT は不要です。要件が「ダウンタイム不可」に変われば CDC を追加します。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. NHẬN DIỆN ============ -->
+<section id="nhandien">
+  <span class="eyebrow">理論 7 / 7</span>
+  <h2>専用データベース：Neptune、DocumentDB、Keyspaces、Timestream、QLDB、MemoryDB</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <p>このグループは、試験では<b>見分ける</b>ことだけが求められます。問題文に出てくるデータモデルやエンジン名を見てすぐに選べればよく、運用の詳細まで知る必要はありません。いずれもマネージドで、VPC 内に配置され、KMS で暗号化され、backup があります。</p>
+      <div class="tbl"><table>
+        <tr><th>サービス</th><th>データモデル</th><th>互換性 / プロトコル</th><th>ユースケース例</th></tr>
+        <tr><td><b>Neptune</b></td><td><b>Graph</b>：node と edge、多段階の関係をたどる</td><td>Gremlin、openCypher、SPARQL (RDF)</td><td>ソーシャルネットワーク（友達の友達）、商品レコメンド、関係性による不正検知、knowledge graph。Neptune ML と Neptune Analytics もある</td></tr>
+        <tr><td><b>DocumentDB</b></td><td><b>Document</b> JSON</td><td><b>MongoDB</b> API 互換</td><td>MongoDB 向けに書かれた app をマネージドに移したい。Aurora と同様のアーキテクチャ（storage は3 AZ に6コピー、15 replica）</td></tr>
+        <tr><td><b>Keyspaces</b></td><td><b>Wide-column</b></td><td><b>Apache Cassandra</b>（CQL）互換</td><td>既存の Cassandra app、serverless、DynamoDB と同様に on-demand または provisioned</td></tr>
+        <tr><td><b>Timestream</b></td><td><b>Time series</b>：timestamp + measure</td><td>独自の SQL、IoT Core、Kinesis、Grafana と連携</td><td>IoT センサー、メトリクス、時系列のログ。古いデータを memory から magnetic store へ自動で移し、時間範囲のクエリが高速</td></tr>
+        <tr><td><b>QLDB</b></td><td><b>Ledger</b>：<b>immutable</b> なジャーナル、ハッシュで検証可能（cryptographically verifiable）</td><td>PartiQL、中央集権型、所有者は1者</td><td>金融取引の履歴、車両登録の記録、改ざんされていないことを証明する必要があるサプライチェーン。ブロックチェーン（Managed Blockchain：分散型、複数の参加者）とは異なる</td></tr>
+        <tr><td><b>MemoryDB for Redis</b></td><td>インメモリ key-value、<b>durable</b></td><td>Redis 互換</td><td>Redis を（キャッシュとしてだけでなく）<b>メインの database</b> として使う：Multi-AZ の transaction log、ノード障害でもデータを失わない、読み取りはマイクロ秒</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">今週全体の「問題文 → 選ぶサービス」表</span>
+      <div class="tbl"><table>
+        <tr><th>問題文のキーワード</th><th>選ぶサービス</th></tr>
+        <tr><td>リレーショナル、SQL、Oracle または SQL Server、lift and shift</td><td>RDS</td></tr>
+        <tr><td>リレーショナルの MySQL/PostgreSQL、最高の性能と HA、15 replica、Global Database</td><td>Aurora</td></tr>
+        <tr><td>リレーショナル、予測できない負荷、従量課金</td><td>Aurora Serverless v2</td></tr>
+        <tr><td>Key-value、serverless、ms、無制限のスケール、session、cart、IoT</td><td>DynamoDB</td></tr>
+        <tr><td>DynamoDB のキャッシュ、マイクロ秒、コード変更なし</td><td>DAX</td></tr>
+        <tr><td>RDS のキャッシュ、session store、leaderboard、pub/sub</td><td>ElastiCache Redis</td></tr>
+        <tr><td>最もシンプルなキャッシュ、multithread</td><td>ElastiCache Memcached</td></tr>
+        <tr><td>Redis だがデータの永続化が必須、メインの DB として使う</td><td>MemoryDB for Redis</td></tr>
+        <tr><td>Data warehouse、OLAP、BI、ペタバイト</td><td>Redshift</td></tr>
+        <tr><td>S3 をロードせずにクエリ、warehouse と join</td><td>Redshift Spectrum</td></tr>
+        <tr><td>S3 を serverless でクエリ、アドホック、クエリ単位の課金</td><td>Athena</td></tr>
+        <tr><td>Graph、多段階の関係、ソーシャルネットワーク、レコメンド</td><td>Neptune</td></tr>
+        <tr><td>MongoDB</td><td>DocumentDB</td></tr>
+        <tr><td>Cassandra</td><td>Keyspaces</td></tr>
+        <tr><td>時系列、IoT センサー、時間ごとのメトリクス</td><td>Timestream</td></tr>
+        <tr><td>Immutable、検証可能な履歴、ledger、所有者は1者</td><td>QLDB</td></tr>
+        <tr><td>互いに信頼しない複数の参加者、分散型、Hyperledger/Ethereum</td><td>Managed Blockchain</td></tr>
+        <tr><td>全文検索、ログ分析、Kibana</td><td>OpenSearch Service</td></tr>
+        <tr><td>DB の移行、ダウンタイム最小、CDC</td><td>DMS（エンジンを変えるなら + SCT）</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>graph, relationships, social network <b>→ Neptune</b></span><span>MongoDB-compatible <b>→ DocumentDB</b></span><span>Cassandra-compatible <b>→ Keyspaces</b></span><span>time series, IoT telemetry <b>→ Timestream</b></span><span>immutable, cryptographically verifiable <b>→ QLDB</b></span><span>Redis-compatible durable database <b>→ MemoryDB</b></span><span>decentralized, multiple parties <b>→ Managed Blockchain</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">19. 友達推薦アプリで、数億人のユーザーに対して「友達の友達の友達」を低レイテンシでクエリする必要があります。どの DB を選びますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Neptune。</b> Graph DB は多段階の関係をたどる処理に最適化されています。RDS では再帰的な join が必要でとても遅く、DynamoDB には関係という概念がありません。</p></div>
+      <div class="q"><p class="qt">20. 銀行が残高のすべての変更履歴を保存し、過去の記録を誰も改ざんできないことを監査で証明する必要があります。管理は銀行自身が行います。何を選びますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>QLDB。</b> immutable な ledger で、検証用にハッシュ化された journal を持ちます。Managed Blockchain は互いに信頼しない複数の参加者が共同で運用するためのものです。「銀行自身が管理する」なら中央集権型なので → QLDB。DynamoDB と Streams でも履歴は記録できますが、それ自体は「verifiable」ではありません。</p></div>
+      <div class="q"><p class="qt">21. 工場の10,000個のセンサーが毎秒温度を送信しています。「機械ごとの直近5分の平均」をクエリし、古いデータは安価なストレージへ自動で移したい。何を選びますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Timestream。</b> 時間関数と memory から magnetic への階層化を備えた時系列 DB です。DynamoDB でも保存はできますが、時系列関数はなく、階層化も TTL + export で自作する必要があります。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HANDS-ON ============ -->
+<section id="handson">
+  <span class="eyebrow">ハンズオン</span>
+  <h2>ハンズオン：5つのラボ</h2>
+  <p>Lab 1 と Lab 2 は時間課金の RDS Multi-AZ を作成するので、1回の作業でまとめて行い、Lab 5 ですぐに削除します（Lab 2 の直後に Lab 5 の RDS 部分を行っても構いません）。Lab 3 と Lab 4 は Free Tier の always free（25 GB、25 RCU/WCU、Lambda は月100万リクエスト、AWSドキュメントで要確認）の範囲で DynamoDB と Lambda を使います。すべてのコマンドは PowerShell で <code>$env:AWS_PROFILE = "saa"</code>、Region <code>ap-northeast-1</code> を前提に実行します。</p>
+  <div class="note">参考価格（AWSドキュメントで要確認）：<code>db.t3.micro</code> Single-AZ は約0.02 USD/時間、<b>Multi-AZ はその2倍</b>で約0.04 USD/時間。これに gp3 20 GB の storage が約0.003 USD/時間加わり、backup は無料枠内です。Read replica はさらに1 instance 分かかります。両方を4時間保持して約0.3 USD、<b>1か月放置すると約45 USD</b> です。旧タイプの Free Tier には db.t3.micro Single-AZ が月750時間ありますが、Multi-AZ は通常対象外です。新タイプ（クレジット制）の Free Tier アカウントではクレジットから差し引かれます。</div>
+
+  <div class="card">
+    <h3>Lab 1. RDS MySQL Multi-AZ を作成し、failover を強制して endpoint が変わらないことを確認</h3>
+    <ol class="steps">
+      <li><div><p>DB 用の Security Group を準備します：Console → <b>EC2 → Security Groups → Create</b>。Name <code>saa-rds-sg</code>、VPC は default。Inbound rule：MySQL/Aurora、port 3306、Source は<b>ラボ用 EC2 の SG</b>（VPC 内の EC2 から接続する場合）または <b>My IP</b>（ローカル PC から接続する場合、DB を public にする必要あり）。最もきれいな方法は、同じ VPC 内の EC2 t3.micro から接続することです（第2週と同じ手順で作成し、<code>sudo dnf install mariadb105 -y</code> で <code>mysql</code> client をインストール）。</p></div></li>
+      <li><div><p>Console → <b>RDS → Databases → Create database</b>。<b>Standard create</b> を選び、Engine は <b>MySQL</b>（デフォルトのバージョン）、Templates は <b>Dev/Test</b>（Free tier テンプレートでは Multi-AZ を選べない）。Availability and durability：<b>Multi-AZ DB instance</b>（「Multi-AZ DB cluster」は選ばないこと。こちらは3 instance で1.5倍高い）。</p></div></li>
+      <li><div><p>Settings：DB instance identifier <code>saa-mysql</code>、Master username <code>admin</code>、password は <b>Self managed</b> を選んで自分で設定します（料金を発生させないため Secrets Manager は選ばない）。Instance configuration：<b>Burstable classes → db.t3.micro</b>。Storage：gp3、20 GiB、ラボでは <b>storage autoscaling のチェックを外します</b>。</p></div></li>
+      <li><div><p>Connectivity：VPC は default、Public access は <b>No</b>（EC2 を使う場合）または Yes（ローカル PC を使う場合）、VPC security group は <code>saa-rds-sg</code>。Additional configuration：Initial database name <code>labdb</code>、Backup retention <b>1 day</b>。Enable Performance Insights と Enhanced Monitoring の<b>チェックを外します</b>（Performance Insights は7日間無料ですが、簡単にするため）。deletion protection もチェックを外します（Lab 5 で削除できるように）。Create database。<b>Available</b> になるまで10〜15分待ちます。</p></div></li>
+      <li><div><p>DB <code>saa-mysql</code> を開き → <b>Connectivity &amp; security</b> タブで、<b>Endpoint</b>（<code>saa-mysql.xxxx.ap-northeast-1.rds.amazonaws.com</code> の形式）と現在の <b>Availability Zone</b>（例：<code>ap-northeast-1a</code>）、<b>Secondary Zone</b> を控えます。CLI の場合：</p>
+<pre><code>aws rds describe-db-instances --db-instance-identifier saa-mysql `
+  --query "DBInstances[0].[Endpoint.Address,AvailabilityZone,SecondaryAvailabilityZone,MultiAZ]" --output table</code></pre></div></li>
+      <li><div><p>EC2（またはローカル PC）から接続してデータを作成します：</p>
+<pre><code>mysql -h saa-mysql.xxxx.ap-northeast-1.rds.amazonaws.com -u admin -p labdb
+CREATE TABLE notes (id INT AUTO_INCREMENT PRIMARY KEY, body VARCHAR(100), created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+INSERT INTO notes (body) VALUES ('before failover');
+SELECT @@hostname, @@server_id;
+SELECT * FROM notes;</code></pre><p>failover 後に比較するため、<code>@@hostname</code> を控えておきます。接続できない場合は、SG の inbound 3306 の送信元が正しいか、DB と EC2 が同じ VPC にあるか、Public access が意図どおりかを確認します。</p></div></li>
+      <li><div><p>failover を強制します：Console → DB を選択 → <b>Actions → Reboot</b> → <b>Reboot with failover?</b> にチェック → Confirm。または CLI：</p>
+<pre><code>aws rds reboot-db-instance --db-instance-identifier saa-mysql --force-failover
+aws rds describe-events --source-identifier saa-mysql --source-type db-instance --duration 30 --query "Events[].Message"</code></pre><p>その間、mysql client で <code>SELECT 1;</code> を実行し続けると、接続が1〜2分ほど切れた後、再接続できるようになります。</p></div></li>
+      <li><div><p>Available に戻ったら、ステップ5の describe コマンドを再実行します。<b>Endpoint は変わらず</b>、<b>AvailabilityZone と SecondaryAvailabilityZone が入れ替わって</b>います。同じ endpoint で再接続して <code>SELECT @@hostname;</code> を実行すると別の hostname が表示され、<code>SELECT * FROM notes;</code> には「before failover」の行が残っています（sync replication なのでデータは失われない）。endpoint に対して前後で <code>nslookup</code> を実行すると、名前は同じでも IP が変わっていることが分かります。</p></div></li>
+    </ol>
+    <div class="note">RDS Multi-AZ は時間単位で課金されています。続けて Lab 2 を行い、同じ日のうちに Lab 5 で削除してください。途中で中断する場合は、PC を離れる前に DB を削除します。</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 2. read replica を作成し、接続して INSERT を試し、拒否されることを確認</h3>
+    <ol class="steps">
+      <li><div><p>Console → RDS → <code>saa-mysql</code> を選択 → <b>Actions → Create read replica</b>。DB instance identifier <code>saa-mysql-rr</code>、instance class <b>db.t3.micro</b>、Multi-AZ <b>No</b>（コスト削減）、同じ VPC と SG <code>saa-rds-sg</code>、Public access は primary と同じ設定。Create。または CLI：</p>
+<pre><code>aws rds create-db-instance-read-replica --db-instance-identifier saa-mysql-rr `
+  --source-db-instance-identifier saa-mysql --db-instance-class db.t3.micro `
+  --vpc-security-group-ids sg-xxxxxxxx --no-publicly-accessible</code></pre><p>5〜10分待ちます。待っている間に replica の <b>Configuration</b> タブを開くと、Replication role は <b>Replica</b>、primary 側は <b>Source</b> と表示されています。</p></div></li>
+      <li><div><p>replica の endpoint を取得します（primary の endpoint とは異なる）：</p>
+<pre><code>aws rds describe-db-instances --db-instance-identifier saa-mysql-rr `
+  --query "DBInstances[0].[Endpoint.Address,ReadReplicaSourceDBInstanceIdentifier,StatusInfos]" --output json</code></pre></div></li>
+      <li><div><p>replica に接続して書き込みを試します：</p>
+<pre><code>mysql -h saa-mysql-rr.xxxx.ap-northeast-1.rds.amazonaws.com -u admin -p labdb
+SELECT * FROM notes;                          -- primary のデータが見える
+INSERT INTO notes (body) VALUES ('on replica'); -- エラー
+SHOW VARIABLES LIKE 'read_only';              -- ON</code></pre><p>期待される結果：<code>ERROR 1290 (HY000): The MySQL server is running with the --read-only option so it cannot execute this statement</code>。これがまさに「Read Replica は読み取り用で、書き込み用ではない」というポイントです。</p></div></li>
+      <li><div><p>replication lag を確認します：primary で <code>INSERT INTO notes (body) VALUES ('after replica');</code> を実行し、すぐに replica で <code>SELECT * FROM notes;</code> を実行します。lag は数百 ms 程度なので通常はすぐ反映されますが、原則として <b>asynchronous</b> です。replica の Monitoring タブで <b>ReplicaLag</b> メトリクスを確認します。</p></div></li>
+      <li><div><p>任意（必須ではありません）：replica を <b>Actions → Promote</b> します。数分後に replica は独立した DB になり、<code>read_only</code> が OFF になって INSERT でき、primary からデータを受け取らなくなります。この手順を行った場合、Lab 5 では両方を通常の2つの DB として削除します。</p></div></li>
+    </ol>
+    <div class="note">現在2つの instance に課金されています（Multi-AZ の primary は2台分、replica は1台分）。当日中に続けない場合は、すぐに Lab 5 の RDS 部分に進んでください。</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 3. DynamoDB テーブルを作成し、Lambda（Python boto3）で書き込みと読み取り</h3>
+    <ol class="steps">
+      <li><div><p>partition key と sort key を持つ on-demand テーブルを作成します：</p>
+<pre><code>aws dynamodb create-table --table-name saa-notes `
+  --attribute-definitions AttributeName=userId,AttributeType=S AttributeName=noteId,AttributeType=S `
+  --key-schema AttributeName=userId,KeyType=HASH AttributeName=noteId,KeyType=RANGE `
+  --billing-mode PAY_PER_REQUEST
+aws dynamodb wait table-exists --table-name saa-notes
+aws dynamodb describe-table --table-name saa-notes --query "Table.[TableStatus,BillingModeSummary.BillingMode]"</code></pre></div></li>
+      <li><div><p>Lambda 用の IAM role を作成し、このテーブルだけに最小限の権限を付与します。ファイル <code>trust.json</code>：</p>
+<pre><code>{ "Version": "2012-10-17", "Statement": [ { "Effect": "Allow",
+  "Principal": { "Service": "lambda.amazonaws.com" }, "Action": "sts:AssumeRole" } ] }</code></pre><p>ファイル <code>ddb-policy.json</code>（account id を置き換える）：</p>
+<pre><code>{ "Version": "2012-10-17", "Statement": [ { "Effect": "Allow",
+  "Action": ["dynamodb:PutItem","dynamodb:GetItem","dynamodb:Query"],
+  "Resource": "arn:aws:dynamodb:ap-northeast-1:&lt;account-id&gt;:table/saa-notes" } ] }</code></pre>
+<pre><code>aws iam create-role --role-name saa-lambda-ddb-role --assume-role-policy-document file://trust.json
+aws iam attach-role-policy --role-name saa-lambda-ddb-role --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+aws iam put-role-policy --role-name saa-lambda-ddb-role --policy-name ddb-notes --policy-document file://ddb-policy.json</code></pre><p><code>AWSLambdaBasicExecutionRole</code> は CloudWatch Logs への書き込みだけを許可します。DynamoDB の権限は1つのテーブルに限定した inline policy です（least privilege）。</p></div></li>
+      <li><div><p><code>lambda_function.py</code> を作成します：</p>
+<pre><code>import json, os, time, uuid
+import boto3
+
+table = boto3.resource("dynamodb").Table(os.environ["TABLE"])
+
+def lambda_handler(event, context):
+    action = event.get("action", "write")
+    user_id = event.get("userId", "quy")
+    if action == "write":
+        item = {"userId": user_id, "noteId": str(uuid.uuid4()),
+                "body": event.get("body", "hello"), "createdAt": int(time.time())}
+        if "ttlSeconds" in event:
+            item["expireAt"] = int(time.time()) + int(event["ttlSeconds"])
+        table.put_item(Item=item)
+        return {"written": item}
+    resp = table.query(KeyConditionExpression=boto3.dynamodb.conditions.Key("userId").eq(user_id))
+    return {"count": resp["Count"], "items": resp["Items"]}</code></pre><p>zip にして function を作成します（role の作成後、IAM の反映を数秒待ちます）：</p>
+<pre><code>Compress-Archive -Path lambda_function.py -DestinationPath fn.zip -Force
+aws lambda create-function --function-name saa-notes-fn --runtime python3.12 `
+  --role arn:aws:iam::&lt;account-id&gt;:role/saa-lambda-ddb-role `
+  --handler lambda_function.lambda_handler --zip-file fileb://fn.zip `
+  --environment "Variables={TABLE=saa-notes}" --timeout 10</code></pre><p>注意：返される item の数値は <code>Decimal</code> 型になります。Lambda が戻り値の JSON シリアライズでエラーを出したら、<code>int(...)</code> を <code>str(...)</code> に変えるか、<code>json.dumps</code> で <code>default=str</code> を使います。</p></div></li>
+      <li><div><p>書き込みと読み取りを呼び出します：</p>
+<pre><code>aws lambda invoke --function-name saa-notes-fn --cli-binary-format raw-in-base64-out `
+  --payload '{"action":"write","body":"first note"}' out.json; Get-Content out.json
+aws lambda invoke --function-name saa-notes-fn --cli-binary-format raw-in-base64-out `
+  --payload '{"action":"read"}' out.json; Get-Content out.json</code></pre><p>CLI でテーブルを直接確認し、Lambda のログも見ます：</p>
+<pre><code>aws dynamodb scan --table-name saa-notes --query "Count"
+aws logs tail /aws/lambda/saa-notes-fn --since 10m</code></pre></div></li>
+      <li><div><p>least privilege を試します：payload を <code>{"action":"write"}</code> にし、inline policy から <code>dynamodb:PutItem</code> を一時的に外して再度 invoke すると、<code>AccessDeniedException</code> になります。Lab 4 で使うので元に戻します。Console DynamoDB → テーブル → <b>Explore items</b> を開くと、userId と noteId の2つのキーを持つ item が確認できます。</p></div></li>
+    </ol>
+    <div class="note ok">この程度の DynamoDB on-demand と Lambda は always free の範囲内で、時間課金はありません。それでもアカウントを整理するため、Lab 5 で削除します。</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 4. TTL と Streams を有効化し、過去の TTL を持つ item を書き込んで削除を確認、stream のレコードも確認</h3>
+    <ol class="steps">
+      <li><div><p>NEW_AND_OLD_IMAGES で Streams を有効化し、attribute <code>expireAt</code> で TTL を有効化します：</p>
+<pre><code>aws dynamodb update-table --table-name saa-notes `
+  --stream-specification StreamEnabled=true,StreamViewType=NEW_AND_OLD_IMAGES
+aws dynamodb update-time-to-live --table-name saa-notes `
+  --time-to-live-specification Enabled=true,AttributeName=expireAt
+aws dynamodb describe-time-to-live --table-name saa-notes</code></pre><p>Console では、<b>Additional settings</b> タブで TTL status が Enabled、<b>Exports and streams</b> タブで Stream ARN を確認できます。</p></div></li>
+      <li><div><p>stream のすべてのレコードをログに出力する2つ目の Lambda を作成します。ファイル <code>stream_fn.py</code>：</p>
+<pre><code>import json
+def lambda_handler(event, context):
+    for r in event["Records"]:
+        who = r.get("userIdentity", {}).get("principalId", "user")
+        keys = r["dynamodb"]["Keys"]
+        print(json.dumps({"event": r["eventName"], "by": who, "keys": keys}))
+    return {"processed": len(event["Records"])}</code></pre>
+<pre><code>Compress-Archive -Path stream_fn.py -DestinationPath stream.zip -Force
+aws iam attach-role-policy --role-name saa-lambda-ddb-role --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaDynamoDBExecutionRole
+aws lambda create-function --function-name saa-stream-fn --runtime python3.12 `
+  --role arn:aws:iam::&lt;account-id&gt;:role/saa-lambda-ddb-role `
+  --handler stream_fn.lambda_handler --zip-file fileb://stream.zip --timeout 10
+$stream = aws dynamodb describe-table --table-name saa-notes --query "Table.LatestStreamArn" --output text
+aws lambda create-event-source-mapping --function-name saa-stream-fn `
+  --event-source-arn $stream --starting-position LATEST --batch-size 10</code></pre><p>ラボを簡潔にするため role は共用します。<code>AWSLambdaDynamoDBExecutionRole</code> が stream の読み取り権限を与えます。</p></div></li>
+      <li><div><p>Lab 3 の Lambda で、通常の item と、過去の TTL を持つ item（ttlSeconds が負の値）を書き込みます：</p>
+<pre><code>aws lambda invoke --function-name saa-notes-fn --cli-binary-format raw-in-base64-out `
+  --payload '{"action":"write","body":"will expire","ttlSeconds":-600}' out.json; Get-Content out.json
+aws lambda invoke --function-name saa-notes-fn --cli-binary-format raw-in-base64-out `
+  --payload '{"action":"write","body":"stays"}' out.json</code></pre><p>直後に <code>{"action":"read"}</code> で読むと、「will expire」の item は<b>まだ残っています</b>。TTL による削除はバックグラウンドで行われ、即時ではないためです。これは試験の罠です。期限切れの item は削除されるまで読み取れる可能性があるので、正確さが必要なら app 側で <code>expireAt &gt; now</code> でフィルターします。</p></div></li>
+      <li><div><p>stream が2件の INSERT を受け取ったことを確認します：</p>
+<pre><code>aws logs tail /aws/lambda/saa-stream-fn --since 5m</code></pre><p><code>"event": "INSERT", "by": "user"</code> の行が2つ出るはずです。</p></div></li>
+      <li><div><p>TTL による削除を待ちます。小さいテーブルなら通常数分〜数十分ですが、ドキュメント上は最大で数日かかります。定期的に確認します：</p>
+<pre><code>aws dynamodb scan --table-name saa-notes --query "Items[].body"
+aws logs tail /aws/lambda/saa-stream-fn --since 1h | Select-String REMOVE</code></pre><p>item が scan から消えると、stream のログに <code>"event": "REMOVE", "by": "dynamodb.amazonaws.com"</code> の行が出ます。手動削除と比較するには、<code>aws dynamodb delete-item --table-name saa-notes --key '{"userId":{"S":"quy"},"noteId":{"S":"&lt;stays の item の id&gt;"}}'</code> を実行してログを見ます。REMOVE になりますが、<code>by</code> は dynamodb.amazonaws.com ではありません。これが確認クイズ10で TTL による削除を見分ける方法です。</p></div></li>
+      <li><div><p>メトリクスを確認します：Console DynamoDB → テーブル → Monitor → <b>TimeToLiveDeletedItemCount</b> が増えています。stream の Lambda は、テーブルの RCU を消費せずに呼び出されます。</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Lab 5. 片付けと Billing の確認</h3>
+    <ol class="steps">
+      <li><div><p><b>RDS を最初に、当日中に。</b><b>read replica を先に</b>、primary を後に削除する必要があります（replica が残っている間、RDS は primary の削除を許可しない）：</p>
+<pre><code>aws rds delete-db-instance --db-instance-identifier saa-mysql-rr --skip-final-snapshot
+aws rds wait db-instance-deleted --db-instance-identifier saa-mysql-rr
+aws rds delete-db-instance --db-instance-identifier saa-mysql --skip-final-snapshot --delete-automated-backups</code></pre><p>Console の場合：Actions → Delete →「Create final snapshot」の<b>チェックを外し</b>、「Acknowledge」にチェックして <code>delete me</code> と入力します。deletion protection を有効にしていたら、先に Modify で無効化します。restore の練習用に final snapshot を残したい場合は作成しても構いませんが、後で snapshot を削除するのを忘れないでください（無料枠を超えた snapshot は GB-月で課金）。</p></div></li>
+      <li><div><p>instance と手動 snapshot が残っていないか確認します：</p>
+<pre><code>aws rds describe-db-instances --query "DBInstances[].DBInstanceIdentifier"
+aws rds describe-db-snapshots --snapshot-type manual --query "DBSnapshots[].DBSnapshotIdentifier"
+aws rds delete-db-snapshot --db-snapshot-identifier &lt;残っていればその名前&gt;</code></pre><p>Lab 1 用に作成した EC2 client を削除し（terminate して、EBS が残っていないか確認）、SG <code>saa-rds-sg</code> も削除します。</p></div></li>
+      <li><div><p>DynamoDB、Lambda、IAM：</p>
+<pre><code>$uuid = aws lambda list-event-source-mappings --function-name saa-stream-fn --query "EventSourceMappings[0].UUID" --output text
+aws lambda delete-event-source-mapping --uuid $uuid
+aws lambda delete-function --function-name saa-stream-fn
+aws lambda delete-function --function-name saa-notes-fn
+aws dynamodb delete-table --table-name saa-notes
+aws iam delete-role-policy --role-name saa-lambda-ddb-role --policy-name ddb-notes
+aws iam detach-role-policy --role-name saa-lambda-ddb-role --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+aws iam detach-role-policy --role-name saa-lambda-ddb-role --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaDynamoDBExecutionRole
+aws iam delete-role --role-name saa-lambda-ddb-role
+aws logs delete-log-group --log-group-name /aws/lambda/saa-notes-fn
+aws logs delete-log-group --log-group-name /aws/lambda/saa-stream-fn</code></pre></div></li>
+      <li><div><p>Console → <b>Billing and Cost Management → Bills</b>：RDS の行は db.t3.micro の数時間分だけで、長引く storage や snapshot の課金がないはずです。翌日 <b>Cost Explorer</b> を開いて Service = RDS で絞り込み、課金が発生していないことを確認します。DynamoDB と Lambda の <b>Free Tier</b> 使用量が無料枠内に収まっていることも確認します。</p></div></li>
+    </ol>
+    <div class="note bad">今週の時間課金リソース：<b>RDS primary（Multi-AZ は2 instance 分）、RDS read replica、EC2 client</b>。当日中に削除してください。RDS の snapshot、残った EBS volume、Elastic IP は気づきにくいコストなので、PC を閉じる前にもう一度確認します。</div>
+  </div>
+</section>
+
+<!-- ============ MỐC KIỂM TRA ============ -->
+<section id="moc">
+  <span class="eyebrow">確認ポイント</span>
+  <h2>資料を見ずに自分で説明できるべき2つの問い</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>1. 問題文に応じて RDS、Aurora、DynamoDB、ElastiCache のどれを選ぶか？</h3>
+      <p style="font-size:.94rem">回答の骨組み（隠してから自分で説明してみる）：</p>
+      <ul style="font-size:.94rem">
+        <li>最初の問い：データは<b>リレーショナル</b>（SQL、join、transaction）か、<b>key-value</b> か？ リレーショナル → RDS/Aurora。key-value、serverless、無制限のスケール、ms → DynamoDB。</li>
+        <li>リレーショナルの中では：エンジンが Oracle/SQL Server、またはシンプルで安価なマネージドで十分 → <b>RDS</b>。MySQL/PostgreSQL で最高の性能と HA、15 replica、Global Database、Serverless v2 が必要 → <b>Aurora</b>。</li>
+        <li><b>ElastiCache</b> は DB の代わりではなく、DB の前に置くものです：<em>sub-millisecond</em>、<em>reduce read load</em>、<em>session store</em>、<em>leaderboard</em> とあれば選びます。HA/永続化/データ構造が必要なら Redis、シンプルでよければ Memcached。DynamoDB 専用のキャッシュは DAX です。</li>
+        <li>各タイプの例を1つずつ挙げられること：会計 ERP → RDS、10 replica が必要な大規模 MySQL Web app → Aurora、ショッピングカート・session → DynamoDB、商品ページの読み取り負荷軽減 → ElastiCache。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>2. Multi-AZ は HA のため、Read Replica は scale read のため？</h3>
+      <p style="font-size:.94rem">回答の骨組み：</p>
+      <ul style="font-size:.94rem">
+        <li><b>Multi-AZ</b>：別 AZ の standby、<b>synchronous</b> レプリケーション、1〜2分の<b>自動 failover</b>、<b>endpoint は変わらない</b>、standby は<b>読み取り不可</b>（Multi-AZ DB cluster を除く）。目的：AZ 障害やメンテナンス時にデータを失わず、ダウンタイムを短くすること。</li>
+        <li><b>Read Replica</b>：<b>asynchronous</b> なコピーで lag があり、<b>専用の endpoint</b> を持ち、app 側で読み取りクエリを振り分ける。<b>cross-Region</b> も可能で、最大15。自動 failover はなく、primary として使うには手動で <b>promote</b> する必要がある。</li>
+        <li>両者は補完し合う関係で、本番では両方を有効にするのが一般的。Aurora は2つの役割を兼ね、replica が読み取りと standby の両方を担う。</li>
+        <li>例を1つ挙げられること：レポートが app を遅くする → Read Replica、AZ 障害に耐えることが要件 → Multi-AZ。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TỪ KHÓA ============ -->
+<section id="tukhoa">
+  <span class="eyebrow">クイックレビュー</span>
+  <h2>第6週キーワード表</h2>
+  <div class="tbl"><table>
+    <tr><th>問題文のキーワード</th><th>すぐに思い浮かべるもの</th></tr>
+    <tr><td><em>synchronous</em>, <em>automatic failover</em>, <em>survive AZ failure</em>, DB</td><td>RDS Multi-AZ</td></tr>
+    <tr><td><em>asynchronous</em>, <em>offload reads</em>, <em>reporting</em>, <em>read-heavy</em></td><td>Read Replica</td></tr>
+    <tr><td><em>readable standby</em>, two standbys</td><td>RDS Multi-AZ DB cluster</td></tr>
+    <tr><td><em>point-in-time recovery</em>, restore to a specific second</td><td>Automated backup（RDS、Aurora、DynamoDB PITR）</td></tr>
+    <tr><td><em>retain backups longer than 35 days</em></td><td>Manual snapshot、AWS Backup</td></tr>
+    <tr><td><em>encrypt an existing unencrypted RDS</em></td><td>Snapshot → 暗号化してコピー → restore</td></tr>
+    <tr><td><em>too many connections</em>, Lambda と RDS</td><td>RDS Proxy</td></tr>
+    <tr><td><em>avoid storing DB passwords</em></td><td>IAM DB authentication（rotate するなら Secrets Manager）</td></tr>
+    <tr><td><em>OS access</em> on managed Oracle/SQL Server</td><td>RDS Custom</td></tr>
+    <tr><td><em>6 copies, 3 AZs</em>, <em>self-healing storage</em>, 15 replicas</td><td>Aurora</td></tr>
+    <tr><td><em>reader endpoint</em>, distribute reads without app changes</td><td>Aurora reader endpoint</td></tr>
+    <tr><td><em>cross-Region DR</em>, RPO 1秒、RTO 1分、relational</td><td>Aurora Global Database</td></tr>
+    <tr><td><em>unpredictable</em>, <em>intermittent</em>, relational, pay per use</td><td>Aurora Serverless v2</td></tr>
+    <tr><td><em>rewind in place</em>, undo bad change in minutes</td><td>Aurora Backtrack</td></tr>
+    <tr><td><em>test copy of production quickly</em></td><td>Aurora cloning</td></tr>
+    <tr><td><em>single-digit millisecond</em>, <em>serverless</em>, key-value, session, cart</td><td>DynamoDB</td></tr>
+    <tr><td><em>microsecond</em>, cache DynamoDB, minimal code change</td><td>DAX</td></tr>
+    <tr><td><em>query by another attribute</em> on existing table</td><td>GSI</td></tr>
+    <tr><td><em>same partition key</em>, different sort key, strongly consistent index</td><td>LSI（テーブル作成時のみ）</td></tr>
+    <tr><td><em>react to changes</em>, trigger Lambda on insert</td><td>DynamoDB Streams</td></tr>
+    <tr><td><em>expire items</em>, delete after N days at no cost</td><td>DynamoDB TTL</td></tr>
+    <tr><td><em>multi-Region active-active</em>, NoSQL</td><td>DynamoDB Global Table（Streams が必要）</td></tr>
+    <tr><td><em>throttled</em> although capacity available</td><td>Hot partition、partition key を見直す</td></tr>
+    <tr><td><em>sub-millisecond cache</em>, session store, leaderboard, pub/sub</td><td>ElastiCache Redis</td></tr>
+    <tr><td><em>simplest cache</em>, <em>multithreaded</em>, no persistence</td><td>ElastiCache Memcached</td></tr>
+    <tr><td><em>lazy loading</em> / <em>cache always fresh</em></td><td>Cache-aside / write-through、TTL と併用</td></tr>
+    <tr><td><em>Redis-compatible</em> durable primary database</td><td>MemoryDB for Redis</td></tr>
+    <tr><td><em>data warehouse</em>, OLAP, columnar, BI, petabyte</td><td>Redshift</td></tr>
+    <tr><td><em>query S3 without loading</em>, join with warehouse tables</td><td>Redshift Spectrum</td></tr>
+    <tr><td><em>serverless SQL on S3</em>, pay per query, ad hoc</td><td>Athena</td></tr>
+    <tr><td><em>migrate database</em>, <em>minimal downtime</em>, CDC</td><td>DMS</td></tr>
+    <tr><td><em>different engine</em>, Oracle → PostgreSQL</td><td>SCT、次に DMS</td></tr>
+    <tr><td>graph / MongoDB / Cassandra / time series / ledger</td><td>Neptune / DocumentDB / Keyspaces / Timestream / QLDB</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ CHECKLIST ============ -->
+<section id="checklist">
+  <span class="eyebrow">進捗</span>
+  <h2>第6週チェックリスト</h2>
+  <p style="font-size:.94rem;color:var(--muted)">ここでチェックすると、この端末上で自分の進捗を記録できます。項目が終わったら、セッションで Claude に伝えて <code>AWS-SAA-checklist.md</code> にもチェックを入れてもらいます。</p>
+  <div class="card">
+    <h4>理論</h4>
+    <label class="check"><input type="checkbox" id="c1" data-ck><span>RDS：Multi-AZ と Read Replica の違い、backup、snapshot、encryption、RDS Proxy</span></label>
+    <label class="check"><input type="checkbox" id="c2" data-ck><span>Aurora：cluster endpoint、reader endpoint、Global Database、Serverless</span></label>
+    <label class="check"><input type="checkbox" id="c3" data-ck><span>DynamoDB：on-demand と provisioned、GSI と LSI、DAX、Streams、TTL、Global Table</span></label>
+    <label class="check"><input type="checkbox" id="c4" data-ck><span>ElastiCache：Redis と Memcached、cache-aside と write-through</span></label>
+    <label class="check"><input type="checkbox" id="c5" data-ck><span>Redshift、Redshift Spectrum</span></label>
+    <label class="check"><input type="checkbox" id="c6" data-ck><span>DMS、Schema Conversion Tool</span></label>
+    <label class="check"><input type="checkbox" id="c7" data-ck><span>Neptune、DocumentDB、Keyspaces、Timestream、QLDB（見分け方）</span></label>
+    <h4>ハンズオン</h4>
+    <label class="check"><input type="checkbox" id="c8" data-ck><span>RDS Multi-AZ を作成し、failover を強制して endpoint が変わらないことを確認</span></label>
+    <label class="check"><input type="checkbox" id="c9" data-ck><span>read replica を作成し、接続して書き込みが拒否されることを確認</span></label>
+    <label class="check"><input type="checkbox" id="c10" data-ck><span>DynamoDB テーブルを作成し、Lambda で書き込みと読み取り</span></label>
+    <label class="check"><input type="checkbox" id="c11" data-ck><span>DynamoDB の TTL と Streams を有効化し、期限切れ item の削除を確認</span></label>
+    <label class="check"><input type="checkbox" id="c12" data-ck><span>RDS を当日中に削除し、DynamoDB と Lambda を片付け、Billing を確認</span></label>
+    <h4>確認ポイント</h4>
+    <label class="check"><input type="checkbox" id="c13" data-ck><span>問題文の要件に応じて RDS、Aurora、DynamoDB、ElastiCache を選べる</span></label>
+    <label class="check"><input type="checkbox" id="c14" data-ck><span>Multi-AZ は HA のため、Read Replica は scale read のためであることを説明できる</span></label>
+    <h4>その他</h4>
+    <label class="check"><input type="checkbox" id="c15" data-ck><span>第6週のクイズで80%以上</span></label>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  // Xem đáp án
+  document.querySelectorAll('[data-reveal]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var a=b.parentElement.querySelector('.ans');
+      a.hidden=!a.hidden; b.textContent=a.hidden?'答えを見る':'答えを隠す';
+    });
+  });
+  // Checklist lưu trên máy này
+  var boxes=document.querySelectorAll('[data-ck]'), KEY='saa-tuan-06';
+  var saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  function update(){
+    var n=0; boxes.forEach(function(c){ c.closest('.check').classList.toggle('done',c.checked); if(c.checked)n++; });
+    document.getElementById('bar').style.width=(n/boxes.length*100)+'%';
+    document.getElementById('pct').textContent=n+'/'+boxes.length;
+  }
+  boxes.forEach(function(c){
+    if(saved[c.id])c.checked=true;
+    c.addEventListener('change',function(){ saved[c.id]=c.checked; try{ localStorage.setItem(KEY,JSON.stringify(saved)); }catch(e){} update(); });
+  });
+  update();
+  // Đánh dấu mục đang đọc
+  var links=document.querySelectorAll('.toc a'), secs=[];
+  links.forEach(function(l){ var s=document.querySelector(l.getAttribute('href')); if(s)secs.push([s,l]); });
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ links.forEach(function(l){l.classList.remove('active')}); secs.forEach(function(p){ if(p[0]===e.target)p[1].classList.add('active'); }); } }); },{rootMargin:'-20% 0px -70% 0px'});
+    secs.forEach(function(p){ io.observe(p[0]); });
+  }
+})();
+</script>

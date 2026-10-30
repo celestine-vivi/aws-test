@@ -1,0 +1,1223 @@
+<title>SAA Tuần 2-3 Compute Storage</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky mục lục bên trái (desktop), cột nội dung 760px bên phải; xếp một cột ở màn hẹp. */
+:root{
+  --bg:#f2f4f7; --surface:#ffffff; --surface-2:#e9edf2; --line:#d3dae3;
+  --fg:#172030; --muted:#5a6676; --accent:#1c6e8c; --accent-soft:#dcecf3;
+  --warm:#b35a00; --warm-soft:#fbe9d6; --ok:#2a7d4f; --ok-soft:#dcf0e4; --bad:#b3362b; --bad-soft:#f8dedb;
+  --display:"Manrope","IBM Plex Sans",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+a{color:var(--accent)}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:800}
+h2{font-size:1.5rem;font-weight:800;padding-top:8px}
+h3{font-size:1.12rem;font-weight:700}
+h4{font-size:.95rem;font-weight:700}
+p{margin:0}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+pre{font-family:var(--mono);font-size:.84rem;line-height:1.5;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:0}
+pre code{background:none;padding:0;font-size:inherit}
+em{color:var(--warm);font-style:italic}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* Header */
+.hero{max-width:1120px;margin:0 auto;padding-block:36px 20px;display:flex;flex-direction:column;gap:12px}
+.hero .lead{max-width:62ch;color:var(--muted);font-size:1.02rem}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.88rem;color:var(--muted)}
+.meta b{color:var(--fg);font-weight:600}
+.progress{display:flex;align-items:center;gap:12px;font-size:.88rem;color:var(--muted)}
+.bar{flex:1;max-width:320px;height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+
+/* Two columns */
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;align-items:start}
+.toc{position:sticky;top:max(12px,env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:2px;font-size:.9rem}
+.toc a{color:var(--muted);text-decoration:none;padding:6px 10px;border-left:2px solid var(--line);display:block}
+.toc a:hover,.toc a.active{color:var(--fg);border-left-color:var(--accent)}
+.toc .grp{margin-top:10px}
+main{display:flex;flex-direction:column;gap:56px;min-width:0;max-width:780px}
+section{display:flex;flex-direction:column;gap:18px;scroll-margin-top:16px}
+@media (max-width:860px){ .wrap{grid-template-columns:1fr;gap:24px} .toc{position:static;flex-direction:row;flex-wrap:wrap;gap:6px} .toc a{border:1px solid var(--line);border-radius:99px;padding:4px 10px} .toc .grp{margin:0} .toc a.active{border-color:var(--accent)} }
+
+/* Blocks */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.block{display:flex;flex-direction:column;gap:8px}
+.block > .eyebrow{color:var(--accent)}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:5px}
+li::marker{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.kw{display:flex;flex-wrap:wrap;gap:8px}
+.kw span{background:var(--warm-soft);color:var(--warm);border-radius:4px;padding:3px 9px;font-size:.86rem;font-style:italic}
+.kw span b{font-style:normal;font-weight:600;color:var(--fg)}
+.note{border-left:3px solid var(--warm);background:var(--warm-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.94rem}
+.note.ok{border-color:var(--ok);background:var(--ok-soft)}
+.note.bad{border-color:var(--bad);background:var(--bad-soft)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;font-size:.84rem}
+tr:last-child td{border-bottom:0}
+td.c{text-align:center}
+
+/* Checklist */
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:6px;cursor:pointer}
+.check:hover{background:var(--surface-2)}
+.check input{margin-top:5px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.check.done{color:var(--muted);text-decoration:line-through}
+
+/* Quiz reveal */
+.q{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.q .qt{font-weight:500}
+.q button{align-self:flex-start;font:inherit;font-size:.86rem;padding:5px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer}
+.q button:hover{background:var(--accent);color:var(--surface)}
+.q button:focus-visible,.check input:focus-visible,.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.q .ans{font-size:.94rem;border-top:1px dashed var(--line);padding-top:8px}
+.q .ans b{color:var(--ok)}
+
+/* Steps */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:12px;padding:0;list-style:none}
+.steps li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:start}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--mono);font-size:.8rem;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:500;margin-top:2px}
+.steps li > div{display:flex;flex-direction:column;gap:6px;min-width:0}
+
+/* Flow diagram */
+.flow{display:flex;flex-direction:column;gap:0;align-items:stretch;max-width:520px}
+.flow .n{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:.94rem}
+.flow .n .tag{font-family:var(--mono);font-size:.74rem;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.tag.deny{background:var(--bad-soft);color:var(--bad)} .tag.allow{background:var(--ok-soft);color:var(--ok)} .tag.next{background:var(--surface-2);color:var(--muted)}
+.flow .arrow{height:22px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--mono);font-size:.78rem}
+.flow .arrow::before{content:"";width:1px;height:100%;background:var(--line);position:absolute}
+.flow .arrow{position:relative} .flow .arrow span{background:var(--bg);padding:0 6px;position:relative}
+
+svg text{font-family:var(--body)}
+.diag{overflow-x:auto}
+.diag svg{width:100%;max-width:700px;height:auto;display:block}
+.sv-region{fill:var(--surface);stroke:var(--accent)} .sv-az{fill:var(--accent-soft);stroke:var(--accent)} .sv-edge{fill:var(--warm-soft);stroke:var(--warm)}
+.sv-t{fill:var(--fg);font-size:13px} .sv-m{fill:var(--muted);font-size:11px} .sv-line{stroke:var(--line)}
+@media (prefers-reduced-motion: reduce){ .bar i{transition:none} }
+</style>
+
+<header class="hero">
+  <span class="eyebrow">AWS SAA-C03 · Lộ trình 12 tuần · Tuần 2 đến 3</span>
+  <h1>Compute và Storage</h1>
+  <p class="lead">Khối hai tuần: tuần 2 học EC2 và các loại đĩa gắn vào nó (EBS, instance store, AMI, EFS, FSx); tuần 3 học S3 thật kỹ rồi khép lại bằng nhóm dịch vụ hybrid (Storage Gateway, Snow, Backup, DataSync). Mục tiêu cuối khối: nhìn đề bài biết ngay nên chọn EBS, EFS, instance store hay S3, và chọn đúng storage class S3 theo từ khóa.</p>
+  <div class="meta"><span>Nhịp học: <b>1,5 đến 2 giờ/ngày</b>, 14 ngày</span><span>Domain liên quan: <b>PERF 24%</b>, <b>COST 20%</b>, <b>RES 26%</b></span><span>Chi phí lab: <b>dưới 2 USD</b> nếu xóa ngay sau mỗi lab</span></div>
+  <div class="progress"><span>Tiến độ checklist</span><div class="bar"><i id="bar"></i></div><span id="pct">0/22</span></div>
+</header>
+
+<div class="wrap">
+<nav class="toc" aria-label="Mục lục">
+  <a href="#ke-hoach">Kế hoạch 14 ngày</a>
+  <span class="grp eyebrow">Tuần 2: Compute</span>
+  <a href="#ec2">1. EC2: family, user data, metadata</a>
+  <a href="#pricing">2. EC2 pricing</a>
+  <a href="#placement">3. Placement group</a>
+  <a href="#ebs">4. EBS</a>
+  <a href="#ami">5. AMI, instance store</a>
+  <a href="#efs">6. EFS</a>
+  <a href="#fsx">7. FSx</a>
+  <span class="grp eyebrow">Tuần 3: S3 và hybrid</span>
+  <a href="#s3-class">8. S3 storage class</a>
+  <a href="#s3-mgmt">9. Lifecycle, versioning, replication, Object Lock</a>
+  <a href="#s3-sec">10. Bucket policy, ACL, encryption</a>
+  <a href="#s3-feat">11. Presigned URL, Acceleration, multipart, event</a>
+  <a href="#hybrid">12. Storage Gateway, Snow, Backup, DataSync</a>
+  <span class="grp eyebrow">Thực hành</span>
+  <a href="#handson">Hands-on 7 lab</a>
+  <a href="#moc">Mốc kiểm tra</a>
+  <a href="#tukhoa">Bảng từ khóa đề thi</a>
+  <a href="#checklist">Checklist khối</a>
+</nav>
+
+<main>
+
+<section id="ke-hoach">
+  <h2>Kế hoạch 14 ngày</h2>
+  <p>Mỗi ngày một mục lý thuyết, lab đi kèm làm ngay trong ngày. Resource tính giờ (EC2, EBS, EFS) tạo đầu lab và xóa cuối lab, không để qua đêm.</p>
+  <div class="tbl"><table>
+    <tr><th>Ngày</th><th>Lý thuyết</th><th>Hands-on</th></tr>
+    <tr><td>1</td><td>EC2: instance family, user data, metadata</td><td>Lab 1: EC2 + user data cài web server</td></tr>
+    <tr><td>2</td><td>EC2 pricing: On-Demand, Spot, Reserved, Savings Plans, Dedicated</td><td>Xem Pricing Calculator, so giá t3.micro On-Demand và Spot</td></tr>
+    <tr><td>3</td><td>Placement group</td><td>Tạo thử một spread placement group rồi xóa (miễn phí)</td></tr>
+    <tr><td>4</td><td>EBS: loại volume, snapshot, encryption, multi-attach</td><td>Lab 2: gắn EBS, format, mount, snapshot</td></tr>
+    <tr><td>5</td><td>AMI, instance store</td><td>Lab 3: tạo AMI, launch lại ở AZ khác</td></tr>
+    <tr><td>6</td><td>EFS</td><td>Lab 6: mount EFS vào hai EC2</td></tr>
+    <tr><td>7</td><td>FSx for Windows, Lustre, NetApp ONTAP</td><td>Ôn tuần 2, tự vẽ bảng so sánh EBS / instance store / EFS / FSx</td></tr>
+    <tr><td>8</td><td>S3 storage class</td><td>Lab 4 phần 1: static website</td></tr>
+    <tr><td>9</td><td>S3 lifecycle, versioning, replication, Object Lock</td><td>Lab 4 phần 2 (versioning) và Lab 5 (lifecycle)</td></tr>
+    <tr><td>10</td><td>S3 bucket policy, ACL, Block Public Access, encryption</td><td>Viết bucket policy bắt buộc HTTPS, thử upload HTTP bị chặn</td></tr>
+    <tr><td>11</td><td>S3 presigned URL, Transfer Acceleration, multipart, event notification</td><td>Lab 7: presigned URL bằng CLI</td></tr>
+    <tr><td>12</td><td>Storage Gateway, Snow family, AWS Backup, DataSync</td><td>Tạo một backup plan trong AWS Backup rồi xóa (chỉ xem giao diện)</td></tr>
+    <tr><td>13 đến 14</td><td>Ôn hai mốc kiểm tra, học bảng từ khóa</td><td>Dọn dẹp toàn bộ, kiểm tra Billing, nói "cho quiz" để nhận <code>quiz/tuan-02-03.md</code> (40 câu, cần 80%)</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ 1. EC2 ============ -->
+<section id="ec2">
+  <span class="eyebrow">Tuần 2 · Lý thuyết 1 / 12</span>
+  <h2>EC2: instance family, user data, metadata</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Đọc tên instance type</span>
+      <p>Ví dụ <code>m6g.2xlarge</code>: <b>m</b> là family (general purpose), <b>6</b> là thế hệ, <b>g</b> là bộ xử lý Graviton (ARM) của AWS, <b>2xlarge</b> là cỡ. Các chữ phụ hay gặp: <b>a</b> AMD, <b>i</b> Intel, <b>g</b> Graviton, <b>n</b> network mạnh, <b>d</b> có ổ NVMe cục bộ (instance store), <b>e</b> nhiều RAM hoặc ổ hơn.</p>
+      <div class="tbl"><table>
+        <tr><th>Family</th><th>Chữ cái</th><th>Dùng cho</th><th>Từ khóa trong đề</th></tr>
+        <tr><td>General purpose</td><td>t, m (và Mac)</td><td>Web server, app server, repo code, workload cân bằng CPU và RAM</td><td><em>balanced</em>, không nói gì đặc biệt</td></tr>
+        <tr><td>Compute optimized</td><td>c</td><td>Batch, encode video, game server, HPC, ML inference nhẹ</td><td><em>compute-intensive</em>, <em>high-performance processors</em></td></tr>
+        <tr><td>Memory optimized</td><td>r, x, z, High Memory (u)</td><td>Database trong RAM, cache lớn, SAP HANA, phân tích real-time</td><td><em>in-memory</em>, <em>large datasets in memory</em></td></tr>
+        <tr><td>Storage optimized</td><td>i, d, h</td><td>NoSQL phân tán, data warehouse, log, cần IOPS cục bộ cực cao</td><td><em>high sequential read/write</em>, <em>local storage</em>, <em>low latency IOPS</em></td></tr>
+        <tr><td>Accelerated computing</td><td>p, g, inf, trn, f</td><td>Train ML (p, trn), inference (inf, g), đồ họa (g), FPGA (f)</td><td><em>GPU</em>, <em>machine learning training</em></td></tr>
+      </table></div>
+      <ul>
+        <li><b>T family (burstable)</b>: CPU baseline thấp, tích lũy <b>CPU credit</b> khi nhàn rồi dùng khi bận. Hết credit thì bị giảm về baseline, trừ khi bật <b>Unlimited mode</b> (trả thêm tiền). Rẻ nhất, hợp dev/test và web ít tải. Đề hỏi "ứng dụng chạy chậm dần sau vài giờ tải cao trên t3" → hết CPU credit.</li>
+        <li><b>Nitro System</b>: nền tảng ảo hóa thế hệ mới, cho EBS tới 256.000 IOPS, enhanced networking, hầu hết type hiện đại đều Nitro.</li>
+        <li>Chọn type theo <b>Compute Optimizer</b> (học tuần 8) thay vì đoán.</li>
+      </ul>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">User data</span>
+        <ul>
+          <li>Script chạy <b>một lần khi khởi động lần đầu</b> (first boot), chạy bằng <b>root</b>, nên không cần <code>sudo</code> trong script.</li>
+          <li>Giới hạn <b>16 KB</b> ở dạng raw. Trên Linux bắt đầu bằng <code>#!/bin/bash</code>; Windows dùng <code>&lt;powershell&gt;</code>.</li>
+          <li>Dùng để: cài package, tải code, join domain, đăng ký với load balancer. Cài gì nặng thì nướng sẵn vào AMI để boot nhanh (xem mục 5).</li>
+          <li>Log ở <code>/var/log/cloud-init-output.log</code> để debug khi script không chạy như ý.</li>
+          <li>Sửa user data phải <b>stop</b> instance rồi sửa; muốn chạy lại mỗi lần boot phải cấu hình cloud-init đặc biệt (đề hầu như không hỏi).</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Instance metadata (IMDS)</span>
+        <ul>
+          <li>Địa chỉ <code>http://169.254.169.254/latest/meta-data/</code>, chỉ gọi được <b>từ bên trong instance</b>.</li>
+          <li>Cho biết: instance-id, instance-type, AZ, private/public IP, security group, <b>IAM role credentials tạm thời</b> ở <code>iam/security-credentials/&lt;role&gt;</code>. User data xem ở <code>/latest/user-data</code>.</li>
+          <li><b>IMDSv2</b>: phải lấy token bằng <code>PUT</code> trước rồi gửi kèm header mỗi request. Chống lỗ hổng SSRF đánh cắp credential của role. Amazon Linux 2023 bật IMDSv2 mặc định; đề hỏi "ngăn ứng dụng bị SSRF lấy credential" → ép IMDSv2 (<code>HttpTokens=required</code>).</li>
+          <li>SDK và CLI trên EC2 tự động lấy credential từ IMDS, đó là lý do gắn role cho EC2 thay vì nhúng access key (ôn tuần 1).</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Vòng đời và những thứ hay hỏi</span>
+      <div class="tbl"><table>
+        <tr><th>Hành động</th><th>Điều gì xảy ra</th><th>Tiền</th></tr>
+        <tr><td>Stop</td><td>EBS giữ nguyên, RAM mất, <b>public IP đổi</b> khi start lại (Elastic IP thì giữ), có thể đổi instance type khi đang stop</td><td>Không tính giờ EC2, vẫn tính EBS</td></tr>
+        <tr><td>Hibernate</td><td>RAM ghi xuống EBS root (phải mã hóa), start lại nhanh và giữ trạng thái app. RAM tối đa khoảng 150 GB, cần kiểm tra lại danh sách type hỗ trợ</td><td>Như stop</td></tr>
+        <tr><td>Reboot</td><td>Như restart OS: giữ IP, giữ instance store</td><td>Không gián đoạn tính tiền</td></tr>
+        <tr><td>Terminate</td><td>Xóa instance; EBS root mặc định bị xóa theo (<code>DeleteOnTermination=true</code>), volume gắn thêm mặc định giữ lại</td><td>Dừng tính</td></tr>
+      </table></div>
+      <ul>
+        <li><b>Elastic IP</b>: IPv4 cố định của bạn, giới hạn mặc định 5 mỗi Region. Từ 02/2024 mọi public IPv4 đều tính tiền (khoảng 0,005 USD/giờ, kiểm tra lại giá), kể cả đang gắn. Đề hỏi "IP không đổi sau stop/start" → Elastic IP; hỏi "tránh dùng Elastic IP" → đặt sau Load Balancer hoặc dùng DNS.</li>
+        <li><b>Key pair</b>: khóa SSH, AWS chỉ giữ public key. Mất private key thì tạo AMI rồi launch instance mới với key mới, hoặc dùng EC2 Instance Connect / Session Manager.</li>
+        <li><b>Security Group</b> học kỹ tuần 4; tuần này chỉ cần biết: mở 80 cho web, 22 chỉ cho IP của mình.</li>
+        <li><b>EC2 Instance Connect</b>: SSH qua trình duyệt, đẩy key tạm 60 giây, vẫn cần mở cổng 22 từ dải IP của dịch vụ. <b>Session Manager</b> (tuần 8) thì không cần mở cổng nào.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">1. Một app phân tích dữ liệu cần giữ 500 GB dataset trong RAM để truy vấn nhanh. Chọn family nào?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Memory optimized (r hoặc x).</b> Từ khóa <em>in-memory</em>. Storage optimized (i) là bẫy: nó cho ổ cục bộ nhanh, không phải RAM lớn.</p></div>
+      <div class="q"><p class="qt">2. Security team phát hiện một lỗ hổng SSRF trong web app trên EC2 có thể bị lợi dụng để lấy credential của IAM role. Cách giảm rủi ro với ít thay đổi code nhất?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Bắt buộc IMDSv2 trên instance.</b> Token phải lấy bằng PUT kèm header, SSRF đơn giản qua GET không làm được. Gỡ role khỏi EC2 thì app mất quyền, không phải đáp án.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. PRICING ============ -->
+<section id="pricing">
+  <span class="eyebrow">Tuần 2 · Lý thuyết 2 / 12</span>
+  <h2>EC2 pricing: On-Demand, Spot, Reserved, Savings Plans, Dedicated Host</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Năm cách trả tiền</span>
+      <div class="tbl"><table>
+        <tr><th>Mô hình</th><th>Cam kết</th><th>Giảm giá</th><th>Khi nào chọn</th><th>Bẫy</th></tr>
+        <tr><td><b>On-Demand</b></td><td>Không, tính theo giây (Linux, tối thiểu 60 giây)</td><td>0%</td><td>Tải ngắn, khó đoán, dev/test, lần đầu chạy</td><td>Đắt nhất khi chạy 24/7 dài hạn</td></tr>
+        <tr><td><b>Spot</b></td><td>Không, AWS có thể lấy lại với thông báo <b>2 phút</b></td><td>Tới 90%</td><td>Batch, render, CI, big data, <em>fault-tolerant</em>, <em>interruption acceptable</em></td><td>Không dùng cho database, web tier duy nhất, việc không thể dừng giữa chừng</td></tr>
+        <tr><td><b>Reserved Instance</b></td><td>1 hoặc 3 năm, một type cụ thể (Standard) hoặc đổi được (Convertible)</td><td>Tới khoảng 72% (Standard), 66% (Convertible)</td><td>Workload ổn định đã biết rõ type, kể cả RDS, ElastiCache, Redshift cũng có RI</td><td>Standard RI không đổi family được; Zonal RI thì giữ chỗ capacity trong AZ, Regional RI thì không</td></tr>
+        <tr><td><b>Savings Plans</b></td><td>1 hoặc 3 năm, cam kết <b>số USD/giờ</b></td><td>Compute SP tới 66%, EC2 Instance SP tới 72%</td><td>Workload ổn định nhưng muốn linh hoạt type, Region, cả Fargate và Lambda (Compute SP)</td><td>Phần dùng vượt cam kết tính giá On-Demand</td></tr>
+        <tr><td><b>Dedicated Host</b></td><td>On-Demand hoặc reservation, thuê <b>cả máy vật lý</b></td><td>Không rẻ</td><td>License tính theo socket/core (Windows Server, SQL Server, Oracle BYOL), compliance cần thấy phần cứng</td><td>Nhầm với Dedicated Instance</td></tr>
+      </table></div>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Reserved với Savings Plans, chọn gì</span>
+        <ul>
+          <li>Đề mới thường muốn <b>Savings Plans</b> vì linh hoạt hơn; AWS cũng khuyến nghị thế.</li>
+          <li><b>Compute Savings Plans</b>: áp dụng mọi family, size, OS, Region, cả Fargate và Lambda. Linh hoạt nhất, giảm ít hơn.</li>
+          <li><b>EC2 Instance Savings Plans</b>: cam kết một family trong một Region (ví dụ m5 ở Tokyo), đổi size, OS, AZ tự do. Giảm nhiều hơn.</li>
+          <li>RI vẫn xuất hiện khi đề nói "cần <em>reserve capacity</em> trong một AZ" (Zonal RI) hoặc dịch vụ không có Savings Plans (RDS, ElastiCache, OpenSearch, Redshift, DynamoDB reserved capacity).</li>
+          <li>Payment option cho cả hai: <b>All Upfront</b> (rẻ nhất), Partial Upfront, No Upfront (đắt nhất trong nhóm cam kết).</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Spot chi tiết</span>
+        <ul>
+          <li>Bạn đặt <b>max price</b> (mặc định bằng giá On-Demand); giá Spot vượt max hoặc AWS cần lại capacity thì instance bị interrupt sau thông báo 2 phút (xem qua metadata hoặc EventBridge).</li>
+          <li>Hành vi khi interrupt: terminate, stop hoặc hibernate.</li>
+          <li><b>Spot Fleet / EC2 Fleet</b>: gom nhiều type, nhiều AZ, chiến lược <code>capacity-optimized</code> hoặc <code>price-capacity-optimized</code> để ít bị interrupt nhất. Đề hỏi "giảm xác suất bị interrupt" → đa dạng type và AZ.</li>
+          <li>Kết hợp trong Auto Scaling Group: base On-Demand cho phần tối thiểu, Spot cho phần scale thêm (học tuần 4).</li>
+          <li><b>Spot block</b> (giữ 1 đến 6 giờ) đã ngừng, đề cũ mới nhắc.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dedicated Host, Dedicated Instance, Capacity Reservation</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>Dedicated Host</th><th>Dedicated Instance</th><th>On-Demand Capacity Reservation</th></tr>
+        <tr><td>Bạn được gì</td><td>Cả máy vật lý, thấy socket, core, host ID; tự đặt instance lên host</td><td>Instance chạy trên phần cứng chỉ dành cho account bạn, không thấy socket/core</td><td>Giữ chỗ capacity trong một AZ, không giảm giá</td></tr>
+        <tr><td>Từ khóa</td><td><em>BYOL per-socket / per-core</em>, <em>server-bound license</em>, <em>compliance requires dedicated hardware visibility</em></td><td><em>dedicated hardware</em> nhưng không nói license</td><td><em>ensure capacity</em>, <em>guarantee instances available</em> cho sự kiện, DR</td></tr>
+        <tr><td>Kết hợp</td><td>Có thể mua reservation cho host</td><td>Trả thêm phí theo Region</td><td>Ghép với Savings Plans/Regional RI để vừa có chỗ vừa giảm giá</td></tr>
+      </table></div>
+    </div>
+
+    <div class="note">Tổng kết chọn nhanh: ổn định dài hạn → Savings Plans (hoặc RI); linh hoạt, tải ngắn → On-Demand; ngắt được, muốn rẻ nhất → Spot; license theo socket → Dedicated Host; cần chắc có máy ngày cao điểm → Capacity Reservation.</div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">3. Một công ty chạy cluster xử lý ảnh theo lô mỗi đêm, job có thể chạy lại nếu bị hỏng giữa chừng. Cần <em>most cost-effective</em>. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Spot Instances.</b> Từ khóa: batch, chạy lại được. Reserved là bẫy cho người nghĩ "chạy mỗi đêm là ổn định": RI tính tiền cả 24 giờ dù chỉ dùng vài giờ đêm.</p></div>
+      <div class="q"><p class="qt">4. Workload ổn định 3 năm, nhưng team dự định chuyển một phần từ EC2 sang Fargate trong thời gian đó. Mô hình nào vừa tiết kiệm vừa không bị kẹt?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Compute Savings Plans 3 năm.</b> Áp dụng cho cả EC2 và Fargate (và Lambda). EC2 Instance Savings Plans và RI chỉ áp cho EC2, chuyển sang Fargate là mất giảm giá.</p></div>
+      <div class="q"><p class="qt">5. Công ty có license SQL Server tính theo số core vật lý, muốn mang lên AWS (BYOL). Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Dedicated Host.</b> Chỉ Dedicated Host cho thấy socket/core để tuân thủ license kiểu này. Dedicated Instance không đủ vì không có visibility phần cứng.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. PLACEMENT GROUP ============ -->
+<section id="placement">
+  <span class="eyebrow">Tuần 2 · Lý thuyết 3 / 12</span>
+  <h2>Placement group: cluster, spread, partition</h2>
+
+  <div class="card">
+    <p>Placement group là cách bạn gợi ý cho AWS <b>đặt instance ở đâu so với nhau</b> trên phần cứng. Miễn phí. Ba chiến lược đánh đổi giữa hiệu năng mạng và khả năng chịu lỗi.</p>
+    <div class="tbl"><table>
+      <tr><th></th><th>Cluster</th><th>Spread</th><th>Partition</th></tr>
+      <tr><td>Đặt thế nào</td><td>Gần nhau nhất, cùng rack, <b>một AZ</b></td><td>Mỗi instance một rack riêng (nguồn, switch riêng)</td><td>Chia thành partition, mỗi partition một nhóm rack riêng</td></tr>
+      <tr><td>Được gì</td><td>Độ trễ thấp nhất, băng thông cao nhất giữa instance</td><td>Một rack hỏng chỉ mất một instance</td><td>Một rack hỏng chỉ ảnh hưởng một partition</td></tr>
+      <tr><td>Giới hạn</td><td>Không trải nhiều AZ; rack hỏng thì mất nhiều; nên launch cùng lúc, cùng type</td><td>Tối đa <b>7 instance mỗi AZ</b> mỗi group (trải được nhiều AZ)</td><td>Tối đa <b>7 partition mỗi AZ</b>, mỗi partition chứa hàng trăm instance</td></tr>
+      <tr><td>Dùng cho</td><td>HPC, big data job cần giao tiếp node nhiều, ML training phân tán</td><td>Vài instance quan trọng phải tách biệt: primary/standby, các node của một cụm nhỏ</td><td>Hadoop, Cassandra, Kafka, HDFS: app tự biết topology để đặt replica khác partition</td></tr>
+      <tr><td>Từ khóa</td><td><em>lowest network latency</em>, <em>highest throughput between instances</em>, <em>tightly coupled</em></td><td><em>critical instances</em>, <em>isolated from each other</em>, <em>reduce correlated failures</em>, số lượng nhỏ</td><td><em>large distributed and replicated workload</em>, <em>hundreds of instances</em>, <em>topology-aware</em></td></tr>
+    </table></div>
+    <ul>
+      <li>Instance trong partition group đọc được mình ở partition nào qua metadata (<code>placement/partition-number</code>).</li>
+      <li>Gặp <b>insufficient capacity error</b> khi launch vào cluster group: stop hết rồi start lại cùng lúc để AWS tìm chỗ mới.</li>
+      <li>Kết hợp với <b>enhanced networking</b> (ENA) và cùng instance type để cluster group có hiệu quả.</li>
+    </ul>
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">6. Cụm Cassandra 60 node cần giảm ảnh hưởng khi phần cứng hỏng, app tự quản lý replica. Chọn placement group nào?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Partition.</b> Spread bị trần 7 instance/AZ nên không đủ cho 60 node. Cluster thì tất cả cùng rack, ngược mục tiêu.</p></div>
+      <div class="q"><p class="qt">7. Job mô phỏng khí hậu chạy MPI cần các node trao đổi dữ liệu liên tục với độ trễ thấp nhất. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Cluster placement group</b> trong một AZ, cùng instance type, bật enhanced networking (hoặc EFA cho HPC). Đổi lại, không chịu được AZ hỏng.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. EBS ============ -->
+<section id="ebs">
+  <span class="eyebrow">Tuần 2 · Lý thuyết 4 / 12</span>
+  <h2>EBS: gp3, io2, st1, sc1, snapshot, encryption, multi-attach</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <ul>
+        <li>EBS là <b>ổ đĩa mạng</b> (block storage) gắn vào EC2, nằm trong <b>một AZ</b>, dữ liệu còn sau khi stop/terminate (nếu không bật delete on termination). Một volume gắn vào một instance (trừ multi-attach); một instance gắn được nhiều volume.</li>
+        <li>Được nhân bản tự động trong AZ nên bền, nhưng AZ sập là mất quyền truy cập → cần snapshot để thoát AZ.</li>
+        <li>Tính tiền theo <b>GB đã provision mỗi tháng</b> (không phải GB dùng) cộng IOPS/throughput thêm nếu mua.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Các loại volume</span>
+      <div class="tbl"><table>
+        <tr><th>Loại</th><th>Công nghệ</th><th>Hiệu năng</th><th>Cỡ</th><th>Boot được</th><th>Dùng cho</th></tr>
+        <tr><td><b>gp3</b></td><td>SSD</td><td>Mặc định <b>3.000 IOPS, 125 MB/s</b> không phụ thuộc cỡ; mua thêm tới 16.000 IOPS, 1.000 MB/s</td><td>1 GiB đến 16 TiB</td><td>Có</td><td>Mặc định cho mọi thứ: boot, dev/test, app, DB vừa. Rẻ hơn gp2 khoảng 20%</td></tr>
+        <tr><td>gp2</td><td>SSD</td><td>3 IOPS mỗi GiB, burst tới 3.000, trần 16.000 (đạt ở 5.334 GiB)</td><td>1 GiB đến 16 TiB</td><td>Có</td><td>Thế hệ cũ; đề "gp2 nhỏ mà cần nhiều IOPS" → đổi sang gp3</td></tr>
+        <tr><td><b>io2 Block Express</b> (io2)</td><td>SSD</td><td>Tới <b>256.000 IOPS</b>, 4.000 MB/s, 1.000 IOPS mỗi GiB, độ bền 99,999%</td><td>4 GiB đến 64 TiB</td><td>Có</td><td>Database quan trọng (Oracle, SAP, SQL Server), cần IOPS trên 16.000 hoặc độ trễ dưới ms</td></tr>
+        <tr><td>io1</td><td>SSD</td><td>Tới 64.000 IOPS (Nitro), 50 IOPS mỗi GiB</td><td>4 GiB đến 16 TiB</td><td>Có</td><td>Thế hệ cũ của io2</td></tr>
+        <tr><td><b>st1</b></td><td>HDD throughput</td><td>Tới 500 MB/s, tính theo throughput không tính IOPS</td><td>125 GiB đến 16 TiB</td><td><b>Không</b></td><td>Big data, data warehouse, log, streaming: đọc ghi tuần tự khối lớn, rẻ</td></tr>
+        <tr><td><b>sc1</b></td><td>HDD cold</td><td>Tới 250 MB/s</td><td>125 GiB đến 16 TiB</td><td><b>Không</b></td><td>Dữ liệu ít truy cập, cần rẻ nhất trong EBS</td></tr>
+      </table></div>
+      <ul>
+        <li>Nhớ hai nhóm: <b>SSD = IOPS</b> (nhiều thao tác nhỏ, ngẫu nhiên, database, boot); <b>HDD = throughput</b> (ít thao tác, mỗi thao tác khối lớn, tuần tự). HDD không làm boot volume.</li>
+        <li>Đề nói <em>over 16,000 IOPS</em> hoặc <em>sub-millisecond latency</em> cho một volume → io2. Nói <em>cost-effective</em> và không nêu IOPS → gp3.</li>
+        <li><b>Elastic Volumes</b>: tăng cỡ, đổi loại, đổi IOPS khi volume đang chạy, không cần detach. Sau khi tăng cỡ phải tự mở rộng partition và file system trong OS (<code>growpart</code>, <code>xfs_growfs</code>). Chỉ tăng, không giảm cỡ.</li>
+      </ul>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Snapshot</span>
+        <ul>
+          <li>Bản chụp volume lưu trong S3 (bạn không thấy object), <b>incremental</b>: lần sau chỉ lưu block đã đổi, nhưng xóa snapshot giữa chừng vẫn restore được các snapshot còn lại.</li>
+          <li>Nằm ở mức <b>Region</b> → đây là cách đưa dữ liệu sang AZ khác (tạo volume từ snapshot ở AZ đích) hoặc Region khác (copy snapshot).</li>
+          <li>Chụp khi đang chạy được nhưng nên dừng I/O hoặc detach để nhất quán; với root volume nên stop instance.</li>
+          <li><b>EBS Snapshots Archive</b>: tier lưu trữ rẻ hơn khoảng 75%, khôi phục mất 24 đến 72 giờ. <b>Recycle Bin</b>: giữ snapshot/AMI đã xóa trong 1 ngày đến 1 năm để lỡ tay còn lấy lại.</li>
+          <li><b>Fast Snapshot Restore (FSR)</b>: volume tạo từ snapshot có hiệu năng đầy đủ ngay, không bị chậm lần đọc đầu; tốn tiền theo giờ.</li>
+          <li><b>Data Lifecycle Manager (DLM)</b>: tự chụp và xóa snapshot theo lịch (đề hỏi "tự động hóa snapshot EBS" → DLM hoặc AWS Backup).</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Encryption</span>
+        <ul>
+          <li>Dùng KMS (AES-256). Mã hóa <b>at rest</b> trong volume, <b>in transit</b> giữa instance và volume, mọi snapshot và volume sinh ra từ nó đều mã hóa. Gần như không giảm hiệu năng.</li>
+          <li>Có thể bật <b>encryption by default</b> cho cả Region trong EC2 settings.</li>
+          <li>Volume chưa mã hóa <b>không bật mã hóa tại chỗ được</b>. Cách làm: snapshot → copy snapshot và tick encrypt → tạo volume mới từ bản copy → đổi volume. Đây là câu kinh điển.</li>
+          <li>Chia sẻ snapshot mã hóa sang account khác: phải dùng <b>customer managed key</b> và chia sẻ cả key; snapshot mã hóa bằng AWS managed key không chia sẻ được.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Multi-attach</span>
+      <ul>
+        <li>Chỉ <b>io1/io2</b>, gắn một volume vào tối đa <b>16 instance Nitro</b> trong <b>cùng AZ</b>, tất cả đọc ghi được.</li>
+        <li>File system thường (ext4, XFS) không hiểu nhiều máy ghi cùng lúc → phải dùng <b>cluster-aware file system</b> hoặc app tự quản lý (Oracle RAC kiểu cũ). Không phải cách làm shared storage thông thường.</li>
+        <li>Đề hỏi "nhiều EC2 ở <b>nhiều AZ</b> cùng đọc ghi một file system" → <b>EFS</b>, không phải multi-attach.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">8. Volume gp2 200 GiB gắn cho database đang thiếu IOPS, ứng dụng cần 10.000 IOPS ổn định với chi phí thấp nhất. Làm gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Đổi sang gp3 và provision 10.000 IOPS.</b> gp2 200 GiB chỉ có 600 IOPS baseline; muốn 10.000 phải phóng to tới 3.334 GiB, lãng phí. io2 đạt được nhưng đắt hơn gp3 khi chỉ cần 10.000 (dưới 16.000).</p></div>
+      <div class="q"><p class="qt">9. Audit phát hiện một EBS volume chứa dữ liệu nhạy cảm chưa mã hóa. Cách mã hóa dữ liệu đó?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Snapshot volume, copy snapshot với tùy chọn encrypt, tạo volume mới từ snapshot đã mã hóa rồi gắn thay volume cũ.</b> Không có nút "bật mã hóa" cho volume đang tồn tại.</p></div>
+      <div class="q"><p class="qt">10. Hệ thống xử lý log ghi tuần tự hàng trăm GB mỗi ngày, ít truy cập ngẫu nhiên, muốn rẻ. Loại EBS nào?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>st1.</b> Throughput HDD cho ghi tuần tự khối lớn. sc1 còn rẻ hơn nhưng chỉ nên khi ít truy cập; gp3 làm được nhưng đắt hơn với dung lượng lớn.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. AMI, INSTANCE STORE ============ -->
+<section id="ami">
+  <span class="eyebrow">Tuần 2 · Lý thuyết 5 / 12</span>
+  <h2>AMI và instance store</h2>
+
+  <div class="card">
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">AMI (Amazon Machine Image)</span>
+        <ul>
+          <li>Bản mẫu để launch EC2: gồm snapshot của root volume (và các volume khác), <b>block device mapping</b>, launch permission, kiến trúc (x86/ARM), loại ảo hóa.</li>
+          <li>Nguồn: AWS cung cấp (Amazon Linux 2023, Ubuntu, Windows), <b>AWS Marketplace</b> (trả thêm phí phần mềm), <b>AMI của bạn</b> (golden AMI), AMI được chia sẻ từ account khác.</li>
+          <li>AMI nằm trong <b>một Region</b>. Muốn launch ở Region khác phải <b>copy AMI</b> sang Region đó. Trong cùng Region thì launch ở AZ nào cũng được (khác với EBS).</li>
+          <li><b>Golden AMI</b>: nướng sẵn OS đã vá, agent, app vào AMI để instance boot nhanh và giống nhau. Đề: "giảm thời gian khởi động instance trong Auto Scaling thay vì cài bằng user data" → golden AMI. Tự động hóa việc nướng bằng <b>EC2 Image Builder</b>.</li>
+          <li>Chia sẻ AMI: cho account cụ thể, cho Organization, hoặc public. AMI mã hóa thì phải chia sẻ KMS key kèm theo.</li>
+          <li>Xóa AMI là <b>deregister</b>; snapshot EBS đi kèm không tự xóa, phải xóa tay để hết tiền.</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Instance store</span>
+        <ul>
+          <li>Ổ <b>gắn vật lý vào máy chủ</b> chạy instance (NVMe/SSD), có ở các type có chữ <b>d</b> hoặc family i, d, h. Cỡ cố định theo type, không mua thêm được.</li>
+          <li>Hiệu năng cực cao (hàng triệu IOPS ở i3en/i4i) vì không đi qua mạng.</li>
+          <li><b>Ephemeral</b>: mất dữ liệu khi <b>stop, hibernate, terminate</b> hoặc phần cứng hỏng. Qua <b>reboot</b> thì còn. Không snapshot được như EBS.</li>
+          <li>Dùng cho: cache, buffer, scratch, dữ liệu tạm, dữ liệu đã có replica ở nơi khác (node của cluster NoSQL).</li>
+          <li>Đề nói <em>highest possible IOPS</em>, <em>temporary</em>, <em>can be lost</em> → instance store. Nói <em>must persist after stop</em> → EBS.</li>
+          <li>Giá đã nằm trong giá instance, không tính riêng.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block diag"><span class="eyebrow">Hình dung bốn loại storage quanh một EC2</span>
+      <svg viewBox="0 0 700 330" role="img" aria-label="Sơ đồ: instance store nằm trong host, EBS gắn qua mạng trong cùng AZ, EFS dùng chung giữa nhiều EC2 ở nhiều AZ, S3 truy cập qua HTTP ở mức Region">
+        <rect x="20" y="20" width="660" height="290" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="36" y="44" class="sv-t" font-weight="600">Region</text>
+        <rect x="40" y="60" width="300" height="180" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="56" y="82" class="sv-t" font-weight="600">AZ 1a</text>
+        <rect x="56" y="96" width="150" height="120" rx="6" class="sv-region" stroke-width="1.5"/>
+        <text x="131" y="116" text-anchor="middle" class="sv-t" font-weight="600">Host vật lý</text>
+        <rect x="68" y="128" width="126" height="34" rx="4" class="sv-edge" stroke-width="1"/>
+        <text x="131" y="150" text-anchor="middle" class="sv-t">EC2 instance</text>
+        <rect x="68" y="172" width="126" height="34" rx="4" class="sv-edge" stroke-width="1" stroke-dasharray="4 3"/>
+        <text x="131" y="186" text-anchor="middle" class="sv-m">Instance store</text>
+        <text x="131" y="200" text-anchor="middle" class="sv-m">mất khi stop</text>
+        <rect x="236" y="128" width="90" height="48" rx="4" class="sv-region" stroke-width="1.5"/>
+        <text x="281" y="148" text-anchor="middle" class="sv-t" font-weight="600">EBS</text>
+        <text x="281" y="164" text-anchor="middle" class="sv-m">block, 1 AZ</text>
+        <line x1="194" y1="145" x2="236" y2="152" class="sv-line" stroke-width="2"/>
+        <text x="281" y="200" text-anchor="middle" class="sv-m">snapshot → S3</text>
+        <text x="281" y="214" text-anchor="middle" class="sv-m">(mức Region)</text>
+        <rect x="360" y="60" width="150" height="180" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="376" y="82" class="sv-t" font-weight="600">AZ 1c</text>
+        <rect x="376" y="128" width="118" height="34" rx="4" class="sv-edge" stroke-width="1"/>
+        <text x="435" y="150" text-anchor="middle" class="sv-t">EC2 instance</text>
+        <rect x="200" y="258" width="180" height="40" rx="6" class="sv-region" stroke-width="1.5"/>
+        <text x="290" y="275" text-anchor="middle" class="sv-t" font-weight="600">EFS (NFS)</text>
+        <text x="290" y="290" text-anchor="middle" class="sv-m">file, nhiều AZ, nhiều EC2</text>
+        <line x1="131" y1="162" x2="131" y2="172" class="sv-line" stroke-width="1"/>
+        <line x1="131" y1="216" x2="240" y2="258" class="sv-line" stroke-width="2" stroke-dasharray="4 4"/>
+        <line x1="435" y1="162" x2="340" y2="258" class="sv-line" stroke-width="2" stroke-dasharray="4 4"/>
+        <rect x="540" y="96" width="120" height="100" rx="6" class="sv-region" stroke-width="1.5"/>
+        <text x="600" y="120" text-anchor="middle" class="sv-t" font-weight="600">S3</text>
+        <text x="600" y="140" text-anchor="middle" class="sv-m">object, HTTP</text>
+        <text x="600" y="156" text-anchor="middle" class="sv-m">3+ AZ</text>
+        <text x="600" y="172" text-anchor="middle" class="sv-m">không mount</text>
+        <text x="600" y="188" text-anchor="middle" class="sv-m">như ổ đĩa</text>
+        <line x1="494" y1="145" x2="540" y2="145" class="sv-line" stroke-width="2" stroke-dasharray="2 3"/>
+        <text x="517" y="138" text-anchor="middle" class="sv-m">API</text>
+      </svg>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">11. Auto Scaling Group mất 8 phút để instance mới sẵn sàng vì user data cài nhiều package. Cách giảm thời gian này?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Tạo golden AMI đã cài sẵn package, dùng AMI đó trong launch template.</b> User data chỉ còn làm việc nhỏ (lấy config). Tăng instance size không giải quyết gốc vấn đề.</p></div>
+      <div class="q"><p class="qt">12. Một app cần ổ tạm cho dữ liệu trung gian với IOPS cao nhất có thể, mất dữ liệu khi restart là chấp nhận được. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Instance store</b> (chọn type có local NVMe như i4i hoặc có hậu tố d). io2 cho IOPS cao nhưng vẫn qua mạng và tốn tiền không cần thiết khi dữ liệu là tạm.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. EFS ============ -->
+<section id="efs">
+  <span class="eyebrow">Tuần 2 · Lý thuyết 6 / 12</span>
+  <h2>EFS: performance mode, throughput mode, storage class</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <ul>
+        <li>File system <b>NFS v4.1</b> được quản lý, gắn cùng lúc vào <b>hàng trăm EC2 ở nhiều AZ</b> trong Region (Regional) hoặc một AZ (One Zone). Chỉ cho <b>Linux</b>; Windows thì dùng FSx for Windows.</li>
+        <li>Tự co giãn tới petabyte, trả tiền theo <b>GB thực dùng</b>, không provision trước. Đắt hơn EBS gp3 nhiều lần mỗi GB (kiểm tra giá), bù lại dùng chung và không phải quản lý.</li>
+        <li>Kết nối qua <b>mount target</b> (một ENI mỗi AZ) và Security Group mở cổng <b>2049</b>. Mount từ on-premises qua Direct Connect/VPN cũng được.</li>
+        <li>Mã hóa at rest bằng KMS, in transit bằng TLS (mount helper <code>-o tls</code>). Phân quyền bằng POSIX, IAM và <b>EFS Access Point</b> (ép user/group và thư mục gốc cho từng app).</li>
+        <li>Lambda và ECS/Fargate cũng mount EFS được: đề hỏi "nhiều container cần shared persistent storage" → EFS.</li>
+      </ul>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Performance mode (chọn lúc tạo)</span>
+        <ul>
+          <li><b>General Purpose</b>: mặc định, độ trễ thấp nhất, cho web, CMS, home directory. Chọn cái này trừ khi có lý do.</li>
+          <li><b>Max I/O</b>: chịu được nhiều client song song hơn, đổi lại độ trễ cao hơn một chút. Cho big data, media processing. Chỉ có ở Regional với Bursting/Provisioned, không có ở One Zone và Elastic.</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Throughput mode (đổi được sau)</span>
+        <ul>
+          <li><b>Elastic</b> (mặc định hiện nay): tự co giãn theo tải, trả theo lượng đọc ghi. Chọn khi tải <em>spiky</em>, khó đoán.</li>
+          <li><b>Provisioned</b>: đặt MB/s cố định không phụ thuộc dung lượng. Chọn khi dữ liệu nhỏ mà cần throughput cao đều đặn.</li>
+          <li><b>Bursting</b>: throughput tỉ lệ với dung lượng (50 KB/s mỗi GB) cộng burst credit. File system nhỏ hay bị nghẽn → đổi sang Elastic hoặc Provisioned.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Storage class và lifecycle</span>
+      <div class="tbl"><table>
+        <tr><th>Class</th><th>Đặc điểm</th><th>Khi nào</th></tr>
+        <tr><td><b>EFS Standard</b></td><td>Truy cập thường xuyên, giá cao nhất</td><td>File đang dùng hàng ngày</td></tr>
+        <tr><td><b>EFS Infrequent Access (IA)</b></td><td>Rẻ hơn nhiều mỗi GB, nhưng tính phí mỗi lần đọc ghi</td><td>File vài tuần mới đụng tới</td></tr>
+        <tr><td><b>EFS Archive</b></td><td>Rẻ nhất, cho file vài tháng mới đọc một lần</td><td>Dữ liệu giữ cho compliance</td></tr>
+        <tr><td>One Zone (và One Zone-IA)</td><td>Chỉ một AZ, rẻ hơn khoảng 47% so với Regional</td><td>Dev/test, dữ liệu tái tạo được, không cần chịu lỗi AZ</td></tr>
+      </table></div>
+      <ul>
+        <li><b>Lifecycle management</b>: tự chuyển file sang IA sau N ngày không truy cập (ví dụ 30 ngày) và sang Archive sau N ngày khác; có tùy chọn <b>transition back</b> về Standard khi file được đọc lại. Đề hỏi "giảm chi phí EFS mà không đổi ứng dụng" → bật lifecycle sang IA.</li>
+        <li>Backup EFS bằng <b>AWS Backup</b> (mục 12). Replication sang Region khác có sẵn (EFS Replication) cho DR.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>Nhiều EC2 Linux ở nhiều AZ ghi chung một thư mục</td><td>EFS</td><td>EBS multi-attach (một AZ, io1/io2, cần cluster FS)</td></tr>
+        <tr><td>Shared storage cho Windows, Active Directory</td><td>FSx for Windows</td><td>EFS (không hỗ trợ SMB/Windows)</td></tr>
+        <tr><td>Giảm chi phí EFS cho file ít đọc</td><td>Lifecycle sang EFS IA</td><td>Chuyển sang S3 (phải sửa app)</td></tr>
+        <tr><td>Lưu file không cần mount, truy cập qua API, rẻ nhất</td><td>S3</td><td>EFS</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">13. WordPress chạy trên 4 EC2 ở 2 AZ sau ALB, user upload ảnh bị lỗi vì mỗi instance lưu ảnh cục bộ. Giải pháp <em>least operational overhead</em>?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Mount một EFS vào cả 4 instance, trỏ thư mục upload vào đó.</b> EBS không chia sẻ được qua AZ. Sync bằng rsync là đáp án "tự làm", nhiều overhead.</p></div>
+      <div class="q"><p class="qt">14. EFS chứa 20 TB, chỉ 10% được đọc trong tháng, hóa đơn cao. Giảm chi phí thế nào mà app không đổi?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Bật EFS lifecycle management chuyển file sang IA (và Archive) sau một số ngày không truy cập.</b> App vẫn thấy cùng đường dẫn. Đổi sang One Zone thì phải tạo file system mới và mất chịu lỗi AZ.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. FSx ============ -->
+<section id="fsx">
+  <span class="eyebrow">Tuần 2 · Lý thuyết 7 / 12</span>
+  <h2>FSx for Windows, FSx for Lustre, FSx for NetApp ONTAP</h2>
+
+  <div class="card">
+    <p>FSx là nhóm file system được quản lý cho các hệ thống file "có thương hiệu" của thế giới ngoài AWS. Đề thi hỏi FSx chủ yếu ở mức nhận diện: nghe từ khóa nào thì chọn loại nào.</p>
+    <div class="tbl"><table>
+      <tr><th></th><th>FSx for Windows File Server</th><th>FSx for Lustre</th><th>FSx for NetApp ONTAP</th><th>FSx for OpenZFS</th></tr>
+      <tr><td>Giao thức</td><td><b>SMB</b>, NTFS</td><td>Lustre (client riêng, POSIX)</td><td><b>NFS, SMB, iSCSI</b> cùng lúc</td><td>NFS</td></tr>
+      <tr><td>Client</td><td>Windows, cả Linux và macOS qua SMB</td><td>Linux (EC2, container, on-prem)</td><td>Linux, Windows, macOS</td><td>Linux, Windows, macOS</td></tr>
+      <tr><td>Điểm mạnh</td><td>Tích hợp <b>Active Directory</b>, Windows ACL, DFS Namespaces, shadow copies, Multi-AZ, SSD hoặc HDD</td><td><b>HPC, ML, video processing</b>: hàng trăm GB/s, triệu IOPS, độ trễ dưới ms; <b>liên kết với S3</b> (đọc lazy từ S3, ghi ngược lại)</td><td>Snapshot, clone tức thì, <b>SnapMirror</b> replicate từ NetApp on-prem, dedup, compression, auto tiering</td><td>ZFS snapshot và clone, độ trễ rất thấp, chuyển từ ZFS on-prem</td></tr>
+      <tr><td>Từ khóa</td><td><em>Windows</em>, <em>SMB</em>, <em>Active Directory</em>, <em>Windows file share</em></td><td><em>HPC</em>, <em>machine learning</em>, <em>high-throughput</em>, <em>process data in S3 at high speed</em></td><td><em>NetApp</em>, <em>ONTAP</em>, <em>multi-protocol</em>, <em>iSCSI</em>, <em>SnapMirror</em></td><td><em>ZFS</em></td></tr>
+    </table></div>
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">FSx for Lustre: scratch với persistent</span>
+        <ul>
+          <li><b>Scratch</b>: dữ liệu tạm, không nhân bản, rẻ, cho job xử lý ngắn hạn, burst throughput cao.</li>
+          <li><b>Persistent</b>: nhân bản trong AZ, cho workload dài hạn cần dữ liệu còn khi hỏng phần cứng.</li>
+          <li>Luồng kinh điển: dữ liệu ở S3 → FSx for Lustre link tới bucket → cluster HPC xử lý trên Lustre → kết quả ghi ngược về S3. Đề "xử lý dữ liệu trong S3 với file system hiệu năng cao" → Lustre.</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">FSx for Windows chi tiết</span>
+        <ul>
+          <li>Join vào AWS Managed Microsoft AD hoặc AD tự quản lý.</li>
+          <li>Multi-AZ với failover tự động cho production. Backup hàng ngày tự động.</li>
+          <li>Truy cập từ on-prem qua VPN/Direct Connect; dùng <b>FSx File Gateway</b> nếu muốn cache tại chỗ.</li>
+          <li>Đề "lift and shift file server Windows, giữ nguyên quyền NTFS" → FSx for Windows, không phải EFS hay S3.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">15. Một phòng nghiên cứu có 200 TB ảnh vệ tinh trong S3, muốn chạy cluster xử lý trên EC2 với throughput hàng trăm GB/s rồi ghi kết quả về S3. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>FSx for Lustre liên kết với bucket S3.</b> EFS không đạt throughput cỡ này và không tích hợp S3 kiểu lazy load. Copy hết về EBS vừa chậm vừa đắt.</p></div>
+      <div class="q"><p class="qt">16. Công ty chuyển file server lên AWS; người dùng Windows đăng nhập domain, cần giữ Windows ACL. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>FSx for Windows File Server</b> join vào Active Directory. EFS là NFS cho Linux, không có ACL kiểu Windows. ONTAP cũng được nhưng chỉ khi đề nhắc NetApp hoặc multi-protocol.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8. S3 STORAGE CLASS ============ -->
+<section id="s3-class">
+  <span class="eyebrow">Tuần 3 · Lý thuyết 8 / 12</span>
+  <h2>S3 storage class</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">S3 là gì, nhắc lại 30 giây</span>
+      <ul>
+        <li><b>Object storage</b>: lưu object (file + metadata) trong bucket, truy cập qua HTTP API, không mount như ổ đĩa (muốn mount dùng Mountpoint for S3 hoặc Storage Gateway). Object tối đa <b>5 TB</b>; một lần PUT tối đa 5 GB, lớn hơn phải multipart.</li>
+        <li>Bucket nằm trong một Region, tên <b>duy nhất toàn cầu</b>. Dung lượng không giới hạn. <b>Strong read-after-write consistency</b>: ghi xong đọc thấy ngay.</li>
+        <li>Key có dạng đường dẫn <code>logs/2026/10/app.log</code> nhưng S3 không có thư mục thật, "prefix" chỉ là phần đầu của key. Hiệu năng: mỗi prefix khoảng 3.500 PUT/COPY/POST/DELETE và 5.500 GET mỗi giây, cần nhiều hơn thì trải ra nhiều prefix.</li>
+        <li>Độ bền <b>11 số 9</b> (99,999999999%) cho mọi class. Khác nhau ở <b>availability</b>, số AZ, phí lấy dữ liệu, thời gian lưu tối thiểu.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Bảng storage class (học thuộc)</span>
+      <div class="tbl"><table>
+        <tr><th>Class</th><th>AZ</th><th>Availability</th><th>Lưu tối thiểu</th><th>Phí lấy ra</th><th>Thời gian lấy</th><th>Dùng cho</th></tr>
+        <tr><td><b>Standard</b></td><td>≥3</td><td>99,99%</td><td>Không</td><td>Không</td><td>ms</td><td>Dữ liệu dùng thường xuyên, mặc định</td></tr>
+        <tr><td><b>Intelligent-Tiering</b></td><td>≥3</td><td>99,9%</td><td>Không</td><td>Không, chỉ phí giám sát mỗi object</td><td>ms (tier Archive Access thì giờ)</td><td>Pattern truy cập <em>unknown</em> hoặc <em>changing</em>; tự chuyển tier sau 30/90 ngày không đọc</td></tr>
+        <tr><td><b>Standard-IA</b></td><td>≥3</td><td>99,9%</td><td>30 ngày</td><td>Có, theo GB</td><td>ms</td><td>Ít đọc nhưng cần ngay: backup, DR, file cũ</td></tr>
+        <tr><td><b>One Zone-IA</b></td><td>1</td><td>99,5%</td><td>30 ngày</td><td>Có</td><td>ms</td><td>Dữ liệu tái tạo được (thumbnail, bản sao thứ hai), rẻ hơn IA 20%</td></tr>
+        <tr><td><b>Glacier Instant Retrieval</b></td><td>≥3</td><td>99,9%</td><td>90 ngày</td><td>Có, cao hơn IA</td><td>ms</td><td>Archive mà <em>quý mới đọc một lần</em> nhưng cần ngay (ảnh y tế, tin tức cũ)</td></tr>
+        <tr><td><b>Glacier Flexible Retrieval</b></td><td>≥3</td><td>99,99% sau restore</td><td>90 ngày</td><td>Có</td><td>Expedited 1 đến 5 phút, Standard 3 đến 5 giờ, Bulk 5 đến 12 giờ</td><td>Archive, backup năm mới đụng, chấp nhận chờ giờ</td></tr>
+        <tr><td><b>Glacier Deep Archive</b></td><td>≥3</td><td>99,99% sau restore</td><td>180 ngày</td><td>Có</td><td>Standard 12 giờ, Bulk 48 giờ</td><td>Rẻ nhất, compliance 7 đến 10 năm, <em>retrieval within 12 hours acceptable</em></td></tr>
+      </table></div>
+      <ul>
+        <li>IA và Glacier Instant tính tối thiểu <b>128 KB</b> mỗi object: file nhỏ lắt nhắt để IA không rẻ. Intelligent-Tiering không giám sát object dưới 128 KB (chúng ở tier Frequent).</li>
+        <li>Xóa object trước thời gian lưu tối thiểu vẫn bị tính đủ số ngày đó.</li>
+        <li>Lấy dữ liệu Glacier Flexible/Deep Archive là <b>restore</b>: tạo bản tạm ở Standard trong N ngày; dùng <b>S3 Batch Operations</b> để restore hàng loạt.</li>
+        <li>Nhận diện thêm: <b>S3 Express One Zone</b> (directory bucket, độ trễ một chữ số ms, cho ML/analytics cần nhanh nhất, một AZ); <b>S3 on Outposts</b>.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Cách đọc đề để chọn class</span>
+      <div class="flow">
+        <div class="n"><span>Không biết hoặc thay đổi pattern truy cập?</span><span class="tag allow">Intelligent-Tiering</span></div>
+        <div class="arrow"><span>không</span></div>
+        <div class="n"><span>Đọc thường xuyên, độ trễ ms?</span><span class="tag allow">Standard</span></div>
+        <div class="arrow"><span>không</span></div>
+        <div class="n"><span>Ít đọc, cần ngay, tái tạo được?</span><span class="tag allow">One Zone-IA, còn không thì Standard-IA</span></div>
+        <div class="arrow"><span>không</span></div>
+        <div class="n"><span>Archive, quý mới đọc, vẫn cần ms?</span><span class="tag allow">Glacier Instant</span></div>
+        <div class="arrow"><span>không</span></div>
+        <div class="n"><span>Chờ được vài giờ?</span><span class="tag allow">Glacier Flexible</span></div>
+        <div class="arrow"><span>không</span></div>
+        <div class="n"><span>Chờ được 12 giờ trở lên, rẻ nhất?</span><span class="tag allow">Glacier Deep Archive</span></div>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">17. Báo cáo tài chính phải lưu 7 năm theo luật, gần như không ai đọc, khi audit yêu cầu thì có 24 giờ để nộp. Class nào <em>most cost-effective</em>?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Glacier Deep Archive.</b> Restore Standard 12 giờ nằm trong 24 giờ cho phép. Glacier Flexible đắt hơn mà không cần nhanh đến thế.</p></div>
+      <div class="q"><p class="qt">18. Ứng dụng lưu dữ liệu người dùng với pattern truy cập không đoán được: có file đọc mỗi ngày, có file nhiều tháng không ai mở. Muốn tối ưu chi phí mà không phải tự phân tích. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>S3 Intelligent-Tiering.</b> Từ khóa <em>unknown / unpredictable access pattern</em>. Lifecycle sang IA là bẫy: file hay đọc chuyển sang IA sẽ tốn phí retrieval.</p></div>
+      <div class="q"><p class="qt">19. Thumbnail sinh ra từ ảnh gốc (gốc ở Standard), ít khi được xem, cần rẻ nhất mà vẫn lấy ngay khi cần. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>One Zone-IA.</b> Thumbnail tái tạo được từ gốc nên mất AZ cũng không sao. Standard-IA đắt hơn 20% để có 3 AZ mà ở đây không cần.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9. LIFECYCLE, VERSIONING, REPLICATION, OBJECT LOCK ============ -->
+<section id="s3-mgmt">
+  <span class="eyebrow">Tuần 3 · Lý thuyết 9 / 12</span>
+  <h2>S3: lifecycle, versioning, replication (CRR, SRR), Object Lock</h2>
+
+  <div class="card">
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Lifecycle rule</span>
+        <ul>
+          <li>Hai loại hành động: <b>Transition</b> (đổi class sau N ngày) và <b>Expiration</b> (xóa sau N ngày). Lọc theo prefix, tag, cỡ object.</li>
+          <li>Áp được cho <b>noncurrent version</b> (bản cũ khi bật versioning): ví dụ chuyển bản cũ sang Glacier sau 30 ngày, xóa sau 365 ngày.</li>
+          <li>Hai hành động dọn dẹp hay hỏi: <b>abort incomplete multipart upload</b> sau N ngày (phần upload dở vẫn tính tiền) và <b>xóa expired delete marker</b>.</li>
+          <li>Ràng buộc: object phải ở Standard ít nhất <b>30 ngày</b> trước khi chuyển sang Standard-IA / One Zone-IA; chuyển sang Glacier thì ngày 0 cũng được. Chiều chuyển chỉ đi xuống (Standard → IA → Glacier), không tự lên lại.</li>
+          <li>Không chắc nên để bao nhiêu ngày → bật <b>S3 Storage Class Analysis</b> hoặc <b>Storage Lens</b> để xem pattern trước.</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Versioning</span>
+        <ul>
+          <li>Bật ở <b>mức bucket</b>; object cũ trước khi bật có version ID <code>null</code>. Bật rồi chỉ <b>suspend</b> được, không tắt hẳn.</li>
+          <li>Upload đè tạo version mới, bản cũ vẫn còn (và vẫn tính tiền). Xóa thường chỉ đặt <b>delete marker</b>; xóa delete marker là "khôi phục". Xóa hẳn phải xóa đúng version ID.</li>
+          <li><b>MFA Delete</b>: bắt buộc MFA khi xóa version vĩnh viễn hoặc đổi trạng thái versioning. Chỉ root bật được, qua CLI/API.</li>
+          <li>Versioning là <b>điều kiện bắt buộc</b> của replication và Object Lock.</li>
+          <li>Đề "bảo vệ khỏi xóa nhầm hoặc ghi đè nhầm" → versioning (+ MFA Delete nếu nhắc tới bảo vệ cao hơn).</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Replication: CRR và SRR</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>Cross-Region Replication (CRR)</th><th>Same-Region Replication (SRR)</th></tr>
+        <tr><td>Mục đích</td><td>Compliance lưu bản sao ở vùng khác, giảm độ trễ cho user vùng khác, DR, sao chép sang account khác</td><td>Gom log từ nhiều bucket, đồng bộ prod sang test, giữ bản sao trong cùng Region ở account khác</td></tr>
+        <tr><td>Điều kiện</td><td colspan="2">Versioning bật ở cả hai bucket; IAM role cho S3; bucket đích có thể ở account khác</td></tr>
+        <tr><td>Hành vi</td><td colspan="2">Chỉ sao chép <b>object mới</b> sau khi bật; object cũ phải chạy <b>S3 Batch Replication</b>. Không <b>chain</b> (A→B→C không tự sao chép từ A tới C). Xóa có version ID không được sao chép (tránh xóa dây chuyền), delete marker sao chép được nếu bật tùy chọn. Có thể đổi storage class ở đích</td></tr>
+        <tr><td>SLA</td><td colspan="2"><b>Replication Time Control (RTC)</b>: cam kết 99,99% object sao chép trong <b>15 phút</b>, trả thêm tiền, có metric giám sát</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Object Lock (WORM)</span>
+      <ul>
+        <li>Chặn xóa hoặc ghi đè version trong một khoảng thời gian hoặc vô thời hạn. Phải bật khi tạo bucket (hoặc liên hệ support), cần versioning.</li>
+        <li><b>Retention period</b> có hai mode: <b>Governance</b> (user có quyền đặc biệt <code>s3:BypassGovernanceRetention</code> vẫn xóa được) và <b>Compliance</b> (<b>không ai</b> xóa được, kể cả root, không rút ngắn thời hạn được).</li>
+        <li><b>Legal hold</b>: khóa không có ngày hết hạn, bật/tắt bằng quyền <code>s3:PutObjectLegalHold</code>, độc lập với retention.</li>
+        <li>Đề "regulatory, không ai kể cả admin xóa được trong 5 năm" → Object Lock Compliance mode. "Admin vẫn cần xóa được khi cần" → Governance. Glacier có khái niệm tương tự là <b>Vault Lock</b> (cho Glacier vault kiểu cũ).</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">20. Bật CRR cho bucket có sẵn 10 triệu object, sau một tuần bucket đích vẫn trống phần lớn. Vì sao và làm gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Replication chỉ áp dụng cho object mới sau khi bật. Chạy S3 Batch Replication để sao chép object cũ.</b> Không cần copy tay bằng CLI.</p></div>
+      <div class="q"><p class="qt">21. Log phải giữ nguyên 3 năm theo quy định, kể cả quản trị viên cấp cao cũng không được xóa. Cấu hình gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Object Lock, Compliance mode, retention 3 năm.</b> Governance mode là bẫy vì admin có quyền bypass vẫn xóa được. Versioning một mình không chặn xóa version.</p></div>
+      <div class="q"><p class="qt">22. Một developer lỡ xóa một file quan trọng trong bucket đã bật versioning. Khôi phục thế nào?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Xóa delete marker</b> (xóa với version ID của delete marker), bản gần nhất trở lại là current. Không cần restore từ backup.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10. SECURITY ============ -->
+<section id="s3-sec">
+  <span class="eyebrow">Tuần 3 · Lý thuyết 10 / 12</span>
+  <h2>S3: bucket policy, ACL, Block Public Access, encryption SSE-S3 / SSE-KMS / SSE-C</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Ai được truy cập: ba lớp</span>
+      <div class="tbl"><table>
+        <tr><th>Cơ chế</th><th>Gắn vào</th><th>Dùng khi</th><th>Ghi chú</th></tr>
+        <tr><td><b>IAM policy</b> (identity-based)</td><td>User, group, role</td><td>Quản lý quyền của người/role trong account mình</td><td>Ôn tuần 1: resource ARN bucket khác object (<code>arn:aws:s3:::bucket</code> và <code>.../*</code>)</td></tr>
+        <tr><td><b>Bucket policy</b> (resource-based)</td><td>Bucket</td><td>Cho <b>account khác</b> truy cập, cho <b>public</b> đọc (static website), <b>ép điều kiện</b> cho mọi người dùng bucket</td><td>JSON có thêm trường <code>Principal</code>. Điều kiện hay dùng: <code>aws:SecureTransport</code> (ép HTTPS), <code>aws:SourceVpce</code> (chỉ từ VPC endpoint), <code>s3:x-amz-server-side-encryption</code> (ép mã hóa), <code>aws:SourceIp</code></td></tr>
+        <tr><td><b>ACL</b></td><td>Bucket hoặc từng object</td><td>Gần như không dùng nữa</td><td>Mặc định bị <b>tắt</b> qua Object Ownership = Bucket owner enforced. Đề mới: nếu một đáp án là ACL, thường sai</td></tr>
+      </table></div>
+      <ul>
+        <li>Quy tắc đánh giá như tuần 1: gom IAM policy và bucket policy, <b>explicit deny thắng</b>, có allow ở một trong hai là được (cùng account). Khác account thì phải allow ở <b>cả hai</b> phía.</li>
+        <li><b>Block Public Access</b>: bốn công tắc ở mức account và bucket chặn mọi ACL/policy public, kể cả khi ai đó lỡ viết policy mở. Để bật trừ bucket static website. Đề "đảm bảo không bucket nào có thể bị public trong toàn account" → bật Block Public Access ở mức account (+ SCP).</li>
+        <li><b>S3 Access Points</b>: mỗi app một endpoint với policy riêng thay vì một bucket policy khổng lồ. <b>IAM Access Analyzer for S3</b>: liệt kê bucket đang chia sẻ ra ngoài.</li>
+        <li><b>Pre-signed URL</b> (mục 11) là cách cho người không có IAM tải một object tạm thời mà không mở public.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Ví dụ bucket policy ép HTTPS</span>
+<pre><code>{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Sid": "DenyInsecureTransport",
+    "Effect": "Deny",
+    "Principal": "*",
+    "Action": "s3:*",
+    "Resource": ["arn:aws:s3:::my-bucket", "arn:aws:s3:::my-bucket/*"],
+    "Condition": { "Bool": { "aws:SecureTransport": "false" } }
+  }]
+}</code></pre>
+      <p>Mẫu "Deny khi điều kiện không thỏa" này xuất hiện ở nhiều câu: đổi Condition thành <code>"StringNotEquals": {"s3:x-amz-server-side-encryption": "aws:kms"}</code> là ép mã hóa KMS khi upload.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Encryption: bốn kiểu server-side và một kiểu client-side</span>
+      <div class="tbl"><table>
+        <tr><th>Kiểu</th><th>Ai giữ key</th><th>Header khi upload</th><th>Chọn khi đề nói</th><th>Lưu ý</th></tr>
+        <tr><td><b>SSE-S3</b></td><td>S3 tự quản lý (AES-256)</td><td><code>x-amz-server-side-encryption: AES256</code></td><td>Chỉ cần "encrypted at rest", <em>minimal effort</em></td><td><b>Mặc định</b> cho mọi bucket mới từ 2023. Không có audit riêng từng key</td></tr>
+        <tr><td><b>SSE-KMS</b></td><td>KMS key: AWS managed <code>aws/s3</code> hoặc <b>customer managed</b></td><td><code>x-amz-server-side-encryption: aws:kms</code></td><td><em>audit key usage</em> (CloudTrail), <em>control who can decrypt</em> qua key policy, <em>rotate</em>, tách quyền đọc object và quyền dùng key</td><td>Mỗi GET/PUT gọi KMS → có thể chạm <b>KMS request quota</b>; bật <b>S3 Bucket Keys</b> để giảm 99% số gọi và chi phí. Người đọc cần cả quyền S3 và <code>kms:Decrypt</code></td></tr>
+        <tr><td>DSSE-KMS</td><td>KMS, mã hóa hai lớp</td><td><code>aws:kms:dsse</code></td><td>Yêu cầu compliance mã hóa hai lớp</td><td>Nhận diện là đủ</td></tr>
+        <tr><td><b>SSE-C</b></td><td><b>Bạn</b> gửi key kèm mỗi request, S3 không lưu key</td><td>Header <code>x-amz-server-side-encryption-customer-*</code></td><td><em>customer must manage keys outside AWS</em>, nhưng vẫn muốn S3 làm việc mã hóa</td><td>Bắt buộc <b>HTTPS</b>; mất key là mất dữ liệu; không dùng được qua Console</td></tr>
+        <tr><td>Client-side</td><td>Bạn, mã hóa trước khi gửi</td><td>Không</td><td><em>data must be encrypted before leaving on-premises</em>, S3 không bao giờ thấy plaintext</td><td>Dùng SDK (S3 Encryption Client) hoặc KMS ở phía client</td></tr>
+      </table></div>
+      <ul>
+        <li><b>In transit</b>: HTTPS (TLS). Ép bằng bucket policy <code>aws:SecureTransport</code> như trên.</li>
+        <li>Đổi mã hóa của object có sẵn: copy object đè lên chính nó với header mới, hoặc S3 Batch Operations cho hàng loạt.</li>
+        <li>Đề "giảm chi phí KMS cho bucket có hàng triệu request" → S3 Bucket Keys. "Ai đọc object là phải thấy trong CloudTrail dùng key nào" → SSE-KMS với customer managed key.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">23. Team compliance yêu cầu mọi object phải mã hóa bằng KMS key của công ty và từ chối mọi upload không mã hóa. Cấu hình gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Đặt default encryption của bucket là SSE-KMS với customer managed key, cộng bucket policy Deny PutObject khi <code>s3:x-amz-server-side-encryption</code> khác <code>aws:kms</code>.</b> Chỉ default encryption thì upload không ghi header vẫn được mã hóa bằng default, nhưng đề muốn <em>từ chối</em> → cần Deny.</p></div>
+      <div class="q"><p class="qt">24. Bucket chứa dữ liệu nội bộ chỉ nên truy cập từ EC2 trong VPC qua gateway endpoint, không qua Internet. Chặn thế nào?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Bucket policy Deny mọi request có <code>aws:SourceVpce</code> khác ID của endpoint</b> (hoặc dùng <code>aws:SourceVpc</code>). Security Group không áp lên S3 nên không phải đáp án.</p></div>
+      <div class="q"><p class="qt">25. Một ứng dụng cần S3 mã hóa nhưng công ty quy định key không được lưu ở AWS. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>SSE-C</b> (hoặc client-side encryption nếu đề nói dữ liệu phải mã hóa trước khi rời on-prem). SSE-KMS với customer managed key vẫn là key lưu ở AWS nên không thỏa.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11. FEATURES ============ -->
+<section id="s3-feat">
+  <span class="eyebrow">Tuần 3 · Lý thuyết 11 / 12</span>
+  <h2>S3: presigned URL, Transfer Acceleration, multipart upload, event notification</h2>
+
+  <div class="card">
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Presigned URL</span>
+        <ul>
+          <li>URL có chữ ký, cho phép <b>GET</b> (tải) hoặc <b>PUT</b> (upload) một object cụ thể trong thời gian giới hạn, <b>mang quyền của người tạo URL</b>.</li>
+          <li>Tạo bằng CLI <code>aws s3 presign</code> (mặc định 3600 giây) hoặc SDK. Tối đa <b>7 ngày</b> với credential IAM user; với credential tạm (role) thì hết hạn theo session.</li>
+          <li>Dùng cho: cho khách tải file riêng tư mà không mở public, cho user upload thẳng lên S3 không qua server (giảm tải backend), gửi link có hạn.</li>
+          <li>So với <b>CloudFront signed URL/cookie</b> (tuần 4): CloudFront khi phân phối rộng, cần cache và nhiều file; presigned S3 khi một object, trực tiếp.</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Transfer Acceleration</span>
+        <ul>
+          <li>Upload/download đi vào <b>edge location</b> gần nhất rồi chạy trên mạng xương sống AWS tới bucket. Endpoint <code>bucket.s3-accelerate.amazonaws.com</code>.</li>
+          <li>Hiệu quả khi <b>khoảng cách xa</b> (người dùng toàn cầu upload về một Region), file lớn. Có <b>phí thêm mỗi GB</b>; AWS có công cụ so sánh tốc độ trước khi bật.</li>
+          <li>Đề: <em>users worldwide upload large files to a single bucket, speed up</em> → Transfer Acceleration (kết hợp multipart).</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Multipart upload</span>
+        <ul>
+          <li>Chia file thành nhiều part (5 MB đến 5 GB mỗi part, tối đa 10.000 part) upload <b>song song</b>, hỏng part nào gửi lại part đó.</li>
+          <li><b>Khuyến nghị từ 100 MB</b>, <b>bắt buộc trên 5 GB</b>. CLI <code>aws s3 cp</code> tự làm multipart.</li>
+          <li>Part upload dở <b>vẫn tính tiền</b> cho tới khi hoàn tất hoặc abort → lifecycle rule "abort incomplete multipart uploads after 7 days".</li>
+          <li>Chiều tải xuống tương ứng là <b>byte-range fetch</b>: tải song song từng đoạn, hoặc chỉ lấy phần đầu file.</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Event notification</span>
+        <ul>
+          <li>Khi có sự kiện (<code>s3:ObjectCreated:*</code>, <code>ObjectRemoved</code>, <code>ObjectRestore</code>, <code>Replication</code>, ...) gửi tới <b>SNS</b>, <b>SQS</b> (chỉ standard queue, không FIFO) hoặc <b>Lambda</b>. Lọc theo prefix/suffix (ví dụ <code>images/</code>, <code>.jpg</code>).</li>
+          <li>Đích phải có <b>resource policy</b> cho S3 gửi (SNS topic policy, SQS queue policy, Lambda resource policy).</li>
+          <li><b>EventBridge</b> (bật trên bucket): nhiều loại event hơn, lọc theo nội dung JSON, nhiều đích cùng lúc, archive và replay. Đề "nhiều đích, lọc phức tạp" → EventBridge.</li>
+          <li>Kinh điển: upload ảnh → event → Lambda tạo thumbnail (tuần 7 làm lab này).</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Nhận diện thêm</span>
+      <ul>
+        <li><b>S3 Select / Glacier Select</b>: lọc bằng SQL ngay trong S3, chỉ trả về phần cần, giảm băng thông. <b>Athena</b> (tuần 9) là truy vấn nhiều object bằng SQL.</li>
+        <li><b>S3 Object Lambda</b>: biến đổi object khi đọc (che PII, resize) mà không lưu bản sao.</li>
+        <li><b>Requester Pays</b>: người tải trả phí data transfer, chủ bucket chỉ trả lưu trữ. Cho dataset công khai lớn.</li>
+        <li><b>CORS</b>: cho web ở domain khác gọi bucket; lỗi CORS trên trình duyệt → thêm CORS rule trên bucket.</li>
+        <li><b>Static website hosting</b>: endpoint HTTP dạng <code>bucket.s3-website-region.amazonaws.com</code>, cần bucket public hoặc đặt sau CloudFront với OAC (tuần 4) để không public.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">26. Ứng dụng mobile cho user upload video 2 GB thẳng lên S3 mà không qua server của công ty, bucket vẫn private. Cách làm?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Backend tạo presigned URL cho PUT, app upload thẳng bằng multipart.</b> Mở public write là sai. Upload qua EC2 thì tốn băng thông và không <em>scale</em>.</p></div>
+      <div class="q"><p class="qt">27. Hóa đơn S3 cao bất thường dù dung lượng object thấy trong console nhỏ. Nguyên nhân hay gặp nhất?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Multipart upload dở dang (hoặc noncurrent version) đang tính tiền.</b> Thêm lifecycle rule abort incomplete multipart uploads và expire noncurrent versions.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12. HYBRID ============ -->
+<section id="hybrid">
+  <span class="eyebrow">Tuần 3 · Lý thuyết 12 / 12</span>
+  <h2>Storage Gateway, Snow family, AWS Backup, DataSync</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Storage Gateway: on-prem dùng storage AWS như đồ tại chỗ</span>
+      <p>Là một máy ảo (VMware, Hyper-V, KVM, EC2) hoặc thiết bị phần cứng đặt tại on-prem, cho app cũ tiếp tục dùng giao thức quen thuộc trong khi dữ liệu nằm trên AWS.</p>
+      <div class="tbl"><table>
+        <tr><th>Loại</th><th>Giao thức on-prem</th><th>Dữ liệu nằm ở</th><th>Dùng cho</th><th>Từ khóa</th></tr>
+        <tr><td><b>S3 File Gateway</b></td><td>NFS, SMB</td><td>S3 (mỗi file là một object), cache cục bộ cho file hay đọc</td><td>Mở rộng file server lên S3, lưu trữ rẻ, sau đó dùng lifecycle và các dịch vụ AWS trên object</td><td><em>NFS/SMB to S3</em>, <em>local cache</em>, <em>Active Directory</em> cho SMB</td></tr>
+        <tr><td><b>FSx File Gateway</b></td><td>SMB</td><td>FSx for Windows</td><td>Chi nhánh truy cập FSx for Windows với cache tại chỗ</td><td><em>FSx</em>, <em>branch office</em></td></tr>
+        <tr><td><b>Volume Gateway: Cached</b></td><td>iSCSI (block)</td><td>S3 là chính, cache cục bộ phần hay dùng</td><td>Mở rộng SAN, dữ liệu lớn hơn ổ tại chỗ</td><td><em>iSCSI</em>, <em>primary data in AWS</em>, <em>low-latency access to frequently used data</em></td></tr>
+        <tr><td><b>Volume Gateway: Stored</b></td><td>iSCSI (block)</td><td>Toàn bộ ở on-prem, backup bất đồng bộ lên S3 dạng EBS snapshot</td><td>Cần độ trễ thấp cho toàn bộ dữ liệu, chỉ muốn backup lên cloud</td><td><em>entire dataset on-premises</em>, <em>asynchronous backup</em>, <em>EBS snapshots</em></td></tr>
+        <tr><td><b>Tape Gateway</b></td><td>iSCSI VTL (thư viện băng ảo)</td><td>S3, sau đó Glacier / Deep Archive</td><td>Thay băng từ vật lý, giữ phần mềm backup hiện có (Veeam, NetBackup)</td><td><em>tape</em>, <em>backup software</em>, <em>VTL</em></td></tr>
+      </table></div>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Snow family: chuyển dữ liệu offline</span>
+        <ul>
+          <li>Thiết bị vật lý AWS gửi tới, bạn copy dữ liệu, gửi lại, AWS nạp vào S3. Dùng khi mạng không đủ: quy tắc tay là chuyển qua mạng mất <b>trên một tuần</b> thì cân nhắc Snow.</li>
+          <li><b>Snowcone</b>: nhỏ (8 TB HDD hoặc 14 TB SSD), chạy được pin, có DataSync agent sẵn, cho edge/rugged.</li>
+          <li><b>Snowball Edge Storage Optimized</b>: khoảng 80 TB (bản mới tới 210 TB, kiểm tra lại), có compute nhẹ. <b>Compute Optimized</b>: nhiều vCPU, tùy chọn GPU, chạy EC2/Lambda tại edge không có Internet.</li>
+          <li><b>Snowmobile</b>: xe container 100 PB; AWS đã ngừng cung cấp từ 2024 nhưng đề cũ còn nhắc.</li>
+          <li>Nhập thẳng vào Glacier không được: Snowball → S3 → lifecycle rule sang Glacier.</li>
+          <li>Quản lý bằng <b>AWS OpsHub</b> (GUI). Dữ liệu mã hóa 256-bit trên thiết bị, key ở KMS.</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">DataSync: chuyển dữ liệu online, có lịch</span>
+        <ul>
+          <li>Dịch vụ chuyển <b>file/object</b> giữa on-prem (NFS, SMB, HDFS, object storage) và AWS (<b>S3, EFS, FSx</b> mọi loại), hoặc <b>giữa các dịch vụ AWS</b> (S3 ↔ EFS, EFS ↔ EFS khác Region).</li>
+          <li>Cần cài <b>agent</b> ở on-prem (VM); giữa AWS với nhau không cần agent. Mỗi agent tới khoảng 10 Gbps, kiểm tra lại số.</li>
+          <li>Giữ <b>metadata, permission, timestamp</b>; chạy theo lịch (giờ, ngày, tuần); kiểm tra toàn vẹn; băng thông giới hạn được.</li>
+          <li>Từ khóa: <em>migrate</em>, <em>scheduled transfer</em>, <em>preserve metadata</em>, <em>one-time or periodic</em>, <em>accelerate online transfer</em>.</li>
+          <li>Không phải truy cập liên tục: muốn on-prem <b>dùng hàng ngày</b> thì là Storage Gateway. Muốn nhận file từ đối tác qua <b>SFTP/FTPS</b> thì là <b>AWS Transfer Family</b>.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">AWS Backup: một chỗ quản lý backup</span>
+      <ul>
+        <li>Dịch vụ tập trung: tạo <b>backup plan</b> (lịch, giữ bao lâu, chuyển sang cold storage), gán resource bằng <b>tag</b>, lưu vào <b>backup vault</b>.</li>
+        <li>Hỗ trợ EC2, EBS, RDS, Aurora, DynamoDB, EFS, FSx, Storage Gateway, S3, DocumentDB, Neptune, Redshift, VMware on-prem.</li>
+        <li><b>Cross-Region</b> và <b>cross-account</b> backup cho DR. <b>Vault Lock</b>: WORM cho backup, kể cả admin không xóa trước hạn.</li>
+        <li>Đề "<em>centrally manage</em> backup cho nhiều dịch vụ, nhiều account, có chính sách giữ N ngày" → AWS Backup. Chỉ EBS thôi thì DLM cũng được, nhưng đáp án có AWS Backup thường đúng hơn.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Chọn nhanh trong nhóm "đưa dữ liệu lên AWS"</span>
+      <div class="tbl"><table>
+        <tr><th>Tình huống</th><th>Chọn</th></tr>
+        <tr><td>Hàng trăm TB, mạng yếu, một lần</td><td>Snowball Edge</td></tr>
+        <tr><td>Vài chục TB, mạng ổn, muốn tự động theo lịch, giữ metadata</td><td>DataSync</td></tr>
+        <tr><td>On-prem tiếp tục dùng file share, dữ liệu nằm trên S3</td><td>S3 File Gateway</td></tr>
+        <tr><td>App on-prem cần block storage, dữ liệu chính ở cloud</td><td>Volume Gateway cached</td></tr>
+        <tr><td>Thay thư viện băng từ cho phần mềm backup</td><td>Tape Gateway</td></tr>
+        <tr><td>Đối tác gửi file qua SFTP vào S3</td><td>Transfer Family</td></tr>
+        <tr><td>Database on-prem lên RDS</td><td>DMS (tuần 6)</td></tr>
+        <tr><td>Máy ảo nguyên con lên EC2</td><td>Application Migration Service (tuần 9)</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">28. Công ty có 500 TB dữ liệu cần lên S3 trong 2 tuần, đường Internet 100 Mbps. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Nhiều thiết bị Snowball Edge Storage Optimized.</b> 500 TB qua 100 Mbps mất hơn một năm. DataSync và Transfer Acceleration vẫn phụ thuộc đường mạng đó.</p></div>
+      <div class="q"><p class="qt">29. Phần mềm backup on-prem đang ghi ra băng từ, muốn bỏ băng vật lý mà không đổi phần mềm, lưu lâu dài rẻ. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Tape Gateway</b>, băng ảo lưu ở S3 rồi đẩy sang Glacier Deep Archive. File Gateway là bẫy vì phần mềm backup nói chuyện bằng giao thức tape (VTL), không phải NFS.</p></div>
+      <div class="q"><p class="qt">30. Chi nhánh cần truy cập file trên S3 bằng SMB với độ trễ thấp cho file hay dùng, tất cả file vẫn phải nằm ở S3. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>S3 File Gateway</b> (có cache cục bộ, hỗ trợ SMB và AD). DataSync chỉ chuyển dữ liệu định kỳ, không cho mount.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HANDS-ON ============ -->
+<section id="handson">
+  <span class="eyebrow">Thực hành</span>
+  <h2>Hands-on: 7 lab</h2>
+  <p>Làm ở Region <b>ap-northeast-1 (Tokyo)</b> với profile <code>saa</code> đã cấu hình tuần 1. Lab 1 đến 3 và 6 thuộc tuần 2, lab 4, 5, 7 thuộc tuần 3. Mỗi lab có bước dọn dẹp ở cuối; EC2, EBS và EFS tính tiền theo giờ hoặc theo GB nên không để qua đêm.</p>
+  <div class="note">Trước khi bắt đầu: nếu account thuộc Free Tier kiểu mới (credit), vào Billing → Free Tier xem credit còn lại. t3.micro ở Tokyo khoảng 0,0136 USD/giờ, cả khối lab này tốn dưới 2 USD nếu xóa đúng lúc.</div>
+
+  <div class="card">
+    <h3>Lab 1. Chạy EC2 với user data cài web server, truy cập qua public IP</h3>
+    <ol class="steps">
+      <li><div><p>Console → <b>EC2 → Instances → Launch instances</b>. Name <code>saa-web-1</code>. AMI: <b>Amazon Linux 2023</b> (x86_64). Instance type <b>t3.micro</b>.</p></div></li>
+      <li><div><p>Key pair: <b>Create new key pair</b> tên <code>saa-key</code>, loại RSA, định dạng <code>.pem</code>. File tải về cất ở <code>C:\Users\&lt;bạn&gt;\.ssh\</code>.</p></div></li>
+      <li><div><p>Network settings → Edit: VPC mặc định, subnet bất kỳ (ghi lại AZ, ví dụ <code>ap-northeast-1a</code>), <b>Auto-assign public IP: Enable</b>. Security group: tạo mới tên <code>saa-web-sg</code> với hai rule: <b>SSH</b> source <b>My IP</b>, <b>HTTP</b> source <b>Anywhere (0.0.0.0/0)</b>.</p></div></li>
+      <li><div><p>Storage: để 8 GiB <b>gp3</b>. Mở <b>Advanced details</b>, cuộn xuống <b>User data</b>, dán:</p>
+<pre><code>#!/bin/bash
+dnf update -y
+dnf install -y httpd
+systemctl enable --now httpd
+TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 300")
+ID=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
+AZ=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/placement/availability-zone)
+echo "&lt;h1&gt;Hello from $ID in $AZ&lt;/h1&gt;" &gt; /var/www/html/index.html</code></pre><p>Script này vừa cài web server vừa minh họa gọi IMDSv2. Bấm <b>Launch instance</b>.</p></div></li>
+      <li><div><p>Chờ Status check 2/2 (1 đến 2 phút). Copy <b>Public IPv4 address</b>, mở trình duyệt <code>http://&lt;ip&gt;</code> (chú ý http, không phải https). Thấy "Hello from i-xxxx in ap-northeast-1a" là xong.</p></div></li>
+      <li><div><p>SSH vào xem thêm (PowerShell có sẵn ssh):</p>
+<pre><code>ssh -i $HOME\.ssh\saa-key.pem ec2-user@&lt;ip&gt;
+sudo cat /var/log/cloud-init-output.log | tail -20
+curl -s http://169.254.169.254/latest/meta-data/        # không token → lỗi 401 vì IMDSv2</code></pre><p>Nếu PowerShell báo quyền file quá rộng, chạy <code>icacls $HOME\.ssh\saa-key.pem /inheritance:r /grant:r "$env:USERNAME:R"</code>.</p></div></li>
+      <li><div><p>Thử <b>Stop</b> rồi <b>Start</b> instance: public IP đổi, web vẫn chạy (httpd đã enable) nhưng nội dung index.html không đổi vì user data chỉ chạy lần đầu. <b>Chưa terminate</b>, lab 2 và 3 dùng tiếp instance này.</p></div></li>
+    </ol>
+    <div class="note bad">Trang không mở được: kiểm tra (1) SG có HTTP 0.0.0.0/0 chưa, (2) gõ http không phải https, (3) đợi user data xong (xem log). Lỗi hay gặp nhất là trình duyệt tự chuyển sang https.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 2. Gắn thêm EBS, format, mount, chụp snapshot</h3>
+    <ol class="steps">
+      <li><div><p><b>EC2 → Volumes → Create volume</b>: type <b>gp3</b>, size <b>10</b> GiB, <b>AZ phải trùng AZ của instance</b> (ví dụ ap-northeast-1a), tick Encrypt với key mặc định <code>aws/ebs</code>. Tag Name <code>saa-data</code>. Create.</p></div></li>
+      <li><div><p>Chọn volume → <b>Actions → Attach volume</b> → chọn instance <code>saa-web-1</code>, device name để <code>/dev/sdf</code>. Thử đổi AZ ở bước 1 sang 1c để tự thấy instance không hiện trong danh sách attach: đó là bài học "EBS gắn với AZ".</p></div></li>
+      <li><div><p>SSH vào instance, xem đĩa mới:</p>
+<pre><code>lsblk
+# nvme0n1 là root 8G, nvme1n1 là volume mới 10G (Nitro đổi tên /dev/sdf thành nvme1n1)
+sudo file -s /dev/nvme1n1        # "data" nghĩa là chưa có file system
+sudo mkfs -t xfs /dev/nvme1n1
+sudo mkdir /data
+sudo mount /dev/nvme1n1 /data
+df -h /data
+echo "ghi tu lab 2" | sudo tee /data/test.txt</code></pre></div></li>
+      <li><div><p>Để mount tự động sau reboot, dùng UUID (tên device có thể đổi):</p>
+<pre><code>sudo blkid /dev/nvme1n1
+echo "UUID=&lt;uuid-vua-thay&gt;  /data  xfs  defaults,nofail  0  2" | sudo tee -a /etc/fstab
+sudo umount /data &amp;&amp; sudo mount -a &amp;&amp; df -h /data</code></pre><p><code>nofail</code> để instance vẫn boot được nếu volume bị detach.</p></div></li>
+      <li><div><p>Thử <b>Elastic Volumes</b>: Console → volume <code>saa-data</code> → Modify → size 20 GiB. Sau vài phút, trong instance chạy <code>sudo xfs_growfs /data</code> rồi <code>df -h /data</code> thấy 20G. (Volume không có partition nên không cần growpart.)</p></div></li>
+      <li><div><p>Chụp snapshot: volume → <b>Actions → Create snapshot</b>, description <code>saa-data-snap1</code>. Vào <b>Snapshots</b> chờ Completed. Tạo volume từ snapshot ở <b>AZ khác</b>: snapshot → Actions → Create volume from snapshot → AZ <code>ap-northeast-1c</code>. Đây là cách duy nhất chuyển dữ liệu EBS sang AZ khác.</p></div></li>
+      <li><div><p>Dọn: xóa volume vừa tạo ở 1c (chưa gắn vào đâu). Giữ <code>saa-data</code> và snapshot tới lab 3. Chạy <code>aws ec2 describe-volumes --query "Volumes[].{id:VolumeId,state:State,az:AvailabilityZone,size:Size}" --output table</code> để quen cách kiểm tra bằng CLI.</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Lab 3. Tạo AMI từ EC2, launch lại ở AZ khác</h3>
+    <ol class="steps">
+      <li><div><p>Instance <code>saa-web-1</code> → <b>Actions → Image and templates → Create image</b>. Name <code>saa-web-ami-v1</code>. Để tick <b>Reboot instance</b> (nhất quán file system). Trong phần Instance volumes thấy cả root và volume <code>saa-data</code>: bỏ volume data ra khỏi AMI (Remove) để AMI chỉ có root. Create image.</p></div></li>
+      <li><div><p><b>AMIs</b> chờ Available (2 đến 5 phút). Mở <b>Snapshots</b>: thấy một snapshot mới sinh ra kèm AMI. AMI thực chất là snapshot + metadata.</p></div></li>
+      <li><div><p>AMI → <b>Launch instance from AMI</b>. Name <code>saa-web-2</code>, t3.micro, key <code>saa-key</code>, Network: chọn subnet ở <b>AZ khác</b> (ví dụ ap-northeast-1c), bật public IP, SG <code>saa-web-sg</code> có sẵn. <b>Không nhập user data</b>. Launch.</p></div></li>
+      <li><div><p>Mở <code>http://&lt;ip-moi&gt;</code>: web chạy ngay vì httpd đã nằm trong AMI, nhưng trang vẫn ghi instance ID <b>cũ</b> và AZ cũ, vì index.html được nướng sẵn và user data không chạy. Đây là điểm khác biệt golden AMI và user data: thứ gì theo từng instance thì để user data, thứ gì cố định thì nướng AMI.</p></div></li>
+      <li><div><p>Thử copy AMI sang Region khác: AMI → Actions → <b>Copy AMI</b> → Destination Osaka (ap-northeast-3). Xem xong thì vào Osaka <b>deregister</b> và xóa snapshot ở đó ngay.</p></div></li>
+      <li><div><p>Dọn dẹp tuần 2 phần EC2 (giữ lại gì thì ghi rõ):</p>
+<pre><code>aws ec2 terminate-instances --instance-ids &lt;id-saa-web-1&gt; &lt;id-saa-web-2&gt;
+aws ec2 delete-volume --volume-id &lt;id-saa-data&gt;            # sau khi instance đã terminated
+aws ec2 deregister-image --image-id &lt;ami-id&gt;
+aws ec2 delete-snapshot --snapshot-id &lt;snap-cua-ami&gt;
+aws ec2 delete-snapshot --snapshot-id &lt;snap-saa-data-snap1&gt;
+aws ec2 describe-addresses                                   # phải trống, Elastic IP không gắn vẫn tính tiền</code></pre><p>Key pair và security group giữ lại được, không tốn tiền. Lab 6 sẽ tạo EC2 mới.</p></div></li>
+    </ol>
+    <div class="note ok">Kiểm tra lại: EC2 → Instances không còn running, Volumes trống, Snapshots trống, AMIs trống ở cả Tokyo và Osaka.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 6. Mount một EFS vào hai EC2, xem file dùng chung</h3>
+    <p style="font-size:.94rem;color:var(--muted)">Làm ngay sau lab 3 khi còn trong tuần 2. Đánh số 6 theo thứ tự trong checklist.</p>
+    <ol class="steps">
+      <li><div><p>Tạo security group cho EFS: <b>EC2 → Security Groups → Create</b>, tên <code>saa-efs-sg</code>, inbound rule <b>NFS (2049)</b> với source là security group <code>saa-web-sg</code>. Đây là cách chuẩn: cho phép "mọi instance mang SG web" chứ không phải một IP.</p></div></li>
+      <li><div><p><b>EFS → Create file system → Customize</b>. Name <code>saa-efs</code>, Regional, bỏ tick Automatic backups (để không tốn), Lifecycle: transition to IA sau 30 ngày. Performance: General Purpose, Throughput: Elastic. Next → Network: VPC mặc định, mỗi AZ một mount target, đổi SG của mọi mount target sang <code>saa-efs-sg</code>. Create.</p></div></li>
+      <li><div><p>Launch hai EC2 t3.micro Amazon Linux 2023 tên <code>saa-efs-a</code> ở AZ 1a và <code>saa-efs-c</code> ở AZ 1c, cùng key, cùng SG <code>saa-web-sg</code>, bật public IP. Trong user data của cả hai dán:</p>
+<pre><code>#!/bin/bash
+dnf install -y amazon-efs-utils</code></pre><p>(Console EFS cũng có nút gắn EFS ngay lúc launch ở mục Storage → File systems, nhưng làm tay để hiểu.)</p></div></li>
+      <li><div><p>Lấy File system ID (dạng <code>fs-0123abcd</code>) ở trang EFS → bấm <b>Attach</b> để xem lệnh mẫu. SSH vào <code>saa-efs-a</code>:</p>
+<pre><code>sudo mkdir /mnt/efs
+sudo mount -t efs -o tls fs-0123abcd:/ /mnt/efs
+df -h /mnt/efs                      # Size hiện 8.0E, là "gần như vô hạn"
+echo "tu instance A o AZ 1a" | sudo tee /mnt/efs/hello.txt</code></pre></div></li>
+      <li><div><p>SSH vào <code>saa-efs-c</code>, mount y hệt rồi <code>cat /mnt/efs/hello.txt</code>: thấy nội dung từ A dù hai máy ở hai AZ. Ghi thêm một dòng từ C, quay lại A đọc. Đây là điều EBS không làm được.</p></div></li>
+      <li><div><p>Nếu mount treo: 99% là SG. Kiểm tra mount target của AZ đó có SG <code>saa-efs-sg</code> và rule 2049 source đúng <code>saa-web-sg</code>.</p></div></li>
+      <li><div><p>Dọn: terminate hai instance, rồi EFS → <code>saa-efs</code> → Delete (phải gõ ID để xác nhận). EFS tính theo GB nên để quên cũng rẻ, nhưng tạo thói quen xóa.</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Lab 4. Tạo S3 static website, bật versioning, upload đè và khôi phục bản cũ</h3>
+    <ol class="steps">
+      <li><div><p>Tạo bucket (tên duy nhất toàn cầu, đổi hậu tố):</p>
+<pre><code>aws s3 mb s3://saa-web-quy-2026 --region ap-northeast-1</code></pre></div></li>
+      <li><div><p>Console → bucket → tab <b>Permissions</b> → <b>Block public access</b> → Edit → bỏ tick <b>Block all public access</b> → Save (gõ confirm). Chỉ làm vậy với bucket website thử nghiệm này.</p></div></li>
+      <li><div><p>Cùng tab, <b>Bucket policy</b> → Edit, dán (đổi tên bucket):</p>
+<pre><code>{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Sid": "PublicRead",
+    "Effect": "Allow",
+    "Principal": "*",
+    "Action": "s3:GetObject",
+    "Resource": "arn:aws:s3:::saa-web-quy-2026/*"
+  }]
+}</code></pre><p>Chỉ cho <code>GetObject</code> trên object, không cho ListBucket, không cho ghi.</p></div></li>
+      <li><div><p>Tab <b>Properties</b> → cuối trang <b>Static website hosting</b> → Edit → Enable, Index document <code>index.html</code>, Error document <code>error.html</code> → Save. Ghi lại <b>Bucket website endpoint</b>.</p></div></li>
+      <li><div><p>Tạo và upload phiên bản 1:</p>
+<pre><code>Set-Content -Path index.html -Value "&lt;h1&gt;Phien ban 1&lt;/h1&gt;" -Encoding utf8
+Set-Content -Path error.html -Value "&lt;h1&gt;Khong tim thay&lt;/h1&gt;" -Encoding utf8
+aws s3 cp index.html s3://saa-web-quy-2026/ --content-type text/html
+aws s3 cp error.html s3://saa-web-quy-2026/ --content-type text/html</code></pre><p>Mở website endpoint trên trình duyệt thấy "Phien ban 1". Thử <code>/abc</code> thấy trang lỗi.</p></div></li>
+      <li><div><p>Bật versioning rồi upload đè:</p>
+<pre><code>aws s3api put-bucket-versioning --bucket saa-web-quy-2026 --versioning-configuration Status=Enabled
+Set-Content -Path index.html -Value "&lt;h1&gt;Phien ban 2&lt;/h1&gt;" -Encoding utf8
+aws s3 cp index.html s3://saa-web-quy-2026/ --content-type text/html
+aws s3api list-object-versions --bucket saa-web-quy-2026 --prefix index.html --query "Versions[].{id:VersionId,latest:IsLatest,date:LastModified}" --output table</code></pre><p>Thấy hai version: bản 2 <code>IsLatest=True</code>, bản 1 có VersionId <code>null</code> (vì upload trước khi bật versioning). Reload website thấy bản 2.</p></div></li>
+      <li><div><p>Khôi phục bản cũ, cách 1 (an toàn, giữ lịch sử): copy version cũ đè lên thành version mới:</p>
+<pre><code>aws s3api copy-object --bucket saa-web-quy-2026 --key index.html --copy-source "saa-web-quy-2026/index.html?versionId=null" --content-type text/html --metadata-directive REPLACE</code></pre><p>Reload website thấy lại "Phien ban 1". Cách 2: xóa hẳn version mới nhất bằng <code>delete-object --version-id &lt;id-ban-2&gt;</code>.</p></div></li>
+      <li><div><p>Thí nghiệm delete marker: <code>aws s3 rm s3://saa-web-quy-2026/index.html</code> → website báo 404. Chạy lại <code>list-object-versions</code> thấy thêm mục <code>DeleteMarkers</code>. Xóa delete marker bằng <code>aws s3api delete-object --bucket saa-web-quy-2026 --key index.html --version-id &lt;id-delete-marker&gt;</code> → website sống lại. Đây chính là câu "khôi phục file bị xóa nhầm".</p></div></li>
+    </ol>
+    <div class="note">Giữ bucket này cho lab 5 và 7. Static website dùng HTTP; muốn HTTPS và không public phải đặt sau CloudFront với OAC, làm ở tuần 4.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 5. Lifecycle rule chuyển sang Glacier sau 30 ngày</h3>
+    <ol class="steps">
+      <li><div><p>Console → bucket <code>saa-web-quy-2026</code> → tab <b>Management</b> → <b>Create lifecycle rule</b>. Name <code>archive-logs</code>. Scope: <b>Limit the scope using filters</b>, prefix <code>logs/</code>.</p></div></li>
+      <li><div><p>Rule actions, tick bốn thứ: (1) <b>Transition current versions</b>: Glacier Flexible Retrieval sau <b>30</b> ngày; (2) <b>Transition noncurrent versions</b>: Glacier Deep Archive sau 30 ngày; (3) <b>Expire noncurrent versions</b> sau 365 ngày; (4) <b>Delete expired object delete markers or incomplete multipart uploads</b>: tick incomplete multipart 7 ngày. Create rule.</p></div></li>
+      <li><div><p>Thử tạo rule thứ hai chuyển sang <b>Standard-IA sau 10 ngày</b>: Console sẽ cảnh báo tối thiểu 30 ngày. Đó là ràng buộc trong mục 9. Hủy rule này.</p></div></li>
+      <li><div><p>Lifecycle chạy một lần mỗi ngày và cần tới 30 ngày mới thấy hiệu lực, nên lab này dừng ở kiểm tra cấu hình. Xem lại bằng CLI:</p>
+<pre><code>aws s3api get-bucket-lifecycle-configuration --bucket saa-web-quy-2026</code></pre></div></li>
+      <li><div><p>Để "nhìn thấy" Glacier ngay: upload một file thẳng vào class Glacier rồi thử tải về:</p>
+<pre><code>aws s3 cp error.html s3://saa-web-quy-2026/logs/old.html --storage-class GLACIER
+aws s3 cp s3://saa-web-quy-2026/logs/old.html .       # lỗi InvalidObjectState: phải restore trước
+aws s3api restore-object --bucket saa-web-quy-2026 --key logs/old.html --restore-request "Days=1,GlacierJobParameters={Tier=Expedited}"
+aws s3api head-object --bucket saa-web-quy-2026 --key logs/old.html   # xem trường Restore</code></pre><p>Expedited mất 1 đến 5 phút; sau đó <code>cp</code> về được. Object này nằm trong Glacier tối thiểu 90 ngày tính tiền, nhưng vài KB thì không đáng kể; xóa ở lab 7.</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Lab 7. Tạo presigned URL bằng CLI và mở trên trình duyệt</h3>
+    <ol class="steps">
+      <li><div><p>Tạo một bucket <b>private</b> (Block Public Access bật mặc định) và upload một file:</p>
+<pre><code>aws s3 mb s3://saa-private-quy-2026
+Set-Content -Path secret.txt -Value "chi nguoi co link moi doc duoc"
+aws s3 cp secret.txt s3://saa-private-quy-2026/</code></pre><p>Mở <code>https://saa-private-quy-2026.s3.ap-northeast-1.amazonaws.com/secret.txt</code> trên trình duyệt: XML <code>AccessDenied</code>. Đúng như mong đợi.</p></div></li>
+      <li><div><p>Tạo presigned URL sống 2 phút:</p>
+<pre><code>aws s3 presign s3://saa-private-quy-2026/secret.txt --expires-in 120</code></pre><p>Dán URL vào trình duyệt: tải được file. Nhìn URL thấy <code>X-Amz-Credential</code> (của <code>quy-admin</code>), <code>X-Amz-Expires=120</code>, <code>X-Amz-Signature</code>.</p></div></li>
+      <li><div><p>Đợi quá 2 phút, reload: <code>Request has expired</code>. Thử sửa một ký tự trong Signature: <code>SignatureDoesNotMatch</code>.</p></div></li>
+      <li><div><p>Thí nghiệm "URL mang quyền của người tạo": tạo lại user <code>saa-reader</code> như tuần 1 nhưng <b>không gắn policy nào</b>, cấu hình profile <code>reader</code>, rồi <code>aws s3 presign ... --profile reader</code>. URL tạo ra được nhưng mở thì <code>AccessDenied</code>, vì người ký không có quyền GetObject. Presigned URL không cấp thêm quyền, chỉ ủy quyền.</p></div></li>
+      <li><div><p>Presigned cho upload cần SDK (CLI chỉ làm GET). Ghi nhớ là đủ; tuần 7 có Lambda sẽ làm.</p></div></li>
+      <li><div><p>Dọn dẹp toàn bộ tuần 3:</p>
+<pre><code>aws s3 rb s3://saa-private-quy-2026 --force
+aws s3api delete-objects --bucket saa-web-quy-2026 --delete "$(aws s3api list-object-versions --bucket saa-web-quy-2026 --query '{Objects: Versions[].{Key:Key,VersionId:VersionId}}' --output json)"
+aws s3api delete-objects --bucket saa-web-quy-2026 --delete "$(aws s3api list-object-versions --bucket saa-web-quy-2026 --query '{Objects: DeleteMarkers[].{Key:Key,VersionId:VersionId}}' --output json)"
+aws s3 rb s3://saa-web-quy-2026
+aws iam delete-user --user-name saa-reader    # sau khi xóa access key của user này</code></pre><p>Bucket có versioning phải xóa hết version và delete marker mới <code>rb</code> được; nếu lệnh trên báo lỗi JSON trong PowerShell, xóa trên Console: bucket → Empty → gõ xác nhận → Delete. Nếu <code>DeleteMarkers</code> trống thì lệnh thứ hai báo lỗi, bỏ qua.</p></div></li>
+    </ol>
+    <div class="note ok">Kết thúc khối: Billing → Bills phải chỉ thấy vài cent EC2/EBS. Cost Explorer lọc theo service để chắc không còn EFS hay EBS chạy ngầm.</div>
+  </div>
+</section>
+
+<!-- ============ MỐC KIỂM TRA ============ -->
+<section id="moc">
+  <span class="eyebrow">Mốc kiểm tra</span>
+  <h2>Hai việc phải tự làm được không nhìn tài liệu</h2>
+  <div class="card">
+    <h3>1. Phân biệt EBS, EFS, instance store, S3 dùng trong tình huống nào</h3>
+    <p style="font-size:.94rem">Tự điền bảng này ra giấy, rồi mới mở ra so:</p>
+    <div class="tbl"><table>
+      <tr><th></th><th>EBS</th><th>Instance store</th><th>EFS</th><th>S3</th></tr>
+      <tr><td>Kiểu</td><td>Block (ổ đĩa)</td><td>Block (ổ đĩa cục bộ)</td><td>File (NFS)</td><td>Object (HTTP API)</td></tr>
+      <tr><td>Phạm vi</td><td>Một AZ</td><td>Một host vật lý</td><td>Region (nhiều AZ) hoặc One Zone</td><td>Region, 3+ AZ</td></tr>
+      <tr><td>Bao nhiêu máy gắn</td><td>Một (multi-attach: 16, io1/io2, cùng AZ)</td><td>Một</td><td>Hàng trăm, nhiều AZ, cả Lambda/container</td><td>Không gắn, ai có quyền đều gọi API</td></tr>
+      <tr><td>Còn sau stop?</td><td>Có</td><td><b>Không</b></td><td>Có</td><td>Có</td></tr>
+      <tr><td>OS</td><td>Linux, Windows</td><td>Linux, Windows</td><td>Linux (Windows dùng FSx)</td><td>Bất kỳ</td></tr>
+      <tr><td>Tính tiền</td><td>GB provision</td><td>Trong giá instance</td><td>GB dùng</td><td>GB dùng + request + transfer</td></tr>
+      <tr><td>Hiệu năng</td><td>Tới 256.000 IOPS (io2)</td><td>Cao nhất, triệu IOPS</td><td>Co giãn, độ trễ cao hơn EBS</td><td>Throughput lớn, độ trễ ms, không phải block</td></tr>
+      <tr><td>Chọn khi đề nói</td><td>Boot, database, <em>persistent</em>, <em>single instance</em></td><td><em>temporary</em>, <em>highest IOPS</em>, <em>can be lost</em></td><td><em>shared</em>, <em>multiple instances / AZs</em>, <em>POSIX</em>, Linux</td><td><em>static content</em>, <em>backup</em>, <em>data lake</em>, <em>unlimited</em>, rẻ nhất</td></tr>
+    </table></div>
+  </div>
+  <div class="card">
+    <h3>2. Chọn được storage class S3 theo từ khóa đề bài</h3>
+    <p style="font-size:.94rem">Đọc mỗi cụm từ bên trái, nói class trước khi nhìn cột phải:</p>
+    <div class="tbl"><table>
+      <tr><th>Đề bài có chữ</th><th>Class</th></tr>
+      <tr><td><em>frequently accessed</em>, không nói gì thêm</td><td>Standard</td></tr>
+      <tr><td><em>unknown</em> / <em>unpredictable</em> / <em>changing access patterns</em>, <em>without operational overhead</em></td><td>Intelligent-Tiering</td></tr>
+      <tr><td><em>infrequently accessed</em> but <em>immediate access</em>, <em>rapid access when needed</em></td><td>Standard-IA</td></tr>
+      <tr><td>như trên + <em>easily recreated</em>, <em>non-critical</em>, <em>lowest cost</em></td><td>One Zone-IA</td></tr>
+      <tr><td><em>archive</em>, <em>accessed once a quarter</em>, <em>millisecond retrieval</em></td><td>Glacier Instant Retrieval</td></tr>
+      <tr><td><em>archive</em>, <em>retrieval within a few hours</em>, <em>minutes acceptable with expedited</em></td><td>Glacier Flexible Retrieval</td></tr>
+      <tr><td><em>retain for 7+ years</em>, <em>retrieval within 12 to 48 hours</em>, <em>lowest storage cost</em></td><td>Glacier Deep Archive</td></tr>
+      <tr><td><em>objects smaller than 128 KB</em>, nhiều file nhỏ ít đọc</td><td>Standard (IA/Glacier IR tính tối thiểu 128 KB nên không rẻ)</td></tr>
+      <tr><td><em>must be retained</em>, <em>minimum 30 days</em> rồi mới chuyển</td><td>Lifecycle Standard → IA đúng từ ngày 30</td></tr>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============ TỪ KHÓA ============ -->
+<section id="tukhoa">
+  <span class="eyebrow">Ôn nhanh</span>
+  <h2>Bảng từ khóa tuần 2 đến 3</h2>
+  <div class="tbl"><table>
+    <tr><th>Đề bài có chữ</th><th>Nghĩ ngay tới</th></tr>
+    <tr><td><em>in-memory</em>, dataset lớn trong RAM</td><td>Memory optimized (r, x)</td></tr>
+    <tr><td><em>compute-intensive</em>, batch, encode</td><td>Compute optimized (c)</td></tr>
+    <tr><td><em>GPU</em>, ML training</td><td>Accelerated (p, g, trn)</td></tr>
+    <tr><td>App trên t3 chậm dần sau tải cao</td><td>Hết CPU credit, bật Unlimited hoặc đổi m</td></tr>
+    <tr><td>Chạy script lúc khởi động lần đầu</td><td>User data</td></tr>
+    <tr><td>Lấy instance ID, IP, role credential từ bên trong</td><td>Instance metadata 169.254.169.254, ép IMDSv2 chống SSRF</td></tr>
+    <tr><td>Boot nhanh, cài sẵn, giống nhau</td><td>Golden AMI, EC2 Image Builder</td></tr>
+    <tr><td>Launch ở Region khác</td><td>Copy AMI sang Region đó</td></tr>
+    <tr><td><em>interruption acceptable</em>, batch, <em>lowest cost</em></td><td>Spot (+ đa dạng type/AZ trong fleet)</td></tr>
+    <tr><td><em>steady state</em> 1 đến 3 năm, cần linh hoạt family/Region/Fargate</td><td>Compute Savings Plans</td></tr>
+    <tr><td>Ổn định, chỉ EC2, một family một Region, giảm nhiều nhất</td><td>EC2 Instance Savings Plans hoặc Standard RI</td></tr>
+    <tr><td><em>reserve capacity</em> trong AZ</td><td>Zonal RI hoặc On-Demand Capacity Reservation</td></tr>
+    <tr><td><em>per-socket / per-core license</em>, BYOL</td><td>Dedicated Host</td></tr>
+    <tr><td><em>dedicated hardware</em>, không nhắc license</td><td>Dedicated Instance</td></tr>
+    <tr><td><em>lowest latency between instances</em>, HPC</td><td>Cluster placement group (một AZ)</td></tr>
+    <tr><td>Vài instance <em>critical</em> tách phần cứng</td><td>Spread placement group (7/AZ)</td></tr>
+    <tr><td>Hadoop/Kafka/Cassandra hàng trăm node</td><td>Partition placement group</td></tr>
+    <tr><td>IP không đổi sau stop/start</td><td>Elastic IP</td></tr>
+    <tr><td>Boot volume, database, <em>cost-effective</em> SSD</td><td>gp3</td></tr>
+    <tr><td><em>over 16,000 IOPS</em>, <em>sub-millisecond</em>, DB quan trọng</td><td>io2 Block Express</td></tr>
+    <tr><td>Big data, log, <em>sequential</em>, <em>throughput</em>, rẻ</td><td>st1 (sc1 nếu ít đọc)</td></tr>
+    <tr><td>Volume gp2 nhỏ thiếu IOPS</td><td>Đổi sang gp3, provision IOPS</td></tr>
+    <tr><td>Đưa EBS sang AZ/Region khác</td><td>Snapshot → tạo volume / copy snapshot</td></tr>
+    <tr><td>Mã hóa volume đang chưa mã hóa</td><td>Snapshot → copy có encrypt → volume mới</td></tr>
+    <tr><td>Tự động chụp và xóa snapshot</td><td>Data Lifecycle Manager hoặc AWS Backup</td></tr>
+    <tr><td>Snapshot rẻ hơn, chấp nhận restore 24 đến 72 giờ</td><td>EBS Snapshots Archive</td></tr>
+    <tr><td>Lỡ tay xóa snapshot/AMI</td><td>Recycle Bin</td></tr>
+    <tr><td>Nhiều EC2 cùng AZ ghi chung một volume, cluster FS</td><td>EBS multi-attach (io1/io2)</td></tr>
+    <tr><td><em>temporary</em>, <em>highest IOPS</em>, mất khi stop</td><td>Instance store</td></tr>
+    <tr><td><em>shared file system</em>, Linux, nhiều AZ, Lambda/container</td><td>EFS</td></tr>
+    <tr><td>Giảm chi phí EFS không đổi app</td><td>EFS lifecycle sang IA / Archive</td></tr>
+    <tr><td>EFS nhỏ nhưng cần throughput cao đều</td><td>Provisioned throughput (hoặc Elastic nếu spiky)</td></tr>
+    <tr><td><em>Windows</em>, <em>SMB</em>, <em>Active Directory</em>, NTFS ACL</td><td>FSx for Windows File Server</td></tr>
+    <tr><td><em>HPC</em>, <em>ML</em>, xử lý dữ liệu S3 tốc độ cao</td><td>FSx for Lustre (scratch tạm, persistent lâu dài)</td></tr>
+    <tr><td><em>NetApp</em>, <em>multi-protocol NFS/SMB/iSCSI</em>, SnapMirror</td><td>FSx for NetApp ONTAP</td></tr>
+    <tr><td>Durability 11 số 9, <em>unlimited</em>, object</td><td>S3</td></tr>
+    <tr><td><em>unknown access pattern</em></td><td>S3 Intelligent-Tiering</td></tr>
+    <tr><td><em>infrequent</em> + <em>immediate</em></td><td>Standard-IA (One Zone-IA nếu tái tạo được)</td></tr>
+    <tr><td>Archive quý đọc một lần, cần ms</td><td>Glacier Instant Retrieval</td></tr>
+    <tr><td>Archive, chờ vài giờ được</td><td>Glacier Flexible (Expedited 1 đến 5 phút, Standard 3 đến 5 giờ, Bulk 5 đến 12 giờ)</td></tr>
+    <tr><td>Rẻ nhất, chờ 12 đến 48 giờ, giữ nhiều năm</td><td>Glacier Deep Archive</td></tr>
+    <tr><td>Tự chuyển class và xóa sau N ngày</td><td>Lifecycle rule (IA tối thiểu sau 30 ngày)</td></tr>
+    <tr><td>Chống xóa/ghi đè nhầm</td><td>Versioning (+ MFA Delete)</td></tr>
+    <tr><td>Khôi phục file bị xóa trong bucket versioning</td><td>Xóa delete marker</td></tr>
+    <tr><td>Bản sao Region khác, compliance, DR</td><td>CRR (versioning hai đầu, chỉ object mới, Batch Replication cho cũ)</td></tr>
+    <tr><td>Gom log nhiều bucket, prod sang test cùng Region</td><td>SRR</td></tr>
+    <tr><td>Replicate trong 15 phút có SLA</td><td>S3 Replication Time Control</td></tr>
+    <tr><td><em>WORM</em>, không ai xóa được kể cả root</td><td>Object Lock Compliance mode (Governance nếu admin cần bypass)</td></tr>
+    <tr><td>Cho account khác hoặc public đọc bucket</td><td>Bucket policy (không dùng ACL)</td></tr>
+    <tr><td>Chặn mọi khả năng public trong account</td><td>Block Public Access mức account</td></tr>
+    <tr><td>Ép HTTPS</td><td>Bucket policy Deny aws:SecureTransport=false</td></tr>
+    <tr><td>Chỉ truy cập từ VPC endpoint</td><td>Bucket policy điều kiện aws:SourceVpce</td></tr>
+    <tr><td>Mã hóa đơn giản nhất</td><td>SSE-S3 (mặc định)</td></tr>
+    <tr><td><em>audit key usage</em>, <em>control access to keys</em>, rotate</td><td>SSE-KMS customer managed key</td></tr>
+    <tr><td>KMS bị throttle / tốn tiền với bucket nhiều request</td><td>S3 Bucket Keys</td></tr>
+    <tr><td>Key không được lưu ở AWS</td><td>SSE-C (hoặc client-side)</td></tr>
+    <tr><td>Từ chối upload không mã hóa</td><td>Bucket policy Deny thiếu header x-amz-server-side-encryption</td></tr>
+    <tr><td>Tải/upload tạm thời không mở public, không cần IAM</td><td>Presigned URL</td></tr>
+    <tr><td>Người dùng xa upload file lớn vào một bucket</td><td>Transfer Acceleration + multipart</td></tr>
+    <tr><td>File trên 100 MB, trên 5 GB</td><td>Multipart upload (bắt buộc trên 5 GB)</td></tr>
+    <tr><td>Hóa đơn S3 cao bất thường</td><td>Lifecycle abort incomplete multipart, expire noncurrent</td></tr>
+    <tr><td>Upload xong gọi Lambda/SQS/SNS</td><td>S3 Event Notification (EventBridge nếu lọc phức tạp, nhiều đích)</td></tr>
+    <tr><td>Lọc dữ liệu trong object bằng SQL</td><td>S3 Select</td></tr>
+    <tr><td>On-prem dùng NFS/SMB, dữ liệu trên S3, có cache</td><td>S3 File Gateway</td></tr>
+    <tr><td>On-prem iSCSI, dữ liệu chính trên cloud</td><td>Volume Gateway cached</td></tr>
+    <tr><td>On-prem iSCSI, toàn bộ dữ liệu tại chỗ, backup lên cloud</td><td>Volume Gateway stored</td></tr>
+    <tr><td>Thay băng từ, giữ phần mềm backup</td><td>Tape Gateway</td></tr>
+    <tr><td>Hàng trăm TB, mạng yếu, offline</td><td>Snowball Edge (Snowcone nếu nhỏ, edge)</td></tr>
+    <tr><td>Chuyển online theo lịch, giữ metadata, NFS/SMB/HDFS sang S3/EFS/FSx</td><td>DataSync</td></tr>
+    <tr><td>Nhận file qua SFTP/FTPS vào S3</td><td>Transfer Family</td></tr>
+    <tr><td><em>centrally manage</em> backup nhiều dịch vụ, cross-account/Region, WORM</td><td>AWS Backup (+ Vault Lock)</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ CHECKLIST ============ -->
+<section id="checklist">
+  <span class="eyebrow">Theo dõi</span>
+  <h2>Checklist tuần 2 đến 3</h2>
+  <p style="font-size:.94rem;color:var(--muted)">Tick ở đây để tự theo dõi trên máy này. Khi xong mục nào, nói với Claude trong session để tick vào <code>AWS-SAA-checklist.md</code>.</p>
+  <div class="card">
+    <h4>Lý thuyết tuần 2</h4>
+    <label class="check"><input type="checkbox" id="c1" data-ck><span>EC2: instance family, user data, metadata</span></label>
+    <label class="check"><input type="checkbox" id="c2" data-ck><span>EC2 pricing: On-Demand, Spot, Reserved, Savings Plans, Dedicated Host</span></label>
+    <label class="check"><input type="checkbox" id="c3" data-ck><span>EC2: placement group (cluster, spread, partition)</span></label>
+    <label class="check"><input type="checkbox" id="c4" data-ck><span>EBS: gp3, io2, st1, sc1, snapshot, encryption, multi-attach</span></label>
+    <label class="check"><input type="checkbox" id="c5" data-ck><span>AMI, instance store</span></label>
+    <label class="check"><input type="checkbox" id="c6" data-ck><span>EFS: performance mode, throughput mode, storage class</span></label>
+    <label class="check"><input type="checkbox" id="c7" data-ck><span>FSx for Windows, FSx for Lustre, FSx for NetApp ONTAP</span></label>
+    <h4>Lý thuyết tuần 3</h4>
+    <label class="check"><input type="checkbox" id="c8" data-ck><span>S3: storage class</span></label>
+    <label class="check"><input type="checkbox" id="c9" data-ck><span>S3: lifecycle, versioning, replication (CRR, SRR), Object Lock</span></label>
+    <label class="check"><input type="checkbox" id="c10" data-ck><span>S3: bucket policy, ACL, Block Public Access, encryption SSE-S3 / SSE-KMS / SSE-C</span></label>
+    <label class="check"><input type="checkbox" id="c11" data-ck><span>S3: presigned URL, Transfer Acceleration, multipart upload, event notification</span></label>
+    <label class="check"><input type="checkbox" id="c12" data-ck><span>Storage Gateway (File, Volume, Tape), Snow family, AWS Backup, DataSync</span></label>
+    <h4>Hands-on</h4>
+    <label class="check"><input type="checkbox" id="c13" data-ck><span>Lab 1: EC2 với user data cài web server, truy cập qua public IP</span></label>
+    <label class="check"><input type="checkbox" id="c14" data-ck><span>Lab 2: gắn thêm EBS, format, mount, chụp snapshot</span></label>
+    <label class="check"><input type="checkbox" id="c15" data-ck><span>Lab 3: tạo AMI từ EC2, launch lại ở AZ khác</span></label>
+    <label class="check"><input type="checkbox" id="c16" data-ck><span>Lab 4: S3 static website, versioning, upload đè và khôi phục</span></label>
+    <label class="check"><input type="checkbox" id="c17" data-ck><span>Lab 5: lifecycle rule chuyển sang Glacier sau 30 ngày</span></label>
+    <label class="check"><input type="checkbox" id="c18" data-ck><span>Lab 6: mount một EFS vào hai EC2, xem file dùng chung</span></label>
+    <label class="check"><input type="checkbox" id="c19" data-ck><span>Lab 7: presigned URL bằng CLI, mở trên trình duyệt</span></label>
+    <h4>Mốc kiểm tra</h4>
+    <label class="check"><input type="checkbox" id="c20" data-ck><span>Phân biệt EBS, EFS, instance store, S3 dùng trong tình huống nào</span></label>
+    <label class="check"><input type="checkbox" id="c21" data-ck><span>Chọn được storage class S3 theo từ khóa đề bài</span></label>
+    <label class="check"><input type="checkbox" id="c22" data-ck><span>Quiz tuần 2 đến 3 (40 câu) đạt từ 80%</span></label>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  // Xem đáp án
+  document.querySelectorAll('[data-reveal]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var a=b.parentElement.querySelector('.ans');
+      a.hidden=!a.hidden; b.textContent=a.hidden?'Xem đáp án':'Ẩn đáp án';
+    });
+  });
+  // Checklist lưu trên máy này
+  var boxes=document.querySelectorAll('[data-ck]'), KEY='saa-tuan-02-03';
+  var saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  function update(){
+    var n=0; boxes.forEach(function(c){ c.closest('.check').classList.toggle('done',c.checked); if(c.checked)n++; });
+    document.getElementById('bar').style.width=(n/boxes.length*100)+'%';
+    document.getElementById('pct').textContent=n+'/'+boxes.length;
+  }
+  boxes.forEach(function(c){
+    if(saved[c.id])c.checked=true;
+    c.addEventListener('change',function(){ saved[c.id]=c.checked; try{ localStorage.setItem(KEY,JSON.stringify(saved)); }catch(e){} update(); });
+  });
+  update();
+  // Đánh dấu mục đang đọc
+  var links=document.querySelectorAll('.toc a'), secs=[];
+  links.forEach(function(l){ var s=document.querySelector(l.getAttribute('href')); if(s)secs.push([s,l]); });
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ links.forEach(function(l){l.classList.remove('active')}); secs.forEach(function(p){ if(p[0]===e.target)p[1].classList.add('active'); }); } }); },{rootMargin:'-20% 0px -70% 0px'});
+    secs.forEach(function(p){ io.observe(p[0]); });
+  }
+})();
+</script>

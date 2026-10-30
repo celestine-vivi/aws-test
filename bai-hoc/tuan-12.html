@@ -1,0 +1,932 @@
+<title>SAA Tuần 12 Ngày thi</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky mục lục bên trái (desktop), cột nội dung 760px bên phải; xếp một cột ở màn hẹp. */
+:root{
+  --bg:#f2f4f7; --surface:#ffffff; --surface-2:#e9edf2; --line:#d3dae3;
+  --fg:#172030; --muted:#5a6676; --accent:#1c6e8c; --accent-soft:#dcecf3;
+  --warm:#b35a00; --warm-soft:#fbe9d6; --ok:#2a7d4f; --ok-soft:#dcf0e4; --bad:#b3362b; --bad-soft:#f8dedb;
+  --display:"Manrope","IBM Plex Sans",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+a{color:var(--accent)}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:800}
+h2{font-size:1.5rem;font-weight:800;padding-top:8px}
+h3{font-size:1.12rem;font-weight:700}
+h4{font-size:.95rem;font-weight:700}
+p{margin:0}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+pre{font-family:var(--mono);font-size:.84rem;line-height:1.5;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:0}
+pre code{background:none;padding:0;font-size:inherit}
+em{color:var(--warm);font-style:italic}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* Header */
+.hero{max-width:1120px;margin:0 auto;padding-block:36px 20px;display:flex;flex-direction:column;gap:12px}
+.hero .lead{max-width:62ch;color:var(--muted);font-size:1.02rem}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.88rem;color:var(--muted)}
+.meta b{color:var(--fg);font-weight:600}
+.progress{display:flex;align-items:center;gap:12px;font-size:.88rem;color:var(--muted)}
+.bar{flex:1;max-width:320px;height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+
+/* Two columns */
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;align-items:start}
+.toc{position:sticky;top:max(12px,env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:2px;font-size:.9rem}
+.toc a{color:var(--muted);text-decoration:none;padding:6px 10px;border-left:2px solid var(--line);display:block}
+.toc a:hover,.toc a.active{color:var(--fg);border-left-color:var(--accent)}
+.toc .grp{margin-top:10px}
+main{display:flex;flex-direction:column;gap:56px;min-width:0;max-width:780px}
+section{display:flex;flex-direction:column;gap:18px;scroll-margin-top:16px}
+@media (max-width:860px){ .wrap{grid-template-columns:1fr;gap:24px} .toc{position:static;flex-direction:row;flex-wrap:wrap;gap:6px} .toc a{border:1px solid var(--line);border-radius:99px;padding:4px 10px} .toc .grp{margin:0} .toc a.active{border-color:var(--accent)} }
+
+/* Blocks */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.block{display:flex;flex-direction:column;gap:8px}
+.block > .eyebrow{color:var(--accent)}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:5px}
+li::marker{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.kw{display:flex;flex-wrap:wrap;gap:8px}
+.kw span{background:var(--warm-soft);color:var(--warm);border-radius:4px;padding:3px 9px;font-size:.86rem;font-style:italic}
+.kw span b{font-style:normal;font-weight:600;color:var(--fg)}
+.note{border-left:3px solid var(--warm);background:var(--warm-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.94rem}
+.note.ok{border-color:var(--ok);background:var(--ok-soft)}
+.note.bad{border-color:var(--bad);background:var(--bad-soft)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;font-size:.84rem}
+tr:last-child td{border-bottom:0}
+td.c{text-align:center}
+
+/* Checklist */
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:6px;cursor:pointer}
+.check:hover{background:var(--surface-2)}
+.check input{margin-top:5px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.check.done{color:var(--muted);text-decoration:line-through}
+
+/* Quiz reveal */
+.q{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.q .qt{font-weight:500}
+.q button{align-self:flex-start;font:inherit;font-size:.86rem;padding:5px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer}
+.q button:hover{background:var(--accent);color:var(--surface)}
+.q button:focus-visible,.check input:focus-visible,.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.q .ans{font-size:.94rem;border-top:1px dashed var(--line);padding-top:8px}
+.q .ans b{color:var(--ok)}
+
+/* Steps */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:12px;padding:0;list-style:none}
+.steps li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:start}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--mono);font-size:.8rem;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:500;margin-top:2px}
+.steps li > div{display:flex;flex-direction:column;gap:6px;min-width:0}
+
+/* Flow diagram */
+.flow{display:flex;flex-direction:column;gap:0;align-items:stretch;max-width:520px}
+.flow .n{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:.94rem}
+.flow .n .tag{font-family:var(--mono);font-size:.74rem;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.tag.deny{background:var(--bad-soft);color:var(--bad)} .tag.allow{background:var(--ok-soft);color:var(--ok)} .tag.next{background:var(--surface-2);color:var(--muted)}
+.flow .arrow{height:22px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--mono);font-size:.78rem}
+.flow .arrow::before{content:"";width:1px;height:100%;background:var(--line);position:absolute}
+.flow .arrow{position:relative} .flow .arrow span{background:var(--bg);padding:0 6px;position:relative}
+
+svg text{font-family:var(--body)}
+.diag{overflow-x:auto}
+.diag svg{width:100%;max-width:700px;height:auto;display:block}
+.sv-region{fill:var(--surface);stroke:var(--accent)} .sv-az{fill:var(--accent-soft);stroke:var(--accent)} .sv-edge{fill:var(--warm-soft);stroke:var(--warm)}
+.sv-t{fill:var(--fg);font-size:13px} .sv-m{fill:var(--muted);font-size:11px} .sv-line{stroke:var(--line)}
+@media (prefers-reduced-motion: reduce){ .bar i{transition:none} }
+/* Thêm cho tuần 12: cột con số in đậm bằng mono */
+.tbl td.num{font-family:var(--mono);font-size:.86rem;white-space:nowrap;font-weight:500}
+</style>
+
+<header class="hero">
+  <span class="eyebrow">AWS SAA-C03 · Lộ trình 12 tuần · Tuần 12</span>
+  <h1>Tuần cuối: chốt đề, đặt lịch, đi thi</h1>
+  <p class="lead">Tuần 10 đã ôn bảng so sánh và làm ba đề đầu, tuần 11 đã đi hết Tutorials Dojo đề 2 đến 5 và ôn theo domain. Tuần này không học gì mới: làm nốt đề 6, làm lại những đề dưới 80%, đặt lịch Pearson VUE, thuộc bảng con số, dọn account AWS rồi đi thi. Mục tiêu cuối tuần chỉ có một: <b>THI ĐỖ</b>.</p>
+  <div class="meta"><span>Nhịp học: <b>1,5 đến 2 giờ/ngày</b>, ngày trước thi chỉ đọc lướt</span><span>Domain liên quan: <b>cả 4</b> (SEC 30%, RES 26%, PERF 24%, COST 20%)</span><span>Chi phí: <b>lệ phí thi 150 USD</b>, lab 0 USD</span></div>
+  <div class="progress"><span>Tiến độ checklist</span><div class="bar"><i id="bar"></i></div><span id="pct">0/12</span></div>
+</header>
+
+<div class="wrap">
+<nav class="toc" aria-label="Mục lục">
+  <a href="#ke-hoach">Kế hoạch 7 ngày</a>
+  <span class="grp eyebrow">Chuẩn bị thi</span>
+  <a href="#dat-lich">1. Đăng ký thi</a>
+  <a href="#cheat-sheet-so">2. Con số phải nhớ</a>
+  <a href="#cheat-sheet-tu-khoa">3. Bảng từ khóa cuối cùng</a>
+  <a href="#chien-thuat">4. Chiến thuật ngày thi</a>
+  <a href="#ngay-truoc-thi">5. 48 giờ trước và ngày thi</a>
+  <a href="#sau-khi-thi">6. Sau khi thi</a>
+  <span class="grp eyebrow">Lịch tuần 12</span>
+  <a href="#handson">Lịch tuần 12: 4 việc</a>
+  <a href="#moc">Mốc kiểm tra</a>
+  <a href="#tukhoa">Cụm mở đầu → domain</a>
+  <a href="#checklist">Checklist tuần</a>
+</nav>
+
+<main>
+
+<section id="ke-hoach">
+  <h2>Kế hoạch 7 ngày</h2>
+  <p>Tuần này lịch đi theo ngày thi. Nếu đã đặt lịch ở tuần 11 thì ngày 7 là ngày thi; nếu chưa thì ngày 3 phải đặt xong và dời ngày thi sang tuần sau, các ngày còn lại giữ nguyên thứ tự.</p>
+  <div class="tbl"><table>
+    <tr><th>Ngày</th><th>Việc chính</th><th>Ghi chú</th></tr>
+    <tr><td>1</td><td>Tutorials Dojo đề 6, chế độ <b>timed</b>, 65 câu trong 130 phút</td><td>Ghi % vào checklist. Đọc giải thích cả câu đúng, ghi câu sai vào <code>so-ghi-cau-sai.md</code>.</td></tr>
+    <tr><td>2</td><td>Làm lại các đề dưới 80% (TD đề 1 đến 5, AWS Official Practice Set, đề của khóa học)</td><td>Lần 2 phải trên 80%. Nếu vẫn dưới, ôn đúng domain yếu theo score report rồi làm lại lần 3.</td></tr>
+    <tr><td>3</td><td>Đặt lịch thi nếu chưa đặt (xin ESL trước, rồi Pearson VUE, rồi system test). Ôn sổ câu sai từ tuần 1 đến 11.</td><td>Sổ câu sai là tài liệu ôn giá trị nhất tuần này, đọc từng dòng và tự hỏi "giờ mình chọn gì".</td></tr>
+    <tr><td>4</td><td>Đọc và tự che bảng <a href="#cheat-sheet-so">con số phải nhớ</a></td><td>Che cột Con số, tự nói, mở ra đối chiếu. Làm 2 lượt, cách nhau vài giờ.</td></tr>
+    <tr><td>5</td><td>Đọc bảng <a href="#cheat-sheet-tu-khoa">từ khóa cuối cùng</a>, dọn account AWS</td><td>Rà từng Region, xóa resource còn sót, giữ Budget. Xem Bills phải về 0 USD cho ngày hôm sau.</td></tr>
+    <tr><td>6</td><td>Nghỉ. Chỉ đọc lướt hai cheat sheet, không làm đề, không học bài mới.</td><td>Ngủ đủ. Chuẩn bị giấy tờ, kiểm tra phòng thi (online) hoặc đường đi (test center).</td></tr>
+    <tr><td>7</td><td><b>Thi</b> (hoặc ngày thi đã đặt)</td><td>Check-in sớm 30 phút (online) hoặc đến sớm 15 phút (test center). Flag câu khó, loại 2 đáp án sai, không bỏ trống.</td></tr>
+  </table></div>
+  <div class="note">Tuần 12 không có quiz do Claude sinh. "Quiz" của tuần này là TD đề 6 và kỳ thi thật. Bài kiểm tra cuối cùng ghi vào checklist là <code>AWS-SAA-checklist.md</code> mục "THI ĐỖ".</div>
+</section>
+
+<!-- ============ 1. ĐĂNG KÝ THI ============ -->
+<section id="dat-lich">
+  <span class="eyebrow">Chuẩn bị thi 1 / 6</span>
+  <h2>Đăng ký thi: tài khoản, Pearson VUE, ESL, giấy tờ</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Điều kiện đặt lịch</span>
+      <div class="note ok">Quy tắc của lộ trình: <b>hai đề luyện liên tiếp từ 80% trở lên</b> (chế độ timed, không tra tài liệu) thì đặt lịch ngay, không chờ "ôn thêm chút nữa". Đề Tutorials Dojo khó hơn đề thật một chút, nên 80% ở TD thường tương ứng khoảng 750 đến 800 điểm thật (ước lượng từ kinh nghiệm cộng đồng, không phải số chính thức). Đặt lịch sớm còn có tác dụng ép mình học đều: ngày thi đã cố định thì không còn lý do trì hoãn.</div>
+      <ul>
+        <li>Nếu mới có một đề trên 80%: vẫn đặt lịch cách 7 đến 10 ngày, dùng tuần đó làm lại đề dưới 80%. Pearson VUE cho đổi lịch, chi tiết ở dưới.</li>
+        <li>Nếu chưa đề nào trên 80%: không đặt vội. Quay lại tuần 11, ôn đúng domain yếu theo score report của TD, làm lại đề sau 3 đến 4 ngày.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Tài khoản AWS Certification</span>
+      <ul>
+        <li>Vào <a href="https://www.aws.training/certification" target="_blank" rel="noopener">aws.training/certification</a> → Sign in. Có thể đăng nhập bằng Amazon account, Builder ID hoặc tài khoản doanh nghiệp. Lần đầu sẽ được chuyển sang <b>CertMetrics</b> (hệ thống quản lý chứng chỉ của AWS) để điền hồ sơ.</li>
+        <li><b>Tên trong hồ sơ phải khớp y hệt giấy tờ tùy thân</b> sẽ mang đi thi: thứ tự họ tên, dấu, chữ đệm. Nếu thi ở Nhật với 在留カード hoặc passport Việt Nam thì điền tên không dấu, đúng thứ tự trên passport (ví dụ <code>HO VAN QUY</code> thì First name <code>VAN QUY</code>, Last name <code>HO</code>, hoặc theo đúng cách passport tách). Sai tên là bị từ chối vào thi và mất lệ phí, sửa tên sau khi đặt lịch phải qua support.</li>
+        <li>Dùng email cá nhân, không dùng email công ty sắp đổi. Chứng chỉ, badge và voucher gắn với tài khoản này 3 năm.</li>
+        <li>Nếu đã có chứng chỉ AWS khác (ví dụ Cloud Practitioner): vào <b>Benefits</b> lấy voucher <b>50% off</b> cho kỳ thi tiếp theo, áp mã khi thanh toán Pearson VUE. Voucher có hạn dùng, kiểm tra ngày hết hạn.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Xin accommodation "ESL +30 minutes" (PHẢI làm trước khi đặt lịch)</span>
+      <div class="note bad">Nếu thi bằng <b>tiếng Anh</b> và tiếng Anh không phải tiếng mẹ đẻ, bạn được xin thêm <b>30 phút</b>. Accommodation này phải được <b>duyệt trước khi đặt lịch</b>; đặt lịch xong mới xin thì không áp dụng cho lịch đã đặt, phải hủy và đặt lại. Thi bằng tiếng Nhật thì không xin được ESL (ESL chỉ cho đề tiếng Anh).</div>
+      <ol>
+        <li>Trong CertMetrics → menu <b>Request Exam Accommodations</b> (tên menu có thể hơi khác, cần kiểm tra lại khi vào).</li>
+        <li>Chọn accommodation <b>ESL +30 MINUTES</b>. Loại này không cần giấy tờ chứng minh, thường được duyệt tự động hoặc trong vài ngày làm việc.</li>
+        <li>Chờ trạng thái <b>Approved</b>. Chỉ khi đó mới bấm Schedule với Pearson VUE; lúc đặt lịch, thời gian thi sẽ hiện 160 phút thay vì 130.</li>
+      </ol>
+      <p style="font-size:.92rem;color:var(--muted)">Các accommodation khác (thêm thời gian vì lý do y tế, phòng riêng, screen reader) cần giấy tờ và duyệt lâu hơn, không nằm trong lộ trình này.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Chọn hình thức: online proctored hay test center</span>
+      <div class="tbl"><table>
+        <tr><th>Tiêu chí</th><th>Pearson VUE online (OnVUE)</th><th>Test center</th></tr>
+        <tr><td>Nơi thi</td><td>Phòng riêng ở nhà, bàn trống hoàn toàn, cửa đóng, <b>không ai được vào</b> trong suốt bài thi</td><td>Trung tâm Pearson VUE (Tokyo có nhiều điểm, tìm trên Pearson VUE khi đặt lịch)</td></tr>
+        <tr><td>Thiết bị</td><td>Máy tính cá nhân có webcam, micro, một màn hình duy nhất; cấm màn hình phụ, cấm máy công ty bị khóa policy (OnVUE app thường không cài được)</td><td>Máy của trung tâm, không lo mạng hay phần mềm</td></tr>
+        <tr><td>Kiểm tra trước</td><td>Phải chạy <b>system test</b> của OnVUE trên đúng máy, đúng mạng sẽ thi (webcam, micro, tốc độ mạng, app chạy được)</td><td>Không cần</td></tr>
+        <tr><td>Check-in</td><td>Được check-in từ <b>30 phút trước giờ thi</b>: chụp ảnh mặt, ảnh giấy tờ, 4 ảnh phòng từ điện thoại; proctor xem xét rồi mới cho bắt đầu. Trễ quá 15 phút sau giờ hẹn là mất lượt (cần kiểm tra lại)</td><td>Đến sớm 15 phút, ký tên, chụp ảnh, cất đồ vào locker</td></tr>
+        <tr><td>Rủi ro</td><td>Mất mạng giữa chừng, người nhà mở cửa, bị proctor dừng vì nhìn ra ngoài màn hình, đọc đề thành tiếng (bị cấm)</td><td>Đi lại, kẹt tàu, phòng ồn vì thí sinh khác gõ phím</td></tr>
+        <tr><td>Ngôn ngữ giao tiếp với proctor</td><td>Tiếng Anh (có thể chọn tiếng Nhật ở một số khung giờ, cần kiểm tra lại)</td><td>Nhân viên trung tâm, tiếng Nhật</td></tr>
+        <tr><td>Hợp với ai</td><td>Có phòng riêng yên tĩnh, mạng ổn định, muốn chọn giờ linh hoạt (có slot đêm, cuối tuần)</td><td>Nhà ồn, mạng không chắc, hay lo lắng về kỹ thuật, muốn "đi thi" cho ra không khí</td></tr>
+      </table></div>
+      <p style="font-size:.92rem">Lời khuyên: nếu đang ở Nhật và có thể đến Tokyo thì <b>test center</b> ít rủi ro hơn. Nếu chọn online, hãy chạy system test ít nhất 2 lần, một lần ngay sau khi đặt lịch và một lần tối hôm trước.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Chọn ngôn ngữ đề thi</span>
+      <ul>
+        <li><b>Tiếng Anh</b>: cùng ngôn ngữ với khóa học, Tutorials Dojo và cheat sheet đã đọc 11 tuần qua; từ khóa (<em>least operational overhead</em>, <em>most cost-effective</em>) đã quen mắt; được xin ESL +30 phút. Đây là lựa chọn khuyên dùng cho lộ trình này.</li>
+        <li><b>Tiếng Nhật</b>: đề dịch, đôi khi thuật ngữ dịch lạ hơn bản gốc; không có ESL; chỉ chọn nếu đọc tiếng Nhật kỹ thuật nhanh hơn tiếng Anh rõ rệt. Khi thi tiếng Nhật, trong bài thi vẫn có thể xem câu gốc tiếng Anh bằng nút chuyển ngôn ngữ (cần kiểm tra lại tính năng này ở thời điểm thi).</li>
+        <li>Ngôn ngữ chọn lúc đặt lịch, không đổi được trong phòng thi.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Lệ phí, đổi lịch, hủy</span>
+      <div class="tbl"><table>
+        <tr><th>Mục</th><th>Giá trị</th><th>Ghi chú</th></tr>
+        <tr><td>Lệ phí SAA-C03</td><td class="num">150 USD</td><td>Associate. Thanh toán thẻ trên Pearson VUE, có thể tính thêm thuế tiêu dùng tùy nơi. Dùng voucher 50% nếu có.</td></tr>
+        <tr><td>Đổi lịch (reschedule)</td><td class="num">miễn phí trước 24 giờ</td><td>Thường được đổi miễn phí nếu còn hơn 24 giờ trước giờ thi; sát hơn thì không đổi được và mất lệ phí (cần kiểm tra lại chính sách hiện hành trên Pearson VUE khi đặt).</td></tr>
+        <tr><td>Hủy (cancel)</td><td class="num">trước 24 giờ</td><td>Hủy được hoàn tiền nếu còn hơn 24 giờ (cần kiểm tra lại). Không đến thi (no-show) là mất toàn bộ lệ phí.</td></tr>
+        <tr><td>Thi lại khi trượt</td><td class="num">chờ 14 ngày</td><td>Đóng lệ phí đầy đủ lần nữa. Không giới hạn số lần thi lại.</td></tr>
+        <tr><td>Thi lại khi đã đỗ</td><td class="num">không cần</td><td>Chứng chỉ có giá trị 3 năm, sau đó thi lại bản mới nhất để gia hạn.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Giấy tờ tùy thân</span>
+      <ul>
+        <li>Mang <b>hai loại giấy tờ</b> cho chắc: một giấy tờ chính do chính phủ cấp, còn hạn, có <b>ảnh và chữ ký</b> (passport là tốt nhất; ở Nhật thêm 在留カード hoặc マイナンバーカード), và một giấy tờ phụ có tên (thẻ tín dụng, thẻ ngân hàng có chữ ký). Chính sách hiện tại của AWS có thể chỉ yêu cầu một giấy tờ chính, nhưng mang hai không thừa (cần kiểm tra lại trang chính sách ID của AWS Certification).</li>
+        <li><b>Tên trên giấy tờ phải khớp tên trong tài khoản AWS Certification</b>. Đây là lý do bị từ chối phổ biến nhất ở ngày thi, không phải kiến thức.</li>
+        <li>Thi online: giấy tờ phải là bản gốc vật lý, chụp qua điện thoại trong lúc check-in; ảnh mờ là phải chụp lại, nên để sẵn trên bàn.</li>
+        <li>Giấy tờ hết hạn, bản photo, ảnh trên điện thoại đều không được chấp nhận.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>ESL +30 minutes <b>→ xin trước khi đặt lịch</b></span><span>OnVUE system test <b>→ chạy trên đúng máy, đúng mạng</b></span><span>check-in 30 phút trước <b>→ online</b></span><span>đến sớm 15 phút <b>→ test center</b></span><span>tên khớp giấy tờ <b>→ kiểm tra CertMetrics</b></span><span>50% voucher <b>→ Benefits nếu đã có chứng chỉ</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">1. Bạn vừa đặt lịch thi tiếng Anh xong mới nhớ ra chưa xin ESL +30 phút. Giờ xin thì lịch đã đặt có được thêm 30 phút không?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Không.</b> Accommodation chỉ áp dụng cho lịch đặt sau khi được duyệt. Cách xử lý: xin ESL, chờ Approved, hủy lịch cũ (nếu còn hơn 24 giờ thì được hoàn tiền, cần kiểm tra lại), đặt lại lịch mới. Đó là lý do bước xin ESL đứng trước bước đặt lịch trong lịch tuần 12.</p></div>
+      <div class="q"><p class="qt">2. Tên trong passport là <code>HO VAN QUY</code>, tài khoản AWS Certification điền First name <code>Quy</code>, Last name <code>Ho Van</code>. Có vấn đề gì ngày thi?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Có thể bị từ chối vào thi.</b> Pearson VUE đối chiếu tên trong hồ sơ với giấy tờ; thứ tự và cách tách họ tên khác là rủi ro. Sửa hồ sơ trong CertMetrics cho khớp passport <b>trước khi đặt lịch</b>; nếu đã đặt lịch thì liên hệ AWS Certification support để sửa, mất vài ngày.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. CON SỐ PHẢI NHỚ ============ -->
+<section id="cheat-sheet-so">
+  <span class="eyebrow">Chuẩn bị thi 2 / 6</span>
+  <h2>Con số phải nhớ trước ngày thi</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Cách dùng bảng này</span>
+      <p>Đề SAA ít hỏi thẳng "con số là bao nhiêu", nhưng rất hay giấu con số trong tình huống: "object 8 GB upload hay lỗi" (bẫy single PUT 5 GB), "message 500 KB" (bẫy SQS 256 KB), "cần giữ dữ liệu stream 7 ngày" (bẫy Kinesis retention), "RPO 1 giây cho DR khác Region" (Aurora Global Database). Nhớ con số là để <b>nhận ra bẫy</b>, không phải để tính toán. Cách học: che cột "Con số", tự nói, mở ra đối chiếu; làm 2 lượt ngày 4 và 1 lượt ngày 6. Con số có ghi "(cần kiểm tra lại)" là con số AWS hay thay đổi hoặc tôi không chắc, đề thi thường vẫn dùng giá trị cũ.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kỳ thi SAA-C03</span>
+      <div class="tbl"><table>
+        <tr><th>Mục</th><th>Con số</th><th>Ghi chú bẫy</th></tr>
+        <tr><td>Số câu / thời gian</td><td class="num">65 câu / 130 phút</td><td>Trung bình 2 phút một câu. ESL +30 phút thành 160 phút, khoảng 2,5 phút một câu.</td></tr>
+        <tr><td>Câu không tính điểm</td><td class="num">15 câu</td><td>50 câu tính điểm, 15 câu thử nghiệm trộn lẫn, không biết câu nào. Gặp câu lạ hoắc thì có thể là câu thử nghiệm, không hoảng.</td></tr>
+        <tr><td>Điểm đỗ</td><td class="num">720 / 1000</td><td>Thang 100 đến 1000, scaled score, không phải phần trăm. Không có điểm đỗ riêng từng domain.</td></tr>
+        <tr><td>Tỷ trọng domain</td><td class="num">30 / 26 / 24 / 20</td><td>SEC / RES / PERF / COST. Security nhiều nhất nên câu về IAM, KMS, VPC endpoint, WAF chiếm gần một phần ba.</td></tr>
+        <tr><td>Chứng chỉ có giá trị</td><td class="num">3 năm</td><td>Gia hạn bằng cách thi lại hoặc thi cấp cao hơn (Professional cũng gia hạn Associate).</td></tr>
+        <tr><td>Thi lại khi trượt</td><td class="num">14 ngày</td><td>Lệ phí 150 USD mỗi lần.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">S3 và Glacier</span>
+      <div class="tbl"><table>
+        <tr><th>Dịch vụ</th><th>Con số</th><th>Ghi chú bẫy</th></tr>
+        <tr><td>Kích thước object tối đa</td><td class="num">5 TB</td><td>Một object, không phải một bucket. Bucket không giới hạn dung lượng.</td></tr>
+        <tr><td>Single PUT tối đa</td><td class="num">5 GB</td><td>Trên 5 GB <b>bắt buộc</b> multipart upload. Đề: "upload 10 GB file fails" → multipart.</td></tr>
+        <tr><td>Multipart nên dùng từ</td><td class="num">100 MB</td><td>Khuyến nghị, không bắt buộc. Kết hợp <b>Transfer Acceleration</b> khi upload từ xa.</td></tr>
+        <tr><td>Số part multipart</td><td class="num">tối đa 10.000 part, mỗi part 5 MB đến 5 GB</td><td>Part cuối được nhỏ hơn 5 MB. Dùng lifecycle rule xóa incomplete multipart upload để tiết kiệm tiền.</td></tr>
+        <tr><td>Request rate mỗi prefix</td><td class="num">3.500 PUT / 5.500 GET mỗi giây</td><td>Muốn nhiều hơn: chia nhiều prefix. Không còn cần random hóa tên key như ngày xưa.</td></tr>
+        <tr><td>Standard-IA, One Zone-IA: min storage duration</td><td class="num">30 ngày</td><td>Xóa hoặc chuyển sớm hơn vẫn bị tính đủ 30 ngày. Min billable object <b>128 KB</b>. Lifecycle chuyển từ Standard sang IA phải chờ đủ <b>30 ngày</b> kể từ khi tạo.</td></tr>
+        <tr><td>Glacier Instant Retrieval: min duration</td><td class="num">90 ngày</td><td>Lấy ngay mili giây như IA nhưng rẻ hơn; truy cập khoảng 1 lần mỗi quý.</td></tr>
+        <tr><td>Glacier Flexible Retrieval: min duration</td><td class="num">90 ngày</td><td>Retrieval: <b>Expedited 1 đến 5 phút</b>, Standard 3 đến 5 giờ, Bulk 5 đến 12 giờ (Bulk miễn phí).</td></tr>
+        <tr><td>Glacier Deep Archive: min duration</td><td class="num">180 ngày</td><td>Retrieval: Standard <b>12 giờ</b>, Bulk 48 giờ. Không có Expedited. Rẻ nhất trong S3.</td></tr>
+        <tr><td>Intelligent-Tiering</td><td class="num">phí giám sát mỗi object, không phí retrieval</td><td>Object dưới 128 KB không được tự chuyển tier. Chọn khi <em>unknown or changing access pattern</em>.</td></tr>
+        <tr><td>Object Lock retention</td><td class="num">Governance / Compliance</td><td>Compliance mode: kể cả root cũng không xóa được trước hạn. Phải bật versioning. Đề: <em>WORM</em>, <em>regulatory</em>.</td></tr>
+        <tr><td>S3 Replication</td><td class="num">chỉ object mới sau khi bật</td><td>Object cũ cần <b>S3 Batch Replication</b>. Cả hai bucket phải bật versioning. CRR khác Region, SRR cùng Region.</td></tr>
+        <tr><td>Presigned URL</td><td class="num">tối đa 7 ngày (SigV4)</td><td>Dùng credential của người ký; credential hết hạn thì URL hết hạn sớm hơn (ví dụ ký bằng role EC2 thì tối đa vài giờ).</td></tr>
+        <tr><td>Snowball Edge Storage Optimized</td><td class="num">80 TB (có bản 210 TB)</td><td>Dùng khi chuyển trên 10 TB mà mạng chậm (quy tắc: mạng dưới 100 Mbps hoặc mất hơn 1 tuần). Snowmobile đã ngừng (cần kiểm tra lại).</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">EBS, EFS, FSx, Instance Store</span>
+      <div class="tbl"><table>
+        <tr><th>Dịch vụ</th><th>Con số</th><th>Ghi chú bẫy</th></tr>
+        <tr><td>gp3</td><td class="num">3.000 IOPS và 125 MB/s miễn phí, tối đa 16.000 IOPS / 1.000 MB/s</td><td>IOPS không phụ thuộc dung lượng (khác gp2 là 3 IOPS/GB). Mặc định cho mọi workload thường. Volume tối đa 16 TiB.</td></tr>
+        <tr><td>io1 / io2</td><td class="num">io1 tối đa 64.000 IOPS; io2 Block Express tối đa 256.000 IOPS, 64 TiB</td><td>Chọn khi đề nói <em>over 16,000 IOPS</em>, database, <em>sub-millisecond</em>. Nitro instance mới đạt số cao.</td></tr>
+        <tr><td>EBS Multi-Attach</td><td class="num">io1/io2, tối đa 16 instance, cùng AZ</td><td>Cần file system cluster-aware. Không phải cách làm shared file system thường (đó là EFS).</td></tr>
+        <tr><td>st1 / sc1</td><td class="num">HDD, không boot được</td><td>st1 throughput (big data, log), sc1 rẻ nhất, truy cập ít. Không dùng cho boot volume.</td></tr>
+        <tr><td>EBS snapshot</td><td class="num">incremental, lưu ở S3, mức Region</td><td>Muốn copy sang AZ khác: tạo volume từ snapshot ở AZ đích. Sang Region khác: copy snapshot. Fast Snapshot Restore bỏ thời gian "warm".</td></tr>
+        <tr><td>Instance store</td><td class="num">mất dữ liệu khi stop / terminate / hỏng phần cứng</td><td>Reboot thì còn. Dùng cho cache, buffer, dữ liệu tạm. IOPS cực cao, miễn phí kèm instance.</td></tr>
+        <tr><td>EFS</td><td class="num">hàng nghìn client NFS đồng thời, tự co giãn tới petabyte</td><td>Linux only (NFS v4). Regional, mount từ nhiều AZ. Storage class Standard / IA / Archive, lifecycle theo ngày không truy cập. Đắt hơn EBS trên mỗi GB.</td></tr>
+        <tr><td>EFS throughput mode</td><td class="num">Elastic (mặc định) / Provisioned / Bursting</td><td>Performance mode General Purpose đủ cho hầu hết; Max I/O cho hàng trăm instance song song, latency cao hơn.</td></tr>
+        <tr><td>FSx for Windows</td><td class="num">SMB, Active Directory, DFS</td><td>Đề: <em>Windows file share</em>, <em>NTFS ACL</em>. Multi-AZ có sẵn.</td></tr>
+        <tr><td>FSx for Lustre</td><td class="num">hàng trăm GB/s, sub-millisecond</td><td>HPC, ML, liên kết với S3 (lazy load). Scratch (tạm, rẻ) hoặc Persistent.</td></tr>
+        <tr><td>FSx for NetApp ONTAP / OpenZFS</td><td class="num">NFS + SMB + iSCSI / NFS</td><td>ONTAP khi đề nói <em>multi-protocol</em>, <em>SnapMirror</em>, migrate từ NetApp on-premises.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">EC2</span>
+      <div class="tbl"><table>
+        <tr><th>Dịch vụ</th><th>Con số</th><th>Ghi chú bẫy</th></tr>
+        <tr><td>Spot interruption notice</td><td class="num">2 phút</td><td>Nhận qua EventBridge hoặc metadata. Spot cho batch, CI, <em>fault-tolerant</em>, <em>interruption acceptable</em>. Không bao giờ cho database chính.</td></tr>
+        <tr><td>Reserved Instance / Savings Plans</td><td class="num">1 hoặc 3 năm</td><td>Giảm tới khoảng 72%. Standard RI không đổi instance family; Convertible đổi được, giảm ít hơn. Compute Savings Plans linh hoạt nhất (EC2, Fargate, Lambda).</td></tr>
+        <tr><td>Placement group: Cluster</td><td class="num">một AZ, một rack</td><td>Latency thấp nhất, HPC. Rủi ro: cả nhóm chết cùng rack.</td></tr>
+        <tr><td>Placement group: Spread</td><td class="num">tối đa 7 instance mỗi AZ</td><td>Mỗi instance một rack riêng, cho vài instance tối quan trọng.</td></tr>
+        <tr><td>Placement group: Partition</td><td class="num">tối đa 7 partition mỗi AZ</td><td>Hadoop, Kafka, Cassandra: nhiều instance, chia nhóm rack.</td></tr>
+        <tr><td>Dedicated Host vs Dedicated Instance</td><td class="num">Host: thấy socket và core</td><td>Chọn Host khi đề nói <em>BYOL</em> (license theo socket/core), compliance phần cứng. Dedicated Instance chỉ cần máy chủ vật lý riêng.</td></tr>
+        <tr><td>Tính tiền EC2 Linux</td><td class="num">theo giây, tối thiểu 60 giây</td><td>Stop thì hết tiền compute, EBS và EIP vẫn tính. Hibernate giữ RAM vào EBS.</td></tr>
+        <tr><td>Instance metadata</td><td class="num">169.254.169.254</td><td>IMDSv2 yêu cầu token (PUT trước GET), chống SSRF. User data chạy một lần lúc boot đầu, quyền root.</td></tr>
+        <tr><td>Enhanced Networking / EFA</td><td class="num">ENA tới 100 Gbps+</td><td>EFA cho HPC MPI (bypass kernel). Không nhầm với ENI (card mạng ảo thường).</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">VPC và kết nối</span>
+      <div class="tbl"><table>
+        <tr><th>Dịch vụ</th><th>Con số</th><th>Ghi chú bẫy</th></tr>
+        <tr><td>VPC CIDR</td><td class="num">/16 đến /28</td><td>Tối đa 65.536 IP, tối thiểu 16. Có thể thêm secondary CIDR. Không được overlap với VPC sẽ peer hoặc mạng on-premises.</td></tr>
+        <tr><td>IP giữ lại mỗi subnet</td><td class="num">5</td><td>Network, VPC router, DNS, dự phòng, broadcast. Subnet /24 còn <b>251</b> IP dùng được. Subnet /28 chỉ còn 11.</td></tr>
+        <tr><td>NAT Gateway</td><td class="num">một AZ, tự scale băng thông (5 Gbps lên tới 100 Gbps, cần kiểm tra lại)</td><td>Muốn HA phải tạo <b>một NAT mỗi AZ</b> và route table riêng từng AZ. Nằm ở public subnet, cần Elastic IP. Không hỗ trợ Security Group. Tính tiền theo giờ và GB.</td></tr>
+        <tr><td>Internet Gateway</td><td class="num">1 mỗi VPC</td><td>Không giới hạn băng thông, HA sẵn. Egress-only IGW cho IPv6 (vai trò như NAT).</td></tr>
+        <tr><td>VPC peering</td><td class="num">không transitive, không overlap CIDR</td><td>A-B và B-C không cho A tới C. Nhiều VPC → <b>Transit Gateway</b>. Peering được cross-Region, cross-account.</td></tr>
+        <tr><td>Security Group</td><td class="num">stateful, chỉ Allow</td><td>Mặc định: chặn mọi inbound, cho mọi outbound. Được tham chiếu SG khác làm source. Mỗi ENI tối đa 5 SG (mặc định).</td></tr>
+        <tr><td>NACL</td><td class="num">stateless, số rule nhỏ xét trước, có Deny</td><td>Default NACL allow all; custom NACL deny all. Phải mở ephemeral port 1024 đến 65535 chiều về. Chặn một IP cụ thể → NACL (SG không Deny được).</td></tr>
+        <tr><td>Site-to-Site VPN</td><td class="num">1,25 Gbps mỗi tunnel, 2 tunnel</td><td>Qua Internet, dựng trong phút. Accelerated VPN qua Global Accelerator. Muốn băng thông ổn định, riêng tư → Direct Connect.</td></tr>
+        <tr><td>Direct Connect</td><td class="num">1, 10, 100 Gbps (dedicated); 50 Mbps đến 10 Gbps (hosted)</td><td>Dựng mất <b>tuần đến tháng</b>. Không mã hóa mặc định → thêm VPN over DX nếu cần. HA: 2 DX ở 2 location, hoặc DX + VPN backup.</td></tr>
+        <tr><td>VPC endpoint: Gateway</td><td class="num">S3 và DynamoDB, miễn phí</td><td>Route table entry. Interface endpoint (PrivateLink) cho dịch vụ khác, có ENI, tính tiền theo giờ. S3 có cả hai loại; chọn Gateway khi trong VPC, Interface khi từ on-premises.</td></tr>
+        <tr><td>Transit Gateway</td><td class="num">hub, transitive, tới hàng nghìn VPC</td><td>Hỗ trợ multicast, peering cross-Region. Chia route domain bằng TGW route table.</td></tr>
+        <tr><td>Elastic IP</td><td class="num">5 mỗi Region (soft limit)</td><td>Tính tiền kể cả khi gắn (từ 2024 mọi public IPv4 tính 0,005 USD/giờ). Release EIP không dùng.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">ELB, Auto Scaling, Route 53, CloudFront</span>
+      <div class="tbl"><table>
+        <tr><th>Dịch vụ</th><th>Con số</th><th>Ghi chú bẫy</th></tr>
+        <tr><td>ASG default cooldown</td><td class="num">300 giây</td><td>Sau một scaling activity, chờ cooldown mới scale tiếp (simple scaling). Target tracking và step scaling dùng warm-up thay cooldown.</td></tr>
+        <tr><td>ASG health check grace period</td><td class="num">300 giây mặc định</td><td>Instance mới chưa qua grace period không bị thay dù unhealthy. Bật ELB health check để ASG thay instance mà app chết nhưng OS còn sống.</td></tr>
+        <tr><td>ELB deregistration delay (connection draining)</td><td class="num">300 giây mặc định, 0 đến 3.600</td><td>Giữ kết nối đang dở khi instance rời target group. Giảm cho app stateless để scale-in nhanh.</td></tr>
+        <tr><td>ALB</td><td class="num">Layer 7, HTTP/HTTPS/gRPC</td><td>Path, host, header, query routing; target Lambda, IP, ECS. <b>Không có static IP</b> (muốn static IP → đặt NLB hoặc Global Accelerator trước). Sticky session bằng cookie.</td></tr>
+        <tr><td>NLB</td><td class="num">Layer 4, hàng triệu request/giây, static IP mỗi AZ</td><td>TCP/UDP/TLS, latency cực thấp, giữ source IP của client. Target có thể là ALB. Dùng cho PrivateLink.</td></tr>
+        <tr><td>Gateway Load Balancer</td><td class="num">Layer 3, GENEVE 6081</td><td>Chèn firewall / IDS của bên thứ ba vào đường mạng. Đề: <em>third-party virtual appliances</em>.</td></tr>
+        <tr><td>Route 53 health check</td><td class="num">30 giây chuẩn, 10 giây fast</td><td>Phải cho IP của health checker vào SG. Health check endpoint phải public; resource private thì dùng CloudWatch alarm health check. Failover không có health check thì không chuyển.</td></tr>
+        <tr><td>Route 53 TTL</td><td class="num">tùy đặt, hay dùng 60 đến 300 giây</td><td>Trước migration hạ TTL xuống thấp vài ngày trước để client cập nhật nhanh. Alias record không đặt TTL (theo resource) và miễn phí query tới AWS resource, dùng được ở zone apex.</td></tr>
+        <tr><td>Route 53 Multivalue</td><td class="num">tới 8 record khỏe</td><td>Không thay được load balancer, chỉ là DNS trả nhiều IP có health check.</td></tr>
+        <tr><td>CloudFront default TTL</td><td class="num">24 giờ</td><td>Invalidate để xóa cache sớm (tính tiền sau 1.000 path/tháng). Origin: S3, ALB, EC2, bất kỳ HTTP. OAC bảo vệ S3 origin. Signed URL/cookie cho nội dung riêng. Field-level encryption.</td></tr>
+        <tr><td>Global Accelerator</td><td class="num">2 static anycast IP</td><td>TCP/UDP, failover trong giây, không cache. Đề: <em>static IP</em>, <em>gaming, VoIP, IoT</em>, <em>non-HTTP</em>. CloudFront thì cache nội dung HTTP.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Lambda, API Gateway, Step Functions</span>
+      <div class="tbl"><table>
+        <tr><th>Dịch vụ</th><th>Con số</th><th>Ghi chú bẫy</th></tr>
+        <tr><td>Lambda timeout tối đa</td><td class="num">15 phút (900 giây)</td><td>Mặc định 3 giây. Việc dài hơn 15 phút → ECS Fargate, Batch, Step Functions chia nhỏ.</td></tr>
+        <tr><td>Lambda memory</td><td class="num">128 MB đến 10 GB</td><td>CPU tăng theo memory (10 GB tương đương 6 vCPU). Chậm vì CPU → tăng memory.</td></tr>
+        <tr><td>Lambda concurrency mặc định</td><td class="num">1.000 mỗi Region (soft limit)</td><td>Reserved concurrency: giữ chỗ và cũng là trần cho một function. Provisioned concurrency: chống cold start. Throttle trả lỗi 429.</td></tr>
+        <tr><td>Lambda payload</td><td class="num">6 MB sync, 256 KB async</td><td>File lớn hơn → đưa vào S3, truyền key. Response streaming tới 20 MB (cần kiểm tra lại).</td></tr>
+        <tr><td>Lambda /tmp</td><td class="num">512 MB đến 10 GB</td><td>Chỉ trong một execution environment. Chia sẻ giữa các lần gọi → EFS mount cho Lambda.</td></tr>
+        <tr><td>Lambda deployment package</td><td class="num">50 MB zip, 250 MB giải nén, 10 GB container image</td><td>Layer để chia sẻ thư viện (tối đa 5 layer).</td></tr>
+        <tr><td>API Gateway integration timeout</td><td class="num">29 giây mặc định</td><td>Từ 2024 có thể xin nâng trên 29 giây cho REST API regional (cần kiểm tra lại); đề vẫn coi 29 giây là trần. Việc lâu → trả 202, xử lý async qua SQS hoặc Step Functions.</td></tr>
+        <tr><td>API Gateway throttling</td><td class="num">10.000 request/giây, burst 5.000 mỗi Region</td><td>Usage plan + API key để giới hạn theo khách. Cache response 0,5 GB đến 237 GB. Payload tối đa 10 MB.</td></tr>
+        <tr><td>Step Functions Standard</td><td class="num">tối đa 1 năm, exactly-once</td><td>Express tối đa 5 phút, at-least-once, rẻ và nhanh cho event volume lớn. Đề: <em>orchestrate</em>, <em>retry</em>, <em>human approval</em> → Step Functions; không phải SQS.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">SQS, SNS, Kinesis, EventBridge</span>
+      <div class="tbl"><table>
+        <tr><th>Dịch vụ</th><th>Con số</th><th>Ghi chú bẫy</th></tr>
+        <tr><td>SQS message size</td><td class="num">256 KB</td><td>AWS đã nâng lên 1 MB năm 2025 (cần kiểm tra lại), đề cũ vẫn dùng 256 KB. Message lớn hơn → <b>SQS Extended Client Library</b> lưu S3.</td></tr>
+        <tr><td>SQS retention</td><td class="num">4 ngày mặc định, 1 phút đến 14 ngày</td><td>Quá hạn là mất. Muốn replay nhiều consumer → Kinesis, không phải SQS.</td></tr>
+        <tr><td>SQS visibility timeout</td><td class="num">30 giây mặc định, tối đa 12 giờ</td><td>Xử lý lâu hơn visibility → message hiện lại, bị xử lý trùng. Tăng visibility hoặc gọi ChangeMessageVisibility. DLQ sau maxReceiveCount.</td></tr>
+        <tr><td>SQS long polling</td><td class="num">tới 20 giây</td><td>Giảm empty response, giảm tiền. Delay queue tới 15 phút. Message timer theo từng message.</td></tr>
+        <tr><td>SQS FIFO throughput</td><td class="num">300 msg/giây, 3.000 với batching</td><td>High throughput mode cao hơn nhiều (cần kiểm tra lại). Tên queue phải kết thúc <code>.fifo</code>. Exactly-once bằng deduplication ID 5 phút. Standard: unlimited, at-least-once, best-effort order.</td></tr>
+        <tr><td>SNS</td><td class="num">fan-out tới ~12,5 triệu subscription mỗi topic</td><td>Push, không lưu. Pattern <b>SNS → nhiều SQS</b> để fan-out có buffer. FIFO topic ghép FIFO queue. Message filtering theo attribute.</td></tr>
+        <tr><td>Kinesis Data Streams: mỗi shard</td><td class="num">1 MB/giây hoặc 1.000 record/giây vào, 2 MB/giây ra</td><td>Tổng throughput = số shard. Record tối đa 1 MB. Enhanced fan-out: 2 MB/giây <b>mỗi consumer</b>. On-demand mode tự scale.</td></tr>
+        <tr><td>Kinesis Data Streams retention</td><td class="num">24 giờ mặc định, tối đa 365 ngày</td><td>Replay được, nhiều consumer đọc cùng dữ liệu. Thứ tự theo partition key trong shard. Lỗi <code>ProvisionedThroughputExceeded</code> → thêm shard hoặc chia partition key tốt hơn.</td></tr>
+        <tr><td>Kinesis Data Firehose</td><td class="num">near real-time, buffer 0 đến 900 giây hoặc 1 đến 128 MB</td><td>Không lưu dữ liệu, không replay, tự scale, đích S3 / Redshift / OpenSearch / HTTP. Transform bằng Lambda. Đề: <em>load streaming data into S3 with least effort</em>.</td></tr>
+        <tr><td>EventBridge</td><td class="num">rule, schedule, 90+ SaaS partner</td><td>Thay CloudWatch Events. Event bus, archive và replay, schema registry. Đề: <em>event-driven</em>, <em>cron</em>, <em>third-party SaaS events</em>.</td></tr>
+        <tr><td>Amazon MQ</td><td class="num">ActiveMQ, RabbitMQ</td><td>Chỉ chọn khi đề nói <em>migrate existing application using MQTT/AMQP/JMS without code change</em>. Mới thì SQS/SNS.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">DynamoDB, ElastiCache</span>
+      <div class="tbl"><table>
+        <tr><th>Dịch vụ</th><th>Con số</th><th>Ghi chú bẫy</th></tr>
+        <tr><td>Item tối đa</td><td class="num">400 KB</td><td>Lớn hơn → lưu S3, DynamoDB giữ pointer.</td></tr>
+        <tr><td>1 RCU</td><td class="num">1 strongly consistent read/giây của 4 KB, hoặc 2 eventually consistent</td><td>Item 8 KB strong = 2 RCU; eventually = 1 RCU. Transactional read = 2 RCU cho 4 KB.</td></tr>
+        <tr><td>1 WCU</td><td class="num">1 write/giây của 1 KB</td><td>Item 2,5 KB = 3 WCU (làm tròn lên). Transactional write gấp đôi.</td></tr>
+        <tr><td>LSI vs GSI</td><td class="num">LSI chỉ tạo lúc tạo bảng, cùng partition key; GSI thêm sau, key khác, có RCU/WCU riêng</td><td>GSI throttle → bảng gốc throttle theo. LSI giới hạn 10 GB mỗi partition key value.</td></tr>
+        <tr><td>DynamoDB Streams</td><td class="num">24 giờ</td><td>Trigger Lambda, dùng cho Global Tables. Kinesis Data Streams for DynamoDB giữ lâu hơn.</td></tr>
+        <tr><td>PITR</td><td class="num">35 ngày</td><td>Khôi phục đến giây. On-demand backup giữ vô hạn. TTL xóa item hết hạn miễn phí (trong 48 giờ).</td></tr>
+        <tr><td>DAX</td><td class="num">microsecond, in-memory cache</td><td>Không đổi code (API tương thích). Chỉ cho read-heavy, eventually consistent. ElastiCache khi cần cache cho RDS hoặc cache dữ liệu tổng hợp.</td></tr>
+        <tr><td>Global Tables</td><td class="num">multi-Region active-active, replication ~1 giây</td><td>Cần Streams. Last writer wins. Đề: <em>multi-Region low latency read and write</em>.</td></tr>
+        <tr><td>ElastiCache Redis vs Memcached</td><td class="num">Redis: HA, persistence, sorted set, pub/sub; Memcached: multi-thread, đơn giản</td><td>Leaderboard, session store, <em>Multi-AZ failover</em> → Redis. Chỉ cache đơn giản, scale ngang → Memcached. Redis Cluster mode scale write.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">RDS, Aurora, Redshift, các DB khác</span>
+      <div class="tbl"><table>
+        <tr><th>Dịch vụ</th><th>Con số</th><th>Ghi chú bẫy</th></tr>
+        <tr><td>RDS automated backup retention</td><td class="num">0 đến 35 ngày (mặc định 7)</td><td>0 là tắt backup. PITR đến 5 phút gần nhất. Manual snapshot giữ vô hạn, kể cả sau khi xóa instance.</td></tr>
+        <tr><td>RDS Read Replica</td><td class="num">tối đa 15 (MySQL, MariaDB, PostgreSQL; Oracle và SQL Server 5), cần kiểm tra lại</td><td>Async, có thể cross-Region, promote được thành DB độc lập. Dùng cho <em>read scaling</em> và reporting; <b>không</b> phải cho HA.</td></tr>
+        <tr><td>RDS Multi-AZ</td><td class="num">sync standby, failover 60 đến 120 giây</td><td>Standby không đọc được (trừ Multi-AZ DB cluster có 2 readable standby). Endpoint DNS giữ nguyên. Giá gấp đôi. Đề: <em>high availability</em>, <em>automatic failover</em>.</td></tr>
+        <tr><td>RDS storage tối đa</td><td class="num">64 TiB (SQL Server 16 TiB)</td><td>Storage Auto Scaling bật được. RDS Custom cho Oracle / SQL Server cần quyền OS.</td></tr>
+        <tr><td>RDS Proxy</td><td class="num">connection pooling, failover nhanh hơn ~66%</td><td>Đề: Lambda mở quá nhiều connection, <em>too many connections</em> → RDS Proxy. Dùng IAM auth, Secrets Manager.</td></tr>
+        <tr><td>Aurora storage</td><td class="num">6 bản ở 3 AZ, tự tăng 10 GB tới 128 TiB</td><td>Chịu mất 2 bản vẫn ghi, mất 3 bản vẫn đọc. Tự sửa. Giá cao hơn RDS khoảng 20% nhưng hiệu năng 5x MySQL / 3x PostgreSQL (số marketing).</td></tr>
+        <tr><td>Aurora Replica</td><td class="num">tối đa 15, failover dưới 30 giây</td><td>Reader endpoint tự cân bằng. Replica cũng là failover target (khác RDS). Custom endpoint nhóm instance theo kích cỡ.</td></tr>
+        <tr><td>Aurora Global Database</td><td class="num">RPO 1 giây, RTO dưới 1 phút, tới 5 secondary Region (cần kiểm tra lại)</td><td>Replication lag dưới 1 giây, dùng storage-level replication. Đề: <em>cross-Region DR with RPO of seconds</em>. Write forwarding từ secondary.</td></tr>
+        <tr><td>Aurora Serverless v2</td><td class="num">scale theo ACU trong giây</td><td>Workload không đều, dev/test, <em>unpredictable</em>. Backtrack tới 72 giờ (MySQL) khác với restore: quay lui tại chỗ không tạo cluster mới.</td></tr>
+        <tr><td>Redshift</td><td class="num">OLAP, columnar, petabyte</td><td>Snapshot tự động cross-Region được bật. Spectrum đọc S3. RA3 tách compute và storage. Đề: <em>data warehouse</em>, <em>BI complex queries</em>. Serverless có.</td></tr>
+        <tr><td>Database Migration Service</td><td class="num">homogeneous và heterogeneous, CDC</td><td>Schema Conversion Tool khi đổi engine. Source DB vẫn chạy trong lúc migrate. Snowball Edge + DMS cho DB rất lớn.</td></tr>
+        <tr><td>Neptune / DocumentDB / Keyspaces / Timestream / QLDB</td><td class="num">graph / MongoDB / Cassandra / time-series / ledger</td><td>Nhận diện theo từ khóa là đủ: <em>social graph</em>, <em>MongoDB-compatible</em>, <em>Cassandra</em>, <em>IoT time-series</em>, <em>immutable cryptographically verifiable</em>.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Security: KMS, Secrets Manager, CloudTrail, SCP, WAF</span>
+      <div class="tbl"><table>
+        <tr><th>Dịch vụ</th><th>Con số</th><th>Ghi chú bẫy</th></tr>
+        <tr><td>KMS automatic rotation</td><td class="num">1 năm (customer managed key, bật tùy chọn; có thể đặt 90 đến 2.560 ngày, cần kiểm tra lại)</td><td>AWS managed key tự xoay 1 năm. Xoay key không mã hóa lại dữ liệu cũ, key cũ vẫn giải mã được. Imported key material không tự xoay.</td></tr>
+        <tr><td>KMS key deletion waiting period</td><td class="num">7 đến 30 ngày (mặc định 30)</td><td>Xóa key là mất vĩnh viễn mọi dữ liệu mã hóa bằng nó. Trong thời gian chờ có thể hủy xóa.</td></tr>
+        <tr><td>KMS Encrypt trực tiếp</td><td class="num">tối đa 4 KB</td><td>Dữ liệu lớn hơn dùng <b>envelope encryption</b>: GenerateDataKey, mã hóa dữ liệu bằng data key, lưu data key đã mã hóa kèm dữ liệu.</td></tr>
+        <tr><td>KMS key phạm vi</td><td class="num">Regional; multi-Region key để copy snapshot / DR</td><td>Snapshot EBS mã hóa muốn copy sang Region khác phải mã hóa lại bằng key Region đích. S3 SSE-KMS tính tiền API call KMS; <b>S3 Bucket Key</b> giảm chi phí.</td></tr>
+        <tr><td>S3 encryption</td><td class="num">SSE-S3 (mặc định), SSE-KMS, DSSE-KMS, SSE-C, client-side</td><td>Đề: <em>audit key usage</em>, <em>control who uses key</em> → SSE-KMS. <em>Customer manages keys outside AWS</em> → SSE-C hoặc client-side. Bắt buộc mã hóa khi upload → bucket policy Deny nếu thiếu header.</td></tr>
+        <tr><td>Secrets Manager</td><td class="num">khoảng 0,40 USD mỗi secret mỗi tháng, rotation tự động bằng Lambda</td><td>Tích hợp sẵn RDS, Redshift, DocumentDB. <b>Parameter Store</b> Standard miễn phí (4 KB), Advanced 8 KB, không tự rotate. Đề: <em>rotate database credentials automatically</em> → Secrets Manager.</td></tr>
+        <tr><td>CloudTrail Event history</td><td class="num">90 ngày</td><td>Lưu lâu hơn → tạo Trail ghi S3 (và CloudWatch Logs). Management event bật mặc định; data event (S3 object, Lambda invoke) phải bật, tính tiền. Log file validation chống sửa. Organization trail cho mọi account.</td></tr>
+        <tr><td>CloudWatch metric</td><td class="num">standard 5 phút, detailed 1 phút, high resolution 1 giây</td><td>Memory, disk usage EC2 cần <b>CloudWatch Agent</b> (custom metric). Metric giữ 15 tháng. Logs retention mặc định không hết hạn, đặt được 1 ngày đến 10 năm.</td></tr>
+        <tr><td>AWS Config</td><td class="num">rule đánh giá liên tục, remediation bằng SSM Automation</td><td>Config không chặn, chỉ phát hiện và sửa sau. Chặn trước → SCP hoặc IAM. Đề: <em>compliance</em>, <em>configuration history</em>, <em>who changed SG</em> (Config) vs <em>who called API</em> (CloudTrail).</td></tr>
+        <tr><td>SCP</td><td class="num">tối đa 5 SCP trực tiếp mỗi OU hoặc account (cần kiểm tra lại)</td><td>Không ảnh hưởng management account. Không cấp quyền, chỉ là trần. <code>FullAWSAccess</code> gắn mặc định; xóa nó là chặn hết. Deny list hay dùng hơn allow list.</td></tr>
+        <tr><td>IAM</td><td class="num">role session 1 giờ mặc định, tối đa 12 giờ; 5.000 user mỗi account (cần kiểm tra lại)</td><td>Access key tối đa 2 mỗi user. Policy size có giới hạn ký tự. Inline vs managed: ưu tiên customer managed.</td></tr>
+        <tr><td>WAF</td><td class="num">Web ACL gắn CloudFront, ALB, API Gateway, AppSync, Cognito</td><td>Rate-based rule (chặn IP gửi quá N request trong 5 phút), geo match, SQL injection, managed rule group. <b>Không gắn vào NLB hay EC2</b>. Shield Standard miễn phí (L3/L4), Shield Advanced 3.000 USD/tháng có DRT và bảo hiểm chi phí.</td></tr>
+        <tr><td>ACM certificate</td><td class="num">miễn phí, tự gia hạn</td><td>Dùng cho ALB, CloudFront (phải ở <code>us-east-1</code>), API Gateway. <b>Không</b> tải private key ra để cài lên EC2. Import cert bên ngoài được nhưng không tự gia hạn.</td></tr>
+        <tr><td>GuardDuty / Inspector / Macie / Detective / Security Hub</td><td class="num">threat detection / vulnerability scan / PII in S3 / investigate / aggregate</td><td>GuardDuty đọc CloudTrail, VPC Flow Logs, DNS logs: phát hiện <em>compromised credentials, crypto mining</em>. Inspector quét EC2, ECR, Lambda. Macie tìm <em>sensitive data, PII</em> trong S3.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Các con số còn lại hay gặp</span>
+      <div class="tbl"><table>
+        <tr><th>Dịch vụ</th><th>Con số</th><th>Ghi chú bẫy</th></tr>
+        <tr><td>ECS / Fargate</td><td class="num">Fargate: không quản lý EC2, tính theo vCPU và GB giây</td><td>Task role (quyền của container) khác execution role (quyền kéo image, ghi log). EKS khi đề nói <em>Kubernetes</em>, <em>portable to on-premises</em>. ECS Anywhere, EKS Anywhere cho on-premises.</td></tr>
+        <tr><td>CloudFormation / Elastic Beanstalk</td><td class="num">StackSets cho nhiều account và Region</td><td>Beanstalk: deploy app nhanh, vẫn thấy EC2, miễn phí (trả cho resource). Drift detection trong CloudFormation. SSM Parameter Store hay dùng cho AMI ID trong template.</td></tr>
+        <tr><td>DR: Backup &amp; Restore / Pilot Light / Warm Standby / Multi-site</td><td class="num">RPO/RTO giờ / 10 phút / phút / giây</td><td>Pilot light: DB chạy, app tắt. Warm standby: tất cả chạy ở quy mô nhỏ. Đề cho RTO và ngân sách, chọn mức rẻ nhất đạt RTO.</td></tr>
+        <tr><td>AWS Backup</td><td class="num">tập trung EBS, RDS, DynamoDB, EFS, FSx, S3, VMware</td><td>Backup plan, vault lock (WORM), cross-Region và cross-account copy. Đề: <em>centralized backup policy across accounts</em>.</td></tr>
+        <tr><td>DataSync</td><td class="num">tới 10 Gbps mỗi agent (cần kiểm tra lại)</td><td>NFS/SMB/HDFS/S3 → S3/EFS/FSx, lịch định kỳ, giữ metadata. Khác Storage Gateway (truy cập liên tục hybrid) và Transfer Family (SFTP/FTPS/FTP vào S3/EFS).</td></tr>
+        <tr><td>Storage Gateway</td><td class="num">File (NFS/SMB → S3), Volume (iSCSI, cached / stored), Tape (VTL)</td><td>Volume cached: dữ liệu chính ở S3, cache local. Stored: dữ liệu chính local, backup lên S3. Tape thay thư viện băng, lưu Glacier.</td></tr>
+        <tr><td>Athena / Glue / EMR / QuickSight / OpenSearch</td><td class="num">query S3 bằng SQL / ETL serverless / Hadoop Spark / BI / search log</td><td>Athena tính theo dữ liệu quét: nén, Parquet, partition để rẻ hơn. Glue Data Catalog dùng chung với Athena, EMR, Redshift Spectrum. Đề: <em>ad-hoc SQL on S3 logs</em> → Athena.</td></tr>
+        <tr><td>Cognito</td><td class="num">User Pool (đăng nhập, JWT), Identity Pool (credential AWS tạm)</td><td>Người dùng app → Cognito. Nhân viên → IAM Identity Center. User Pool hỗ trợ social login, SAML, MFA, hosted UI.</td></tr>
+        <tr><td>Organizations</td><td class="num">consolidated billing, volume discount, RI chia sẻ</td><td>All features mode mới dùng được SCP. Tag policy, backup policy. Đề: <em>centrally manage multiple accounts</em>, <em>restrict Regions for all accounts</em> → SCP.</td></tr>
+        <tr><td>Trusted Advisor</td><td class="num">5 nhóm: cost, performance, security, fault tolerance, service limits</td><td>Core check miễn phí; đầy đủ cần Business / Enterprise support. Compute Optimizer gợi ý right-size EC2, EBS, Lambda, ASG chi tiết hơn.</td></tr>
+        <tr><td>Data transfer</td><td class="num">vào AWS miễn phí; ra Internet tính; giữa AZ tính 2 chiều; cùng AZ private IP miễn phí</td><td>Giảm tiền ra Internet: CloudFront (data transfer từ S3 tới CloudFront miễn phí). Giữa Region tính tiền.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">3. Ứng dụng gửi message 400 KB vào SQS và bị lỗi. Cách sửa <em>least operational overhead</em>?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Dùng SQS Extended Client Library để lưu payload lên S3, SQS chỉ mang pointer.</b> Giới hạn kinh điển là 256 KB (AWS đã nâng lên 1 MB năm 2025, cần kiểm tra lại, nhưng đề vẫn có thể hỏi theo số cũ). Đáp án sai hay chọn: chuyển sang Kinesis (record 1 MB thì được, nhưng đổi cả kiến trúc, không phải least overhead) hoặc chia nhỏ message thủ công.</p></div>
+      <div class="q"><p class="qt">4. Lifecycle rule chuyển object từ S3 Standard sang Standard-IA sau 10 ngày, rồi sang Glacier Deep Archive sau 20 ngày. Console báo lỗi. Vì sao?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Standard sang Standard-IA phải tối thiểu 30 ngày kể từ khi tạo object</b>, nên "10 ngày" không hợp lệ. Thêm nữa, object vào IA phải ở đó ít nhất 30 ngày trước khi chuyển tiếp sang Glacier (rule chuyển ở ngày 20 nghĩa là chỉ 10 ngày sau khi vào IA). Sửa: IA ở ngày 30, Deep Archive ở ngày 60 trở lên. Bẫy: Glacier Deep Archive có min duration 180 ngày là chuyện tính tiền, không phải điều kiện của lifecycle.</p></div>
+      <div class="q"><p class="qt">5. Cần DR cho Aurora MySQL sang Region khác với RPO dưới 5 giây và RTO dưới 1 phút. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Aurora Global Database.</b> RPO khoảng 1 giây, RTO dưới 1 phút khi promote secondary. Đáp án sai hay chọn: cross-Region read replica của RDS (lag có thể hàng phút, promote chậm hơn) hoặc snapshot copy cross-Region (RPO hàng giờ). DynamoDB Global Tables là cho DynamoDB, không phải Aurora.</p></div>
+      <div class="q"><p class="qt">6. Bảng DynamoDB cần 100 strongly consistent read mỗi giây, mỗi item 6 KB. Cần bao nhiêu RCU?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>200 RCU.</b> Item 6 KB làm tròn lên 2 đơn vị 4 KB, strongly consistent 1 RCU mỗi đơn vị → 2 RCU mỗi read, nhân 100 read/giây = 200. Nếu đề nói eventually consistent thì chia đôi còn 100. Bẫy: quên làm tròn (6/4 = 1,5 không phải 1).</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. BẢNG TỪ KHÓA CUỐI CÙNG ============ -->
+<section id="cheat-sheet-tu-khoa">
+  <span class="eyebrow">Chuẩn bị thi 3 / 6</span>
+  <h2>Bảng từ khóa cuối cùng (xếp ABC để tra nhanh)</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Cách dùng</span>
+      <p>Gộp bảng từ khóa trong <code>AWS-SAA-checklist.md</code> với các cụm kinh điển khác đã gặp từ tuần 1 đến 11, mỗi từ khóa đúng một dòng, xếp theo chữ cái đầu của từ khóa tiếng Anh. Ngày 5 đọc một lượt từ trên xuống; ngày thi không mang theo được, nhưng khi đọc đề mà bắt gặp cụm nào trong bảng thì não phải nhảy ngay tới cột phải. Nếu một cụm mà bạn phải dừng lại nghĩ quá 3 giây, đánh dấu và đọc lại mục tương ứng ở bài học tuần đó.</p>
+    </div>
+    <div class="tbl"><table>
+      <tr><th>Từ khóa trong đề</th><th>Nghĩ ngay tới</th></tr>
+      <tr><td><em>active-active multi-Region, low latency read and write</em></td><td>DynamoDB Global Tables; Aurora Global Database (write ở primary) + Route 53 latency</td></tr>
+      <tr><td><em>ad-hoc SQL queries on data in S3</em></td><td>Athena (+ Glue Data Catalog); nén, Parquet, partition để giảm tiền</td></tr>
+      <tr><td><em>archive, retrieve within hours, lowest cost</em></td><td>S3 Glacier Flexible Retrieval (3 đến 5 giờ) hoặc Deep Archive (12 giờ, rẻ nhất)</td></tr>
+      <tr><td><em>audit API calls, who did what</em></td><td>CloudTrail (Trail ghi S3 để giữ quá 90 ngày)</td></tr>
+      <tr><td><em>block a specific IP address</em></td><td>NACL Deny rule (Security Group không Deny được); hoặc WAF IP set nếu qua ALB/CloudFront</td></tr>
+      <tr><td><em>BYOL, license per socket / per core</em></td><td>EC2 Dedicated Host</td></tr>
+      <tr><td><em>cache database reads, microsecond latency</em></td><td>DAX (DynamoDB, không đổi code) / ElastiCache Redis (RDS, session, leaderboard)</td></tr>
+      <tr><td><em>centralized backup across accounts and services</em></td><td>AWS Backup + Organizations, backup policy, vault lock</td></tr>
+      <tr><td><em>centrally manage multiple accounts, restrict services or Regions</em></td><td>Organizations + SCP</td></tr>
+      <tr><td><em>compliance, configuration drift, who changed the Security Group</em></td><td>AWS Config (rule + remediation); CloudTrail nếu hỏi API call</td></tr>
+      <tr><td><em>connection pooling, too many database connections from Lambda</em></td><td>RDS Proxy</td></tr>
+      <tr><td><em>consistent network performance, private, not over the Internet</em></td><td>Direct Connect (+ VPN over DX nếu cần mã hóa; VPN backup cho HA)</td></tr>
+      <tr><td><em>cost-effective compute, interruption acceptable, batch, fault-tolerant</em></td><td>Spot Instances (Spot Fleet, mixed instances policy trong ASG)</td></tr>
+      <tr><td><em>cross-account access</em></td><td>IAM role + sts:AssumeRole, hoặc resource-based policy (S3, KMS, SQS, Lambda)</td></tr>
+      <tr><td><em>decouple, buffer, asynchronous, spiky workload</em></td><td>SQS (Standard; FIFO khi cần thứ tự và exactly-once)</td></tr>
+      <tr><td><em>DNS failover, route to healthy endpoint</em></td><td>Route 53 failover routing + health check</td></tr>
+      <tr><td><em>encrypt data at rest, manage and audit keys</em></td><td>KMS (SSE-KMS); CloudTrail ghi mọi lần dùng key; key policy kiểm soát ai dùng</td></tr>
+      <tr><td><em>encrypt data in transit</em></td><td>TLS/HTTPS với ACM certificate trên ALB/CloudFront/API Gateway; VPN; Nitro instances cho traffic giữa instance</td></tr>
+      <tr><td><em>event-driven, react to AWS service events, cron schedule, SaaS events</em></td><td>EventBridge (rule → Lambda, SQS, Step Functions)</td></tr>
+      <tr><td><em>exactly-once processing, preserve message order</em></td><td>SQS FIFO (+ SNS FIFO); Kinesis giữ thứ tự theo partition key</td></tr>
+      <tr><td><em>fan-out one message to many consumers</em></td><td>SNS → nhiều SQS queue (message filtering theo attribute)</td></tr>
+      <tr><td><em>global users, low latency, static and dynamic content</em></td><td>CloudFront (cache ở Edge, origin S3 / ALB)</td></tr>
+      <tr><td><em>HPC, high throughput parallel file system, machine learning training data</em></td><td>FSx for Lustre (liên kết S3); EC2 cluster placement group + EFA</td></tr>
+      <tr><td><em>hybrid storage, on-premises access to S3 with local cache</em></td><td>Storage Gateway (File Gateway NFS/SMB; Volume Gateway iSCSI; Tape Gateway)</td></tr>
+      <tr><td><em>immutable, WORM, regulatory retention, cannot be deleted even by root</em></td><td>S3 Object Lock Compliance mode; Glacier Vault Lock; AWS Backup vault lock</td></tr>
+      <tr><td><em>infrequent but instant access, lower cost than Standard</em></td><td>S3 Standard-IA (One Zone-IA nếu chịu mất khi AZ hỏng; Glacier Instant Retrieval nếu truy cập theo quý)</td></tr>
+      <tr><td><em>IoT / time-series data, telemetry</em></td><td>Kinesis Data Streams / IoT Core vào; Timestream lưu; Firehose → S3</td></tr>
+      <tr><td><em>Kubernetes, portable, existing container orchestration</em></td><td>EKS (Fargate hoặc managed node group); ECS nếu không cần Kubernetes</td></tr>
+      <tr><td><em>least operational overhead, minimal administrative effort</em></td><td>Managed / serverless: Aurora Serverless, DynamoDB, Lambda, Fargate, Firehose, Secrets Manager</td></tr>
+      <tr><td><em>least privilege, unused permissions, publicly shared resources</em></td><td>IAM Access Analyzer, Access Advisor, credential report</td></tr>
+      <tr><td><em>load streaming data into S3 / Redshift / OpenSearch with least effort</em></td><td>Kinesis Data Firehose (near real-time, tự scale, transform bằng Lambda)</td></tr>
+      <tr><td><em>long-running workflow, retry, human approval, orchestrate Lambda functions</em></td><td>Step Functions (Standard tới 1 năm; Express tới 5 phút)</td></tr>
+      <tr><td><em>migrate database with minimal downtime, change engine</em></td><td>DMS (+ Schema Conversion Tool), CDC liên tục</td></tr>
+      <tr><td><em>migrate petabytes, limited bandwidth, weeks to transfer over network</em></td><td>Snowball Edge (nhiều thiết bị); DataSync nếu mạng đủ nhanh</td></tr>
+      <tr><td><em>migrate existing message broker (MQTT, AMQP, JMS) without code change</em></td><td>Amazon MQ (ActiveMQ / RabbitMQ)</td></tr>
+      <tr><td><em>MongoDB-compatible / Cassandra-compatible / graph / ledger</em></td><td>DocumentDB / Keyspaces / Neptune / QLDB</td></tr>
+      <tr><td><em>Multi-AZ, high availability, automatic failover for RDS</em></td><td>RDS Multi-AZ (standby sync); Read Replica KHÔNG phải cho HA</td></tr>
+      <tr><td><em>no public IP, private access to AWS services from VPC</em></td><td>VPC endpoint: Gateway (S3, DynamoDB, miễn phí) hoặc Interface / PrivateLink</td></tr>
+      <tr><td><em>on-premises Active Directory, single sign-on, many accounts</em></td><td>IAM Identity Center + AD Connector / AWS Managed Microsoft AD; SAML 2.0 federation</td></tr>
+      <tr><td><em>personally identifiable information (PII) in S3, sensitive data discovery</em></td><td>Macie</td></tr>
+      <tr><td><em>predictable traffic spike at known time</em></td><td>ASG scheduled scaling; predictive scaling nếu có pattern lặp</td></tr>
+      <tr><td><em>private connectivity to a SaaS / service in another VPC without peering</em></td><td>PrivateLink (NLB + Interface endpoint)</td></tr>
+      <tr><td><em>process data in real time, multiple consumers, replay</em></td><td>Kinesis Data Streams (retention tới 365 ngày, enhanced fan-out)</td></tr>
+      <tr><td><em>protect against SQL injection, XSS, rate limiting, geo blocking</em></td><td>AWS WAF trên CloudFront / ALB / API Gateway</td></tr>
+      <tr><td><em>protect against DDoS, 24/7 response team, cost protection</em></td><td>Shield Advanced (Standard miễn phí và đã bật sẵn)</td></tr>
+      <tr><td><em>RPO of seconds and RTO under a minute for cross-Region database</em></td><td>Aurora Global Database; DynamoDB Global Tables</td></tr>
+      <tr><td><em>rotate credentials, database password automatically</em></td><td>Secrets Manager (Parameter Store không tự rotate)</td></tr>
+      <tr><td><em>serverless REST API / WebSocket API, throttling, API keys</em></td><td>API Gateway + Lambda (29 giây timeout; usage plan)</td></tr>
+      <tr><td><em>shared file system for Linux, multiple EC2 across AZs, POSIX</em></td><td>EFS (lifecycle sang IA để rẻ)</td></tr>
+      <tr><td><em>single-digit millisecond key-value, unlimited scale, serverless database</em></td><td>DynamoDB (on-demand khi không đoán được tải)</td></tr>
+      <tr><td><em>static IP for application, TCP/UDP, fast regional failover, gaming / VoIP</em></td><td>Global Accelerator (2 anycast IP); NLB nếu chỉ cần static IP trong một Region</td></tr>
+      <tr><td><em>static website, hosting with HTTPS and custom domain</em></td><td>S3 static website + CloudFront (OAC) + ACM (us-east-1) + Route 53 alias</td></tr>
+      <tr><td><em>steady-state workload, 1 or 3 years commitment, reduce cost</em></td><td>Reserved Instances / Savings Plans (Compute SP linh hoạt nhất)</td></tr>
+      <tr><td><em>sticky sessions, session state</em></td><td>Tốt nhất: ElastiCache / DynamoDB lưu session (stateless); ALB stickiness là giải pháp tạm</td></tr>
+      <tr><td><em>temporary credentials, no long-term access keys on EC2</em></td><td>IAM role (instance profile), STS</td></tr>
+      <tr><td><em>third-party virtual firewall / IDS appliance inline</em></td><td>Gateway Load Balancer</td></tr>
+      <tr><td><em>threat detection, compromised credentials, unusual API calls, crypto mining</em></td><td>GuardDuty (Inspector là quét lỗ hổng; Detective để điều tra)</td></tr>
+      <tr><td><em>unknown or changing access pattern for S3 objects</em></td><td>S3 Intelligent-Tiering</td></tr>
+      <tr><td><em>upload large files faster from distant locations</em></td><td>S3 Transfer Acceleration + multipart upload</td></tr>
+      <tr><td><em>users of a web / mobile application sign up and sign in, social login</em></td><td>Cognito User Pool (Identity Pool để lấy credential AWS tạm)</td></tr>
+      <tr><td><em>Windows file share, SMB, NTFS permissions, Active Directory integration</em></td><td>FSx for Windows File Server</td></tr>
+      <tr><td><em>workload larger than 15 minutes, container batch jobs</em></td><td>ECS/Fargate, AWS Batch, hoặc chia nhỏ qua Step Functions; không phải Lambda</td></tr>
+    </table></div>
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">7. Đề nói <em>"an application needs a static IP address that clients can whitelist; traffic is UDP; users are worldwide"</em>. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Global Accelerator.</b> Hai từ khóa cùng lúc: <em>static IP</em> và <em>UDP</em> loại CloudFront (chỉ HTTP, không static IP) và ALB (không static IP, chỉ HTTP). NLB có static IP nhưng chỉ trong một Region, không tối ưu cho <em>worldwide</em>.</p></div>
+      <div class="q"><p class="qt">8. Đề nói <em>"determine who modified the security group rule last week"</em>. Chọn CloudTrail hay Config?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>CloudTrail</b> trả lời "ai gọi API gì lúc nào" (user, IP, thời điểm của <code>AuthorizeSecurityGroupIngress</code>). <b>Config</b> trả lời "cấu hình trước và sau thay đổi thế nào, có tuân thủ không" và có thể dẫn link tới CloudTrail event. Nếu câu hỏi nhấn "who" thì CloudTrail; nếu nhấn "what changed / compliant" thì Config.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. CHIẾN THUẬT NGÀY THI ============ -->
+<section id="chien-thuat">
+  <span class="eyebrow">Chuẩn bị thi 4 / 6</span>
+  <h2>Chiến thuật ngày thi</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Phân bổ thời gian</span>
+      <div class="tbl"><table>
+        <tr><th>Mốc</th><th>Không ESL (130 phút)</th><th>Có ESL (160 phút)</th><th>Việc</th></tr>
+        <tr><td>Lượt 1</td><td>0 đến 100 phút</td><td>0 đến 120 phút</td><td>Đi hết 65 câu, mỗi câu tối đa 2 phút. Câu nào chưa chắc: chọn đáp án tạm thời rồi <b>flag</b>, không dừng lại suy nghĩ quá 2 phút.</td></tr>
+        <tr><td>Kiểm tra tiến độ</td><td>phút 50: phải ở câu 32 trở lên</td><td>phút 60: câu 32 trở lên</td><td>Nếu chậm hơn 5 câu, chuyển sang đọc nhanh hơn: đọc câu hỏi cuối, lướt đáp án, chọn và flag.</td></tr>
+        <tr><td>Lượt 2</td><td>100 đến 125 phút</td><td>120 đến 150 phút</td><td>Quay lại các câu đã flag theo thứ tự, mỗi câu 1 đến 2 phút. Ưu tiên câu "chọn 2 đáp án" vì dễ mất điểm vì vội.</td></tr>
+        <tr><td>Dự phòng</td><td>5 phút cuối</td><td>10 phút cuối</td><td>Kiểm tra màn hình review: <b>không câu nào bỏ trống</b>. Không đọc lại câu đã chắc.</td></tr>
+      </table></div>
+      <p style="font-size:.92rem">Đồng hồ đếm ngược hiện ở góc màn hình. Thường có 15 đến 20 câu bị flag ở lượt 1, đó là bình thường. Những câu flag thường rơi vào 15 câu thử nghiệm hoặc câu khó mà ai cũng mất điểm, nên đừng để nó phá tâm lý.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Quy trình đọc một câu trong 2 phút</span>
+      <ol class="steps">
+        <li><div><p><b>Đọc câu hỏi cuối cùng trước</b> (dòng kết thúc bằng dấu hỏi): "Which solution meets these requirements <em>with the least operational overhead</em>?" Biết trước đề hỏi gì (chọn giải pháp, chọn bước, chọn 2 đáp án) và ràng buộc là gì.</p></div></li>
+        <li><div><p><b>Đọc tình huống</b>, tay (hoặc mắt) gạch chân các ràng buộc: số liệu (TB, ms, số user), từ khóa (<em>must</em>, <em>cannot</em>, <em>existing</em>, <em>without code changes</em>, <em>multi-Region</em>), và dịch vụ đã có sẵn trong kiến trúc hiện tại.</p></div></li>
+        <li><div><p><b>Tự đoán đáp án trước khi nhìn lựa chọn</b> ("chắc là SQS + Lambda"). Nhìn đáp án để xác nhận chứ không để bị dẫn dắt.</p></div></li>
+        <li><div><p><b>Loại 2 đáp án sai trước</b>: thường một đáp án sai về kỹ thuật (dịch vụ không làm được việc đó, ví dụ ALB static IP), một đáp án đúng kỹ thuật nhưng vi phạm ràng buộc (đắt hơn, nhiều việc vận hành hơn, có downtime).</p></div></li>
+        <li><div><p><b>So 2 đáp án còn lại bằng đúng từ khóa ràng buộc</b> của câu hỏi: nếu hỏi <em>least operational overhead</em> thì chọn cái managed hơn; nếu hỏi <em>most cost-effective</em> thì chọn cái rẻ hơn mà vẫn đạt yêu cầu; nếu hỏi <em>highly available</em> thì chọn cái không có single point of failure.</p></div></li>
+        <li><div><p>Chọn, nếu còn phân vân thì flag, <b>sang câu tiếp</b>. Không được bỏ trống kể cả khi flag.</p></div></li>
+      </ol>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Từ khóa ràng buộc và cách xử lý</span>
+        <ul>
+          <li><em>least operational overhead</em>, <em>minimal effort</em>, <em>minimal changes</em>: managed, serverless, tính năng có sẵn thắng cái tự dựng. Giữa hai giải pháp cùng đúng, chọn cái có ít bước hơn.</li>
+          <li><em>most cost-effective</em>, <em>lowest cost</em>: vẫn phải đạt yêu cầu trước đã, rồi mới rẻ. Spot, S3 IA/Glacier, Reserved, right-size, Gateway endpoint, single AZ khi không cần HA.</li>
+          <li><em>highly available</em>, <em>fault tolerant</em>, <em>minimal downtime</em>: Multi-AZ, ASG, nhiều NAT, Route 53 failover; không chọn giải pháp một instance hay một AZ.</li>
+          <li><em>improve performance</em>, <em>reduce latency</em>: cache (CloudFront, ElastiCache, DAX), read replica, Global Accelerator, đúng loại storage (io2, FSx Lustre).</li>
+          <li><em>most secure</em>: least privilege, role thay user, mã hóa KMS, private subnet + endpoint, không public.</li>
+          <li><em>without code changes</em>, <em>existing application</em>: giải pháp hạ tầng (RDS Proxy, DAX, Storage Gateway, Amazon MQ), không chọn "sửa app để..."</li>
+          <li><em>in the future</em>, <em>expected to grow</em>: chọn cái tự scale (DynamoDB on-demand, Aurora Serverless, Fargate).</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Câu chọn 2 (hoặc 3) đáp án</span>
+        <ul>
+          <li>Đề ghi rõ "(Choose two.)" hoặc "(Select TWO.)". Hệ thống không cho sang câu tiếp nếu chưa chọn đủ, nhưng vẫn kiểm tra lại số đáp án đã chọn trước khi rời câu.</li>
+          <li>Hai dạng: (a) hai đáp án <b>độc lập</b>, mỗi cái tự giải quyết một phần yêu cầu (ví dụ: một đáp án về bảo mật, một về HA); (b) hai đáp án là <b>hai bước của cùng một giải pháp</b> (ví dụ: tạo VPC endpoint và sửa bucket policy giới hạn theo endpoint).</li>
+          <li>Thường có một đáp án "mồi" đúng kỹ thuật nhưng thuộc giải pháp khác với đáp án còn lại. Hai đáp án chọn phải <b>ăn khớp với nhau</b>.</li>
+          <li>Không có điểm một nửa: chọn đúng 1 trong 2 vẫn là 0 điểm cho câu đó.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Khi gặp dịch vụ lạ hoặc câu quá khó</span>
+      <ul>
+        <li>Nếu một đáp án nhắc dịch vụ chưa từng nghe, và các đáp án khác có dịch vụ quen và một trong số đó hợp lý: <b>loại dịch vụ lạ</b>. Đề SAA hay thêm dịch vụ lạ làm nhiễu (ví dụ AWS Wavelength, AWS Panorama, Amazon Braket).</li>
+        <li>Ngược lại, nếu tất cả đáp án quen đều sai rõ ràng (vi phạm ràng buộc hoặc không làm được việc), thì dịch vụ lạ có thể chính là đáp án. Trường hợp này hiếm hơn.</li>
+        <li>Câu dài nửa trang: đọc câu hỏi cuối, đọc 4 đáp án trước, rồi mới quét tình huống tìm đúng ràng buộc đang phân biệt các đáp án. Không đọc từng chữ.</li>
+        <li>Câu hoàn toàn không biết: loại 2 cái, chọn 1 trong 2 còn lại, flag, đi tiếp. Có 15 câu không tính điểm, câu này có thể là một trong số đó.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Ba quy tắc về đổi đáp án</span>
+      <ul>
+        <li><b>Không đổi đáp án nếu không có lý do mới</b> (nhìn thấy từ khóa bị bỏ sót, nhớ ra giới hạn kỹ thuật). Đổi vì "cảm giác" ở lượt 2 thường đổi từ đúng sang sai.</li>
+        <li>Đổi khi phát hiện mình đã đọc sai câu hỏi (ví dụ hỏi <em>most cost-effective</em> mà mình chọn theo <em>best performance</em>).</li>
+        <li>Nếu lượt 2 vẫn phân vân giữa 2 đáp án y như lượt 1, giữ nguyên lựa chọn đầu.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Tâm lý và sức khỏe</span>
+      <ul>
+        <li>Ngày trước thi: <b>không học bài mới</b>, không làm đề mới (làm đề mới mà điểm thấp sẽ phá tâm lý). Chỉ đọc lướt hai cheat sheet trong bài này và sổ câu sai.</li>
+        <li>Ngủ đủ 7 giờ. Thi buổi sáng thì dậy sớm 2 giờ trước giờ thi để tỉnh táo; thi buổi chiều thì ăn nhẹ, không ăn no ngay trước thi.</li>
+        <li>Uống nước vừa phải: thi online <b>không được rời chỗ</b> trong 130 đến 160 phút (không có break); test center có thể xin ra ngoài nhưng đồng hồ vẫn chạy.</li>
+        <li>5 câu đầu thường khó hơn cảm giác vì chưa "nóng máy". Không kết luận "đề khó quá" trước câu 10.</li>
+        <li>Chuẩn bị sẵn câu nói với bản thân khi gặp 3 câu khó liên tiếp: "flag, đi tiếp, 15 câu không tính điểm". Đó là chiến thuật, không phải bỏ cuộc.</li>
+        <li>Khi hết bài, màn hình hỏi có muốn kết thúc không. Bấm kết thúc, trả lời khảo sát ngắn, rồi màn hình kết quả (hoặc thông báo chờ email).</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>least operational overhead <b>→ managed / serverless</b></span><span>most cost-effective <b>→ rẻ nhất mà vẫn đạt yêu cầu</b></span><span>highly available <b>→ Multi-AZ, không SPOF</b></span><span>minimal downtime <b>→ migration online, DMS, blue/green</b></span><span>without code changes <b>→ giải pháp hạ tầng</b></span><span>Choose two <b>→ hai đáp án phải ăn khớp</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh (luyện quy trình 2 phút)</span>
+      <div class="q"><p class="qt">9. Đọc câu này theo đúng quy trình: "A company runs a web application on EC2 instances behind an ALB in one AZ. The application experiences downtime when the AZ has issues. The company wants to improve availability <em>with the least amount of changes</em>. What should a solutions architect recommend?" (A) Migrate to Lambda; (B) Add instances in a second AZ and configure the ALB and Auto Scaling group to span both AZs; (C) Deploy to a second Region with Route 53 failover; (D) Use a NLB instead of the ALB. Hãy nói bước loại trừ.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>B.</b> Câu hỏi cuối: improve availability, <em>least changes</em>. Loại A (viết lại app, nhiều thay đổi nhất). Loại D (đổi loại load balancer không giải quyết AZ failure). Còn B và C: C đạt availability cao hơn nhưng là multi-Region, thay đổi lớn và đắt; B chỉ thêm AZ trong kiến trúc hiện có. Ràng buộc <em>least changes</em> quyết định B.</p></div>
+      <div class="q"><p class="qt">10. "A company must ensure that objects uploaded to an S3 bucket are encrypted with a key that the company manages and that all key usage is logged. Which combination of steps meets these requirements? (Choose two.)" (A) Enable SSE-S3 default encryption; (B) Create a customer managed KMS key and set it as default encryption with SSE-KMS; (C) Add a bucket policy that denies PutObject requests without the <code>x-amz-server-side-encryption: aws:kms</code> header; (D) Enable S3 Transfer Acceleration; (E) Use SSE-C with keys stored on-premises. Chọn 2.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>B và C.</b> "Key that the company manages" + "usage logged" → customer managed KMS key (CloudTrail ghi mọi lần dùng key). C bắt buộc mọi upload dùng SSE-KMS, ăn khớp với B. Mồi: A (SSE-S3 là key của AWS, không log theo key), E (SSE-C đúng là "company manages" nhưng KMS không log vì không dùng KMS, và E không ăn khớp với C). D không liên quan.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. 48 GIỜ TRƯỚC VÀ NGÀY THI ============ -->
+<section id="ngay-truoc-thi">
+  <span class="eyebrow">Chuẩn bị thi 5 / 6</span>
+  <h2>48 giờ trước và ngày thi</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">48 giờ trước (chung cho cả hai hình thức)</span>
+      <ul>
+        <li>Mở email xác nhận của Pearson VUE: kiểm tra lại <b>ngày, giờ (múi giờ!), hình thức, ngôn ngữ, thời lượng</b> (160 phút nếu đã có ESL). Múi giờ hiển thị là múi giờ bạn chọn lúc đặt lịch, thường là Asia/Tokyo.</li>
+        <li>Đăng nhập lại tài khoản AWS Certification để chắc còn vào được; link "Launch exam" (online) nằm ở đây hoặc trong tài khoản Pearson VUE.</li>
+        <li>Giấy tờ: để sẵn 2 loại, kiểm tra hạn, đối chiếu tên với hồ sơ CertMetrics lần cuối.</li>
+        <li>Đọc lướt hai cheat sheet và sổ câu sai một lượt. Không làm đề mới.</li>
+        <li>Dọn account AWS (xem lịch tuần 12, việc 4) để sau khi thi không phải nhớ.</li>
+      </ul>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Online proctored (OnVUE)</span>
+        <ul>
+          <li><b>Hôm trước</b>: chạy lại system test trên đúng máy, đúng mạng, đúng phòng. Cài sẵn OnVUE app (tải từ link trong email). Tắt antivirus hoặc VPN công ty nếu app bị chặn.</li>
+          <li><b>Phòng</b>: một mình, cửa đóng, không có người ra vào suốt bài thi. Bàn trống hoàn toàn: không giấy, bút, sách, màn hình phụ, tai nghe, đồng hồ thông minh. Tường sau lưng không có bảng ghi chép. Proctor sẽ xem 4 ảnh phòng và có thể yêu cầu xoay webcam.</li>
+          <li><b>Máy</b>: cắm sạc, tắt mọi app khác (Teams, Slack, Discord, cloud sync, trình quản lý màn hình), tắt thông báo. Chỉ một màn hình. Không dùng máy công ty bị khóa chính sách.</li>
+          <li><b>Mạng</b>: ưu tiên dây LAN; nếu Wi-Fi thì bảo mọi người trong nhà không stream video lúc đó. Chuẩn bị điện thoại có 4G/5G để chat với support nếu mất kết nối.</li>
+          <li><b>Check-in</b>: từ 30 phút trước giờ thi, bấm "Begin exam" trong tài khoản Pearson VUE. Dùng điện thoại chụp ảnh mặt, ảnh giấy tờ, 4 ảnh phòng theo hướng dẫn. Sau khi gửi, đặt điện thoại xa tầm tay (proctor yêu cầu), ngồi chờ proctor kết nối, có thể 5 đến 20 phút.</li>
+          <li><b>Trong lúc thi</b>: không rời chỗ, không có break; không được đọc đề thành tiếng, không lẩm bẩm; mắt nhìn vào màn hình, không nhìn ra ngoài lâu; không che webcam; không ai được bước vào phòng. Vi phạm là proctor có thể dừng bài thi và hủy kết quả.</li>
+          <li><b>Nếu mất kết nối</b>: app thường tự kết nối lại và giữ tiến độ; nếu không, liên hệ Pearson VUE support bằng điện thoại ngay, có thể được đặt lại lịch miễn phí tùy trường hợp (cần kiểm tra lại).</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Test center</span>
+        <ul>
+          <li><b>Hôm trước</b>: xem lại địa chỉ, tầng, đường đi, giờ tàu. Nhiều trung tâm ở Tokyo nằm trong tòa văn phòng, biển hiệu nhỏ, tìm trước trên bản đồ.</li>
+          <li><b>Đến sớm 15 phút</b> (Pearson VUE khuyến nghị 15 đến 30 phút). Đến muộn quá 15 phút sau giờ hẹn có thể bị từ chối và mất lệ phí.</li>
+          <li><b>Check-in</b>: xuất trình giấy tờ, ký bảng, chụp ảnh, có thể quét lòng bàn tay (palm vein) ở một số trung tâm. Ký quy định thi.</li>
+          <li><b>Locker</b>: toàn bộ đồ cá nhân (điện thoại, ví, đồng hồ, chìa khóa, áo khoác dày) vào locker. Không mang gì vào phòng thi ngoài giấy tờ và chìa locker. Trung tâm phát bảng trắng nhỏ hoặc giấy nháp và bút, hết thi thu lại.</li>
+          <li><b>Trong phòng</b>: nhiều thí sinh thi các kỳ thi khác nhau, có tiếng gõ phím; thường có tai nghe chống ồn, lấy dùng nếu nhạy tiếng. Muốn ra ngoài phải giơ tay, nhân viên hộ tống, đồng hồ vẫn chạy.</li>
+          <li><b>Sau khi bấm kết thúc</b>: nhân viên in một tờ giấy xác nhận đã hoàn thành (có thể ghi pass/fail hoặc chỉ ghi "completed", tùy chính sách AWS thời điểm đó).</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Sau khi nộp bài: kết quả, score report, badge</span>
+      <div class="tbl"><table>
+        <tr><th>Mốc</th><th>Khi nào</th><th>Ghi chú</th></tr>
+        <tr><td>Kết quả pass / fail</td><td>Hiện ngay trên màn hình cuối bài thi với hầu hết kỳ thi, hoặc gửi email trong <b>5 ngày làm việc</b> (AWS đã có giai đoạn không hiện ngay, cần kiểm tra lại)</td><td>Không hiện điểm số lúc đó, chỉ pass/fail. Đừng tắt máy ngay sau khi bấm kết thúc, chờ màn hình kết quả hoặc thông báo.</td></tr>
+        <tr><td>Score report chi tiết</td><td>Trong tài khoản AWS Certification (CertMetrics), tối đa 5 ngày làm việc</td><td>Điểm scaled 100 đến 1000, và bảng từng domain ghi "Meets competencies" hoặc "Needs improvement". Đây là tài liệu quý nhất nếu trượt.</td></tr>
+        <tr><td>Badge Credly</td><td>Email từ Credly trong vài ngày sau khi đỗ</td><td>Accept badge, gắn lên LinkedIn (mục Licenses &amp; certifications), chữ ký email. Badge có link xác thực công khai.</td></tr>
+        <tr><td>Chứng chỉ PDF</td><td>Tải trong CertMetrics</td><td>Có ngày cấp và ngày hết hạn (3 năm).</td></tr>
+        <tr><td>Benefit sau khi đỗ</td><td>Mục Benefits trong tài khoản</td><td><b>Voucher 50%</b> cho kỳ thi tiếp theo, voucher thi thử miễn phí, quyền dùng AWS Certified store và logo. Voucher có hạn, ghi lại ngày.</td></tr>
+        <tr><td>Hiệu lực chứng chỉ</td><td>3 năm kể từ ngày đỗ</td><td>Gia hạn bằng cách thi lại SAA phiên bản mới nhất, hoặc đỗ SAP (Professional) cũng gia hạn SAA.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">11. Thi online tại nhà, giữa bài thi bạn khát nước và chai nước để ở bếp. Được đi lấy không?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Không.</b> OnVUE không cho rời chỗ hay rời khỏi tầm webcam trong suốt bài thi; rời chỗ là có thể bị hủy bài. Chuẩn bị nước trước là không cần thiết vì bàn phải trống (một số proctor cho chai nước trong suốt không nhãn, nhưng đừng trông cậy vào đó, cần kiểm tra lại quy định hiện hành). Giải pháp: uống đủ nước 1 giờ trước, đi vệ sinh ngay trước khi check-in.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. SAU KHI THI ============ -->
+<section id="sau-khi-thi">
+  <span class="eyebrow">Chuẩn bị thi 6 / 6</span>
+  <h2>Sau khi thi: đỗ thì làm gì, trượt thì làm gì</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Nếu đỗ</span>
+      <ol class="steps">
+        <li><div><p><b>Lưu bằng chứng</b>: tải PDF chứng chỉ và score report từ CertMetrics, lưu vào thư mục cá nhân và cloud (không chỉ để trên máy công ty). Ghi ngày hết hạn vào lịch, đặt nhắc trước 6 tháng.</p></div></li>
+        <li><div><p><b>Credly và LinkedIn</b>: accept badge trên Credly, bấm "Add to LinkedIn profile" để tạo mục Licenses &amp; certifications có link xác thực. Có thể đăng một bài ngắn chia sẻ lộ trình 12 tuần; nhiều nhà tuyển dụng tìm theo từ khóa "AWS Certified Solutions Architect".</p></div></li>
+        <li><div><p><b>Báo công ty</b> nếu công ty có chính sách hỗ trợ lệ phí hoặc thưởng chứng chỉ (nhiều công ty Nhật có 資格手当 hoặc hoàn lệ phí thi, cần hóa đơn Pearson VUE và chứng chỉ).</p></div></li>
+        <li><div><p><b>Tick "THI ĐỖ"</b> trong <code>AWS-SAA-checklist.md</code> và checklist bài này. Nói với Claude trong session để tick và ghi ngày đỗ.</p></div></li>
+        <li><div><p><b>Chọn bước tiếp theo</b> (không cần quyết ngay, nghỉ 1 đến 2 tuần trước):</p>
+          <div class="tbl"><table>
+            <tr><th>Hướng</th><th>Hợp với</th><th>Ghi chú</th></tr>
+            <tr><td><b>Developer Associate (DVA)</b></td><td>Viết code, làm việc với Lambda, API Gateway, DynamoDB, CI/CD hàng ngày</td><td>Trùng khoảng 40% kiến thức SAA, học thêm 4 đến 6 tuần. Voucher 50% dùng ở đây.</td></tr>
+            <tr><td><b>SysOps Administrator Associate (SOA)</b></td><td>Vận hành, monitoring, CloudWatch, Systems Manager</td><td>Có phần lab thực hành (tùy phiên bản, cần kiểm tra lại), khó hơn DVA.</td></tr>
+            <tr><td><b>Solutions Architect Professional (SAP)</b></td><td>Đã làm kiến trúc thật 1 đến 2 năm, muốn chứng chỉ nặng ký</td><td>Khó hơn SAA nhiều, nên có 6 đến 12 tháng kinh nghiệm thực tế trước. Đỗ SAP cũng gia hạn SAA.</td></tr>
+            <tr><td><b>Hands-on thật với CDK</b></td><td>Muốn biến kiến thức thi thành kỹ năng làm việc</td><td>Dựng lại kiến trúc 3 tầng (VPC, ALB, ASG, RDS) hoặc serverless API bằng AWS CDK TypeScript, có test, có CI/CD. Giá trị cho công việc hiện tại nhiều hơn chứng chỉ thứ hai.</td></tr>
+          </table></div></div></li>
+        <li><div><p><b>Dọn account AWS lần cuối</b>: xóa resource còn lại, giữ Budget 1 USD và 10 USD, giữ IAM user admin có MFA. Nếu không dùng tiếp, có thể đóng account (Account → Close account), nhưng Free Tier credit còn lại sẽ mất.</p></div></li>
+      </ol>
+    </div>
+
+    <div class="block"><span class="eyebrow">Nếu trượt</span>
+      <div class="note">Trượt SAA lần đầu không hiếm, nhất là khi thi tiếng Anh. Điểm 650 đến 719 nghĩa là chỉ thiếu vài câu; cách xử lý là có hệ thống chứ không phải học lại từ đầu.</div>
+      <ol class="steps">
+        <li><div><p><b>Đọc score report theo domain</b> ngay khi có (tối đa 5 ngày): domain nào "Needs improvement". Với tỷ trọng 30/26/24/20, yếu ở SEC hoặc RES mất nhiều điểm nhất.</p></div></li>
+        <li><div><p><b>Ghi lại trong 24 giờ</b> mọi câu còn nhớ (dịch vụ, tình huống, hai đáp án đã phân vân) vào <code>so-ghi-cau-sai.md</code>, đánh dấu tuần "thi thật". Trí nhớ về đề phai rất nhanh.</p></div></li>
+        <li><div><p><b>Chờ 14 ngày</b> là bắt buộc. Đặt lịch thi lại luôn ở ngày 15 đến 21 để giữ nhịp; xin lại ESL không cần thiết nếu accommodation vẫn còn hiệu lực (kiểm tra trong CertMetrics).</p></div></li>
+        <li><div><p><b>Ôn đúng domain yếu</b>: mở lại bài học tuần tương ứng (SEC: tuần 1, 4, 8; RES: tuần 5, 6, 9; PERF: tuần 3, 5, 6, 7; COST: tuần 1, 2, 3, 9) và đọc lại mục "Dễ nhầm" + "Từ khóa trong đề". Không đọc lại toàn bộ.</p></div></li>
+        <li><div><p><b>Làm lại đề</b>: TD review mode theo domain yếu, rồi 2 đề timed trong tuần thứ hai. Mục tiêu trên 85% vì đề thật lần hai có thể khác bộ câu.</p></div></li>
+        <li><div><p><b>Không bỏ cuộc</b>: lệ phí 150 USD và 14 ngày là chi phí nhỏ so với 12 tuần đã bỏ ra. Phần lớn người trượt lần 1 với 650+ đỗ lần 2.</p></div></li>
+      </ol>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>Needs improvement <b>→ domain phải ôn lại</b></span><span>14 ngày <b>→ thời gian chờ thi lại</b></span><span>3 năm <b>→ hiệu lực chứng chỉ</b></span><span>50% voucher <b>→ kỳ thi tiếp</b></span><span>Credly <b>→ badge, LinkedIn</b></span><span>SAP gia hạn SAA <b>→ Professional</b></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LỊCH TUẦN 12 ============ -->
+<section id="handson">
+  <span class="eyebrow">Lịch tuần 12</span>
+  <h2>Lịch tuần 12: 4 việc</h2>
+  <p>Thay cho hands-on. Việc 1 và 2 là làm đề, việc 3 là đặt lịch (bỏ qua nếu đã đặt ở tuần 11), việc 4 là dọn account để sau khi thi không còn resource nào tính tiền.</p>
+
+  <div class="card">
+    <h3>Việc 1. Tutorials Dojo đề 6 (timed)</h3>
+    <ol class="steps">
+      <li><div><p>Mở Tutorials Dojo → SAA-C03 Practice Exams → <b>Practice Test 6</b> → chế độ <b>Timed</b>. Nếu đã xin ESL thì vẫn làm trong 130 phút để quen áp lực; 30 phút thêm ở đề thật là phần dư.</p></div></li>
+      <li><div><p>Làm đúng chiến thuật ở mục 4: đọc câu hỏi cuối trước, flag câu khó, không bỏ trống, kiểm tra tiến độ ở phút 50.</p></div></li>
+      <li><div><p>Nộp bài, ghi <b>%</b> vào checklist dưới và vào dòng "Tutorials Dojo đề 6: ____%" trong <code>AWS-SAA-checklist.md</code>.</p></div></li>
+      <li><div><p>Đọc giải thích <b>cả câu làm đúng</b> (TD giải thích vì sao các đáp án khác sai, đây là phần giá trị nhất). Mỗi câu sai ghi một dòng vào <code>so-ghi-cau-sai.md</code>: ngày, tuần 12, dịch vụ, mình chọn, đáp án đúng, vì sao sai, từ khóa.</p></div></li>
+      <li><div><p>Xem bảng điểm theo domain của TD. Domain dưới 70% là domain phải đọc lại mục "Dễ nhầm" ở bài học tuần tương ứng trước ngày 2.</p></div></li>
+    </ol>
+    <div class="note ok">Đề 6 là đề cuối, đạt trên 80% và đề 5 cũng trên 80% nghĩa là đã đủ điều kiện đặt lịch. Nếu đề 6 dưới 80% thì đề 6 cũng vào danh sách làm lại ở việc 2.</div>
+  </div>
+
+  <div class="card">
+    <h3>Việc 2. Làm lại các đề dưới 80%</h3>
+    <ol class="steps">
+      <li><div><p>Liệt kê mọi đề đã làm từ tuần 10 đến 12 có điểm dưới 80%: TD đề 1 đến 6, AWS Official Practice Question Set, đề của khóa học chính, <code>AWS-SAA-quiz-01.md</code>.</p></div></li>
+      <li><div><p>Trước khi làm lại một đề: đọc các dòng của đề đó trong <code>so-ghi-cau-sai.md</code>. Làm lại mà không ôn trước thì điểm tăng chỉ do nhớ đáp án, không phải do hiểu.</p></div></li>
+      <li><div><p>Làm lại ở chế độ timed, cách lần đầu ít nhất 5 đến 7 ngày (đã đủ nếu lần đầu ở tuần 10 hoặc 11). <b>Lần 2 phải trên 80%.</b></p></div></li>
+      <li><div><p>Câu sai lần 2 mà đã sai lần 1: đây là lỗ hổng thật, đánh dấu "sai 2 lần" trong sổ và hỏi Claude giảng lại đúng chỗ đó bằng prompt "Ôn lại chỗ yếu" trong <code>PROMPT-session-tuan.md</code>.</p></div></li>
+      <li><div><p>Nếu vẫn dưới 80% lần 2: dời ngày thi 1 tuần (đổi lịch Pearson VUE trước 24 giờ, cần kiểm tra lại), ôn domain yếu 3 ngày, làm lại lần 3. Không đi thi với hy vọng.</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Việc 3. Đặt lịch thi (nếu chưa đặt)</h3>
+    <ol class="steps">
+      <li><div><p><b>Tạo hoặc kiểm tra tài khoản AWS Certification</b>: <a href="https://www.aws.training/certification" target="_blank" rel="noopener">aws.training/certification</a> → Sign in → vào CertMetrics. Kiểm tra họ tên khớp giấy tờ, email cá nhân, địa chỉ. Nếu đã có chứng chỉ khác, vào Benefits lấy voucher 50%.</p></div></li>
+      <li><div><p><b>Xin ESL +30 minutes</b> (chỉ khi thi tiếng Anh): Request Exam Accommodations → chọn ESL +30 MINUTES → Submit. Không làm bước 4 trước bước này.</p></div></li>
+      <li><div><p><b>Chờ duyệt</b>: thường vài giờ đến vài ngày làm việc, trạng thái Approved hiện trong tài khoản và có email. Trong lúc chờ, làm việc 1 và 2.</p></div></li>
+      <li><div><p><b>Đặt lịch Pearson VUE</b>: trong tài khoản AWS Certification → Schedule → chọn SAA-C03 → chọn ngôn ngữ (English) → chọn <b>OnVUE online</b> hoặc <b>Test center</b> → chọn ngày giờ (múi giờ Asia/Tokyo) → thanh toán 150 USD (nhập voucher nếu có). Màn hình xác nhận phải hiện thời lượng 160 phút nếu ESL đã áp dụng; nếu thấy 130 phút thì dừng lại, không thanh toán, kiểm tra lại accommodation.</p></div></li>
+      <li><div><p><b>Chạy system test</b> (online): link trong email xác nhận hoặc trang Pearson VUE OnVUE. Chạy trên đúng máy, đúng mạng, đúng phòng sẽ thi; app kiểm tra webcam, micro, tốc độ mạng và khả năng chạy app. Chạy lại lần nữa tối hôm trước ngày thi. Test center: thay bằng xem đường đi và giờ tàu.</p></div></li>
+      <li><div><p>Ghi ngày thi vào dòng "Ngày thi dự kiến" ở đầu <code>AWS-SAA-checklist.md</code> và vào lịch cá nhân, đặt nhắc 48 giờ trước.</p></div></li>
+    </ol>
+    <div class="note">Đổi lịch hoặc hủy thường miễn phí nếu còn hơn 24 giờ trước giờ thi (cần kiểm tra lại chính sách hiện hành khi đặt). Sát giờ hơn là mất lệ phí.</div>
+  </div>
+
+  <div class="card">
+    <h3>Việc 4. Dọn dẹp tài khoản AWS trước khi thi</h3>
+    <p style="font-size:.94rem">Mục tiêu: sau khi thi, account không còn resource nào tính tiền theo giờ, chỉ còn Budget, IAM user admin và vài thứ miễn phí. Làm ở ngày 5 để Bills ngày 6 xác nhận về 0.</p>
+    <ol class="steps">
+      <li><div><p><b>Nhìn toàn cảnh trước</b>: Billing and Cost Management → <b>Bills</b> (tháng này dịch vụ nào có tiền) và <b>Cost Explorer</b> (lọc 7 ngày gần nhất, group by Service, rồi group by Region). Dịch vụ nào còn xuất hiện là còn resource. Nếu có Business support thì thêm <b>Trusted Advisor → Cost Optimization</b> (idle load balancer, unassociated EIP, underutilized EBS).</p></div></li>
+      <li><div><p><b>Rà từng Region</b> đã từng dùng (ít nhất <code>ap-northeast-1</code>, và <code>us-east-1</code> vì CloudFront/ACM/WAF global đặt ở đó). Console có <b>Resource Groups &amp; Tag Editor → Tag Editor</b>: chọn All regions, All resource types, Search để liệt kê gần như mọi resource. Hoặc dùng CLI theo thứ tự tiền nhiều trước:</p>
+<pre><code>$env:AWS_PROFILE = "saa"
+foreach ($r in @("ap-northeast-1","us-east-1","ap-southeast-1")) {
+  Write-Host "== $r =="
+  aws ec2 describe-instances --region $r --query "Reservations[].Instances[?State.Name!='terminated'].[InstanceId,State.Name]" --output text
+  aws ec2 describe-volumes --region $r --query "Volumes[].[VolumeId,State,Size]" --output text
+  aws ec2 describe-addresses --region $r --query "Addresses[].[PublicIp,AssociationId]" --output text
+  aws ec2 describe-nat-gateways --region $r --query "NatGateways[?State!='deleted'].[NatGatewayId,State]" --output text
+  aws elbv2 describe-load-balancers --region $r --query "LoadBalancers[].[LoadBalancerName,Type]" --output text
+  aws rds describe-db-instances --region $r --query "DBInstances[].[DBInstanceIdentifier,DBInstanceStatus]" --output text
+  aws rds describe-db-clusters --region $r --query "DBClusters[].[DBClusterIdentifier,Status]" --output text
+  aws ecs list-clusters --region $r --output text
+  aws eks list-clusters --region $r --output text
+  aws kms list-keys --region $r --query "Keys[].KeyId" --output text
+  aws secretsmanager list-secrets --region $r --query "SecretList[].Name" --output text
+  aws ec2 describe-vpc-endpoints --region $r --query "VpcEndpoints[?VpcEndpointType=='Interface'].[VpcEndpointId,ServiceName]" --output text
+  aws efs describe-file-systems --region $r --query "FileSystems[].[FileSystemId,SizeInBytes.Value]" --output text
+}
+aws cloudfront list-distributions --query "DistributionList.Items[].[Id,Status]" --output text
+aws s3 ls</code></pre><p>Dòng nào có kết quả là còn resource. Output trống là sạch.</p></div></li>
+      <li><div><p><b>Xóa theo thứ tự</b> (resource phụ thuộc xóa trước): RDS instance và cluster (bỏ final snapshot nếu không cần, xóa cả snapshot thủ công cũ), ECS service và cluster, EKS (không có trong lộ trình nhưng kiểm tra), ALB/NLB rồi target group, NAT Gateway rồi release Elastic IP (chờ NAT về trạng thái deleted mới release được), EC2 instance rồi EBS volume còn sót và snapshot, Interface VPC endpoint, EFS file system, CloudFront distribution (disable, chờ Deployed, rồi delete), Lambda và API Gateway (miễn phí khi không gọi nhưng dọn cho gọn), Secrets Manager secret (lên lịch xóa 7 ngày), KMS customer managed key (lên lịch xóa 7 ngày; <b>chỉ xóa khi chắc không còn dữ liệu mã hóa bằng key đó</b>), S3 bucket (empty rồi delete; bucket có versioning phải xóa cả version cũ).</p></div></li>
+      <li><div><p><b>Giữ lại</b>: AWS Budgets (1 USD và 10 USD), IAM user admin với MFA, CloudTrail Event history (miễn phí), default VPC (miễn phí), bucket log nếu muốn giữ lịch sử (vài MB, gần như 0 đồng).</p></div></li>
+      <li><div><p><b>Kiểm tra lại ngày hôm sau</b>: Bills và Cost Explorer chi phí ngày gần nhất phải xấp xỉ 0 (có thể còn vài cent từ KMS key đang chờ xóa hoặc public IPv4 trước khi release). Chạy lại script ở bước 2 lần cuối.</p></div></li>
+    </ol>
+    <div class="note">Resource tính tiền theo giờ dễ bỏ quên nhất: <b>NAT Gateway, ALB/NLB, RDS, Elastic IP không gắn, EBS volume không gắn, Interface endpoint, EFS, OpenSearch domain</b>. KMS customer managed key tính 1 USD/tháng mỗi key, Secrets Manager 0,40 USD/tháng mỗi secret. Lab tuần 12 không tạo gì mới, chi phí 0 USD.</div>
+  </div>
+</section>
+
+<!-- ============ MỐC KIỂM TRA ============ -->
+<section id="moc">
+  <span class="eyebrow">Mốc kiểm tra</span>
+  <h2>Ba mốc của tuần cuối</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>1. Đặt được lịch thi và kiểm tra xong hệ thống</h3>
+      <p style="font-size:.94rem">Gợi ý khung tự kiểm tra:</p>
+      <ul style="font-size:.94rem">
+        <li>Email xác nhận Pearson VUE có đủ: ngày, giờ, múi giờ, hình thức, ngôn ngữ, thời lượng (160 phút nếu ESL).</li>
+        <li>Tên trong CertMetrics khớp giấy tờ sẽ mang đi.</li>
+        <li>Online: system test đã Pass trên đúng máy, đúng mạng, đúng phòng. Test center: đã biết đường đi và giờ xuất phát.</li>
+        <li>Ngày thi đã ghi vào <code>AWS-SAA-checklist.md</code> và lịch cá nhân.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>2. Nhớ được bảng con số không nhìn tài liệu</h3>
+      <p style="font-size:.94rem">Gợi ý cách tự kiểm tra (che cột Con số):</p>
+      <ul style="font-size:.94rem">
+        <li>Nói được 10 con số "bẫy" hay gặp nhất: S3 single PUT 5 GB, SQS 256 KB, Lambda 15 phút, API Gateway 29 giây, Spot 2 phút, Kinesis 1 MB/s mỗi shard, DynamoDB 400 KB, RDS backup 35 ngày, Aurora 6 bản 3 AZ, CloudTrail 90 ngày.</li>
+        <li>Nói được 5 số về VPC: /16 đến /28, 5 IP giữ lại, NAT theo AZ, peering không transitive, VPN 1,25 Gbps mỗi tunnel.</li>
+        <li>Nói được số về kỳ thi: 65 câu, 130 phút, 720/1000, 15 câu không tính điểm, 14 ngày thi lại, 3 năm hiệu lực.</li>
+        <li>Sai dưới 5 dòng trong toàn bảng ở lượt che thứ hai là đạt.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>3. THI ĐỖ</h3>
+      <p style="font-size:.94rem">Mốc cuối cùng của 12 tuần:</p>
+      <ul style="font-size:.94rem">
+        <li>Màn hình hoặc email báo <b>Pass</b>; score report từ 720 trở lên.</li>
+        <li>Badge Credly đã accept, chứng chỉ PDF đã lưu, LinkedIn đã cập nhật.</li>
+        <li>Tick "THI ĐỖ" trong <code>AWS-SAA-checklist.md</code>, ghi ngày đỗ.</li>
+        <li>Account AWS đã dọn, Bills về 0, Budget vẫn bật.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TỪ KHÓA: CỤM MỞ ĐẦU → DOMAIN ============ -->
+<section id="tukhoa">
+  <span class="eyebrow">Ôn nhanh</span>
+  <h2>Cụm mở đầu câu hỏi → domain → tư duy</h2>
+  <p style="font-size:.94rem">Đề SAA viết theo khuôn: tình huống, rồi một câu kết nêu yêu cầu. Nhận ra cụm trong câu kết là biết domain và biết "thước đo" để so hai đáp án còn lại.</p>
+  <div class="tbl"><table>
+    <tr><th>Câu hỏi có cụm</th><th>Domain</th><th>Tư duy khi so đáp án</th></tr>
+    <tr><td><em>A solutions architect must ensure data is encrypted at rest / in transit</em></td><td>SEC</td><td>KMS, SSE-KMS, TLS với ACM; đáp án nào không nhắc mã hóa là loại</td></tr>
+    <tr><td><em>must not be accessible from the Internet / must remain private</em></td><td>SEC</td><td>Private subnet, VPC endpoint, PrivateLink, Security Group siết inbound; không public IP</td></tr>
+    <tr><td><em>grant access with least privilege / temporary access</em></td><td>SEC</td><td>IAM role, STS, policy tối thiểu, resource-based policy; loại đáp án có access key dài hạn</td></tr>
+    <tr><td><em>protect the application from common web exploits / DDoS</em></td><td>SEC</td><td>WAF (L7), Shield Advanced (DDoS), CloudFront phía trước</td></tr>
+    <tr><td><em>detect / audit / investigate / comply with regulations</em></td><td>SEC</td><td>CloudTrail (ai), Config (cấu hình), GuardDuty (đe dọa), Macie (PII), Security Hub (gom)</td></tr>
+    <tr><td><em>with minimal downtime / highly available / survive AZ failure</em></td><td>RES</td><td>Multi-AZ, ASG nhiều AZ, NAT mỗi AZ, RDS Multi-AZ; loại đáp án có một điểm chết</td></tr>
+    <tr><td><em>disaster recovery with RPO of X and RTO of Y</em></td><td>RES</td><td>Chọn mức DR rẻ nhất đạt RTO: backup/restore, pilot light, warm standby, multi-site; Aurora Global, Global Tables</td></tr>
+    <tr><td><em>decouple / handle traffic spikes / messages must not be lost</em></td><td>RES</td><td>SQS giữa producer và consumer, SNS fan-out, DLQ; ASG theo queue depth</td></tr>
+    <tr><td><em>stateless / session persistence across instances</em></td><td>RES</td><td>Session ra ElastiCache/DynamoDB, file ra EFS/S3; không lưu trên instance</td></tr>
+    <tr><td><em>improve performance / reduce latency / users complain about slow</em></td><td>PERF</td><td>Cache (CloudFront, ElastiCache, DAX), read replica, Global Accelerator, đúng loại storage; tìm cổ chai trước</td></tr>
+    <tr><td><em>handle millions of requests / scale automatically / unpredictable traffic</em></td><td>PERF</td><td>Serverless tự scale (Lambda, DynamoDB on-demand, Fargate, Aurora Serverless), ASG target tracking</td></tr>
+    <tr><td><em>process / analyze data in real time / near real time</em></td><td>PERF</td><td>Kinesis Data Streams (real time, replay) vs Firehose (near real time, vào S3); không phải SQS</td></tr>
+    <tr><td><em>choose the storage / database for this workload</em></td><td>PERF</td><td>Đối chiếu pattern: key-value → DynamoDB; relational → RDS/Aurora; shared file Linux → EFS; Windows → FSx; object → S3; HPC → Lustre</td></tr>
+    <tr><td><em>run SQL queries on logs / data warehouse / BI dashboards</em></td><td>PERF</td><td>Athena (S3 ad-hoc), Redshift (warehouse), QuickSight (BI), OpenSearch (log search)</td></tr>
+    <tr><td><em>reduce cost / most cost-effective / lower the monthly bill</em></td><td>COST</td><td>Vẫn phải đạt yêu cầu; rồi Spot, Reserved/Savings Plans, S3 IA/Glacier/Intelligent-Tiering, right-size, Gateway endpoint, xóa idle</td></tr>
+    <tr><td><em>data is rarely accessed / accessed once a quarter / must be retained for 7 years</em></td><td>COST</td><td>S3 lifecycle sang IA → Glacier Instant/Flexible → Deep Archive; nhớ min duration 30/90/180 ngày</td></tr>
+    <tr><td><em>track / allocate / alert on spending across teams or accounts</em></td><td>COST</td><td>Cost allocation tags, Cost Explorer, Budgets, CUR, Organizations consolidated billing</td></tr>
+    <tr><td><em>interruptions are acceptable / batch / can be restarted</em></td><td>COST</td><td>Spot (có thể trộn On-Demand trong ASG mixed instances); loại đáp án Reserved cho tải ngắn hạn</td></tr>
+    <tr><td><em>with the least operational overhead / minimal administrative effort</em></td><td>mọi domain</td><td>Managed và serverless thắng; ít bước hơn thắng; AWS làm thay thắng tự dựng</td></tr>
+    <tr><td><em>Which combination of steps... (Choose two.)</em></td><td>mọi domain</td><td>Hai đáp án phải cùng một giải pháp hoặc bổ sung nhau; loại đáp án "mồi" đúng kỹ thuật nhưng lạc hệ</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ CHECKLIST ============ -->
+<section id="checklist">
+  <span class="eyebrow">Theo dõi</span>
+  <h2>Checklist tuần 12</h2>
+  <p style="font-size:.94rem;color:var(--muted)">Tick ở đây để tự theo dõi trên máy này. Khi xong mục nào, nói với Claude trong session để tick vào <code>AWS-SAA-checklist.md</code> (phần "Luyện đề" và "Đặt lịch và thi" của Tuần 10 đến 12).</p>
+  <div class="card">
+    <h4>Luyện đề</h4>
+    <label class="check"><input type="checkbox" id="c1" data-ck><span>Tutorials Dojo đề 6 (timed): ____%</span></label>
+    <label class="check"><input type="checkbox" id="c2" data-ck><span>Làm lại các đề dưới 80%, lần 2 trên 80%</span></label>
+    <label class="check"><input type="checkbox" id="c3" data-ck><span>Đề luyện đạt trên 80% hai lần liên tiếp</span></label>
+    <h4>Đặt lịch thi</h4>
+    <label class="check"><input type="checkbox" id="c4" data-ck><span>Xin accommodation ESL +30 minutes (nếu thi tiếng Anh), đã Approved</span></label>
+    <label class="check"><input type="checkbox" id="c5" data-ck><span>Đăng ký Pearson VUE (online hoặc test center), chọn ngôn ngữ</span></label>
+    <label class="check"><input type="checkbox" id="c6" data-ck><span>Chạy OnVUE system test (hoặc xem đường đi tới test center)</span></label>
+    <h4>Chuẩn bị</h4>
+    <label class="check"><input type="checkbox" id="c7" data-ck><span>Dọn resource AWS, Bills về 0, giữ Budget</span></label>
+    <label class="check"><input type="checkbox" id="c8" data-ck><span>Thuộc bảng con số (tự che và kiểm tra, sai dưới 5 dòng)</span></label>
+    <h4>Ngày thi</h4>
+    <label class="check"><input type="checkbox" id="c9" data-ck><span>Ngày thi: flag câu khó rồi quay lại sau</span></label>
+    <label class="check"><input type="checkbox" id="c10" data-ck><span>Ngày thi: loại 2 đáp án sai trước khi chọn</span></label>
+    <label class="check"><input type="checkbox" id="c11" data-ck><span>Ngày thi: không bỏ trống câu nào</span></label>
+    <label class="check"><input type="checkbox" id="c12" data-ck><span>THI ĐỖ</span></label>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  // Xem đáp án
+  document.querySelectorAll('[data-reveal]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var a=b.parentElement.querySelector('.ans');
+      a.hidden=!a.hidden; b.textContent=a.hidden?'Xem đáp án':'Ẩn đáp án';
+    });
+  });
+  // Checklist lưu trên máy này
+  var boxes=document.querySelectorAll('[data-ck]'), KEY='saa-tuan-12';
+  var saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  function update(){
+    var n=0; boxes.forEach(function(c){ c.closest('.check').classList.toggle('done',c.checked); if(c.checked)n++; });
+    document.getElementById('bar').style.width=(n/boxes.length*100)+'%';
+    document.getElementById('pct').textContent=n+'/'+boxes.length;
+  }
+  boxes.forEach(function(c){
+    if(saved[c.id])c.checked=true;
+    c.addEventListener('change',function(){ saved[c.id]=c.checked; try{ localStorage.setItem(KEY,JSON.stringify(saved)); }catch(e){} update(); });
+  });
+  update();
+  // Đánh dấu mục đang đọc
+  var links=document.querySelectorAll('.toc a'), secs=[];
+  links.forEach(function(l){ var s=document.querySelector(l.getAttribute('href')); if(s)secs.push([s,l]); });
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ links.forEach(function(l){l.classList.remove('active')}); secs.forEach(function(p){ if(p[0]===e.target)p[1].classList.add('active'); }); } }); },{rootMargin:'-20% 0px -70% 0px'});
+    secs.forEach(function(p){ io.observe(p[0]); });
+  }
+})();
+</script>

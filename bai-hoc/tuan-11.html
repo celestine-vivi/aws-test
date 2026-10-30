@@ -1,0 +1,732 @@
+<title>SAA Tuần 11 Luyện đề theo domain</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky mục lục bên trái (desktop), cột nội dung 760px bên phải; xếp một cột ở màn hẹp. */
+:root{
+  --bg:#f2f4f7; --surface:#ffffff; --surface-2:#e9edf2; --line:#d3dae3;
+  --fg:#172030; --muted:#5a6676; --accent:#1c6e8c; --accent-soft:#dcecf3;
+  --warm:#b35a00; --warm-soft:#fbe9d6; --ok:#2a7d4f; --ok-soft:#dcf0e4; --bad:#b3362b; --bad-soft:#f8dedb;
+  --display:"Manrope","IBM Plex Sans",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+a{color:var(--accent)}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:800}
+h2{font-size:1.5rem;font-weight:800;padding-top:8px}
+h3{font-size:1.12rem;font-weight:700}
+h4{font-size:.95rem;font-weight:700}
+p{margin:0}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+pre{font-family:var(--mono);font-size:.84rem;line-height:1.5;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:0}
+pre code{background:none;padding:0;font-size:inherit}
+em{color:var(--warm);font-style:italic}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* Header */
+.hero{max-width:1120px;margin:0 auto;padding-block:36px 20px;display:flex;flex-direction:column;gap:12px}
+.hero .lead{max-width:62ch;color:var(--muted);font-size:1.02rem}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.88rem;color:var(--muted)}
+.meta b{color:var(--fg);font-weight:600}
+.progress{display:flex;align-items:center;gap:12px;font-size:.88rem;color:var(--muted)}
+.bar{flex:1;max-width:320px;height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+
+/* Two columns */
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;align-items:start}
+.toc{position:sticky;top:max(12px,env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:2px;font-size:.9rem}
+.toc a{color:var(--muted);text-decoration:none;padding:6px 10px;border-left:2px solid var(--line);display:block}
+.toc a:hover,.toc a.active{color:var(--fg);border-left-color:var(--accent)}
+.toc .grp{margin-top:10px}
+main{display:flex;flex-direction:column;gap:56px;min-width:0;max-width:780px}
+section{display:flex;flex-direction:column;gap:18px;scroll-margin-top:16px}
+@media (max-width:860px){ .wrap{grid-template-columns:1fr;gap:24px} .toc{position:static;flex-direction:row;flex-wrap:wrap;gap:6px} .toc a{border:1px solid var(--line);border-radius:99px;padding:4px 10px} .toc .grp{margin:0} .toc a.active{border-color:var(--accent)} }
+
+/* Blocks */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.block{display:flex;flex-direction:column;gap:8px}
+.block > .eyebrow{color:var(--accent)}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:5px}
+li::marker{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.kw{display:flex;flex-wrap:wrap;gap:8px}
+.kw span{background:var(--warm-soft);color:var(--warm);border-radius:4px;padding:3px 9px;font-size:.86rem;font-style:italic}
+.kw span b{font-style:normal;font-weight:600;color:var(--fg)}
+.note{border-left:3px solid var(--warm);background:var(--warm-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.94rem}
+.note.ok{border-color:var(--ok);background:var(--ok-soft)}
+.note.bad{border-color:var(--bad);background:var(--bad-soft)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;font-size:.84rem}
+tr:last-child td{border-bottom:0}
+td.c{text-align:center}
+
+/* Checklist */
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:6px;cursor:pointer}
+.check:hover{background:var(--surface-2)}
+.check input{margin-top:5px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.check.done{color:var(--muted);text-decoration:line-through}
+
+/* Quiz reveal */
+.q{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.q .qt{font-weight:500}
+.q button{align-self:flex-start;font:inherit;font-size:.86rem;padding:5px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer}
+.q button:hover{background:var(--accent);color:var(--surface)}
+.q button:focus-visible,.check input:focus-visible,.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.q .ans{font-size:.94rem;border-top:1px dashed var(--line);padding-top:8px}
+.q .ans b{color:var(--ok)}
+
+/* Steps */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:12px;padding:0;list-style:none}
+.steps li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:start}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--mono);font-size:.8rem;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:500;margin-top:2px}
+.steps li > div{display:flex;flex-direction:column;gap:6px;min-width:0}
+
+/* Flow diagram */
+.flow{display:flex;flex-direction:column;gap:0;align-items:stretch;max-width:520px}
+.flow .n{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:.94rem}
+.flow .n .tag{font-family:var(--mono);font-size:.74rem;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.tag.deny{background:var(--bad-soft);color:var(--bad)} .tag.allow{background:var(--ok-soft);color:var(--ok)} .tag.next{background:var(--surface-2);color:var(--muted)}
+.flow .arrow{height:22px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--mono);font-size:.78rem}
+.flow .arrow::before{content:"";width:1px;height:100%;background:var(--line);position:absolute}
+.flow .arrow{position:relative} .flow .arrow span{background:var(--bg);padding:0 6px;position:relative}
+
+svg text{font-family:var(--body)}
+.diag{overflow-x:auto}
+.diag svg{width:100%;max-width:700px;height:auto;display:block}
+.sv-region{fill:var(--surface);stroke:var(--accent)} .sv-az{fill:var(--accent-soft);stroke:var(--accent)} .sv-edge{fill:var(--warm-soft);stroke:var(--warm)}
+.sv-t{fill:var(--fg);font-size:13px} .sv-m{fill:var(--muted);font-size:11px} .sv-line{stroke:var(--line)}
+@media (prefers-reduced-motion: reduce){ .bar i{transition:none} }
+</style>
+
+
+<header class="hero">
+  <span class="eyebrow">AWS SAA-C03 · Lộ trình 12 tuần · Tuần 11</span>
+  <h1>Luyện đề theo domain</h1>
+  <p class="lead">Tuần 10 đã ôn bảng so sánh dịch vụ và làm ba đề đầu. Tuần này là tuần luyện đề chính: bốn đề Tutorials Dojo (đề 2 đến 5), mỗi đề đi kèm một buổi ôn sâu đúng domain, cộng việc làm lại đề dưới 80% của tuần 10. Mục tiêu cuối tuần: hai đề liên tiếp đạt từ 80%, domain yếu nhất tăng ít nhất 10 điểm phần trăm, và sổ câu sai đã phân loại được nguyên nhân sai.</p>
+  <div class="meta"><span>Nhịp học: <b>2 đến 3 giờ/ngày</b> (một đề 65 câu mất khoảng 100 phút)</span><span>Domain liên quan: <b>cả 4</b> (SEC 30%, RES 26%, PERF 24%, COST 20%)</span><span>Chi phí lab tuần này: <b>0 USD</b></span></div>
+  <div class="progress"><span>Tiến độ checklist</span><div class="bar"><i id="bar"></i></div><span id="pct">0/16</span></div>
+</header>
+
+<div class="wrap">
+<nav class="toc" aria-label="Mục lục">
+  <a href="#ke-hoach">Kế hoạch 7 ngày</a>
+  <span class="grp eyebrow">Ôn sâu theo domain</span>
+  <a href="#domain-sec">1. Secure 30%</a>
+  <a href="#domain-res">2. Resilient 26%</a>
+  <a href="#domain-perf">3. High-Performing 24%</a>
+  <a href="#domain-cost">4. Cost-Optimized 20%</a>
+  <a href="#phan-tich-sai">5. Phân tích câu sai</a>
+  <span class="grp eyebrow">Luyện đề</span>
+  <a href="#handson">Lịch làm đề tuần 11</a>
+  <a href="#moc">Mốc kiểm tra</a>
+  <a href="#tukhoa">Bảng cặp dễ nhầm</a>
+  <a href="#checklist">Checklist tuần</a>
+</nav>
+
+<main>
+
+<section id="ke-hoach">
+  <h2>Kế hoạch 7 ngày</h2>
+  <p>Mỗi ngày làm đề ghép với một buổi ôn sâu đúng domain đó, để khi chấm đề bạn thấy ngay chỗ vừa ôn có vào đầu chưa. Ngày 3 và ngày 7 không làm đề mới, chỉ đọc lại sổ câu sai. Đề Tutorials Dojo mỗi đề 65 câu, 130 phút, làm ở <b>timed mode</b> để quen áp lực thời gian của đề thật.</p>
+  <div class="tbl"><table>
+    <tr><th>Ngày</th><th>Ôn sâu (buổi sáng, 45 đến 60 phút)</th><th>Làm đề (buổi tối)</th></tr>
+    <tr><td>1</td><td><a href="#domain-sec">Domain SEC</a>: policy evaluation, KMS, S3 security, SG/NACL, endpoint</td><td>Tutorials Dojo đề 2, timed mode, chấm, ghi sổ, tính % theo domain</td></tr>
+    <tr><td>2</td><td><a href="#domain-res">Domain RES</a>: Multi-AZ với Multi-Region, RDS/Aurora HA, SQS, 4 chiến lược DR</td><td>Tutorials Dojo đề 3, timed mode, chấm, ghi sổ, tính % theo domain</td></tr>
+    <tr><td>3</td><td><a href="#phan-tich-sai">Phân tích câu sai</a> của đề 2 và 3: gắn nguyên nhân cho từng câu, lọc sổ theo dịch vụ</td><td>Không làm đề mới. Dùng prompt "Ôn lại chỗ yếu" trong session với cụm dịch vụ sai nhiều nhất</td></tr>
+    <tr><td>4</td><td><a href="#domain-perf">Domain PERF</a>: EBS type, S3 performance, CloudFront với Global Accelerator, DynamoDB, Kinesis</td><td>Tutorials Dojo đề 4, timed mode, chấm, ghi sổ, tính % theo domain</td></tr>
+    <tr><td>5</td><td><a href="#domain-cost">Domain COST</a>: EC2 pricing, S3 class, data transfer, NAT Gateway, DynamoDB mode</td><td>Tutorials Dojo đề 5, timed mode, chấm, ghi sổ, tính % theo domain</td></tr>
+    <tr><td>6</td><td>Đọc lại bảng bẫy của domain yếu nhất (theo % của 4 đề vừa làm)</td><td>Làm lại các đề dưới 80% của tuần 10 (AWS-SAA-quiz-01, Official Practice Question Set, Tutorials Dojo đề 1), so sánh điểm lần 1 với lần 2</td></tr>
+    <tr><td>7</td><td>Nghỉ, hoặc đọc toàn bộ <code>so-ghi-cau-sai.md</code> một lượt</td><td>Nếu đã có hai đề liên tiếp đạt từ 80%: sang tuần 12 đặt lịch thi. Nếu chưa: tuần 12 vẫn làm Tutorials Dojo đề 6 rồi mới quyết định</td></tr>
+  </table></div>
+  <div class="note">Đề tuần này không chấm trong session (Tutorials Dojo tự chấm). Việc của session Claude tuần 11 là: nhận danh sách câu sai bạn gửi, giúp phân loại nguyên nhân, ghi vào <code>so-ghi-cau-sai.md</code>, và giảng lại cụm dịch vụ yếu. Dùng prompt "Ôn lại chỗ yếu" trong <code>PROMPT-session-tuan.md</code>.</div>
+</section>
+
+<!-- ============ 1. DOMAIN SEC ============ -->
+<section id="domain-sec">
+  <span class="eyebrow">Ôn sâu theo domain 1 / 4</span>
+  <h2>Design Secure Architectures (30%)</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Trọng số và task statement trong exam guide</span>
+      <p>Domain nặng nhất, khoảng 20 trong 65 câu. Ba task statement của SAA-C03 diễn giải lại:</p>
+      <ul>
+        <li><b>1.1 Thiết kế truy cập an toàn vào AWS resource</b>: IAM user/group/role, policy evaluation, cross-account, federation (Identity Center, SAML, Cognito), MFA, least privilege, Organizations và SCP, root account.</li>
+        <li><b>1.2 Thiết kế workload và ứng dụng an toàn</b>: VPC (Security Group, NACL, subnet public/private, NAT, VPC endpoint), WAF, Shield, Network Firewall, Secrets Manager với Parameter Store, dịch vụ phát hiện (GuardDuty, Inspector, Macie, Detective), ghi vết (CloudTrail, Config, VPC Flow Logs).</li>
+        <li><b>1.3 Chọn cách kiểm soát bảo mật dữ liệu phù hợp</b>: mã hóa at rest (KMS, SSE-S3/SSE-KMS/SSE-C, EBS, RDS), mã hóa in transit (TLS, ACM), S3 security (Block Public Access, bucket policy, Object Lock, versioning, MFA Delete), key rotation, data classification, retention và backup theo compliance.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Fact phải thuộc</span>
+      <ul>
+        <li>Thứ tự đánh giá policy: <b>explicit deny</b> thắng tất cả → SCP phải Allow → resource-based policy Allow là đủ (cùng account) → permissions boundary → session policy → identity-based policy. Không ai Allow thì implicit deny.</li>
+        <li>SCP không cấp quyền, chỉ là trần; áp dụng cho mọi principal trong member account kể cả root, nhưng <b>không áp dụng cho management account</b>.</li>
+        <li>Permissions boundary cũng không cấp quyền. Quyền thực = identity policy ∩ boundary. Đề hỏi "cho developer tự tạo role nhưng không vượt quá X" → boundary.</li>
+        <li>Cross-account: cần <b>cả hai phía</b> Allow (identity policy ở account gọi và resource policy ở account chủ), hoặc dùng role + <code>sts:AssumeRole</code>.</li>
+        <li>STS AssumeRole: session mặc định 1 giờ, tối đa 12 giờ theo cấu hình role; role chaining tối đa 1 giờ.</li>
+        <li>IAM Identity Center: SSO cho nhân viên vào nhiều account, permission set, nguồn danh tính là Identity Center directory, AD hoặc IdP SAML. Cognito là cho <b>người dùng ứng dụng</b>: User Pool xác thực (trả JWT), Identity Pool đổi token lấy credential AWS tạm thời (có cả unauthenticated identity).</li>
+        <li>KMS key là <b>regional</b>; multi-Region key là bản sao có cùng key ID và key material, dùng để mã hóa ở Region này giải mã ở Region kia. Snapshot EBS mã hóa muốn copy sang Region khác phải re-encrypt bằng key của Region đích.</li>
+        <li>KMS: AWS managed key tự rotate mỗi năm, không tắt được; customer managed key bật automatic rotation (mặc định mỗi năm, chu kỳ cấu hình được, cần kiểm tra lại dải ngày trên tài liệu AWS); key có imported key material không auto rotate. Giới hạn mã hóa trực tiếp 4 KB nên dùng <b>envelope encryption</b> qua <code>GenerateDataKey</code>.</li>
+        <li>Key policy của KMS key phải cho phép principal (hoặc trỏ về IAM), cross-account dùng KMS key cần cả key policy và IAM policy bên gọi.</li>
+        <li>S3 encryption: SSE-S3 (AES-256, AWS giữ key, <b>bật mặc định</b> cho object mới từ đầu 2023), SSE-KMS (audit qua CloudTrail, có thể bị throttle bởi quota KMS, bật <b>S3 Bucket Key</b> để giảm gọi KMS), SSE-C (khách gửi key trong header, bắt buộc HTTPS), client-side encryption (AWS không thấy key).</li>
+        <li>Ép upload phải mã hóa: bucket policy Deny khi thiếu header <code>s3:x-amz-server-side-encryption</code>. Ép HTTPS: Deny khi <code>aws:SecureTransport</code> = false.</li>
+        <li>S3 Block Public Access ở mức account hoặc bucket, thắng mọi bucket policy và ACL. Object Ownership mặc định là <b>Bucket owner enforced</b> (ACL bị tắt) cho bucket mới.</li>
+        <li>S3 Object Lock: cần versioning, <b>Governance mode</b> (user có quyền đặc biệt vẫn xóa được) với <b>Compliance mode</b> (không ai xóa được kể cả root trong retention period), cộng Legal Hold không có hạn. Glacier Vault Lock là WORM cho vault Glacier cũ.</li>
+        <li>MFA Delete: chỉ <b>root</b> bật được qua CLI, cần versioning, yêu cầu MFA khi xóa version hoặc tắt versioning.</li>
+        <li>Pre-signed URL dùng credential của người tạo, hết hạn theo tham số; CloudFront signed URL/cookie kèm OAC để chặn truy cập thẳng S3.</li>
+        <li>Security Group: <b>stateful</b>, chỉ có rule Allow, mặc định chặn mọi inbound và cho mọi outbound, tham chiếu được SG khác. NACL: <b>stateless</b>, có Deny, rule đánh số đánh giá từ thấp lên, mặc định allow all; muốn chặn một IP → NACL. Vì stateless, NACL phải mở ephemeral port 1024 đến 65535 cho chiều trả về.</li>
+        <li>VPC endpoint: <b>Gateway endpoint</b> chỉ cho S3 và DynamoDB, miễn phí, thêm route vào route table; <b>Interface endpoint</b> (PrivateLink) tạo ENI với private IP, tính tiền theo giờ và GB, dùng cho hầu hết dịch vụ còn lại và cả S3. Endpoint policy giới hạn resource đi qua endpoint, bucket policy có thể dùng <code>aws:SourceVpce</code>.</li>
+        <li>WAF gắn vào CloudFront, ALB, API Gateway, AppSync, Cognito User Pool; <b>không gắn được NLB hay EC2</b>. Rule theo IP, geo, rate-based, SQL injection, XSS, managed rule group. Shield Standard miễn phí tự động (L3/L4); Shield Advanced trả phí hàng tháng, có DDoS Response Team, cost protection, bảo vệ EC2/ELB/CloudFront/Global Accelerator/Route 53. Firewall Manager quản lý WAF, Shield, SG tập trung cho Organizations.</li>
+        <li>GuardDuty: phát hiện mối đe dọa từ CloudTrail, VPC Flow Logs, DNS logs, S3 data events, EKS audit logs; không cần agent. Inspector: quét lỗ hổng EC2, ECR image, Lambda. Macie: tìm PII, dữ liệu nhạy cảm trong S3 bằng ML. Detective: điều tra sâu sau khi GuardDuty báo. Security Hub: gom finding, chấm điểm theo chuẩn.</li>
+        <li>CloudTrail: ghi <b>API call</b> (ai, làm gì, lúc nào); Event history 90 ngày miễn phí; trail đưa vào S3 để giữ lâu, có log file validation chống sửa; data events (S3 object-level, Lambda invoke) <b>tắt mặc định</b>. AWS Config: ghi <b>cấu hình resource</b> theo thời gian, rule đánh giá compliance, remediation bằng SSM Automation; Config không chặn thay đổi, chỉ phát hiện.</li>
+        <li>Secrets Manager: lưu secret, <b>tự động rotate</b> bằng Lambda, tích hợp sẵn RDS/Redshift/DocumentDB, tính tiền theo secret và API call. SSM Parameter Store SecureString: mã hóa bằng KMS, Standard tier miễn phí, <b>không có rotation tự động</b>.</li>
+        <li>ACM: cấp chứng chỉ public <b>miễn phí</b>, tự gia hạn, gắn vào ELB, CloudFront, API Gateway; <b>không export private key</b> và không cài trực tiếp lên EC2. Chứng chỉ cho CloudFront phải nằm ở <b>us-east-1</b>. ACM Private CA cho chứng chỉ nội bộ.</li>
+        <li>EBS: bật "encryption by default" theo Region; volume đã mã hóa không tắt được; volume chưa mã hóa → snapshot → copy snapshot có bật encryption → tạo volume mới. RDS: chỉ bật encryption lúc tạo; DB chưa mã hóa → snapshot → copy có encryption → restore. Read replica của DB mã hóa cũng phải mã hóa.</li>
+        <li>Mã hóa in transit mặc định: VPN (IPsec), CloudFront HTTPS, S3 HTTPS; <b>Direct Connect không mã hóa</b> (cần VPN over DX hoặc MACsec). VPC traffic giữa Nitro instance được mã hóa ở lớp vật lý, nhưng đề thi thường mong đáp án TLS cho ứng dụng.</li>
+        <li>VPC Flow Logs ghi metadata (src/dst IP, port, accept/reject) ở mức VPC, subnet, ENI; không ghi payload, không ghi traffic tới Route 53 Resolver, metadata 169.254.169.254, DHCP. Traffic Mirroring mới bắt payload.</li>
+        <li>Root account: bật MFA, không tạo access key, chỉ dùng cho vài việc (đổi support plan, đóng account, bật MFA Delete). Credential report liệt kê user và trạng thái key/MFA; Access Advisor cho thấy dịch vụ dùng lần cuối; Access Analyzer tìm resource chia sẻ ra ngoài và sinh policy từ CloudTrail.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Bẫy hay gặp</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài</th><th>Đáp án dễ chọn nhầm</th><th>Đáp án đúng</th><th>Vì sao</th></tr>
+        <tr><td>Chặn một địa chỉ IP cụ thể đang tấn công vào EC2</td><td>Security Group thêm rule Deny</td><td>NACL rule Deny với số thứ tự nhỏ</td><td>SG không có Deny. Nếu đề có ALB/CloudFront thì WAF IP set cũng đúng.</td></tr>
+        <tr><td>EC2 trong private subnet đọc S3 mà <em>không đi qua Internet</em>, <em>most cost-effective</em></td><td>Interface endpoint hoặc NAT Gateway</td><td>Gateway endpoint cho S3</td><td>Gateway endpoint miễn phí; Interface endpoint tốn tiền; NAT đi qua public path và tốn tiền theo GB.</td></tr>
+        <tr><td>Rotate mật khẩu RDS tự động, <em>least operational overhead</em></td><td>Parameter Store SecureString</td><td>Secrets Manager</td><td>Parameter Store không có rotation tích hợp. Đề nói "rotate" là Secrets Manager.</td></tr>
+        <tr><td>Nhân viên công ty đăng nhập AWS bằng AD có sẵn, nhiều account</td><td>Cognito User Pool</td><td>IAM Identity Center (hoặc SAML federation)</td><td>Cognito cho khách hàng của ứng dụng. Nhân viên và nhiều account là Identity Center.</td></tr>
+        <tr><td>Chứng minh log không bị sửa, lưu file log S3 không thể xóa 7 năm</td><td>Versioning và bucket policy</td><td>CloudTrail log file validation + S3 Object Lock Compliance mode</td><td>Governance mode và bucket policy đều có người bỏ được. Compliance mode thì root cũng không xóa được trong retention.</td></tr>
+        <tr><td>User có AdministratorAccess nhưng không tạo được resource ở một Region</td><td>Thiếu quyền IAM, cần thêm policy</td><td>SCP của Organizations chặn Region đó</td><td>Allow rộng bao nhiêu cũng bị trần SCP chặn. Tìm Deny hoặc SCP trước khi thêm Allow.</td></tr>
+        <tr><td>Bảo vệ web app khỏi SQL injection chạy sau NLB</td><td>Gắn WAF vào NLB</td><td>Đổi sang ALB (hoặc đặt CloudFront phía trước) rồi gắn WAF</td><td>WAF không gắn được NLB. Shield chỉ lo DDoS, không lo SQL injection.</td></tr>
+        <tr><td>Mã hóa S3, cần <em>audit trail</em> mỗi lần dùng key và tự quản lý key</td><td>SSE-S3</td><td>SSE-KMS với customer managed key</td><td>SSE-S3 không ghi log dùng key trong CloudTrail và không kiểm soát được key policy.</td></tr>
+        <tr><td>Phát hiện tài khoản bị lộ key đang gọi API lạ từ IP độc hại</td><td>Inspector hoặc Macie</td><td>GuardDuty</td><td>Inspector quét lỗ hổng phần mềm, Macie tìm PII trong S3. Hành vi bất thường ở mức account là GuardDuty.</td></tr>
+        <tr><td>Theo dõi xem ai đã đổi Security Group và lúc nào, cộng cảnh báo khi SG mở port 22 ra 0.0.0.0/0</td><td>Chỉ CloudTrail</td><td>CloudTrail (ai đổi) + AWS Config rule (phát hiện cấu hình sai)</td><td>Config đánh giá trạng thái cấu hình, CloudTrail ghi API. Đề hỏi cả hai thì chọn đáp án có cả hai.</td></tr>
+        <tr><td>Mã hóa RDS đang chạy chưa bật encryption</td><td>Bật encryption trong Modify</td><td>Snapshot → copy có encryption → restore DB mới → trỏ app sang</td><td>RDS không bật encryption cho instance đang chạy. EBS cũng tương tự qua snapshot.</td></tr>
+        <tr><td>Cho app mobile upload ảnh thẳng lên S3 với credential tạm</td><td>Nhúng access key của IAM user vào app</td><td>Cognito Identity Pool cấp credential tạm từ IAM role</td><td>Access key trong app sẽ bị lộ. Đề có <em>mobile</em>, <em>temporary credentials</em> là Cognito Identity Pool.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">1. Công ty lưu báo cáo tài chính trong S3. Kiểm toán yêu cầu không ai, kể cả administrator, có thể xóa hoặc sửa file trong 5 năm. Giải pháp nào đáp ứng?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Bật versioning và S3 Object Lock ở Compliance mode với retention 5 năm.</b> Governance mode hay bị chọn nhầm nhưng user có quyền <code>s3:BypassGovernanceRetention</code> vẫn xóa được. Bucket policy Deny thì admin sửa được policy. MFA Delete chỉ bảo vệ việc xóa version, không chặn root.</p></div>
+      <div class="q"><p class="qt">2. Lambda trong private subnet cần gọi DynamoDB và Secrets Manager mà traffic <em>không rời mạng AWS</em>, <em>most cost-effective</em>. Chọn 2 đáp án.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Gateway endpoint cho DynamoDB và Interface endpoint cho Secrets Manager.</b> DynamoDB có gateway endpoint miễn phí nên không dùng interface endpoint cho nó. Secrets Manager chỉ có interface endpoint. NAT Gateway thì traffic ra public và tốn tiền.</p></div>
+      <div class="q"><p class="qt">3. Account A có bucket policy cho phép account B đọc. User ở account B có identity policy Allow <code>s3:GetObject</code> trên bucket đó nhưng vẫn AccessDenied. Nguyên nhân nào hợp lý nhất?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Account B nằm trong Organizations có SCP không cho phép S3, hoặc object được mã hóa bằng KMS key ở account A mà key policy chưa cho account B dùng.</b> Cả hai phía đã Allow nên thiếu quyền bình thường bị loại; phải nghĩ tới SCP, boundary, hoặc KMS. Câu này luyện thói quen "đi hết chuỗi đánh giá".</p></div>
+      <div class="q"><p class="qt">4. Web app sau ALB bị tấn công HTTP flood từ nhiều IP, mỗi IP gửi vài nghìn request mỗi phút. Cần chặn với <em>least operational overhead</em>.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>AWS WAF rate-based rule gắn vào ALB.</b> NACL phải cập nhật tay từng IP và chỉ có 20 rule mặc định. Shield Standard đã bật nhưng xử lý L3/L4, HTTP flood ở L7 cần WAF. Shield Advanced cũng chặn được nhưng tốn tiền và đề không nói cần DRT.</p></div>
+      <div class="q"><p class="qt">5. Ứng dụng trên EC2 ở us-east-1 đọc object S3 được mã hóa bằng customer managed KMS key. Công ty muốn làm DR sang ap-northeast-1: replicate bucket và vẫn đọc được. Cần chú ý gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>KMS key là regional: khi bật CRR phải chỉ định KMS key ở Region đích để mã hóa bản sao, và role replication cần quyền decrypt key nguồn, encrypt key đích.</b> Hoặc dùng multi-Region key để cùng key material ở hai Region. Đáp án nhầm hay gặp là "KMS key tự động dùng được ở mọi Region".</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. DOMAIN RES ============ -->
+<section id="domain-res">
+  <span class="eyebrow">Ôn sâu theo domain 2 / 4</span>
+  <h2>Design Resilient Architectures (26%)</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Trọng số và task statement trong exam guide</span>
+      <p>Khoảng 17 trong 65 câu. Hai task statement:</p>
+      <ul>
+        <li><b>2.1 Thiết kế kiến trúc có khả năng mở rộng và lỏng kết nối (loosely coupled)</b>: ELB, Auto Scaling, SQS/SNS/EventBridge để <em>decouple</em>, API Gateway, Lambda, container (ECS/EKS/Fargate), microservice, chọn storage và database phù hợp để scale, caching, event-driven.</li>
+        <li><b>2.2 Thiết kế kiến trúc có tính sẵn sàng cao và chịu lỗi (highly available, fault-tolerant)</b>: Multi-AZ với Multi-Region, Route 53 routing và health check, RDS Multi-AZ với read replica, Aurora, DynamoDB Global Tables, 4 chiến lược DR theo RPO/RTO, AWS Backup, S3 replication, EFS, Storage Gateway, Direct Connect với VPN dự phòng, immutable infrastructure, single point of failure.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Fact phải thuộc</span>
+      <ul>
+        <li><b>Multi-AZ</b> chịu được một AZ hỏng, chi phí thấp hơn; <b>Multi-Region</b> chịu được cả Region hỏng, dùng cho DR hoặc người dùng toàn cầu. Đề nói <em>highly available</em> thường chỉ cần Multi-AZ; <em>disaster recovery</em>, <em>Region failure</em> mới Multi-Region.</li>
+        <li><b>High availability</b> là giảm thời gian ngừng (có thể gián đoạn ngắn khi failover). <b>Fault tolerance</b> là không gián đoạn chút nào (đắt hơn, ví dụ chạy N+1 ở nhiều AZ). Đề hỏi fault-tolerant thường muốn dư thừa ở mức không mất request nào.</li>
+        <li>RDS Multi-AZ instance: standby <b>đồng bộ</b> ở AZ khác, <b>không đọc được</b>, failover tự động đổi DNS mất khoảng 60 đến 120 giây, dùng khi AZ hỏng, patch OS, đổi instance type. RDS Multi-AZ DB cluster: 2 readable standby, failover nhanh hơn (cần kiểm tra lại thời gian).</li>
+        <li>RDS read replica: <b>bất đồng bộ</b>, đọc được, tối đa 15 replica (tùy engine, cần kiểm tra lại), có cross-Region, promote được thành DB độc lập (dùng cho DR thủ công). Read replica cần bật automated backup trên nguồn.</li>
+        <li>Aurora: dữ liệu 6 bản ở 3 AZ, tự sửa lỗi; tối đa 15 Aurora Replica chia sẻ storage với writer, replica là mục tiêu failover với lag thường dưới giây; failover khoảng 30 giây. Reader endpoint tự cân bằng tải. <b>Aurora Global Database</b>: 1 Region chính, tối đa 5 Region phụ, replication lag thường dưới 1 giây, RPO khoảng 1 giây, RTO dưới 1 phút khi promote (số liệu AWS công bố, cần kiểm tra lại).</li>
+        <li>DynamoDB Global Tables: <b>multi-active</b> nhiều Region, cần bật DynamoDB Streams, xung đột giải quyết theo last writer wins. PITR khôi phục bất kỳ thời điểm nào trong 35 ngày; on-demand backup giữ vô hạn.</li>
+        <li>ELB: <b>ALB</b> layer 7 (HTTP/HTTPS, path/host routing, WebSocket, target là instance, IP, Lambda); <b>NLB</b> layer 4 (TCP/UDP/TLS, <b>static IP và Elastic IP</b>, hàng triệu request/giây, giữ IP nguồn); <b>Gateway Load Balancer</b> cho firewall ảo bên thứ ba (GENEVE). Cross-zone load balancing: ALB bật mặc định miễn phí, NLB tắt mặc định và tính tiền data giữa AZ khi bật.</li>
+        <li>ELB health check loại target lỗi; deregistration delay (connection draining) mặc định 300 giây. ALB sticky session bằng cookie. ALB không có static IP, muốn IP cố định thì đặt NLB trước ALB hoặc dùng Global Accelerator.</li>
+        <li>Auto Scaling Group: trải nhiều AZ, min/desired/max; health check type EC2 (mặc định) hoặc ELB (thay instance khi fail ELB health check, đề hay hỏi vì sao instance "unhealthy" không bị thay: vì ASG đang dùng EC2 health check); grace period mặc định 300 giây; cooldown mặc định 300 giây.</li>
+        <li>Scaling policy: <b>target tracking</b> (giữ CPU 50%, đơn giản nhất), step/simple scaling theo alarm, <b>scheduled</b> (biết trước giờ cao điểm), <b>predictive</b> (ML dự báo theo lịch sử). Lifecycle hook để chạy script trước khi vào service hoặc trước terminate. Instance refresh để rolling ra AMI mới.</li>
+        <li>ASG termination policy mặc định: chọn AZ có nhiều instance nhất → instance dùng launch template/config cũ nhất → gần giờ billing kế tiếp. Scale-in protection giữ instance đang xử lý job dài.</li>
+        <li>Route 53 routing policy: simple, <b>weighted</b> (chia % tải, blue/green), <b>latency</b> (Region trả lời nhanh nhất), <b>failover</b> (active-passive với health check), <b>geolocation</b> (theo nước của người dùng, compliance nội dung), <b>geoproximity</b> (theo khoảng cách có bias, cần Traffic Flow), <b>multivalue answer</b> (tới 8 record khỏe, không thay ELB), IP-based. Alias record miễn phí, trỏ được apex domain tới ELB/CloudFront/S3 website; CNAME không trỏ được apex.</li>
+        <li>Route 53 health check: kiểm tra endpoint public, không kiểm tra được private IP trực tiếp; với resource private thì tạo health check dựa trên CloudWatch alarm. Có thể gắn health check lên record trong failover.</li>
+        <li>SQS Standard: không giới hạn throughput, <em>at-least-once</em>, thứ tự best-effort. SQS FIFO: đúng thứ tự trong message group, <em>exactly-once</em> nhờ deduplication, 300 msg/giây (3.000 với batching; high throughput mode cao hơn, cần kiểm tra lại). Message tối đa 256 KB (lớn hơn dùng Extended Client Library với S3). Retention mặc định 4 ngày, tối đa 14 ngày. Visibility timeout mặc định 30 giây, tối đa 12 giờ. Long polling tới 20 giây giảm empty receive. Delay queue tối đa 15 phút. Dead-letter queue nhận message thất bại sau maxReceiveCount.</li>
+        <li>SNS là pub/sub fan-out tới SQS, Lambda, HTTP, email, SMS; SNS FIFO fan-out sang SQS FIFO. EventBridge: bus sự kiện có rule lọc theo nội dung, lịch cron, tích hợp SaaS, schema registry. Pattern "SNS → nhiều SQS" để một sự kiện xử lý song song nhiều cách.</li>
+        <li>Bốn chiến lược DR theo thứ tự RTO/RPO giảm dần và chi phí tăng dần: <b>Backup and restore</b> (RPO/RTO hàng giờ), <b>Pilot light</b> (DB replicate sẵn, app tắt, RTO chục phút), <b>Warm standby</b> (bản thu nhỏ đang chạy, RTO vài phút), <b>Multi-site active-active</b> (RTO/RPO gần 0, đắt nhất). <b>RPO</b> là lượng dữ liệu chấp nhận mất, <b>RTO</b> là thời gian chấp nhận ngừng.</li>
+        <li>AWS Backup: quản lý backup tập trung theo backup plan cho EBS, RDS, Aurora, DynamoDB, EFS, FSx, Storage Gateway, EC2; copy cross-Region và cross-account; Backup Vault Lock để WORM. Đề nói <em>centrally manage backups</em>, <em>compliance retention</em> → AWS Backup.</li>
+        <li>S3 replication (CRR hoặc SRR): cần <b>versioning ở cả hai bucket</b>, chỉ sao chép object mới sau khi bật (object cũ dùng S3 Batch Replication), <b>không sao chép delete marker mặc định</b>, không replicate chuỗi (A→B→C không tự chạy). Replication Time Control cam kết 15 phút. S3 durability 11 số 9 ở mọi class; Standard trải tối thiểu 3 AZ, One Zone-IA chỉ 1 AZ.</li>
+        <li>EBS gắn với một AZ; snapshot incremental lưu ở S3 mức Region, copy sang Region khác được; Data Lifecycle Manager tự tạo và xóa snapshot. Muốn volume ở AZ khác: snapshot → tạo volume mới.</li>
+        <li>EFS Standard trải nhiều AZ trong Region, hàng nghìn EC2 mount cùng lúc qua NFS, EFS One Zone rẻ hơn nhưng một AZ; EFS Replication sang Region khác. Instance store và EBS không chia sẻ nhiều instance (trừ EBS multi-attach io1/io2 cùng AZ).</li>
+        <li>Storage Gateway: <b>File Gateway</b> (NFS/SMB → object S3, cache local), <b>Volume Gateway</b> (iSCSI; cached: dữ liệu chính ở S3, cache nóng local; stored: toàn bộ local, snapshot lên S3 thành EBS snapshot), <b>Tape Gateway</b> (VTL thay băng từ, lưu Glacier). Đề <em>on-premises backup to cloud with existing backup software</em> → Tape Gateway; <em>low-latency access to frequently used data, rest in S3</em> → cached volume hoặc File Gateway.</li>
+        <li>Direct Connect: kết nối riêng, băng thông ổn định, <b>không tự mã hóa</b>, mất tuần tới tháng để thiết lập, một kết nối là single point of failure. Resiliency: hai DX ở hai location khác nhau (maximum resiliency), hoặc DX chính + <b>Site-to-Site VPN dự phòng</b> (rẻ nhất). Direct Connect Gateway nối một DX tới nhiều VPC ở nhiều Region.</li>
+        <li>Site-to-Site VPN: hai tunnel IPsec, mỗi tunnel khoảng 1,25 Gbps; dựng trong phút; qua Transit Gateway dùng ECMP để gộp băng thông nhiều VPN. Transit Gateway là hub nối nhiều VPC và on-premises, thay VPC peering dạng mesh (peering không transitive).</li>
+        <li>Immutable infrastructure: không patch tại chỗ, tạo AMI mới (EC2 Image Builder), rolling hay blue/green qua ASG instance refresh hoặc CodeDeploy; trạng thái để ở ngoài instance (S3, EFS, DynamoDB, ElastiCache session). Stateless instance là tiền đề để ASG thay instance tự do.</li>
+        <li>Lambda gọi bất đồng bộ retry 2 lần, có DLQ hoặc destination; SQS trigger retry theo visibility timeout; Step Functions điều phối workflow dài có retry/catch; đề <em>orchestrate multiple Lambda with retry</em> → Step Functions.</li>
+        <li>Elastic IP remap sang instance khác khi failover thủ công; ENI thứ hai di chuyển giữa instance cùng AZ. Đây là HA kiểu cũ, đề <em>least operational overhead</em> thường chọn ELB + ASG thay vì remap EIP.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Bẫy hay gặp</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài</th><th>Đáp án dễ chọn nhầm</th><th>Đáp án đúng</th><th>Vì sao</th></tr>
+        <tr><td>RDS bị quá tải do nhiều truy vấn đọc báo cáo</td><td>Bật Multi-AZ</td><td>Thêm read replica, trỏ báo cáo sang replica</td><td>Multi-AZ standby không phục vụ đọc. Multi-AZ là HA, read replica là scale đọc.</td></tr>
+        <tr><td>RDS cần chịu được AZ hỏng với <em>minimal downtime</em>, không sửa app</td><td>Read replica ở AZ khác</td><td>Multi-AZ</td><td>Read replica phải promote thủ công và đổi endpoint. Multi-AZ failover tự động giữ nguyên endpoint.</td></tr>
+        <tr><td>Xử lý đơn hàng, mỗi đơn chỉ xử lý một lần và đúng thứ tự theo khách</td><td>SQS Standard</td><td>SQS FIFO với message group ID = mã khách</td><td>Standard có thể trùng và lệch thứ tự. Bẫy ngược: đề cần <em>unlimited throughput</em> thì Standard.</td></tr>
+        <tr><td>Bật S3 CRR nhưng bucket đích vẫn trống</td><td>Chờ thêm vì replication chậm</td><td>CRR chỉ áp dụng object mới; object có sẵn cần S3 Batch Replication</td><td>Replication không hồi tố. Cũng kiểm tra versioning đã bật ở cả hai bucket chưa.</td></tr>
+        <tr><td>DR cho hệ thống quan trọng, RTO vài phút, RPO vài giây, chấp nhận chi phí vừa phải</td><td>Multi-site active-active</td><td>Warm standby</td><td>Active-active đạt nhưng đắt nhất, đề nói chi phí vừa phải. Pilot light thì RTO chục phút, không đạt.</td></tr>
+        <tr><td>Ứng dụng cần IP tĩnh để khách hàng whitelist firewall</td><td>ALB với Elastic IP</td><td>NLB (có EIP) hoặc Global Accelerator trước ALB</td><td>ALB không gắn EIP. Đề có thêm <em>global users</em> thì Global Accelerator.</td></tr>
+        <tr><td>Instance trong ASG fail health check của ALB nhưng không bị thay</td><td>Tăng grace period</td><td>Đổi ASG health check type sang ELB</td><td>Mặc định ASG chỉ nhìn EC2 status check, instance treo app vẫn "healthy" với EC2.</td></tr>
+        <tr><td>Chia 10% traffic sang phiên bản mới để thử</td><td>Route 53 failover</td><td>Route 53 weighted (hoặc ALB weighted target group)</td><td>Failover là active-passive, không chia tỉ lệ.</td></tr>
+        <tr><td>Direct Connect bị đứt làm mất kết nối on-premises, cần dự phòng <em>cost-effective</em></td><td>DX thứ hai</td><td>Site-to-Site VPN làm backup cho DX</td><td>DX thứ hai là maximum resiliency nhưng đắt. Đề nói chi phí thì VPN.</td></tr>
+        <tr><td>Nhiều EC2 ở nhiều AZ cần ghi cùng một thư mục dữ liệu</td><td>EBS multi-attach</td><td>EFS</td><td>Multi-attach chỉ io1/io2 trong một AZ, và cần file system hỗ trợ cluster. EFS mount được từ nhiều AZ.</td></tr>
+        <tr><td>Phần mềm backup on-premises hiện ghi ra băng từ, muốn đưa lên cloud mà không đổi quy trình</td><td>File Gateway</td><td>Tape Gateway</td><td>Tape Gateway giả lập thư viện băng (VTL) nên phần mềm backup không cần sửa.</td></tr>
+        <tr><td>Lambda xử lý sự kiện thất bại thì mất sự kiện</td><td>Tăng timeout</td><td>Cấu hình DLQ (SQS/SNS) hoặc on-failure destination cho Lambda</td><td>Async invoke retry 2 lần rồi bỏ; DLQ giữ lại để xử lý sau.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">6. Hệ thống đặt vé chạy trên EC2 sau ALB với ASG, database RDS MySQL Single-AZ. Công ty muốn chịu được một AZ hỏng mà <em>không mất dữ liệu đã commit</em> và app tự phục hồi. Chọn 2 việc cần làm.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Bật RDS Multi-AZ và cấu hình ASG trải ít nhất 2 AZ với ALB ở các AZ đó.</b> Read replica ở AZ khác là bất đồng bộ nên có thể mất giao dịch cuối, không đạt "không mất dữ liệu đã commit". Snapshot định kỳ thì RPO hàng giờ.</p></div>
+      <div class="q"><p class="qt">7. Ứng dụng upload ảnh: web tier nhận file rồi gọi thẳng service xử lý ảnh. Khi lượng upload tăng đột biến, service xử lý quá tải và request bị mất. Cần <em>decouple</em> và không mất request.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Web tier đẩy message vào SQS; service xử lý chạy trong ASG scale theo số message trong queue (ApproximateNumberOfMessagesVisible).</b> SNS không giữ message khi consumer bận. Kinesis là cho streaming liên tục, không phải job queue. Tăng size instance không giải quyết đột biến.</p></div>
+      <div class="q"><p class="qt">8. Công ty ở Tokyo cần DR ở Osaka cho ứng dụng dùng Aurora MySQL. Yêu cầu RPO dưới 1 phút, RTO dưới 5 phút, và Osaka cũng phục vụ đọc cho người dùng vùng Kansai.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Aurora Global Database với Region phụ ở Osaka.</b> Replication lag thường dưới 1 giây và promote dưới 1 phút, cluster phụ đọc được. Cross-Region read replica của RDS MySQL thường đạt nhưng lag cao hơn và promote thủ công chậm hơn; snapshot copy cross-Region thì RPO hàng giờ. Đề nhắc Aurora thì ưu tiên tính năng của Aurora.</p></div>
+      <div class="q"><p class="qt">9. Website ở hai Region, Region chính xử lý toàn bộ traffic, Region phụ chỉ nhận khi chính hỏng. Dùng Route 53 thế nào?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Failover routing policy: record PRIMARY trỏ Region chính có health check, record SECONDARY trỏ Region phụ.</b> Latency routing chia người dùng theo độ trễ nên Region phụ sẽ nhận traffic bình thường, không phải active-passive. Weighted 100/0 không tự chuyển khi hỏng.</p></div>
+      <div class="q"><p class="qt">10. Worker lấy message từ SQS, xử lý mất khoảng 5 phút. Người vận hành thấy một message bị xử lý 2 lần bởi 2 worker khác nhau. Cách sửa đơn giản nhất?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Tăng visibility timeout lên lớn hơn thời gian xử lý (ví dụ 10 phút).</b> Mặc định 30 giây nên message hiện lại trước khi worker đầu xong. Chuyển sang FIFO không sửa được chuyện này (FIFO chống trùng lúc gửi, không chống hiện lại khi timeout). DLQ là cho message lỗi, không phải message chậm.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. DOMAIN PERF ============ -->
+<section id="domain-perf">
+  <span class="eyebrow">Ôn sâu theo domain 3 / 4</span>
+  <h2>Design High-Performing Architectures (24%)</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Trọng số và task statement trong exam guide</span>
+      <p>Khoảng 16 trong 65 câu. Năm task statement, đều có dạng "chọn giải pháp hiệu năng cao và có thể mở rộng cho ...":</p>
+      <ul>
+        <li><b>3.1 Storage</b>: EBS type, instance store, EFS mode, FSx (Lustre, Windows, ONTAP), S3 performance và storage class theo access pattern.</li>
+        <li><b>3.2 Compute</b>: EC2 family, placement group, enhanced networking, Auto Scaling, Lambda, container, batch, chọn compute theo workload.</li>
+        <li><b>3.3 Database</b>: RDS với Aurora, read replica, ElastiCache, DAX, DynamoDB throughput và index, Redshift, chọn engine theo access pattern.</li>
+        <li><b>3.4 Network</b>: CloudFront với Global Accelerator, Route 53, VPC endpoint, Direct Connect, Transit Gateway, ELB type, placement cho độ trễ thấp.</li>
+        <li><b>3.5 Data ingestion và transformation</b>: Kinesis (Data Streams, Firehose, Managed Service for Apache Flink), Glue, Athena, EMR, Lake Formation, DataSync, Transfer Family, Snow family.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Fact phải thuộc</span>
+      <ul>
+        <li>EC2 family nhận diện bằng chữ cái: <b>C</b> compute (batch, encoding), <b>R</b> memory (in-memory DB, cache), <b>M</b> general, <b>T</b> burstable (CPU credit, bật Unlimited để không bị nghẽn), <b>I</b> storage optimized (NVMe instance store, NoSQL, data warehouse), <b>D/H</b> HDD dày, <b>P/G</b> GPU (ML, render), <b>X/u</b> high memory (SAP HANA), <b>Hpc</b>. Graviton (hậu tố g) rẻ hơn khoảng 20% cùng hiệu năng cho workload ARM được.</li>
+        <li>Placement group: <b>Cluster</b> gom trong một AZ, độ trễ thấp nhất, băng thông cao cho HPC, nhưng cả nhóm chung rủi ro; <b>Spread</b> mỗi instance trên rack riêng, tối đa 7 instance mỗi AZ mỗi group, cho vài instance quan trọng; <b>Partition</b> chia nhóm rack (tối đa 7 partition mỗi AZ), cho Hadoop, Cassandra, Kafka. Đề <em>tightly coupled HPC, low latency</em> → Cluster; <em>reduce correlated failure</em> → Spread.</li>
+        <li>EBS gp3: baseline 3.000 IOPS và 125 MB/s <b>không phụ thuộc dung lượng</b>, mua thêm tới 16.000 IOPS và 1.000 MB/s, rẻ hơn gp2 khoảng 20%. gp2: 3 IOPS/GB, burst 3.000, tối đa 16.000. io1: tới 64.000 IOPS (Nitro), 50 IOPS/GB. io2 Block Express: tới 256.000 IOPS, 4.000 MB/s, độ bền cao hơn (99,999%). st1: HDD throughput tới 500 MB/s cho log, big data; sc1: HDD lạnh tới 250 MB/s, rẻ nhất. Boot volume chỉ gp2/gp3/io1/io2. Số liệu cần kiểm tra lại trên tài liệu AWS trước ngày thi.</li>
+        <li>EBS multi-attach chỉ io1/io2, cùng AZ, tối đa 16 instance Nitro, app phải tự xử lý ghi đồng thời. EBS-optimized instance có băng thông riêng cho EBS.</li>
+        <li>Instance store: ổ vật lý gắn host, IOPS rất cao, <b>mất dữ liệu khi stop, hibernate, terminate hoặc host hỏng</b>, giữ khi reboot. Dùng cho buffer, cache, scratch, dữ liệu replicate sẵn (Cassandra). Không snapshot được.</li>
+        <li>EFS performance mode: <b>General Purpose</b> (mặc định, độ trễ thấp) với <b>Max I/O</b> (throughput và IOPS cao hơn, độ trễ cao hơn, nhiều nghìn client). Throughput mode: <b>Elastic</b> (tự co giãn, khuyến nghị), Bursting (theo dung lượng), Provisioned (cố định). Storage class Standard, Infrequent Access, Archive với lifecycle. Chỉ Linux (NFS v4); Windows dùng FSx for Windows.</li>
+        <li>FSx for Lustre: file system HPC, hàng trăm GB/s, sub-millisecond, <b>liên kết với S3</b> (lazy load, ghi ngược về S3), Scratch (tạm, rẻ) với Persistent (replicate trong AZ). FSx for Windows: SMB, NTFS, Active Directory, DFS, Multi-AZ. FSx for NetApp ONTAP: đa giao thức NFS/SMB/iSCSI, snapshot, dedup, cho migrate NetApp. FSx for OpenZFS: NFS hiệu năng cao.</li>
+        <li>S3 performance: ít nhất 3.500 PUT/COPY/POST/DELETE và 5.500 GET/HEAD mỗi giây <b>cho mỗi prefix</b>, số prefix không giới hạn nên tách prefix để tăng throughput. Multipart upload khuyến nghị từ 100 MB, bắt buộc trên 5 GB, object tối đa 5 TB. <b>Transfer Acceleration</b> upload qua edge location gần người dùng rồi đi mạng AWS. <b>Byte-range fetch</b> tải song song từng phần hoặc chỉ phần đầu file. S3 Select lọc nội dung CSV/JSON/Parquet phía server để giảm dữ liệu truyền.</li>
+        <li>CloudFront: cache tại edge, origin là S3, ALB, EC2, hay bất kỳ HTTP; chặn truy cập thẳng S3 bằng <b>Origin Access Control</b>; signed URL/cookie cho nội dung trả phí; geo restriction; field-level encryption; <b>CloudFront Functions</b> (sửa header, rất nhẹ, chạy ở edge) với <b>Lambda@Edge</b> (logic nặng hơn, Node/Python, chạy ở regional edge cache); Origin Shield giảm tải origin; TTL mặc định 24 giờ. Tăng tốc cả nội dung động vì dùng backbone AWS.</li>
+        <li>Global Accelerator: 2 anycast <b>static IP</b>, định tuyến ở lớp mạng tới endpoint khỏe nhất gần nhất (ALB, NLB, EC2, EIP), <b>không cache</b>, failover trong khoảng giây, hợp TCP/UDP không phải HTTP (game, VoIP, IoT), và khi khách cần whitelist IP. CloudFront cho HTTP có cache; Global Accelerator cho mọi giao thức không cache.</li>
+        <li>ElastiCache <b>Redis</b>: replication, Multi-AZ failover, persistence, sorted set (leaderboard), pub/sub, Redis AUTH, cluster mode; <b>Memcached</b>: đa luồng, đơn giản, không persistence, không backup, không replicate, sharding bằng client. Session store web → Redis (hoặc DynamoDB). Cache strategy: lazy loading (cache miss mới nạp, dữ liệu có thể cũ) với write-through (ghi DB thì ghi cache, luôn mới, tốn ghi), kèm TTL.</li>
+        <li>DAX: cache in-memory riêng cho DynamoDB, độ trễ <b>microsecond</b>, API tương thích nên gần như không sửa code, tốt cho read-heavy và hot key; không giúp write. Đề <em>microsecond</em> + DynamoDB → DAX; <em>microsecond</em> + RDS → ElastiCache.</li>
+        <li>DynamoDB: 1 RCU = 1 đọc strongly consistent 4 KB/giây (2 đọc eventually consistent); 1 WCU = 1 ghi 1 KB/giây; transactional tốn gấp đôi. Item tối đa 400 KB. Partition key phân bố đều để tránh hot partition. <b>GSI</b>: partition key khác, tạo bất kỳ lúc nào, capacity riêng, chỉ eventually consistent; <b>LSI</b>: cùng partition key, sort key khác, phải tạo cùng lúc tạo bảng, strongly consistent được. DynamoDB Streams giữ thay đổi 24 giờ để Lambda xử lý; TTL xóa item hết hạn miễn phí; auto scaling cho provisioned mode.</li>
+        <li>RDS read replica tới 15 (tùy engine, cần kiểm tra lại), đồng bộ bất đồng bộ, có cross-Region; Aurora reader endpoint tự cân bằng; Aurora Replica auto scaling theo CPU hoặc connection; custom endpoint để tách replica cho báo cáo. <b>RDS Proxy</b> gộp connection (Lambda mở nhiều connection), giảm thời gian failover, chỉ trong VPC.</li>
+        <li>Aurora Serverless v2 scale theo ACU từng bước nhỏ, hợp workload thất thường; Aurora Parallel Query đẩy xử lý phân tích xuống storage; Aurora Multi-Master là tính năng cũ, đề hiện nay hiếm hỏi.</li>
+        <li>Redshift: data warehouse cột, OLAP, Redshift Spectrum query thẳng S3, concurrency scaling, RA3 tách compute và storage; Redshift Serverless. Athena: query S3 bằng SQL, serverless, trả tiền theo dữ liệu quét, dùng Parquet/ORC nén và partition để giảm chi phí; Glue Data Catalog làm metastore; Glue ETL serverless; EMR cho Spark/Hadoop tự quản; OpenSearch cho full-text search và log analytics; Neptune graph; Timestream time series; QLDB ledger; DocumentDB MongoDB tương thích; Keyspaces Cassandra.</li>
+        <li>Kinesis Data Streams: mỗi shard 1 MB/giây hoặc 1.000 record/giây ghi, 2 MB/giây đọc chia sẻ; <b>enhanced fan-out</b> cho mỗi consumer 2 MB/giây riêng; retention mặc định 24 giờ, tối đa 365 ngày; on-demand mode tự scale shard; lỗi <code>ProvisionedThroughputExceeded</code> → thêm shard hoặc sửa partition key nóng. <b>Firehose</b>: near real-time (buffer theo giây hoặc MB), tự scale, chuyển đổi bằng Lambda, ghi S3, Redshift, OpenSearch, Splunk, HTTP; <b>không lưu dữ liệu để replay</b> và không có consumer tùy ý. <b>Managed Service for Apache Flink</b> (tên cũ Kinesis Data Analytics): SQL/Flink trên stream theo thời gian thực. Kinesis Video Streams cho video.</li>
+        <li>Lambda: timeout tối đa 15 phút, memory tới 10 GB (CPU tỉ lệ theo memory), /tmp tới 10 GB, payload sync 6 MB, deployment 250 MB giải nén hoặc container image 10 GB. Concurrency mặc định 1.000 mỗi Region (nâng được); <b>reserved concurrency</b> giữ hoặc giới hạn số đồng thời cho một hàm; <b>provisioned concurrency</b> làm nóng sẵn để tránh cold start; SnapStart cho Java. Lambda trong VPC cần ENI và quyền tạo ENI; truy cập Internet từ Lambda trong VPC cần NAT. Lambda layer dùng chung thư viện. Số liệu giới hạn cần kiểm tra lại.</li>
+        <li>API Gateway: REST API (cache, usage plan, API key, WAF, request validation) với HTTP API (rẻ hơn, nhanh hơn, ít tính năng) với WebSocket API. Cache 0,5 đến 237 GB, TTL mặc định 300 giây, tối đa 3.600; throttle mặc định khoảng 10.000 request/giây mỗi account mỗi Region, burst 5.000 (cần kiểm tra lại). Endpoint type edge-optimized (qua CloudFront), regional, private (qua interface endpoint). Timeout tích hợp 29 giây mặc định.</li>
+        <li>Enhanced networking: <b>ENA</b> cho băng thông cao (tới 100 Gbps và hơn tùy instance), SR-IOV giảm CPU; <b>EFA</b> cho HPC và ML dùng MPI, bypass OS; cần ENA driver trong AMI. Đề <em>low latency inter-node communication for HPC</em> → cluster placement group + EFA.</li>
+        <li>Scaling theo queue: metric tùy chỉnh backlog per instance = số message visible chia số instance, target tracking về giá trị mong muốn. Scaling cho Kinesis consumer theo số shard. Scaling ECS service theo CPU hoặc ALB request count per target.</li>
+        <li>Chuyển dữ liệu lớn: <b>DataSync</b> (online, NFS/SMB/HDFS/S3 giữa on-premises và AWS, tới 10 Gbps mỗi agent, lịch định kỳ, có xác minh); <b>Snowball Edge</b> (offline, ~80 TB mỗi thiết bị, khi mạng chậm, tuần); <b>Snowmobile</b> (exabyte); <b>Transfer Family</b> (SFTP/FTPS/FTP managed vào S3/EFS); <b>Storage Gateway</b> (hybrid liên tục). Quy tắc tay: 10 TB qua 100 Mbps mất khoảng 10 ngày, mạng chậm hơn thì chọn Snowball.</li>
+        <li>Cache ở mọi tầng khi đề nói <em>reduce latency</em> hoặc <em>reduce database load</em>: CloudFront (edge), API Gateway cache, ElastiCache/DAX (database), read replica (scale đọc), DynamoDB adaptive capacity (tự xử lý partition nóng vừa phải).</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Bẫy hay gặp</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài</th><th>Đáp án dễ chọn nhầm</th><th>Đáp án đúng</th><th>Vì sao</th></tr>
+        <tr><td>Game online UDP, người chơi toàn cầu, cần độ trễ thấp và IP tĩnh</td><td>CloudFront</td><td>Global Accelerator</td><td>CloudFront chỉ HTTP/HTTPS, không UDP, không IP tĩnh.</td></tr>
+        <tr><td>Website tĩnh và API, người dùng toàn cầu, <em>cache</em> nội dung</td><td>Global Accelerator</td><td>CloudFront</td><td>Global Accelerator không cache. Đề có chữ <em>cache</em>, <em>static content</em> là CloudFront.</td></tr>
+        <tr><td>DynamoDB đọc nhiều, cần <em>microsecond latency</em>, <em>minimal code change</em></td><td>ElastiCache Redis</td><td>DAX</td><td>Redis phải sửa code để tự quản cache. DAX tương thích API DynamoDB.</td></tr>
+        <tr><td>Database tạm cho job xử lý, cần IOPS cực cao, dữ liệu có thể mất</td><td>io2 EBS</td><td>Instance store (I family)</td><td>Instance store IOPS cao hơn và không tốn thêm tiền; đề nói "có thể mất" là gợi ý.</td></tr>
+        <tr><td>Upload file lớn từ nhiều nước lên một bucket S3 bị chậm</td><td>CloudFront</td><td>S3 Transfer Acceleration + multipart upload</td><td>CloudFront là cho tải xuống (có thể PUT nhưng đề S3 upload là Transfer Acceleration).</td></tr>
+        <tr><td>HPC training ML cần file system song song đọc dữ liệu từ S3</td><td>EFS</td><td>FSx for Lustre liên kết S3</td><td>EFS không đạt throughput hàng trăm GB/s và không link S3. Lustre là từ khóa HPC.</td></tr>
+        <tr><td>Hàng trăm sensor gửi dữ liệu, cần phân tích <em>real-time</em> và nhiều ứng dụng đọc lại stream</td><td>Firehose hoặc SQS</td><td>Kinesis Data Streams</td><td>Firehose không cho nhiều consumer tùy ý và không replay. SQS không phải streaming, một message một consumer.</td></tr>
+        <tr><td>Chỉ cần gom log vào S3 gần real-time, <em>least operational overhead</em>, không cần xử lý tùy biến</td><td>Kinesis Data Streams + Lambda</td><td>Kinesis Data Firehose</td><td>Firehose tự scale, tự ghi S3, không phải quản shard.</td></tr>
+        <tr><td>Lambda bị cold start làm API chậm vào giờ cao điểm</td><td>Reserved concurrency</td><td>Provisioned concurrency</td><td>Reserved chỉ giới hạn hoặc giữ số slot, không làm nóng. Provisioned giữ sẵn instance đã khởi tạo.</td></tr>
+        <tr><td>Lambda bị throttle vì một hàm khác dùng hết concurrency của account</td><td>Provisioned concurrency</td><td>Reserved concurrency cho hàm quan trọng (hoặc giới hạn hàm kia)</td><td>Reserved tách quota riêng cho hàm.</td></tr>
+        <tr><td>Bảng DynamoDB cần query theo thuộc tính khác partition key, bảng đã có dữ liệu</td><td>LSI</td><td>GSI</td><td>LSI chỉ tạo lúc tạo bảng và giữ nguyên partition key. GSI thêm sau được.</td></tr>
+        <tr><td>Chuyển 500 TB từ data center có đường 100 Mbps trong 2 tuần</td><td>DataSync</td><td>Snowball Edge (nhiều thiết bị)</td><td>100 Mbps truyền 500 TB mất hơn một năm. DataSync chỉ khi mạng đủ nhanh.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">11. Ứng dụng phân tích log ghi tuần tự file lớn lên EBS, cần throughput cao, <em>most cost-effective</em>. IOPS không quan trọng.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>st1 (Throughput Optimized HDD).</b> gp3 cũng đạt nhưng đắt hơn cho workload tuần tự lớn. io2 là lãng phí. sc1 rẻ hơn nhưng throughput thấp hơn, chọn khi đề nói "ít truy cập".</p></div>
+      <div class="q"><p class="qt">12. Trang thương mại điện tử dùng RDS PostgreSQL. Trang chủ truy vấn danh sách sản phẩm bán chạy mỗi giây hàng nghìn lần, dữ liệu đổi mỗi giờ. Cách giảm tải DB với <em>least effort</em>?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>ElastiCache (Redis) với lazy loading và TTL 1 giờ cho kết quả truy vấn.</b> Read replica cũng giảm tải nhưng vẫn chạy query hàng nghìn lần. DAX chỉ dùng cho DynamoDB. Tăng instance size tốn tiền và không scale vô hạn.</p></div>
+      <div class="q"><p class="qt">13. Một bảng DynamoDB có partition key là <code>date</code>. Vào ngày khuyến mãi, ứng dụng bị <code>ProvisionedThroughputExceededException</code> dù tổng WCU còn dư nhiều. Nguyên nhân và cách sửa?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Hot partition: mọi ghi trong ngày dồn vào một partition key. Sửa bằng partition key phân bố đều (thêm hậu tố ngẫu nhiên hoặc dùng ID giao dịch), không phải tăng WCU.</b> Tăng WCU tổng không giúp vì giới hạn mỗi partition (1.000 WCU) vẫn bị chạm. DAX không giúp ghi.</p></div>
+      <div class="q"><p class="qt">14. Công ty chạy mô phỏng khí tượng trên 200 EC2 trao đổi dữ liệu liên tục giữa các node bằng MPI. Thiết kế nào tối ưu độ trễ mạng?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Cluster placement group trong một AZ với instance hỗ trợ EFA.</b> Spread placement group tối đa 7 instance mỗi AZ và tách xa nhau, ngược mục tiêu. Multi-AZ tăng độ trễ. Partition placement group dành cho hệ phân tán chịu lỗi như Hadoop.</p></div>
+      <div class="q"><p class="qt">15. Ứng dụng xem video theo yêu cầu: file MP4 lớn trong S3, người dùng hay tua tới giữa video. Cách để phát nhanh mà không tải cả file?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Dùng byte-range request (HTTP Range) qua CloudFront với origin S3.</b> S3 Select chỉ cho CSV/JSON/Parquet, không phải video. Transfer Acceleration là cho upload. Multipart là cách upload, không phải cách đọc.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. DOMAIN COST ============ -->
+<section id="domain-cost">
+  <span class="eyebrow">Ôn sâu theo domain 4 / 4</span>
+  <h2>Design Cost-Optimized Architectures (20%)</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Trọng số và task statement trong exam guide</span>
+      <p>Khoảng 13 trong 65 câu. Bốn task statement, đều mang chữ <em>cost-optimized</em>:</p>
+      <ul>
+        <li><b>4.1 Storage</b>: S3 storage class và lifecycle, Intelligent-Tiering, Glacier retrieval, EBS type và snapshot, EFS class, backup retention, data transfer cost.</li>
+        <li><b>4.2 Compute</b>: EC2 pricing (On-Demand, Spot, Reserved, Savings Plans, Dedicated), right sizing, Auto Scaling, Lambda, Fargate với EC2, Graviton, Compute Optimizer.</li>
+        <li><b>4.3 Database</b>: RDS Reserved, Aurora Serverless, DynamoDB on-demand với provisioned, caching để giảm I/O, chọn engine rẻ hơn, dừng DB không dùng.</li>
+        <li><b>4.4 Network</b>: NAT Gateway, VPC endpoint thay NAT, CloudFront giảm egress, Direct Connect so với VPN, cùng AZ so với khác AZ, Transit Gateway cost, Route 53.</li>
+      </ul>
+      <p>Cộng thêm công cụ: Cost Explorer, Budgets, Cost and Usage Report, Cost Anomaly Detection, cost allocation tags, Organizations consolidated billing.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Fact phải thuộc</span>
+      <ul>
+        <li><b>On-Demand</b>: Linux tính theo giây (tối thiểu 60 giây), Windows và vài OS tính theo giờ; không cam kết; cho workload ngắn, không dự đoán được.</li>
+        <li><b>Reserved Instance</b>: 1 hoặc 3 năm, giảm tới khoảng 72% (3 năm all upfront). <b>Standard RI</b> giảm nhiều nhất, đổi được AZ và size trong cùng family (Linux), <b>không đổi family</b>, bán lại được ở RI Marketplace; <b>Convertible RI</b> giảm ít hơn (tới ~66%), đổi được family, OS, tenancy. Thanh toán all upfront, partial, no upfront. Scope <b>regional</b> (linh hoạt AZ, không giữ chỗ) hoặc <b>zonal</b> (giữ capacity ở AZ cụ thể).</li>
+        <li><b>Savings Plans</b>: cam kết số USD/giờ trong 1 hoặc 3 năm. <b>Compute SP</b> áp cho EC2 mọi family, Region, Fargate, Lambda, giảm tới 66%; <b>EC2 Instance SP</b> cố định family và Region, giảm tới 72%. Đề <em>flexible across instance family, Region, Fargate, Lambda</em> → Compute Savings Plans. Số % cần kiểm tra lại.</li>
+        <li><b>Spot</b>: giảm tới 90%, AWS thu hồi khi cần với cảnh báo 2 phút, cho batch, CI, big data, render, stateless web có ASG mixed; <b>không</b> cho database, workload không chịu gián đoạn. Spot Fleet và ASG mixed instances policy trộn On-Demand với Spot nhiều instance type để giảm rủi ro thu hồi; chiến lược price-capacity-optimized.</li>
+        <li><b>Dedicated Host</b>: cả máy vật lý, thấy socket/core để dùng license theo socket (Windows Server, SQL Server BYOL), đắt nhất. <b>Dedicated Instance</b>: chạy trên hardware riêng nhưng không kiểm soát placement, không thấy socket. <b>Capacity Reservation</b>: giữ chỗ On-Demand trong một AZ, không giảm giá, kết hợp với regional RI hoặc SP để vừa có chỗ vừa rẻ.</li>
+        <li>Right sizing: <b>Compute Optimizer</b> gợi ý size EC2, ASG, EBS, Lambda, ECS Fargate dựa trên CloudWatch (over-provisioned, under-provisioned); <b>Trusted Advisor</b> báo idle load balancer, low utilization EC2, unassociated EIP, underutilized EBS (nhiều check cần Business/Enterprise support); Cost Explorer có mục right sizing recommendation.</li>
+        <li>S3 storage class: <b>Standard</b> (thường xuyên); <b>Intelligent-Tiering</b> (tự chuyển tier theo truy cập, phí giám sát nhỏ mỗi object, <b>không phí retrieval</b>, object dưới 128 KB không được tier nhưng vẫn lưu; opt-in Archive Access và Deep Archive Access tier); <b>Standard-IA</b> (phí retrieval theo GB, tối thiểu 30 ngày và 128 KB tính tiền, vẫn nhiều AZ); <b>One Zone-IA</b> (rẻ hơn IA khoảng 20%, 1 AZ, cho dữ liệu tái tạo được); <b>Glacier Instant Retrieval</b> (mili giây, tối thiểu 90 ngày, cho dữ liệu truy cập quý một lần); <b>Glacier Flexible Retrieval</b> (Expedited 1 đến 5 phút, Standard 3 đến 5 giờ, Bulk 5 đến 12 giờ, tối thiểu 90 ngày); <b>Glacier Deep Archive</b> (Standard 12 giờ, Bulk 48 giờ, tối thiểu 180 ngày, rẻ nhất). Số ngày tối thiểu cần kiểm tra lại trên tài liệu AWS.</li>
+        <li>Lifecycle rule: transition theo tuổi object (Standard → IA cần tối thiểu 30 ngày ở Standard trước), expiration, xóa noncurrent version sau N ngày, <b>abort incomplete multipart upload</b> (nguồn phí ẩn), xóa expired delete marker. Không chuyển ngược từ Glacier lên Standard bằng lifecycle (phải restore rồi copy). <b>S3 Storage Class Analysis</b> và <b>Storage Lens</b> để biết nên chuyển class nào. Đề <em>unknown or changing access pattern</em> → Intelligent-Tiering.</li>
+        <li>Glacier restore tạm thời tạo bản copy Standard trong số ngày chỉ định, trả tiền cả hai; Expedited có thể mua provisioned capacity để chắc chắn có throughput.</li>
+        <li>EBS: gp3 rẻ hơn gp2 khoảng 20% và baseline cao hơn, nên <em>cost-effective</em> cho hầu hết; io2 chỉ khi cần trên 16.000 IOPS hoặc độ bền cao; st1/sc1 cho throughput lớn dữ liệu lạnh. Snapshot incremental, chỉ tính block thay đổi; <b>EBS Snapshots Archive</b> rẻ hơn khoảng 75% cho snapshot giữ trên 90 ngày, restore 24 đến 72 giờ. Data Lifecycle Manager xóa snapshot cũ. Xóa volume mồ côi sau terminate (kiểm tra Delete on termination).</li>
+        <li>Data transfer: <b>vào AWS miễn phí</b>; cùng AZ qua private IP miễn phí; <b>khác AZ cùng Region tính tiền mỗi chiều</b> (khoảng 0,01 USD/GB mỗi chiều); khác Region (khoảng 0,02 USD/GB); ra Internet khoảng 0,09 USD/GB giảm dần theo bậc, 100 GB đầu mỗi tháng miễn phí; từ S3 hay EC2 tới CloudFront miễn phí và CloudFront ra Internet rẻ hơn; dùng public IP hay EIP giữa instance cùng AZ vẫn tính tiền như regional. Giá cần kiểm tra lại.</li>
+        <li><b>NAT Gateway</b>: khoảng 0,045 USD/giờ cộng khoảng 0,045 USD/GB xử lý (Tokyo đắt hơn chút), mỗi AZ một NAT để vừa HA vừa tránh phí khác AZ. Traffic từ private subnet tới S3/DynamoDB đi qua NAT bị tính tiền GB; thay bằng <b>Gateway endpoint miễn phí</b>. Interface endpoint khoảng 0,01 USD/giờ mỗi AZ cộng 0,01 USD/GB, vẫn rẻ hơn NAT khi lưu lượng lớn. NAT instance rẻ hơn nhưng tự quản, không HA.</li>
+        <li>CloudFront giảm egress và giảm tải origin; Global Accelerator tính phí cố định theo giờ cộng premium theo GB. Direct Connect: phí port theo giờ và egress rẻ hơn Internet nhiều, hợp lưu lượng lớn ổn định; VPN rẻ dựng nhanh cho lưu lượng nhỏ. Transit Gateway tính theo attachment và GB; VPC peering chỉ tính data transfer.</li>
+        <li>RDS Reserved Instance 1 hoặc 3 năm giảm tới khoảng 69% (cần kiểm tra lại), size-flexible trong cùng engine và family; RDS <b>stop</b> instance tối đa 7 ngày rồi tự bật lại (Multi-AZ với read replica không stop được); dev DB dùng lịch tắt ngoài giờ bằng Instance Scheduler hay Lambda; Multi-AZ gấp đôi tiền, dev/test không cần.</li>
+        <li><b>Aurora Serverless v2</b> tính theo ACU-giờ, hợp workload thất thường hoặc ít dùng; Aurora Standard tính I/O riêng, <b>Aurora I/O-Optimized</b> không tính I/O, chọn khi I/O vượt khoảng 25% hóa đơn. Aurora rẻ hơn RDS cùng engine khi cần nhiều replica vì replica dùng chung storage.</li>
+        <li>DynamoDB <b>on-demand</b>: trả theo request, cho traffic thất thường hoặc không biết trước, giá mỗi request cao hơn nhiều lần provisioned; <b>provisioned</b> + auto scaling cho traffic đều, mua <b>reserved capacity</b> 1 hoặc 3 năm để giảm thêm; <b>Standard-IA table class</b> cho bảng ít truy cập nhưng nhiều dữ liệu (storage rẻ hơn, throughput đắt hơn). Chuyển đổi mode tối đa một lần mỗi 24 giờ.</li>
+        <li><b>Lambda</b> tính theo số request và GB-giây; Free Tier 1 triệu request và 400.000 GB-giây mỗi tháng (always free, cần kiểm tra lại); arm64 Graviton rẻ hơn khoảng 20%; tăng memory đôi khi rẻ hơn vì chạy nhanh hơn; Compute Savings Plans áp được cho Lambda.</li>
+        <li><b>Fargate</b> tính vCPU và GB theo giây, không quản server, <b>Fargate Spot</b> giảm tới 70% cho task chịu gián đoạn; <b>ECS trên EC2</b> rẻ hơn khi cluster dùng đầy và có RI/Spot nhưng phải quản host. Đề <em>least operational overhead</em> → Fargate; <em>most cost-effective với sử dụng ổn định cao</em> → EC2 với RI hoặc Savings Plans.</li>
+        <li>Công cụ: <b>Cost Explorer</b> (xem và lọc chi phí, dự báo, gợi ý RI/SP, right sizing, có API); <b>AWS Budgets</b> (cost, usage, RI/SP utilization và coverage; cảnh báo actual và forecast; <b>budget action</b> tự gắn policy hoặc dừng EC2/RDS); <b>Cost and Usage Report</b> (chi tiết nhất, ra S3, query bằng Athena); <b>Cost Anomaly Detection</b> (ML phát hiện chi tiêu bất thường, cảnh báo SNS); <b>cost allocation tags</b> (phải kích hoạt tag trong Billing mới hiện ở Cost Explorer); <b>Cost Categories</b> gom chi phí theo team; <b>Pricing Calculator</b> ước tính trước.</li>
+        <li><b>Consolidated billing</b> trong Organizations: một hóa đơn cho mọi account, <b>gộp usage để hưởng giá bậc thang</b> (S3, data transfer), <b>RI và Savings Plans chia sẻ</b> giữa các account (tắt được RI sharing cho account cụ thể), management account trả tiền; SCP không liên quan tiền nhưng chặn được tạo resource đắt (ví dụ Deny instance type lớn).</li>
+        <li>Tiết kiệm nhanh hay ra đề: tắt dev/test ngoài giờ (scheduled scaling, Instance Scheduler), release EIP không gắn, xóa ELB không target, đặt retention cho CloudWatch Logs (mặc định giữ vĩnh viễn), S3 Requester Pays cho bucket chia sẻ dữ liệu lớn, chuyển Windows sang Linux nếu được, Graviton, Spot cho batch.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Bẫy hay gặp</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài</th><th>Đáp án dễ chọn nhầm</th><th>Đáp án đúng</th><th>Vì sao</th></tr>
+        <tr><td>Workload ổn định 3 năm nhưng có thể đổi instance family và Region trong tương lai</td><td>Standard RI</td><td>Compute Savings Plans (hoặc Convertible RI)</td><td>Standard RI không đổi family hay Region. Đề có <em>flexibility</em> → Compute SP.</td></tr>
+        <tr><td>Batch xử lý ảnh chạy đêm, có thể chạy lại nếu lỗi, <em>most cost-effective</em></td><td>Reserved Instance</td><td>Spot Instances</td><td>Đề nói "chịu gián đoạn", "chạy lại được" là gợi ý Spot. RI cho chạy liên tục.</td></tr>
+        <tr><td>Dữ liệu truy cập không đoán được, có file truy cập thường xuyên xen file bỏ lâu</td><td>Standard-IA</td><td>S3 Intelligent-Tiering</td><td>Standard-IA tính phí retrieval mỗi lần đọc, nếu đọc nhiều sẽ đắt hơn Standard. Intelligent-Tiering không có phí retrieval.</td></tr>
+        <tr><td>Lưu trữ 7 năm theo luật, hầu như không đọc, khi cần có thể chờ 1 ngày</td><td>Glacier Flexible Retrieval</td><td>Glacier Deep Archive</td><td>Deep Archive rẻ nhất, Standard retrieval 12 giờ vẫn trong "1 ngày". Chỉ chọn Flexible khi cần dưới 5 giờ hoặc Expedited.</td></tr>
+        <tr><td>Log tải lên S3 rồi phân tích trong 30 ngày, sau đó cần hiếm khi đọc nhưng <em>instant</em></td><td>Lifecycle sang Glacier Flexible sau 30 ngày</td><td>Lifecycle sang Standard-IA hoặc Glacier Instant Retrieval sau 30 ngày</td><td>Glacier Flexible mất phút tới giờ để lấy, không "instant".</td></tr>
+        <tr><td>EC2 private subnet tải hàng TB từ S3 qua NAT Gateway, hóa đơn tăng vọt</td><td>Tăng NAT Gateway hoặc thêm NAT ở AZ khác</td><td>Thêm Gateway endpoint cho S3, route table trỏ S3 qua endpoint</td><td>Gateway endpoint miễn phí, bỏ hoàn toàn phí GB qua NAT.</td></tr>
+        <tr><td>Chi phí data transfer giữa web tier và DB tier trong cùng Region cao</td><td>Dùng public IP để tránh phí</td><td>Đặt chung AZ hoặc giảm chatty, dùng private IP; public/EIP vẫn tính tiền</td><td>Phí phát sinh do khác AZ, cả hai chiều. Lưu ý đánh đổi HA.</td></tr>
+        <tr><td>DynamoDB bảng traffic đều đặn 24/7, đang dùng on-demand, tốn tiền</td><td>Standard-IA table class</td><td>Provisioned với auto scaling và reserved capacity</td><td>On-demand đắt gấp nhiều lần cho traffic đều. IA class là cho ít truy cập, không phải cho đều.</td></tr>
+        <tr><td>DB dev/test chỉ dùng giờ hành chính, RDS Multi-AZ</td><td>Reserved Instance</td><td>Tắt Multi-AZ, dừng hoặc lên lịch stop ngoài giờ (hoặc Aurora Serverless v2)</td><td>RI vẫn trả tiền 24/7. Dev không cần Multi-AZ.</td></tr>
+        <tr><td>Cần biết trước chi phí hàng tháng và cảnh báo khi dự báo vượt ngân sách</td><td>Cost Explorer</td><td>AWS Budgets với forecast alert</td><td>Cost Explorer để xem và phân tích; cảnh báo theo ngưỡng là Budgets.</td></tr>
+        <tr><td>Chi tiêu tăng bất thường 300% trong một ngày ở một dịch vụ, muốn phát hiện tự động mà không đặt ngưỡng tay</td><td>Budgets</td><td>Cost Anomaly Detection</td><td>Budgets cần ngưỡng cố định. Anomaly Detection dùng ML học mẫu chi tiêu.</td></tr>
+        <tr><td>Nhiều account, muốn RI mua ở account A áp cho account B và hưởng giá bậc thang S3 gộp</td><td>Mua RI ở từng account</td><td>Organizations consolidated billing (RI sharing bật mặc định)</td><td>Consolidated billing gộp usage và chia sẻ RI/SP.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">16. Công ty chạy 20 EC2 m5.large ổn định suốt năm cho web, cộng cụm render chạy theo đợt chịu được gián đoạn. Kết hợp nào <em>most cost-effective</em>?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>EC2 Instance Savings Plans (hoặc Standard RI) cho 20 web instance và Spot cho cụm render.</b> Bẫy: chọn Spot cho web (có thể bị thu hồi) hoặc RI cho render (trả tiền cả lúc không chạy). Compute SP cũng đúng nếu đề nhấn mạnh linh hoạt.</p></div>
+      <div class="q"><p class="qt">17. Ứng dụng lưu ảnh y tế vào S3: 30 ngày đầu bác sĩ xem thường xuyên, sau đó hiếm khi xem nhưng khi cần phải mở ngay, sau 1 năm chỉ giữ theo luật 10 năm, chấp nhận chờ 12 giờ. Thiết kế lifecycle?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Standard 30 ngày → Standard-IA (hoặc Glacier Instant Retrieval) → sau 365 ngày Glacier Deep Archive → expiration sau 10 năm.</b> One Zone-IA sai vì dữ liệu y tế không được phép mất khi AZ hỏng. Chuyển thẳng sang Glacier Flexible sau 30 ngày sai vì không "mở ngay".</p></div>
+      <div class="q"><p class="qt">18. VPC có 3 AZ, mỗi AZ một NAT Gateway. EC2 private subnet gửi 50 TB mỗi tháng lên S3 và 2 TB tới API bên ngoài. Giảm chi phí mạng nhiều nhất bằng cách nào?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Tạo Gateway endpoint cho S3 để 50 TB không qua NAT; giữ NAT cho 2 TB còn lại.</b> Gộp về một NAT Gateway tiết kiệm phí giờ nhưng thêm phí khác AZ và mất HA, và không giải quyết 50 TB. Interface endpoint cho S3 vẫn tính tiền GB.</p></div>
+      <div class="q"><p class="qt">19. Ứng dụng microservice chạy trên ECS, tải không đều, team nhỏ không muốn quản server. Chi phí tháng cao vì nhiều task không quan trọng chạy liên tục. Giảm chi phí mà vẫn <em>least operational overhead</em>?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Giữ Fargate, chuyển các task chịu gián đoạn sang Fargate Spot, mua Compute Savings Plans cho phần chạy ổn định.</b> Chuyển sang ECS trên EC2 với RI rẻ hơn nhưng phải quản host, trái yêu cầu. Giảm size task chỉ là right sizing, không đủ.</p></div>
+      <div class="q"><p class="qt">20. Phòng tài chính muốn mỗi team thấy chi phí của mình trong một account chung, và nhận email khi chi phí dự báo của team Data vượt 5.000 USD. Chọn 2 việc.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Gắn tag Team cho resource và kích hoạt cost allocation tag; tạo AWS Budget lọc theo tag Team=Data với forecast alert.</b> Tách account riêng cũng chia được chi phí nhưng đề nói account chung. Cost Explorer xem được nhưng không gửi email theo ngưỡng.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. PHÂN TÍCH CÂU SAI ============ -->
+<section id="phan-tich-sai">
+  <span class="eyebrow">Ôn sâu 5 / 5 · Phương pháp</span>
+  <h2>Cách phân tích câu sai</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Vì sao phải phân loại</span>
+      <p>Làm thêm đề chỉ tăng điểm khi mỗi câu sai được đổi thành một việc cụ thể. "Sai 12 câu" không nói lên gì; "7 câu sai vì nhầm Multi-AZ với read replica, 3 câu vì đọc sót chữ <em>cost</em>" thì biết ngay ngày mai học gì. Tuần này mỗi câu sai phải gắn đúng một nguyên nhân trong bốn loại dưới đây.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Bốn nguyên nhân sai</span>
+      <div class="tbl"><table>
+        <tr><th>Mã</th><th>Nguyên nhân</th><th>Dấu hiệu nhận ra</th><th>Việc cần làm</th></tr>
+        <tr><td><b>KB</b></td><td>Không biết dịch vụ hoặc tính năng</td><td>Đọc giải thích mới lần đầu nghe tên (ví dụ Gateway Load Balancer, S3 Batch Replication, Vault Lock)</td><td>Đọc Tutorials Dojo cheat sheet của dịch vụ đó 10 phút, viết 3 dòng "là gì, khi nào dùng, khác gì dịch vụ gần nhất" vào cột Vì sao sai</td></tr>
+        <tr><td><b>NH</b></td><td>Biết nhưng nhầm với dịch vụ gần</td><td>Hai đáp án đều "nghe đúng", chọn cái kia (CloudFront với Global Accelerator, SQS với Kinesis, Multi-AZ với read replica, Parameter Store với Secrets Manager)</td><td>Ghi cặp dịch vụ vào cột Từ khóa dạng "A với B", đọc lại bảng Dễ nhầm của tuần tương ứng, thêm một dòng vào bảng cặp dễ nhầm cuối bài này</td></tr>
+        <tr><td><b>SOT</b></td><td>Đọc sót từ khóa hoặc ràng buộc</td><td>Giải thích chỉ ra một chữ trong đề mà mình không để ý (<em>cost-effective</em>, <em>no code change</em>, <em>within 2 weeks</em>, <em>Windows</em>, <em>UDP</em>, "select TWO")</td><td>Chép đúng từ khóa bị sót vào cột Từ khóa. Khi làm đề sau: gạch chân từ khóa trước khi đọc đáp án</td></tr>
+        <tr><td><b>BEST</b></td><td>Đoán sai bẫy "tốt nhất"</td><td>Đáp án mình chọn cũng chạy được, nhưng đáp án đúng rẻ hơn, ít quản trị hơn, hoặc đúng hơn với một ràng buộc</td><td>Ghi tiêu chí phân thắng bại vào Vì sao sai ("cả hai đạt, nhưng đề cần least operational overhead → managed"). Luyện loại 2 đáp án sai trước rồi so sánh 2 cái còn lại theo tiêu chí đề nêu</td></tr>
+      </table></div>
+      <div class="note">Câu sai do hết giờ hoặc bấm nhầm thì ghi <b>SOT</b> kèm chữ "thời gian". Nếu 3 câu trở lên trong một đề thuộc loại này thì vấn đề là nhịp làm bài: 65 câu trong 130 phút là 2 phút mỗi câu, câu nào quá 3 phút phải đánh dấu rồi đi tiếp.</div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Cách ghi vào so-ghi-cau-sai.md</span>
+      <p>Giữ nguyên 7 cột của file, chỉ quy ước thêm cách điền để lọc được bằng tìm kiếm:</p>
+      <div class="tbl"><table>
+        <tr><th>Cột</th><th>Điền gì</th><th>Ví dụ</th></tr>
+        <tr><td>Ngày</td><td>yyyy-mm-dd</td><td>2026-10-29</td></tr>
+        <tr><td>Tuần</td><td>Tuần và đề, viết tắt</td><td>T11 TD2 Q37</td></tr>
+        <tr><td>Dịch vụ</td><td>Tên dịch vụ chính của đáp án đúng, viết đúng tên AWS để lọc được</td><td>Global Accelerator</td></tr>
+        <tr><td>Mình chọn</td><td>Dịch vụ hoặc cách làm mình chọn</td><td>CloudFront</td></tr>
+        <tr><td>Đáp án đúng</td><td>Dịch vụ hoặc cách làm đúng</td><td>Global Accelerator trước NLB</td></tr>
+        <tr><td>Vì sao sai</td><td><b>Mã nguyên nhân</b> rồi một câu lý do</td><td>NH: CloudFront chỉ HTTP, đề là UDP và cần static IP</td></tr>
+        <tr><td>Từ khóa</td><td>Từ khóa trong đề quyết định đáp án, tiếng Anh</td><td>UDP, static IP, global users</td></tr>
+      </table></div>
+      <p style="font-size:.92rem">Một dòng mẫu đúng format Markdown của file:</p>
+<pre><code>| 2026-10-29 | T11 TD2 Q37 | Global Accelerator | CloudFront | Global Accelerator trước NLB | NH: CloudFront chỉ HTTP, đề là UDP và cần static IP | UDP, static IP, global users |</code></pre>
+      <p style="font-size:.92rem">Cách nhanh nhất: sau khi chấm, dán vào session danh sách "Q37: chọn B, đúng D" kèm một câu tóm tắt đề, rồi nói "ghi vào sổ câu sai với mã nguyên nhân". Claude điền đủ 7 cột, bạn chỉ sửa mã nguyên nhân nếu thấy không đúng.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Lọc sổ để thấy cụm yếu</span>
+      <ol>
+        <li>Sau mỗi 2 đề, đếm cột Dịch vụ: dịch vụ nào xuất hiện từ 3 lần trở lên là một cụm yếu. Trong PowerShell tại thư mục AWS:
+<pre><code>Select-String -Path so-ghi-cau-sai.md -Pattern '^\| 20' |
+  ForEach-Object { ($_.Line -split '\|')[3].Trim() } |
+  Group-Object | Sort-Object Count -Descending | Select-Object Count, Name -First 10</code></pre>
+        Lệnh này tách cột Dịch vụ (cột thứ 3 sau dấu gạch đầu dòng) rồi đếm. Đếm theo mã nguyên nhân thì đổi chỉ số <code>[3]</code> thành <code>[6]</code> và lấy 2 đến 4 ký tự đầu.</li>
+        <li>Đếm theo mã nguyên nhân: nhiều <b>KB</b> thì cần học thêm dịch vụ (đọc cheat sheet), nhiều <b>NH</b> thì cần bảng so sánh (ôn mục Dễ nhầm), nhiều <b>SOT</b> thì cần kỹ thuật đọc đề (gạch từ khóa, đọc câu hỏi cuối trước), nhiều <b>BEST</b> thì cần quy tắc tiêu chí (bảng từ khóa cuối bài).</li>
+        <li>Tính % theo domain của từng đề: Tutorials Dojo hiện kết quả theo domain ở trang review. Ghi 4 con số đó vào ghi chú checklist dạng "TD2: SEC 75 / RES 82 / PERF 90 / COST 70". Domain thấp nhất của 2 đề liên tiếp là domain ôn sâu ngày hôm sau.</li>
+        <li>Câu nào sai 2 lần (xuất hiện 2 dòng cùng dịch vụ và cùng cặp nhầm) phải được giảng lại trong session, không tự đọc nữa.</li>
+      </ol>
+    </div>
+
+    <div class="block"><span class="eyebrow">Mẫu prompt "Ôn lại chỗ yếu" (có sẵn trong PROMPT-session-tuan.md)</span>
+<pre><code>Tôi làm quiz tuần 11 được __/__. Các câu sai nằm ở dịch vụ: ____.
+Hãy giảng lại đúng các chỗ đó, so sánh với dịch vụ dễ nhầm, rồi cho tôi 10 câu mini quiz chỉ về phần này.</code></pre>
+      <p style="font-size:.92rem">Với tuần 11, điền "quiz tuần 11" bằng tên đề (ví dụ "Tutorials Dojo đề 2 được 48/65") và liệt kê cụm yếu từ bước lọc sổ, kèm mã nguyên nhân chiếm đa số. Ví dụ: "Các câu sai nằm ở dịch vụ: RDS Multi-AZ với read replica (NH, 3 câu), S3 storage class (BEST, 2 câu)". Claude sẽ giảng đúng cặp đó và ra mini quiz 10 câu để kiểm tra ngay.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Quy tắc làm lại đề dưới 80%</span>
+      <ul>
+        <li>Làm lại <b>đúng 1 tuần sau</b> lần đầu, không sớm hơn: sớm hơn là nhớ đáp án chứ không phải hiểu; muộn hơn thì mất nhịp.</li>
+        <li>Làm lại cũng ở timed mode, không xem lại sổ ngay trước khi làm.</li>
+        <li>Ghi hai điểm cạnh nhau trong checklist: "TD1: 72% → 86%". Lần 2 phải đạt từ 80% mới tính là xong đề đó.</li>
+        <li>Câu sai cả 2 lần: thêm dòng mới vào sổ với chữ "LẦN 2" ở cột Tuần, và bắt buộc đem vào session để giảng lại.</li>
+        <li>Lần 2 vẫn dưới 80%: không làm lại lần 3 ngay; quay về ôn sâu domain thấp nhất của đề đó trong bài này, rồi làm đề mới.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LỊCH LÀM ĐỀ ============ -->
+<section id="handson">
+  <span class="eyebrow">Luyện đề</span>
+  <h2>Lịch làm đề tuần 11</h2>
+  <p>Năm phiên làm đề, mỗi phiên theo cùng một quy trình 6 bước. Tổng thời gian mỗi phiên khoảng 3 giờ: 130 phút làm, 40 đến 60 phút chấm và ghi sổ. Không có resource AWS nào được tạo trong tuần này.</p>
+
+  <div class="card">
+    <h3>Đề 1. Tutorials Dojo đề 2 (ngày 1, sau khi ôn domain SEC)</h3>
+    <ol class="steps">
+      <li><div><p>Mở bộ Tutorials Dojo SAA-C03, chọn <b>Practice Test 2</b>, chế độ <b>Timed mode</b> (65 câu, 130 phút). Tắt điện thoại, không tra cứu. Gạch từ khóa và ràng buộc trong đầu trước khi đọc 4 đáp án.</p></div></li>
+      <li><div><p>Nộp bài, xem điểm tổng và <b>điểm theo domain</b> ở trang review. Đọc giải thích của <b>cả câu đúng</b>, vì nhiều câu đúng là do đoán.</p></div></li>
+      <li><div><p>Với mỗi câu sai: gắn mã nguyên nhân (KB, NH, SOT, BEST) rồi gửi vào session để ghi vào <code>so-ghi-cau-sai.md</code> theo đúng 7 cột. Cột Tuần ghi <code>T11 TD2 Qxx</code>.</p></div></li>
+      <li><div><p>Tính % theo domain, ghi vào ghi chú dạng <code>TD2: SEC __ / RES __ / PERF __ / COST __</code>. So với tuần 10 xem domain SEC vừa ôn có nhích không.</p></div></li>
+      <li><div><p>Nói trong session: "TD đề 2 được __%" để tick dòng <code>Tutorials Dojo đề 2: ____%</code> trong <code>AWS-SAA-checklist.md</code>.</p></div></li>
+      <li><div><p>Dưới 80%: ghi ngay lịch làm lại vào ngày 1 của tuần 12. Từ 80%: đánh dấu đây là đề thứ nhất của chuỗi "hai đề liên tiếp".</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Đề 2. Tutorials Dojo đề 3 (ngày 2, sau khi ôn domain RES)</h3>
+    <ol class="steps">
+      <li><div><p><b>Practice Test 3</b>, Timed mode. Trước khi bắt đầu, đọc lại 5 dòng đầu sổ câu sai của đề 2 để nhắc mình bẫy vừa dính.</p></div></li>
+      <li><div><p>Chấm, đọc giải thích cả câu đúng. Chú ý riêng các câu RES: Multi-AZ, read replica, SQS, DR, vì đây là domain vừa ôn.</p></div></li>
+      <li><div><p>Ghi câu sai vào sổ với mã nguyên nhân, cột Tuần <code>T11 TD3 Qxx</code>.</p></div></li>
+      <li><div><p>Tính % theo domain, ghi <code>TD3: SEC __ / RES __ / PERF __ / COST __</code>. Giờ đã có 2 đề của tuần 11, chạy lệnh lọc sổ ở mục Phân tích câu sai để tìm cụm yếu cho ngày 3.</p></div></li>
+      <li><div><p>Báo điểm trong session để tick checklist.</p></div></li>
+      <li><div><p>Dưới 80%: đặt lịch làm lại ngày 2 tuần 12. Đề 2 và đề 3 cùng từ 80%: mốc kiểm tra 1 đã đạt.</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Đề 3. Tutorials Dojo đề 4 (ngày 4, sau khi ôn domain PERF)</h3>
+    <ol class="steps">
+      <li><div><p><b>Practice Test 4</b>, Timed mode. Áp dụng thói quen mới từ ngày 3: câu nào có 2 đáp án đều chạy được thì tìm tiêu chí đề nêu (<em>cost</em>, <em>operational overhead</em>, <em>latency</em>, <em>no code change</em>) trước khi chọn.</p></div></li>
+      <li><div><p>Chấm, đọc giải thích cả câu đúng. Để ý các câu PERF: EBS type, cache, Kinesis, placement group.</p></div></li>
+      <li><div><p>Ghi câu sai vào sổ, cột Tuần <code>T11 TD4 Qxx</code>. Câu nào trùng dịch vụ với đề 2 hoặc 3 thì ghi thêm "lặp" vào cột Vì sao sai.</p></div></li>
+      <li><div><p>Tính % theo domain, ghi <code>TD4: ...</code>. So sánh 3 đề: domain nào thấp nhất ổn định thì chính là domain ôn ngày 6.</p></div></li>
+      <li><div><p>Báo điểm trong session để tick checklist.</p></div></li>
+      <li><div><p>Dưới 80%: đặt lịch làm lại ngày 4 tuần 12.</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Đề 4. Tutorials Dojo đề 5 (ngày 5, sau khi ôn domain COST)</h3>
+    <ol class="steps">
+      <li><div><p><b>Practice Test 5</b>, Timed mode. Đây là đề cuối của tuần, cố gắng làm đúng nhịp 2 phút mỗi câu và để lại 10 phút cuối xem lại câu đã đánh dấu.</p></div></li>
+      <li><div><p>Chấm, đọc giải thích cả câu đúng. Để ý các câu COST: pricing model, S3 class, NAT với endpoint.</p></div></li>
+      <li><div><p>Ghi câu sai vào sổ, cột Tuần <code>T11 TD5 Qxx</code>.</p></div></li>
+      <li><div><p>Tính % theo domain, ghi <code>TD5: ...</code>. Lập bảng 4 đề x 4 domain, tính trung bình mỗi domain, so với tuần 10 để kiểm tra mốc 2 (domain yếu nhất tăng ít nhất 10 điểm).</p></div></li>
+      <li><div><p>Báo điểm trong session để tick checklist. Nếu đề 4 và 5 cùng từ 80% (hoặc bất kỳ 2 đề liên tiếp nào) thì nói rõ "hai đề liên tiếp đạt 80%" để tick mốc 1.</p></div></li>
+      <li><div><p>Dưới 80%: đặt lịch làm lại ngày 5 tuần 12.</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Đề 5. Làm lại đề dưới 80% từ tuần 10 (ngày 6)</h3>
+    <ol class="steps">
+      <li><div><p>Liệt kê đề tuần 10 dưới 80%: có thể là <code>AWS-SAA-quiz-01.md</code>, AWS Official Practice Question Set, hoặc Tutorials Dojo đề 1. Chỉ làm lại đề đã đủ 7 ngày kể từ lần đầu. Nếu cả 3 đều dưới 80%, ưu tiên Tutorials Dojo đề 1 (có giải thích tốt nhất) rồi tới quiz-01.</p></div></li>
+      <li><div><p>Làm lại ở timed mode, không đọc sổ câu sai ngay trước khi làm. Với <code>AWS-SAA-quiz-01.md</code>, gửi đáp án vào session để Claude chấm như tuần 10.</p></div></li>
+      <li><div><p>Ghi hai điểm cạnh nhau: <code>TD1: 72% → 86%</code>. Tính lại % theo domain của lần 2 và so với lần 1 từng domain.</p></div></li>
+      <li><div><p>Đối chiếu sổ: câu nào sai cả hai lần thì thêm dòng mới với cột Tuần ghi <code>T11 LẦN 2 TD1 Qxx</code>. Danh sách này bắt buộc đem vào session để giảng lại, không tự đọc.</p></div></li>
+      <li><div><p>Lần 2 đạt từ 80%: tick dòng "Làm lại các đề dưới 80% sau 1 tuần" trong checklist (khi mọi đề tuần 10 đã qua 80%). Lần 2 vẫn dưới 80%: không làm lần 3, quay về ôn sâu domain thấp nhất rồi tiếp tục với đề mới ở tuần 12.</p></div></li>
+      <li><div><p>Cuối ngày: kiểm tra mốc 3 bằng cách mở sổ, mọi dòng tuần 11 đều có mã nguyên nhân ở cột Vì sao sai. Dòng nào thiếu thì bổ sung ngay.</p></div></li>
+    </ol>
+    <div class="note ok">Tuần này không tạo resource AWS. Vẫn vào Billing một lần ở ngày 7 để chắc không còn resource ngầm từ các tuần lab (NAT Gateway, ALB, RDS, Elastic IP, EBS volume mồ côi).</div>
+  </div>
+</section>
+
+<!-- ============ MỐC KIỂM TRA ============ -->
+<section id="moc">
+  <span class="eyebrow">Mốc kiểm tra</span>
+  <h2>Ba mốc phải đạt trước khi sang tuần 12</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>1. Hai đề liên tiếp đạt từ 80%</h3>
+      <p style="font-size:.94rem">Gợi ý khung tự kiểm:</p>
+      <ul style="font-size:.94rem">
+        <li>Hai đề <b>liền nhau theo thứ tự làm</b> (TD2 và TD3, hoặc TD3 và TD4, hoặc TD4 và TD5), không tính đề làm lại.</li>
+        <li>Cả hai ở timed mode, không tra cứu, không xem sổ trước.</li>
+        <li>Điểm là của lần làm đầu tiên của đề đó.</li>
+        <li>Đạt mốc này là điều kiện để tuần 12 đặt lịch thi; chưa đạt thì tuần 12 làm TD đề 6 và làm lại đề rồi mới quyết định.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>2. Domain yếu nhất tăng ít nhất 10 điểm phần trăm so với tuần 10</h3>
+      <p style="font-size:.94rem">Gợi ý khung tự kiểm:</p>
+      <ul style="font-size:.94rem">
+        <li>Lấy domain thấp nhất theo thống kê của tuần 10 (quiz-01, Official set, TD1), ghi con số gốc.</li>
+        <li>Lấy trung bình % domain đó của 4 đề tuần 11 (TD2 đến TD5).</li>
+        <li>Hiệu số từ 10 điểm trở lên là đạt (ví dụ COST 60% → 72%).</li>
+        <li>Không đạt: tuần 12 dành ngày 1 và 2 ôn lại đúng domain đó bằng bảng bẫy trong bài này trước khi làm TD6.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>3. Sổ câu sai đã phân loại nguyên nhân</h3>
+      <p style="font-size:.94rem">Gợi ý khung tự kiểm:</p>
+      <ul style="font-size:.94rem">
+        <li>Mọi dòng tuần 11 trong <code>so-ghi-cau-sai.md</code> có một trong bốn mã KB, NH, SOT, BEST ở đầu cột Vì sao sai.</li>
+        <li>Nói được mã nào chiếm nhiều nhất và việc tương ứng (KB → cheat sheet, NH → bảng so sánh, SOT → gạch từ khóa, BEST → tiêu chí).</li>
+        <li>Liệt kê được 3 cụm dịch vụ sai nhiều nhất theo kết quả lọc sổ.</li>
+        <li>Câu sai 2 lần đã được giảng lại trong session, có mini quiz 10 câu xác nhận.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TỪ KHÓA ============ -->
+<section id="tukhoa">
+  <span class="eyebrow">Ôn nhanh</span>
+  <h2>Bảng cặp dễ chọn nhầm</h2>
+  <p style="font-size:.94rem;color:var(--muted)">Mỗi dòng là một cặp mà đề thật cố tình đặt cạnh nhau. Đọc cột trái, nói to cột phải, kể cả phần trong ngoặc.</p>
+  <div class="tbl"><table>
+    <tr><th>Đề bài có chữ</th><th>Nghĩ ngay tới (không phải X)</th></tr>
+    <tr><td><em>highly available</em>, survive AZ failure, <em>minimal downtime</em></td><td>Multi-AZ (không phải Multi-Region, không phải read replica)</td></tr>
+    <tr><td><em>read-heavy</em>, offload reporting queries</td><td>Read replica (không phải Multi-AZ)</td></tr>
+    <tr><td><em>disaster recovery</em>, Region failure, RPO/RTO cụ thể</td><td>Multi-Region theo 4 chiến lược DR (không phải chỉ Multi-AZ)</td></tr>
+    <tr><td><em>decouple</em>, buffer, spike, không mất request</td><td>SQS (không phải SNS, không phải Kinesis)</td></tr>
+    <tr><td><em>fan-out</em>, một sự kiện nhiều người nhận</td><td>SNS → nhiều SQS (không phải SQS một mình)</td></tr>
+    <tr><td><em>real-time streaming</em>, replay, nhiều consumer</td><td>Kinesis Data Streams (không phải Firehose, không phải SQS)</td></tr>
+    <tr><td><em>near real-time</em> load vào S3/Redshift/OpenSearch, <em>no management</em></td><td>Kinesis Data Firehose (không phải Data Streams)</td></tr>
+    <tr><td><em>exactly-once</em>, <em>ordered</em></td><td>SQS FIFO (không phải Standard); <em>unlimited throughput</em> thì ngược lại</td></tr>
+    <tr><td><em>static IP</em>, TCP/UDP, <em>fast failover</em>, global</td><td>Global Accelerator (không phải CloudFront)</td></tr>
+    <tr><td><em>cache</em>, static content, HTTP, <em>edge</em></td><td>CloudFront (không phải Global Accelerator)</td></tr>
+    <tr><td><em>microsecond</em> + DynamoDB, <em>no code change</em></td><td>DAX (không phải ElastiCache)</td></tr>
+    <tr><td><em>microsecond</em> hoặc <em>sub-millisecond</em> + RDS, session, leaderboard</td><td>ElastiCache Redis (không phải DAX, không phải Memcached nếu cần persistence)</td></tr>
+    <tr><td><em>shared file system</em>, Linux, nhiều AZ</td><td>EFS (không phải EBS multi-attach)</td></tr>
+    <tr><td><em>Windows file share</em>, SMB, Active Directory</td><td>FSx for Windows (không phải EFS)</td></tr>
+    <tr><td><em>HPC</em>, <em>high throughput</em>, ML training, S3 linked</td><td>FSx for Lustre (không phải EFS Max I/O)</td></tr>
+    <tr><td><em>rotate credentials</em>, database password</td><td>Secrets Manager (không phải Parameter Store)</td></tr>
+    <tr><td><em>configuration values</em>, free, hierarchy</td><td>SSM Parameter Store (không phải Secrets Manager)</td></tr>
+    <tr><td><em>audit API calls</em>, who did what</td><td>CloudTrail (không phải Config, không phải CloudWatch Logs)</td></tr>
+    <tr><td><em>configuration drift</em>, compliance rule, resource history</td><td>AWS Config (không phải CloudTrail)</td></tr>
+    <tr><td><em>threat detection</em>, compromised credentials, malicious IP</td><td>GuardDuty (không phải Inspector, không phải Macie)</td></tr>
+    <tr><td><em>vulnerabilities</em> trên EC2, container image, Lambda</td><td>Inspector (không phải GuardDuty)</td></tr>
+    <tr><td><em>PII</em>, sensitive data trong S3</td><td>Macie (không phải GuardDuty)</td></tr>
+    <tr><td>Block một IP, Deny rule, stateless</td><td>NACL (không phải Security Group)</td></tr>
+    <tr><td>SQL injection, XSS, rate limit HTTP</td><td>WAF trên ALB/CloudFront/API Gateway (không phải Shield, không gắn NLB)</td></tr>
+    <tr><td><em>private access</em> tới S3/DynamoDB, <em>no Internet</em>, free</td><td>Gateway endpoint (không phải Interface endpoint, không phải NAT)</td></tr>
+    <tr><td><em>private access</em> tới dịch vụ khác, SaaS, PrivateLink</td><td>Interface endpoint (không phải Gateway endpoint)</td></tr>
+    <tr><td>Nhân viên, nhiều account, AD, SSO</td><td>IAM Identity Center (không phải Cognito)</td></tr>
+    <tr><td>Người dùng app web/mobile, sign-up, social login</td><td>Cognito User Pool; credential AWS tạm thì Identity Pool (không phải IAM user)</td></tr>
+    <tr><td>Giới hạn trần cho một role/user do developer tạo</td><td>Permissions boundary (không phải SCP)</td></tr>
+    <tr><td>Giới hạn trần cho cả account, kể cả root</td><td>SCP (không phải permissions boundary, không phải IAM policy)</td></tr>
+    <tr><td><em>interruption OK</em>, batch, <em>lowest cost</em></td><td>Spot (không phải Reserved)</td></tr>
+    <tr><td>Steady 1 đến 3 năm, <em>flexible family/Region</em></td><td>Compute Savings Plans (không phải Standard RI)</td></tr>
+    <tr><td>License theo socket/core, BYOL</td><td>Dedicated Host (không phải Dedicated Instance)</td></tr>
+    <tr><td><em>unknown access pattern</em>, không muốn phí retrieval</td><td>S3 Intelligent-Tiering (không phải Standard-IA)</td></tr>
+    <tr><td><em>infrequent</em> nhưng <em>instant</em>, millisecond</td><td>Standard-IA hoặc Glacier Instant Retrieval (không phải Glacier Flexible)</td></tr>
+    <tr><td><em>archive</em>, retrieve trong 12 giờ, rẻ nhất</td><td>Glacier Deep Archive (không phải Glacier Flexible)</td></tr>
+    <tr><td>Mạng chậm, hàng chục TB trở lên, có vài tuần</td><td>Snowball Edge (không phải DataSync)</td></tr>
+    <tr><td>Backup on-premises bằng phần mềm ghi băng</td><td>Tape Gateway (không phải File Gateway)</td></tr>
+    <tr><td>Cảnh báo ngưỡng chi tiêu, forecast</td><td>AWS Budgets (không phải Cost Explorer)</td></tr>
+    <tr><td>Chi tiêu bất thường, không đặt ngưỡng</td><td>Cost Anomaly Detection (không phải Budgets)</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ CHECKLIST ============ -->
+<section id="checklist">
+  <span class="eyebrow">Theo dõi</span>
+  <h2>Checklist tuần 11</h2>
+  <p style="font-size:.94rem;color:var(--muted)">Tick ở đây để tự theo dõi trên máy này. Khi xong mục nào, nói với Claude trong session để tick vào <code>AWS-SAA-checklist.md</code>. Ghi % ngay cạnh tên đề trong checklist Markdown.</p>
+  <div class="card">
+    <h4>Ôn sâu theo domain</h4>
+    <label class="check"><input type="checkbox" id="c1" data-ck><span>Ôn domain SEC: đọc fact, bảng bẫy, làm 5 câu kiểm tra nhanh</span></label>
+    <label class="check"><input type="checkbox" id="c2" data-ck><span>Ôn domain RES: đọc fact, bảng bẫy, làm 5 câu kiểm tra nhanh</span></label>
+    <label class="check"><input type="checkbox" id="c3" data-ck><span>Ôn domain PERF: đọc fact, bảng bẫy, làm 5 câu kiểm tra nhanh</span></label>
+    <label class="check"><input type="checkbox" id="c4" data-ck><span>Ôn domain COST: đọc fact, bảng bẫy, làm 5 câu kiểm tra nhanh</span></label>
+    <label class="check"><input type="checkbox" id="c5" data-ck><span>Ôn sâu domain yếu nhất (theo % của 4 đề) thêm một lượt ở ngày 6</span></label>
+    <h4>Làm đề</h4>
+    <label class="check"><input type="checkbox" id="c6" data-ck><span>Tutorials Dojo đề 2, timed mode, ghi %: ____% (SEC / RES / PERF / COST)</span></label>
+    <label class="check"><input type="checkbox" id="c7" data-ck><span>Tutorials Dojo đề 3, timed mode, ghi %: ____%</span></label>
+    <label class="check"><input type="checkbox" id="c8" data-ck><span>Tutorials Dojo đề 4, timed mode, ghi %: ____%</span></label>
+    <label class="check"><input type="checkbox" id="c9" data-ck><span>Tutorials Dojo đề 5, timed mode, ghi %: ____%</span></label>
+    <label class="check"><input type="checkbox" id="c10" data-ck><span>Làm lại đề dưới 80% của tuần 10 sau đúng 1 tuần, ghi điểm lần 1 → lần 2</span></label>
+    <h4>Mốc kiểm tra</h4>
+    <label class="check"><input type="checkbox" id="c11" data-ck><span>Hai đề liên tiếp đạt từ 80%</span></label>
+    <label class="check"><input type="checkbox" id="c12" data-ck><span>Domain yếu nhất tăng ít nhất 10 điểm phần trăm so với tuần 10</span></label>
+    <label class="check"><input type="checkbox" id="c13" data-ck><span>Sổ câu sai tuần 11 đã có mã nguyên nhân (KB / NH / SOT / BEST) ở mọi dòng</span></label>
+    <h4>Khác</h4>
+    <label class="check"><input type="checkbox" id="c14" data-ck><span>Ghi sổ câu sai đủ 7 cột cho cả 4 đề và đề làm lại, câu sai 2 lần đã giảng lại trong session</span></label>
+    <label class="check"><input type="checkbox" id="c15" data-ck><span>Đọc giải thích của cả câu làm đúng ở mỗi đề</span></label>
+    <label class="check"><input type="checkbox" id="c16" data-ck><span>Hai đề liên tiếp đạt 80% → sang tuần 12 đặt lịch thi</span></label>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  // Xem đáp án
+  document.querySelectorAll('[data-reveal]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var a=b.parentElement.querySelector('.ans');
+      a.hidden=!a.hidden; b.textContent=a.hidden?'Xem đáp án':'Ẩn đáp án';
+    });
+  });
+  // Checklist lưu trên máy này
+  var boxes=document.querySelectorAll('[data-ck]'), KEY='saa-tuan-11';
+  var saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  function update(){
+    var n=0; boxes.forEach(function(c){ c.closest('.check').classList.toggle('done',c.checked); if(c.checked)n++; });
+    document.getElementById('bar').style.width=(n/boxes.length*100)+'%';
+    document.getElementById('pct').textContent=n+'/'+boxes.length;
+  }
+  boxes.forEach(function(c){
+    if(saved[c.id])c.checked=true;
+    c.addEventListener('change',function(){ saved[c.id]=c.checked; try{ localStorage.setItem(KEY,JSON.stringify(saved)); }catch(e){} update(); });
+  });
+  update();
+  // Đánh dấu mục đang đọc
+  var links=document.querySelectorAll('.toc a'), secs=[];
+  links.forEach(function(l){ var s=document.querySelector(l.getAttribute('href')); if(s)secs.push([s,l]); });
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ links.forEach(function(l){l.classList.remove('active')}); secs.forEach(function(p){ if(p[0]===e.target)p[1].classList.add('active'); }); } }); },{rootMargin:'-20% 0px -70% 0px'});
+    secs.forEach(function(p){ io.observe(p[0]); });
+  }
+})();
+</script>

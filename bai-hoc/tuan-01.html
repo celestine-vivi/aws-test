@@ -1,0 +1,753 @@
+<title>SAA Tuần 1 Nền tảng</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky mục lục bên trái (desktop), cột nội dung 760px bên phải; xếp một cột ở màn hẹp. */
+:root{
+  --bg:#f2f4f7; --surface:#ffffff; --surface-2:#e9edf2; --line:#d3dae3;
+  --fg:#172030; --muted:#5a6676; --accent:#1c6e8c; --accent-soft:#dcecf3;
+  --warm:#b35a00; --warm-soft:#fbe9d6; --ok:#2a7d4f; --ok-soft:#dcf0e4; --bad:#b3362b; --bad-soft:#f8dedb;
+  --display:"Manrope","IBM Plex Sans",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+a{color:var(--accent)}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:800}
+h2{font-size:1.5rem;font-weight:800;padding-top:8px}
+h3{font-size:1.12rem;font-weight:700}
+h4{font-size:.95rem;font-weight:700}
+p{margin:0}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+pre{font-family:var(--mono);font-size:.84rem;line-height:1.5;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:0}
+pre code{background:none;padding:0;font-size:inherit}
+em{color:var(--warm);font-style:italic}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* Header */
+.hero{max-width:1120px;margin:0 auto;padding-block:36px 20px;display:flex;flex-direction:column;gap:12px}
+.hero .lead{max-width:62ch;color:var(--muted);font-size:1.02rem}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.88rem;color:var(--muted)}
+.meta b{color:var(--fg);font-weight:600}
+.progress{display:flex;align-items:center;gap:12px;font-size:.88rem;color:var(--muted)}
+.bar{flex:1;max-width:320px;height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+
+/* Two columns */
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;align-items:start}
+.toc{position:sticky;top:max(12px,env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:2px;font-size:.9rem}
+.toc a{color:var(--muted);text-decoration:none;padding:6px 10px;border-left:2px solid var(--line);display:block}
+.toc a:hover,.toc a.active{color:var(--fg);border-left-color:var(--accent)}
+.toc .grp{margin-top:10px}
+main{display:flex;flex-direction:column;gap:56px;min-width:0;max-width:780px}
+section{display:flex;flex-direction:column;gap:18px;scroll-margin-top:16px}
+@media (max-width:860px){ .wrap{grid-template-columns:1fr;gap:24px} .toc{position:static;flex-direction:row;flex-wrap:wrap;gap:6px} .toc a{border:1px solid var(--line);border-radius:99px;padding:4px 10px} .toc .grp{margin:0} .toc a.active{border-color:var(--accent)} }
+
+/* Blocks */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.block{display:flex;flex-direction:column;gap:8px}
+.block > .eyebrow{color:var(--accent)}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:5px}
+li::marker{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.kw{display:flex;flex-wrap:wrap;gap:8px}
+.kw span{background:var(--warm-soft);color:var(--warm);border-radius:4px;padding:3px 9px;font-size:.86rem;font-style:italic}
+.kw span b{font-style:normal;font-weight:600;color:var(--fg)}
+.note{border-left:3px solid var(--warm);background:var(--warm-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.94rem}
+.note.ok{border-color:var(--ok);background:var(--ok-soft)}
+.note.bad{border-color:var(--bad);background:var(--bad-soft)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;font-size:.84rem}
+tr:last-child td{border-bottom:0}
+td.c{text-align:center}
+
+/* Checklist */
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:6px;cursor:pointer}
+.check:hover{background:var(--surface-2)}
+.check input{margin-top:5px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.check.done{color:var(--muted);text-decoration:line-through}
+
+/* Quiz reveal */
+.q{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.q .qt{font-weight:500}
+.q button{align-self:flex-start;font:inherit;font-size:.86rem;padding:5px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer}
+.q button:hover{background:var(--accent);color:var(--surface)}
+.q button:focus-visible,.check input:focus-visible,.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.q .ans{font-size:.94rem;border-top:1px dashed var(--line);padding-top:8px}
+.q .ans b{color:var(--ok)}
+
+/* Steps */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:12px;padding:0;list-style:none}
+.steps li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:start}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--mono);font-size:.8rem;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:500;margin-top:2px}
+.steps li > div{display:flex;flex-direction:column;gap:6px;min-width:0}
+
+/* Flow diagram */
+.flow{display:flex;flex-direction:column;gap:0;align-items:stretch;max-width:520px}
+.flow .n{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:.94rem}
+.flow .n .tag{font-family:var(--mono);font-size:.74rem;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.tag.deny{background:var(--bad-soft);color:var(--bad)} .tag.allow{background:var(--ok-soft);color:var(--ok)} .tag.next{background:var(--surface-2);color:var(--muted)}
+.flow .arrow{height:22px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--mono);font-size:.78rem}
+.flow .arrow::before{content:"";width:1px;height:100%;background:var(--line);position:absolute}
+.flow .arrow{position:relative} .flow .arrow span{background:var(--bg);padding:0 6px;position:relative}
+
+svg text{font-family:var(--body)}
+.diag{overflow-x:auto}
+.diag svg{width:100%;max-width:700px;height:auto;display:block}
+.sv-region{fill:var(--surface);stroke:var(--accent)} .sv-az{fill:var(--accent-soft);stroke:var(--accent)} .sv-edge{fill:var(--warm-soft);stroke:var(--warm)}
+.sv-t{fill:var(--fg);font-size:13px} .sv-m{fill:var(--muted);font-size:11px} .sv-line{stroke:var(--line)}
+@media (prefers-reduced-motion: reduce){ .bar i{transition:none} }
+</style>
+
+<header class="hero">
+  <span class="eyebrow">AWS SAA-C03 · Lộ trình 12 tuần · Tuần 1</span>
+  <h1>Nền tảng và dựng môi trường</h1>
+  <p class="lead">Tuần này học năm khái niệm nền (Region, Shared Responsibility, IAM, cách đánh giá policy, cách tính tiền) và dựng xong tài khoản an toàn để các tuần sau làm lab. Mục tiêu cuối tuần: giải thích được khi nào dùng role thay vì user, và vì sao explicit deny luôn thắng allow.</p>
+  <div class="meta"><span>Nhịp học: <b>1,5 đến 2 giờ/ngày</b></span><span>Domain liên quan: <b>SEC 30%</b>, <b>COST 20%</b></span><span>Chi phí lab tuần này: <b>0 USD</b> nếu làm đúng hướng dẫn</span></div>
+  <div class="progress"><span>Tiến độ checklist</span><div class="bar"><i id="bar"></i></div><span id="pct">0/15</span></div>
+</header>
+
+<div class="wrap">
+<nav class="toc" aria-label="Mục lục">
+  <a href="#ke-hoach">Kế hoạch 7 ngày</a>
+  <span class="grp eyebrow">Lý thuyết</span>
+  <a href="#region">1. Region, AZ, Edge</a>
+  <a href="#shared">2. Shared responsibility</a>
+  <a href="#iam">3. IAM: user, group, role, policy</a>
+  <a href="#policy">4. Thứ tự đánh giá policy</a>
+  <a href="#pricing">5. Tính tiền và Free Tier</a>
+  <span class="grp eyebrow">Thực hành</span>
+  <a href="#handson">Hands-on 5 lab</a>
+  <a href="#moc">Mốc kiểm tra</a>
+  <a href="#tukhoa">Bảng từ khóa đề thi</a>
+  <a href="#checklist">Checklist tuần</a>
+</nav>
+
+<main>
+
+<section id="ke-hoach">
+  <h2>Kế hoạch 7 ngày</h2>
+  <p>Mỗi ngày học một mục lý thuyết rồi làm ngay lab đi kèm. Ngày cuối tuần dành cho ôn và quiz.</p>
+  <div class="tbl"><table>
+    <tr><th>Ngày</th><th>Lý thuyết</th><th>Hands-on</th></tr>
+    <tr><td>1</td><td>Region, AZ, Edge location</td><td>Tạo tài khoản, bật MFA cho root</td></tr>
+    <tr><td>2</td><td>Shared responsibility model</td><td>Tạo IAM user admin, tạo Budget 10 USD</td></tr>
+    <tr><td>3</td><td>IAM: user, group, role, policy</td><td>Cài AWS CLI, cấu hình profile, <code>sts get-caller-identity</code></td></tr>
+    <tr><td>4</td><td>Thứ tự đánh giá policy</td><td>Viết policy chỉ đọc một bucket, kiểm tra bằng Policy Simulator</td></tr>
+    <tr><td>5</td><td>Cách tính tiền, Free Tier</td><td>Xem Billing, Cost Explorer, Free Tier usage</td></tr>
+    <tr><td>6 đến 7</td><td>Ôn hai mốc kiểm tra, đọc lại từ khóa</td><td>Nói "cho quiz" trong session để nhận <code>quiz/tuan-01.md</code>, cần đạt 80%</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ 1. REGION ============ -->
+<section id="region">
+  <span class="eyebrow">Lý thuyết 1 / 5</span>
+  <h2>Region, Availability Zone, Edge location</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <ul>
+        <li><b>Region</b>: một khu vực địa lý (Tokyo <code>ap-northeast-1</code>, Singapore <code>ap-southeast-1</code>, N. Virginia <code>us-east-1</code>). Mỗi Region là một cụm hạ tầng độc lập hoàn toàn với Region khác. AWS hiện có hơn 30 Region.</li>
+        <li><b>Availability Zone (AZ)</b>: một hoặc nhiều data center trong Region, có điện, mạng, làm mát riêng, cách nhau đủ xa để một sự cố (cháy, lụt, mất điện) không ảnh hưởng AZ khác nhưng đủ gần để mạng giữa chúng có độ trễ rất thấp. Tên dạng <code>ap-northeast-1a</code>, <code>1c</code>, <code>1d</code>. Mỗi Region có ít nhất 3 AZ (Region mới).</li>
+        <li><b>Edge location</b>: điểm hiện diện (Point of Presence) ở hàng trăm thành phố, gần người dùng hơn Region. Dùng cho CloudFront (cache nội dung), Route 53 (DNS), Global Accelerator, AWS Shield. Không chạy EC2 hay RDS ở đây.</li>
+        <li>Nhận diện thêm: <b>Local Zones</b> (mở rộng Region tới thành phố lớn, chạy được EC2/EBS), <b>Wavelength</b> (trong mạng 5G của nhà mạng), <b>Outposts</b> (rack AWS đặt tại data center của bạn).</li>
+      </ul>
+    </div>
+
+    <div class="block diag"><span class="eyebrow">Hình dung</span>
+      <svg viewBox="0 0 700 300" role="img" aria-label="Sơ đồ Region chứa ba AZ, Edge location nằm ngoài Region gần người dùng">
+        <rect x="20" y="40" width="440" height="230" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="36" y="66" class="sv-t" font-weight="600">Region ap-northeast-1 (Tokyo)</text>
+        <text x="36" y="84" class="sv-m">Chọn khi deploy EC2, RDS, VPC. Dữ liệu không tự rời Region.</text>
+        <rect x="40" y="110" width="120" height="130" rx="8" class="sv-az" stroke-width="1.5"/>
+        <rect x="180" y="110" width="120" height="130" rx="8" class="sv-az" stroke-width="1.5"/>
+        <rect x="320" y="110" width="120" height="130" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="100" y="136" text-anchor="middle" class="sv-t" font-weight="600">AZ 1a</text>
+        <text x="240" y="136" text-anchor="middle" class="sv-t" font-weight="600">AZ 1c</text>
+        <text x="380" y="136" text-anchor="middle" class="sv-t" font-weight="600">AZ 1d</text>
+        <text x="100" y="160" text-anchor="middle" class="sv-m">1+ data center</text>
+        <text x="240" y="160" text-anchor="middle" class="sv-m">1+ data center</text>
+        <text x="380" y="160" text-anchor="middle" class="sv-m">1+ data center</text>
+        <text x="100" y="180" text-anchor="middle" class="sv-m">điện, mạng riêng</text>
+        <text x="240" y="180" text-anchor="middle" class="sv-m">điện, mạng riêng</text>
+        <text x="380" y="180" text-anchor="middle" class="sv-m">điện, mạng riêng</text>
+        <text x="100" y="222" text-anchor="middle" class="sv-m">EC2 · EBS · RDS</text>
+        <text x="240" y="222" text-anchor="middle" class="sv-m">EC2 · EBS · RDS</text>
+        <text x="380" y="222" text-anchor="middle" class="sv-m">EC2 · EBS · RDS</text>
+        <line x1="160" y1="175" x2="180" y2="175" class="sv-line" stroke-width="2"/>
+        <line x1="300" y1="175" x2="320" y2="175" class="sv-line" stroke-width="2"/>
+        <text x="240" y="262" text-anchor="middle" class="sv-m">AZ nối nhau bằng mạng riêng độ trễ thấp (ms) → Multi-AZ = chịu lỗi trong Region</text>
+        <rect x="500" y="40" width="180" height="70" rx="8" class="sv-edge" stroke-width="1.5"/>
+        <text x="590" y="64" text-anchor="middle" class="sv-t" font-weight="600">Edge location</text>
+        <text x="590" y="82" text-anchor="middle" class="sv-m">CloudFront · Route 53</text>
+        <text x="590" y="98" text-anchor="middle" class="sv-m">Global Accelerator · Shield</text>
+        <rect x="500" y="140" width="180" height="60" rx="8" class="sv-region" stroke-width="1.5"/>
+        <text x="590" y="165" text-anchor="middle" class="sv-t" font-weight="600">Người dùng (Hà Nội)</text>
+        <text x="590" y="184" text-anchor="middle" class="sv-m">cache gần, DNS gần</text>
+        <line x1="590" y1="140" x2="590" y2="110" class="sv-line" stroke-width="2"/>
+        <line x1="500" y1="75" x2="460" y2="75" class="sv-line" stroke-width="2" stroke-dasharray="4 4"/>
+        <text x="590" y="240" text-anchor="middle" class="sv-m">Edge lấy nội dung từ Region</text>
+        <text x="590" y="256" text-anchor="middle" class="sv-m">(origin) khi cache miss</text>
+      </svg>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Khi nào chọn Region nào</span>
+        <ul>
+          <li><b>Compliance / data residency</b>: luật bắt dữ liệu ở trong nước → chọn Region ở nước đó.</li>
+          <li><b>Latency</b>: gần người dùng nhất.</li>
+          <li><b>Dịch vụ có sẵn</b>: Region mới thường thiếu dịch vụ, <code>us-east-1</code> có đủ nhất.</li>
+          <li><b>Giá</b>: giá khác nhau theo Region, Tokyo đắt hơn Virginia.</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Dịch vụ global và regional</span>
+        <ul>
+          <li><b>Global</b>: IAM, Route 53, CloudFront, WAF (cho CloudFront), Organizations, Billing.</li>
+          <li><b>Regional</b>: EC2, VPC, RDS, Lambda, DynamoDB. S3 bucket nằm trong một Region nhưng tên bucket là duy nhất toàn cầu.</li>
+          <li><b>Gắn với một AZ</b>: EC2 instance, EBS volume, subnet. EBS không gắn được vào EC2 ở AZ khác.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>Chịu được một data center hỏng</td><td>Multi-AZ trong một Region</td><td>Multi-Region (quá tốn, không cần)</td></tr>
+        <tr><td>Chịu được cả Region sập, DR</td><td>Multi-Region</td><td>Multi-AZ</td></tr>
+        <tr><td>Người dùng toàn cầu tải nội dung nhanh</td><td>CloudFront qua Edge location</td><td>Tạo EC2 ở nhiều Region</td></tr>
+        <tr><td>Độ trễ dưới 10 ms cho một thành phố không có Region</td><td>Local Zones</td><td>Edge location (không chạy EC2)</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>highly available <b>→ Multi-AZ</b></span><span>disaster recovery <b>→ Multi-Region</b></span><span>data must remain in country <b>→ chọn Region</b></span><span>low latency global users <b>→ Edge / CloudFront</b></span><span>fault isolation <b>→ AZ độc lập</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">1. Một công ty muốn ứng dụng vẫn chạy khi một data center ở Tokyo mất điện, với chi phí thấp nhất. Nên deploy thế nào?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Deploy ở 2 AZ trở lên trong Region Tokyo (Multi-AZ).</b> Multi-Region cũng đạt nhưng đắt và phức tạp hơn, đề nói <em>cost</em> nên loại. Một AZ duy nhất thì không chịu lỗi được.</p></div>
+      <div class="q"><p class="qt">2. Một EBS volume ở <code>ap-northeast-1a</code> có gắn được vào EC2 ở <code>ap-northeast-1c</code> không?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Không.</b> EBS gắn với một AZ. Muốn chuyển sang AZ khác phải chụp snapshot (snapshot nằm ở mức Region) rồi tạo volume mới từ snapshot ở AZ đích.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. SHARED RESPONSIBILITY ============ -->
+<section id="shared">
+  <span class="eyebrow">Lý thuyết 2 / 5</span>
+  <h2>Shared responsibility model</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <p>AWS chịu trách nhiệm bảo mật <b>của</b> cloud (security <em>of</em> the cloud): phần cứng, data center, mạng vật lý, hypervisor, phần mềm của dịch vụ managed. Bạn chịu trách nhiệm bảo mật <b>trong</b> cloud (security <em>in</em> the cloud): dữ liệu, ai được truy cập (IAM), cấu hình mạng (Security Group, NACL), mã hóa, hệ điều hành và ứng dụng do bạn cài.</p>
+      <p>Ranh giới dịch chuyển theo dịch vụ: càng managed thì AWS gánh càng nhiều.</p>
+    </div>
+    <div class="tbl"><table>
+      <tr><th>Dịch vụ</th><th>AWS lo</th><th>Bạn lo</th></tr>
+      <tr><td>EC2 (IaaS)</td><td>Phần cứng, hypervisor, mạng vật lý</td><td>Vá OS, cài firewall trong OS, Security Group, IAM, dữ liệu, mã hóa EBS</td></tr>
+      <tr><td>RDS (managed)</td><td>Cả vá OS và DB engine, backup tự động</td><td>Tài khoản DB, Security Group, bật encryption, dữ liệu, tối ưu query</td></tr>
+      <tr><td>Lambda, S3, DynamoDB (serverless / abstracted)</td><td>Gần như toàn bộ hạ tầng và runtime</td><td>Code, IAM policy, bucket policy, mã hóa, phân loại dữ liệu</td></tr>
+    </table></div>
+    <div class="block"><span class="eyebrow">Trách nhiệm chung (shared controls)</span>
+      <ul>
+        <li><b>Patch management</b>: AWS vá hạ tầng, bạn vá guest OS trên EC2.</li>
+        <li><b>Configuration management</b>: AWS cấu hình hạ tầng, bạn cấu hình OS, database, ứng dụng.</li>
+        <li><b>Awareness and training</b>: AWS đào tạo nhân viên AWS, bạn đào tạo nhân viên bạn.</li>
+      </ul>
+    </div>
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>physical security, hardware disposal <b>→ AWS</b></span><span>patch guest OS on EC2 <b>→ Customer</b></span><span>patch RDS engine <b>→ AWS</b></span><span>encrypt data at rest <b>→ Customer (bật)</b></span><span>IAM, MFA, credentials <b>→ Customer</b></span><span>network infrastructure, hypervisor <b>→ AWS</b></span></div>
+    </div>
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">3. Audit yêu cầu chứng minh guest OS trên EC2 đã được vá lỗi. Ai phải làm việc này?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Khách hàng.</b> Với EC2, OS là của bạn. Dùng Systems Manager Patch Manager (học tuần 8) để tự động hóa. Nếu là RDS thì AWS vá engine, bạn chỉ chọn maintenance window.</p></div>
+      <div class="q"><p class="qt">4. Chọn 2 việc thuộc trách nhiệm của AWS: (A) bật MFA cho user, (B) thay ổ cứng hỏng trong data center, (C) cấu hình Security Group, (D) vá hypervisor.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>B và D.</b> A và C đều là cấu hình trong cloud của bạn. Bẫy hay gặp: "Security Group" nghe như hạ tầng mạng nhưng là cấu hình của khách hàng.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. IAM ============ -->
+<section id="iam">
+  <span class="eyebrow">Lý thuyết 3 / 5</span>
+  <h2>IAM: user, group, role, policy</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Bốn khái niệm</span>
+      <div class="tbl"><table>
+        <tr><th>Khái niệm</th><th>Là gì</th><th>Credential</th><th>Dùng cho</th></tr>
+        <tr><td><b>User</b></td><td>Một danh tính cố định trong account</td><td>Dài hạn: password (console), access key (CLI/SDK)</td><td>Con người cần truy cập lâu dài. Mỗi account tối đa 5.000 user (cần kiểm tra lại).</td></tr>
+        <tr><td><b>Group</b></td><td>Nhóm user, gắn policy cho cả nhóm</td><td>Không có, không đăng nhập được</td><td>Quản lý quyền theo chức năng (Developers, Admins). Group không lồng nhau, một user thuộc tối đa 10 group.</td></tr>
+        <tr><td><b>Role</b></td><td>Danh tính <b>được giả lập (assume)</b>, không thuộc về ai cố định</td><td>Tạm thời, do STS cấp, tự hết hạn (mặc định 1 giờ, tối đa 12 giờ)</td><td>EC2, Lambda, dịch vụ AWS, user ở account khác, người dùng federated (SSO, Google, AD).</td></tr>
+        <tr><td><b>Policy</b></td><td>Tài liệu JSON mô tả quyền</td><td>Không</td><td>Gắn vào user, group, role (identity-based) hoặc vào resource như S3 bucket (resource-based).</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Role có hai policy</span>
+      <ul>
+        <li><b>Trust policy</b>: ai được assume role này (Principal: <code>ec2.amazonaws.com</code>, account khác, SAML provider).</li>
+        <li><b>Permission policy</b>: role được làm gì sau khi assume.</li>
+        <li>EC2 nhận role thông qua <b>instance profile</b>. Credential tạm thời được cấp qua metadata service và tự xoay vòng, bạn không bao giờ phải nhúng access key vào máy.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Khi nào dùng role thay vì user (mốc kiểm tra 1)</span>
+      <div class="note ok">Quy tắc: <b>phần mềm và truy cập tạm thời → role. Con người cần đăng nhập lâu dài → user</b> (hoặc tốt hơn là IAM Identity Center, cũng là role phía sau). Nếu đề bài có chữ <em>temporary</em>, <em>cross-account</em>, <em>EC2 / Lambda needs access</em>, <em>federated</em>, <em>rotate credentials</em>, <em>no long-term credentials</em> thì đáp án gần như luôn là role.</div>
+      <ul>
+        <li>EC2 cần đọc S3 → gắn role cho EC2, không tạo access key rồi copy vào máy.</li>
+        <li>Account A cần vào S3 của account B → B tạo role tin tưởng A, A dùng <code>sts:AssumeRole</code>.</li>
+        <li>Nhân viên đăng nhập bằng Active Directory công ty → federation SAML 2.0 hoặc IAM Identity Center, map sang role.</li>
+        <li>App mobile cần upload ảnh lên S3 → Cognito Identity Pool cấp credential tạm từ role.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Cấu trúc một policy JSON</span>
+<pre><code>{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ReadOnlyOneBucket",
+      "Effect": "Allow",                       // Allow hoặc Deny
+      "Action": ["s3:GetObject", "s3:ListBucket"],
+      "Resource": ["arn:aws:s3:::saa-lab-quy", "arn:aws:s3:::saa-lab-quy/*"],
+      "Condition": { "Bool": { "aws:MultiFactorAuthPresent": "true" } }
+    }
+  ]
+}</code></pre>
+      <ul>
+        <li><b>Principal</b> chỉ có trong resource-based policy (bucket policy, KMS key policy, SQS, SNS, Lambda). Identity-based policy không có Principal vì nó đã gắn vào danh tính rồi.</li>
+        <li><b>ARN</b>: <code>arn:partition:service:region:account-id:resource</code>. S3 và IAM không có region. Bucket và object là hai ARN khác nhau, nên <code>ListBucket</code> cần ARN bucket còn <code>GetObject</code> cần ARN <code>bucket/*</code>. Đây là lỗi hay gặp nhất khi tự viết policy.</li>
+        <li><b>Condition</b> hay gặp: <code>aws:SourceIp</code>, <code>aws:MultiFactorAuthPresent</code>, <code>aws:RequestedRegion</code>, <code>aws:PrincipalOrgID</code>, <code>s3:prefix</code>, <code>ec2:ResourceTag/…</code>.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Các loại policy (nhận diện đủ để làm đề)</span>
+      <div class="tbl"><table>
+        <tr><th>Loại</th><th>Gắn vào</th><th>Cấp quyền được không</th><th>Ghi chú</th></tr>
+        <tr><td>AWS managed policy</td><td>User, group, role</td><td class="c">Có</td><td>AWS tạo sẵn (<code>AdministratorAccess</code>, <code>ReadOnlyAccess</code>), không sửa được.</td></tr>
+        <tr><td>Customer managed policy</td><td>User, group, role</td><td class="c">Có</td><td>Bạn tạo, dùng lại nhiều nơi, có version. Ưu tiên dùng.</td></tr>
+        <tr><td>Inline policy</td><td>Một user/group/role duy nhất</td><td class="c">Có</td><td>Xóa danh tính là mất policy. Chỉ dùng khi quan hệ 1-1 chặt.</td></tr>
+        <tr><td>Resource-based policy</td><td>Resource (S3 bucket, KMS key, SQS)</td><td class="c">Có</td><td>Có Principal. Cho phép cross-account mà không cần assume role.</td></tr>
+        <tr><td>Permissions boundary</td><td>User hoặc role</td><td class="c">Không</td><td>Chỉ là trần tối đa. Quyền thực = identity policy ∩ boundary.</td></tr>
+        <tr><td>SCP (Organizations)</td><td>Account hoặc OU</td><td class="c">Không</td><td>Trần cho cả account, kể cả root của account đó. Học kỹ tuần 8.</td></tr>
+        <tr><td>Session policy</td><td>Phiên AssumeRole</td><td class="c">Không</td><td>Thu hẹp quyền thêm cho một phiên.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Best practice IAM mà đề thi hay hỏi</span>
+      <ul>
+        <li>Root chỉ dùng cho vài việc (đổi plan hỗ trợ, đóng account, một số thiết lập billing). Bật MFA cho root, không tạo access key cho root.</li>
+        <li><em>Least privilege</em>: cấp đúng quyền cần, bắt đầu từ ít rồi mở dần. Dùng <b>IAM Access Analyzer</b> để sinh policy từ CloudTrail và tìm resource bị chia sẻ ra ngoài.</li>
+        <li><b>Credential report</b> (toàn account, file CSV) và <b>Access Advisor</b> (một user/role dùng dịch vụ nào lần cuối khi nào) để dọn quyền thừa.</li>
+        <li>Bật MFA cho user có quyền cao, dùng condition <code>aws:MultiFactorAuthPresent</code> cho hành động nguy hiểm.</li>
+        <li>Password policy: độ dài, độ phức tạp, hết hạn, không dùng lại.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Cặp</th><th>Khác nhau ở chỗ</th></tr>
+        <tr><td>IAM user với IAM Identity Center user</td><td>Identity Center (SSO) quản lý tập trung nhiều account, đăng nhập một lần, credential tạm. Đề nói <em>multiple accounts</em>, <em>single sign-on</em>, <em>existing corporate directory</em> → Identity Center.</td></tr>
+        <tr><td>IAM role với Cognito</td><td>Cognito cho người dùng ứng dụng (khách hàng web/mobile), IAM cho người quản trị và dịch vụ AWS. Cognito Identity Pool vẫn trả về credential của một IAM role.</td></tr>
+        <tr><td>Resource-based policy với assume role (cross-account)</td><td>Bucket policy cho account khác truy cập mà người gọi vẫn giữ danh tính gốc. Assume role thì người gọi "đổi mũ" sang role của account kia, mất quyền ở account gốc trong phiên đó.</td></tr>
+        <tr><td>Permissions boundary với SCP</td><td>Cả hai không cấp quyền. Boundary áp cho một user/role, do IAM admin đặt. SCP áp cho cả account, do Organizations đặt.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>EC2 needs to access S3 <b>→ IAM role (instance profile)</b></span><span>cross-account access <b>→ role + sts:AssumeRole</b></span><span>corporate Active Directory <b>→ SAML federation / Identity Center</b></span><span>mobile app users <b>→ Cognito</b></span><span>temporary credentials <b>→ STS</b></span><span>least privilege <b>→ policy tối thiểu, Access Analyzer</b></span><span>unused credentials <b>→ credential report</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">5. Ứng dụng chạy trên EC2 phải ghi log vào S3. Developer đề xuất tạo IAM user, sinh access key rồi lưu vào file cấu hình trên instance. Kiến trúc sư nên làm gì để <em>most secure</em>?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Tạo IAM role có quyền ghi bucket, gắn vào EC2 qua instance profile.</b> Access key dài hạn trên máy có thể rò rỉ (AMI, snapshot, git). Role cấp credential tạm, tự xoay vòng, không có gì để lộ.</p></div>
+      <div class="q"><p class="qt">6. Policy gắn cho user có <code>s3:GetObject</code> trên <code>arn:aws:s3:::bucket/*</code> nhưng chạy <code>aws s3 ls s3://bucket</code> bị AccessDenied. Vì sao?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Thiếu <code>s3:ListBucket</code> trên ARN của bucket (không có <code>/*</code>).</b> Liệt kê là hành động trên bucket, tải object là hành động trên object. Hai resource khác nhau nên cần hai dòng.</p></div>
+      <div class="q"><p class="qt">7. Công ty có 20 AWS account, muốn nhân viên đăng nhập bằng tài khoản Active Directory sẵn có, <em>least operational overhead</em>. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>IAM Identity Center kết nối với AD (qua AD Connector hoặc AWS Managed Microsoft AD), gán permission set cho các account.</b> Tạo IAM user ở 20 account là tốn công và không SSO. Cognito là cho người dùng ứng dụng, không phải nhân viên quản trị.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. POLICY EVALUATION ============ -->
+<section id="policy">
+  <span class="eyebrow">Lý thuyết 4 / 5</span>
+  <h2>Thứ tự đánh giá policy</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Ba câu cần thuộc</span>
+      <ol>
+        <li>Mặc định mọi request bị từ chối (<b>implicit deny</b>).</li>
+        <li>Có bất kỳ <b>explicit deny</b> nào áp dụng → từ chối ngay, không xét gì thêm.</li>
+        <li>Không có deny, và có một policy <b>Allow</b> áp dụng → cho phép. Còn lại là implicit deny.</li>
+      </ol>
+      <p>Tóm tắt: <b>explicit deny &gt; explicit allow &gt; implicit deny</b>.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Luồng đánh giá trong một account</span>
+      <div class="flow">
+        <div class="n"><span>Request đến. Gom <b>tất cả</b> policy liên quan: identity, resource, SCP, boundary, session</span><span class="tag next">bắt đầu</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span>Có statement <b>Effect: Deny</b> nào khớp Action + Resource + Condition không?</span><span class="tag deny">có → DENY</span></div>
+        <div class="arrow"><span>không ↓</span></div>
+        <div class="n"><span>Account trong Organizations: <b>SCP</b> có Allow không?</span><span class="tag deny">không → DENY</span></div>
+        <div class="arrow"><span>có ↓</span></div>
+        <div class="n"><span><b>Resource-based policy</b> Allow cho principal này?</span><span class="tag allow">có → ALLOW</span></div>
+        <div class="arrow"><span>không ↓</span></div>
+        <div class="n"><span>Có <b>permissions boundary</b>? Boundary phải Allow</span><span class="tag deny">không → DENY</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span>Có <b>session policy</b>? Session policy phải Allow</span><span class="tag deny">không → DENY</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span><b>Identity-based policy</b> có Allow?</span><span class="tag allow">có → ALLOW</span></div>
+        <div class="arrow"><span>không ↓</span></div>
+        <div class="n"><span>Không ai cho phép</span><span class="tag deny">implicit DENY</span></div>
+      </div>
+      <p style="font-size:.9rem;color:var(--muted)">Luồng rút gọn theo tài liệu IAM "Policy evaluation logic". Với đề SAA chỉ cần nhớ: deny thắng tất cả, boundary và SCP là trần chứ không cấp quyền, cùng account thì identity policy hoặc resource policy cho phép là đủ.</p>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Cùng account với khác account</span>
+        <ul>
+          <li><b>Cùng account</b>: identity-based Allow <b>hoặc</b> resource-based Allow là đủ (hợp).</li>
+          <li><b>Khác account</b>: identity-based ở account người gọi <b>và</b> resource-based ở account chủ resource đều phải Allow (giao).</li>
+          <li>Ví dụ: user ở account A muốn đọc bucket ở account B → A cho user quyền <code>s3:GetObject</code>, đồng thời bucket policy ở B có Principal là account A hoặc user đó.</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Vì sao explicit deny thắng allow (mốc kiểm tra 2)</span>
+        <p>Vì nó là <b>lưới an toàn</b>: admin có thể chặn chắc chắn một hành động (xóa CloudTrail, dùng Region ngoài danh sách, tắt encryption) mà không sợ một policy Allow nào đó ở đâu đó mở lại. Nếu allow thắng được deny thì ai có quyền gắn policy cũng tự mở khóa được, deny trở nên vô nghĩa. Deny được đánh giá trước và dừng ngay nên không có cách nào "cộng thêm allow" để vượt qua.</p>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Hai mẫu Deny hay ra đề</span>
+<pre><code>// Chặn mọi hành động ngoài Tokyo và Osaka, trừ các dịch vụ global
+{
+  "Effect": "Deny",
+  "NotAction": ["iam:*", "sts:*", "route53:*", "cloudfront:*", "support:*"],
+  "Resource": "*",
+  "Condition": { "StringNotEquals": { "aws:RequestedRegion": ["ap-northeast-1", "ap-northeast-3"] } }
+}
+
+// Bắt buộc MFA cho mọi hành động xóa S3
+{
+  "Effect": "Deny",
+  "Action": ["s3:DeleteObject", "s3:DeleteBucket"],
+  "Resource": "*",
+  "Condition": { "BoolIfExists": { "aws:MultiFactorAuthPresent": "false" } }
+}</code></pre>
+      <ul>
+        <li><code>NotAction</code> + <code>Deny</code> = "deny mọi thứ trừ danh sách này". Đọc chậm, đề hay dùng để đánh lừa.</li>
+        <li><code>NotAction</code> + <code>Allow</code> = "allow mọi thứ trừ danh sách này", rất rộng, thường là đáp án sai khi đề hỏi <em>least privilege</em>.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>explicit deny <b>→ luôn thắng</b></span><span>restrict to specific Regions <b>→ Deny + aws:RequestedRegion</b></span><span>maximum permissions a developer can grant <b>→ permissions boundary</b></span><span>prevent even account root <b>→ SCP</b></span><span>why AccessDenied although Allow exists <b>→ tìm Deny hoặc SCP</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">8. User thuộc group Developers có policy Allow <code>ec2:*</code>. User còn có inline policy Deny <code>ec2:TerminateInstances</code>. User chạy TerminateInstances. Kết quả?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Bị từ chối.</b> Explicit deny ở bất kỳ policy nào áp dụng đều thắng, kể cả khi Allow rộng hơn hay gắn ở group. Thứ tự gắn, loại policy không quan trọng.</p></div>
+      <div class="q"><p class="qt">9. Account nằm trong OU có SCP chỉ Allow <code>ec2:*</code> và <code>s3:*</code>. IAM user trong account có <code>AdministratorAccess</code>. User tạo được RDS không?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Không.</b> SCP là trần của account. AdministratorAccess cho phép mọi thứ nhưng quyền thực = SCP ∩ identity policy, RDS nằm ngoài SCP. Ngay cả root của account đó cũng không tạo được.</p></div>
+      <div class="q"><p class="qt">10. User ở account A có Allow <code>s3:GetObject</code> trên bucket của account B, nhưng bucket B không có bucket policy. Đọc được không?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Không.</b> Cross-account cần cả hai phía cho phép. Account B phải thêm bucket policy với Principal là account A (hoặc tạo role cho A assume).</p></div>
+      <div class="q"><p class="qt">11. Admin gắn permissions boundary chỉ cho <code>s3:*</code> lên user X. X có identity policy Allow <code>s3:*</code> và <code>dynamodb:*</code>. X làm được gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Chỉ S3.</b> Boundary không cấp quyền, chỉ giới hạn: quyền thực = identity ∩ boundary. DynamoDB nằm ngoài boundary nên là implicit deny.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. PRICING ============ -->
+<section id="pricing">
+  <span class="eyebrow">Lý thuyết 5 / 5</span>
+  <h2>Cách tính tiền cơ bản và Free Tier</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Ba nguyên tắc giá</span>
+      <ul>
+        <li><b>Pay as you go</b>: dùng bao nhiêu trả bấy nhiêu, không hợp đồng.</li>
+        <li><b>Save when you commit</b>: cam kết 1 hoặc 3 năm (Reserved Instances, Savings Plans) rẻ hơn tới khoảng 70%.</li>
+        <li><b>Pay less by using more</b>: giá bậc thang, S3 và data transfer càng nhiều càng rẻ mỗi GB.</li>
+      </ul>
+    </div>
+    <div class="block"><span class="eyebrow">Ba thứ tạo ra hóa đơn</span>
+      <div class="tbl"><table>
+        <tr><th>Loại</th><th>Tính theo</th><th>Lưu ý thi</th></tr>
+        <tr><td><b>Compute</b></td><td>Giờ hoặc giây chạy (EC2, Lambda tính theo ms và GB-s), loại instance, Region</td><td>EC2 Linux tính theo giây, tối thiểu 60 giây. Stop instance thì hết tiền compute nhưng EBS vẫn tính.</td></tr>
+        <tr><td><b>Storage</b></td><td>GB-tháng, số request, loại storage class</td><td>EBS volume và snapshot bị bỏ quên là nguồn phí ngầm phổ biến.</td></tr>
+        <tr><td><b>Data transfer</b></td><td>GB ra ngoài</td><td>Vào AWS: miễn phí. Ra Internet: tính tiền. Giữa 2 AZ cùng Region: tính cả 2 chiều. Cùng AZ qua private IP: miễn phí. Giữa 2 Region: tính tiền.</td></tr>
+      </table></div>
+      <p style="font-size:.92rem">Từ tháng 2/2024 mọi <b>địa chỉ IPv4 public</b> đều tính tiền (khoảng 0,005 USD/giờ), kể cả khi gắn vào instance đang chạy. Elastic IP không gắn vào gì cũng tính.</p>
+    </div>
+    <div class="block"><span class="eyebrow">Free Tier hiện hành</span>
+      <div class="note">Tài khoản tạo <b>từ 15/7/2025</b> dùng Free Tier kiểu mới: nhận credit (100 USD khi đăng ký, thêm tối đa 100 USD khi hoàn thành các hoạt động làm quen), hết hạn sau 6 tháng. Có hai lựa chọn: <b>Free plan</b> (không bị trừ tiền quá credit, bị giới hạn một số dịch vụ) và <b>Paid plan</b> (dùng đủ dịch vụ, vượt credit thì trả tiền). Tài khoản cũ hơn vẫn theo kiểu 12 tháng miễn phí. Các dịch vụ <b>always free</b> (Lambda 1 triệu request/tháng, DynamoDB 25 GB, CloudWatch 10 metric) vẫn còn. Con số cụ thể cần kiểm tra lại trên trang AWS Free Tier trước khi tạo tài khoản.</div>
+      <p style="font-size:.92rem">Với lộ trình này nên chọn <b>Paid plan</b> để làm được lab NAT Gateway, ALB, RDS ở tuần 4 đến 6, và kiểm soát bằng Budget cộng thói quen xóa resource ngay sau lab.</p>
+    </div>
+    <div class="block"><span class="eyebrow">Công cụ quản lý chi phí (nhận diện)</span>
+      <div class="tbl"><table>
+        <tr><th>Công cụ</th><th>Dùng khi</th></tr>
+        <tr><td><b>AWS Budgets</b></td><td>Đặt ngưỡng tiền hoặc usage, gửi cảnh báo email/SNS khi vượt hoặc dự báo sẽ vượt. Có thể gắn action tự động (ví dụ gắn policy Deny).</td></tr>
+        <tr><td><b>Cost Explorer</b></td><td>Xem và phân tích chi phí quá khứ theo dịch vụ, tag, account; dự báo 12 tháng; gợi ý Reserved / Savings Plans.</td></tr>
+        <tr><td><b>Cost and Usage Report (CUR)</b></td><td>Dữ liệu chi tiết nhất, xuất ra S3 để phân tích bằng Athena / QuickSight.</td></tr>
+        <tr><td><b>Pricing Calculator</b></td><td>Ước tính chi phí trước khi dựng.</td></tr>
+        <tr><td><b>Cost allocation tags</b></td><td>Gắn tag (Project, Team) để tách chi phí trong Cost Explorer. Phải kích hoạt tag trong Billing.</td></tr>
+        <tr><td><b>Trusted Advisor, Compute Optimizer</b></td><td>Gợi ý resource đang thừa (idle, oversized). Học kỹ tuần 8.</td></tr>
+      </table></div>
+    </div>
+    <div class="block"><span class="eyebrow">Resource dễ gây mất tiền khi tự học</span>
+      <div class="tbl"><table>
+        <tr><th>Resource</th><th>Giá tham khảo (cần kiểm tra lại)</th><th>Nhớ</th></tr>
+        <tr><td>NAT Gateway</td><td>Khoảng 0,045 đến 0,062 USD/giờ + tiền theo GB</td><td>Xóa ngay sau lab. Để quên một tháng mất khoảng 35 đến 45 USD.</td></tr>
+        <tr><td>ALB / NLB</td><td>Khoảng 0,02 đến 0,03 USD/giờ + LCU</td><td>Xóa sau lab.</td></tr>
+        <tr><td>RDS db.t3.micro</td><td>Khoảng 0,02 USD/giờ, Multi-AZ gấp đôi</td><td>Xóa trong ngày, bỏ tick "create final snapshot" nếu không cần.</td></tr>
+        <tr><td>EKS cluster</td><td>0,10 USD/giờ chỉ riêng control plane</td><td>Khoảng 72 USD/tháng. Không dựng EKS trong lộ trình này.</td></tr>
+        <tr><td>Public IPv4, Elastic IP</td><td>0,005 USD/giờ</td><td>Release EIP không dùng.</td></tr>
+        <tr><td>EBS, snapshot</td><td>gp3 khoảng 0,08 USD/GB-tháng</td><td>Xóa volume còn sót sau khi terminate EC2 (kiểm tra cột "Delete on termination").</td></tr>
+      </table></div>
+    </div>
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>alert when spend exceeds <b>→ Budgets</b></span><span>analyze past cost by service <b>→ Cost Explorer</b></span><span>most granular billing data <b>→ CUR</b></span><span>track cost by project <b>→ cost allocation tags</b></span><span>data transfer cost between AZs <b>→ có tính tiền</b></span><span>idle resources <b>→ Trusted Advisor</b></span></div>
+    </div>
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">12. Hai EC2 trong cùng VPC nhưng khác AZ trao đổi 10 TB dữ liệu mỗi tháng qua private IP. Có tốn phí data transfer không? Giảm thế nào?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Có</b>, tính cả hai chiều theo GB. Giảm bằng cách đặt cùng AZ (đổi lại là giảm HA) hoặc giảm lượng dữ liệu. Bẫy: "cùng VPC" không có nghĩa là miễn phí.</p></div>
+      <div class="q"><p class="qt">13. Phòng tài chính muốn biết mỗi dự án tốn bao nhiêu tiền trong account dùng chung. Làm gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Gắn tag Project cho resource, kích hoạt cost allocation tag trong Billing, lọc trong Cost Explorer.</b> Tách account riêng cũng được nhưng đề hỏi trong account dùng chung.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HANDS-ON ============ -->
+<section id="handson">
+  <span class="eyebrow">Thực hành</span>
+  <h2>Hands-on: 5 lab</h2>
+  <p>Làm theo thứ tự. Lab 1 đến 3 làm trên Console, lab 4 và 5 có CLI. Tuần này không tạo resource nào tốn tiền, nhưng vẫn tập thói quen dọn dẹp ở cuối.</p>
+
+  <div class="card">
+    <h3>Lab 1. Tạo tài khoản AWS, bật MFA cho root</h3>
+    <ol class="steps">
+      <li><div><p>Vào <a href="https://aws.amazon.com/free" target="_blank" rel="noopener">aws.amazon.com/free</a>, chọn Create account. Dùng email riêng cho AWS (có thể dạng <code>ten+aws@gmail.com</code>), đặt tên account dễ nhận như <code>quy-saa-lab</code>. Cần thẻ tín dụng để xác minh.</p></div></li>
+      <li><div><p>Khi được hỏi plan: chọn <b>Paid plan</b> (lý do ở mục Free Tier). Chọn Basic support (miễn phí).</p></div></li>
+      <li><div><p>Đăng nhập bằng root. Góc phải trên → tên account → <b>Security credentials</b> → <b>Multi-factor authentication (MFA)</b> → Assign MFA device.</p></div></li>
+      <li><div><p>Chọn <b>Authenticator app</b> (Microsoft Authenticator, Google Authenticator, 1Password đều được) hoặc <b>Passkey</b>. Quét QR, nhập 2 mã liên tiếp. AWS đang bắt buộc MFA cho root nên bước này không bỏ qua được.</p></div></li>
+      <li><div><p>Cùng trang đó, kiểm tra <b>Access keys</b> của root: phải là 0. Không bao giờ tạo access key cho root.</p></div></li>
+      <li><div><p>Vào <b>Billing and Cost Management → Account</b>: cuộn tới <b>IAM user and role access to Billing information</b>, bấm Edit → Activate. Nếu không bật, IAM user admin ở lab 2 sẽ không xem được hóa đơn.</p></div></li>
+    </ol>
+    <div class="note">Sau lab này, root chỉ còn dùng khi thật cần. Lưu mật khẩu root và mã khôi phục MFA ở password manager.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 2. Tạo IAM user admin và Budget 10 USD</h3>
+    <ol class="steps">
+      <li><div><p>Vẫn là root: vào <b>IAM → Users → Create user</b>. User name <code>quy-admin</code>. Tick <b>Provide user access to the AWS Management Console</b> → chọn "I want to create an IAM user" → đặt password, bỏ tick "must create a new password at next sign-in" nếu muốn.</p></div></li>
+      <li><div><p>Permissions: <b>Attach policies directly</b> → tìm <code>AdministratorAccess</code> → Next → Create user. Trong thực tế công ty sẽ dùng Identity Center, nhưng account học một mình thì IAM user đủ.</p></div></li>
+      <li><div><p>Mở user vừa tạo → tab <b>Security credentials</b> → Assign MFA device cho user này luôn (dùng entry khác trong app Authenticator).</p></div></li>
+      <li><div><p>Ghi lại <b>Account ID</b> (12 số, ở góc phải trên) và link đăng nhập dạng <code>https://&lt;account-id&gt;.signin.aws.amazon.com/console</code>. Sign out root, đăng nhập lại bằng <code>quy-admin</code>. Từ đây về sau chỉ dùng user này.</p></div></li>
+      <li><div><p>Đổi Region ở góc phải trên sang <b>Asia Pacific (Tokyo) ap-northeast-1</b>. Dùng một Region cố định suốt lộ trình để không bỏ sót resource.</p></div></li>
+      <li><div><p><b>Billing and Cost Management → Budgets → Create budget</b> → Use a template → <b>Monthly cost budget</b>. Budget name <code>saa-lab-10usd</code>, Enter your budgeted amount <code>10</code>, Email recipients: email của bạn → Create budget. Template này tự tạo cảnh báo ở 85% actual, 100% actual và 100% forecast.</p></div></li>
+      <li><div><p>Thêm một budget nữa ở mức <code>1</code> USD để biết ngay khi có resource ngầm phát sinh phí. Tiền chỉ cập nhật vài lần mỗi ngày nên cảnh báo có thể trễ 8 đến 12 giờ.</p></div></li>
+      <li><div><p><b>Billing preferences</b> → bật <b>Receive AWS Free Tier usage alerts</b> và <b>Receive CloudWatch billing alerts</b>. Nếu account là Free Tier kiểu mới, vào <b>Free Tier</b> xem số credit còn lại.</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Lab 3. Cài AWS CLI, cấu hình profile, kiểm tra danh tính</h3>
+    <ol class="steps">
+      <li><div><p>Cài AWS CLI v2 trên Windows bằng winget (hoặc tải file MSI từ trang AWS):</p>
+<pre><code>winget install --id Amazon.AWSCLI -e
+aws --version</code></pre><p>Mở lại terminal sau khi cài. Kết quả mong đợi dạng <code>aws-cli/2.x.x Python/3.x Windows/10 ...</code>.</p></div></li>
+      <li><div><p>Tạo access key cho user admin: Console → IAM → Users → <code>quy-admin</code> → Security credentials → <b>Create access key</b> → chọn "Command Line Interface (CLI)" → tick xác nhận → Create. Tải file CSV về và không commit nó vào git. Đây là credential dài hạn, chấp nhận được cho máy cá nhân có mật khẩu; ở công ty dùng <code>aws configure sso</code>.</p></div></li>
+      <li><div><p>Cấu hình profile tên <code>saa</code>:</p>
+<pre><code>aws configure --profile saa
+# AWS Access Key ID: dán key
+# AWS Secret Access Key: dán secret
+# Default region name: ap-northeast-1
+# Default output format: json</code></pre><p>File được ghi vào <code>C:\Users\&lt;bạn&gt;\.aws\credentials</code> và <code>.aws\config</code>.</p></div></li>
+      <li><div><p>Kiểm tra danh tính đang dùng:</p>
+<pre><code>aws sts get-caller-identity --profile saa</code></pre><p>Kết quả mong đợi:</p>
+<pre><code>{
+    "UserId": "AIDAEXAMPLE...",
+    "Account": "123456789012",
+    "Arn": "arn:aws:iam::123456789012:user/quy-admin"
+}</code></pre><p>Nhìn ARN để chắc mình đang là <code>user/quy-admin</code>, không phải <code>root</code>.</p></div></li>
+      <li><div><p>Để khỏi gõ <code>--profile</code> mỗi lần, trong PowerShell:</p>
+<pre><code>$env:AWS_PROFILE = "saa"
+aws sts get-caller-identity</code></pre><p>Muốn cố định cho mọi cửa sổ: thêm <code>AWS_PROFILE</code> vào biến môi trường của user Windows.</p></div></li>
+      <li><div><p>Thử vài lệnh đọc không tốn tiền: <code>aws ec2 describe-regions --output table</code>, <code>aws iam list-users</code>, <code>aws s3 ls</code> (trống là đúng).</p></div></li>
+    </ol>
+    <div class="note bad">Nếu gặp <code>InvalidClientTokenId</code>: key gõ sai hoặc chưa active. <code>AccessDenied</code> khi gọi <code>sts get-caller-identity</code> hầu như không xảy ra vì lệnh này không cần quyền. Nếu lệnh treo lâu, kiểm tra proxy công ty.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 4. Tự viết IAM policy chỉ đọc một bucket, kiểm tra bằng Policy Simulator</h3>
+    <ol class="steps">
+      <li><div><p>Tạo bucket thử nghiệm (tên bucket phải duy nhất toàn cầu, đổi hậu tố cho khác):</p>
+<pre><code>aws s3 mb s3://saa-lab-quy-2026 --region ap-northeast-1
+echo hello &gt; hello.txt
+aws s3 cp hello.txt s3://saa-lab-quy-2026/hello.txt</code></pre></div></li>
+      <li><div><p>Tạo file <code>readonly-bucket.json</code>. Chú ý hai Resource khác nhau cho bucket và object:</p>
+<pre><code>{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ListBucket",
+      "Effect": "Allow",
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::saa-lab-quy-2026"
+    },
+    {
+      "Sid": "GetObjects",
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::saa-lab-quy-2026/*"
+    }
+  ]
+}</code></pre></div></li>
+      <li><div><p>Tạo policy, tạo user thử nghiệm <code>saa-reader</code>, gắn policy, tạo access key và profile <code>reader</code>:</p>
+<pre><code>aws iam create-policy --policy-name SaaLabReadOnlyBucket --policy-document file://readonly-bucket.json
+aws iam create-user --user-name saa-reader
+aws iam attach-user-policy --user-name saa-reader --policy-arn arn:aws:iam::&lt;account-id&gt;:policy/SaaLabReadOnlyBucket
+aws iam create-access-key --user-name saa-reader
+aws configure --profile reader   # dán key của saa-reader</code></pre></div></li>
+      <li><div><p>Mở <b>IAM Policy Simulator</b>: <a href="https://policysim.aws.amazon.com/" target="_blank" rel="noopener">policysim.aws.amazon.com</a> (đăng nhập bằng <code>quy-admin</code>). Cột trái chọn Users → <code>saa-reader</code>. Bên phải: Select service <b>Amazon S3</b>, Select actions: <code>GetObject</code>, <code>PutObject</code>, <code>ListBucket</code>, <code>DeleteObject</code>. Mở <b>Simulation Settings</b>, điền Resource ARN <code>arn:aws:s3:::saa-lab-quy-2026/*</code> cho GetObject/PutObject/DeleteObject và <code>arn:aws:s3:::saa-lab-quy-2026</code> cho ListBucket. Bấm <b>Run Simulation</b>.</p>
+        <p>Kết quả mong đợi: GetObject và ListBucket <b>allowed</b>, PutObject và DeleteObject <b>denied</b> với lý do "Implicitly denied (no matching statements)".</p></div></li>
+      <li><div><p>Xác nhận bằng CLI thật:</p>
+<pre><code>aws s3 ls s3://saa-lab-quy-2026 --profile reader            # chạy được
+aws s3 cp s3://saa-lab-quy-2026/hello.txt . --profile reader  # chạy được
+aws s3 cp hello.txt s3://saa-lab-quy-2026/x.txt --profile reader  # AccessDenied</code></pre></div></li>
+      <li><div><p>Thí nghiệm explicit deny: thêm vào policy một statement <code>"Effect": "Deny", "Action": "s3:GetObject", "Resource": "arn:aws:s3:::saa-lab-quy-2026/*"</code> (tạo version mới bằng <code>aws iam create-policy-version --set-as-default</code> hoặc sửa trên Console). Chạy lại Policy Simulator: GetObject giờ <b>denied</b> với lý do "Explicitly denied", dù statement Allow vẫn còn nguyên. Đây chính là mốc kiểm tra 2.</p></div></li>
+      <li><div><p>Thử đổi Sid ListBucket thành Resource <code>.../*</code> rồi chạy lại simulator để tự thấy lỗi ARN hay gặp: ListBucket sẽ bị denied.</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Lab 5. Dọn dẹp và kiểm tra billing</h3>
+    <ol class="steps">
+      <li><div><pre><code>aws iam list-access-keys --user-name saa-reader
+aws iam delete-access-key --user-name saa-reader --access-key-id &lt;AKIA...&gt;
+aws iam detach-user-policy --user-name saa-reader --policy-arn arn:aws:iam::&lt;account-id&gt;:policy/SaaLabReadOnlyBucket
+aws iam delete-user --user-name saa-reader
+aws s3 rb s3://saa-lab-quy-2026 --force</code></pre><p>Policy <code>SaaLabReadOnlyBucket</code> giữ lại cũng không tốn tiền; muốn xóa thì phải xóa các version không mặc định trước.</p></div></li>
+      <li><div><p>Console → <b>Billing and Cost Management → Bills</b>: tổng tháng này phải là 0 USD. Mở <b>Cost Explorer</b> (lần đầu bật mất tới 24 giờ mới có dữ liệu). Tạo thói quen: mỗi cuối tuần vào đây một lần.</p></div></li>
+      <li><div><p>Mở <b>Free Tier</b> trong Billing xem credit hoặc usage còn lại để biết ngân sách cho các tuần sau.</p></div></li>
+    </ol>
+    <div class="note ok">Tuần này không có resource tính theo giờ. Từ tuần 2 bắt đầu có EC2 và EBS, nhớ terminate và xóa volume sau mỗi lab.</div>
+  </div>
+</section>
+
+<!-- ============ MỐC KIỂM TRA ============ -->
+<section id="moc">
+  <span class="eyebrow">Mốc kiểm tra</span>
+  <h2>Hai câu phải tự nói được không nhìn tài liệu</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>1. Khi nào dùng role thay vì user?</h3>
+      <p style="font-size:.94rem">Gợi ý khung trả lời (che lại rồi tự nói):</p>
+      <ul style="font-size:.94rem">
+        <li>Role cấp credential <b>tạm thời</b> qua STS, user có credential <b>dài hạn</b>.</li>
+        <li>Dùng role khi chủ thể là <b>phần mềm</b> (EC2, Lambda, ECS), khi <b>cross-account</b>, khi <b>federated</b> (AD, Google, SSO), khi cần <b>xoay vòng</b> tự động.</li>
+        <li>Dùng user khi là <b>con người</b> cần đăng nhập lâu dài vào một account và không có hệ thống SSO.</li>
+        <li>Kể được 1 ví dụ: EC2 ghi S3 thì gắn role, không nhúng access key.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>2. Vì sao explicit deny thắng allow?</h3>
+      <p style="font-size:.94rem">Gợi ý khung trả lời:</p>
+      <ul style="font-size:.94rem">
+        <li>Mặc định là deny; AWS gom mọi policy áp dụng rồi tìm <b>Deny trước</b>, gặp là dừng.</li>
+        <li>Mục đích: cho admin một <b>lưới an toàn</b> không thể bị policy Allow ở nơi khác mở lại.</li>
+        <li>Nếu allow thắng được, deny vô nghĩa vì ai gắn thêm được Allow là vượt qua.</li>
+        <li>Kể được 1 ví dụ: Deny với <code>aws:RequestedRegion</code> để khóa Region, hoặc Deny xóa khi không có MFA.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TỪ KHÓA ============ -->
+<section id="tukhoa">
+  <span class="eyebrow">Ôn nhanh</span>
+  <h2>Bảng từ khóa tuần 1</h2>
+  <div class="tbl"><table>
+    <tr><th>Đề bài có chữ</th><th>Nghĩ ngay tới</th></tr>
+    <tr><td><em>highly available</em>, survive AZ failure</td><td>Multi-AZ</td></tr>
+    <tr><td><em>disaster recovery</em>, survive Region failure</td><td>Multi-Region</td></tr>
+    <tr><td><em>data residency</em>, must stay in country</td><td>Chọn Region phù hợp</td></tr>
+    <tr><td><em>low latency</em> cho người dùng toàn cầu, static content</td><td>CloudFront, Edge location</td></tr>
+    <tr><td>Ai vá guest OS trên EC2</td><td>Customer</td></tr>
+    <tr><td>Ai vá RDS engine, hypervisor, phần cứng</td><td>AWS</td></tr>
+    <tr><td>EC2 / Lambda cần truy cập dịch vụ AWS khác</td><td>IAM role (instance profile / execution role)</td></tr>
+    <tr><td><em>cross-account</em> access</td><td>Role + sts:AssumeRole, hoặc resource-based policy</td></tr>
+    <tr><td><em>corporate directory</em>, <em>SSO</em>, nhiều account</td><td>IAM Identity Center, SAML federation</td></tr>
+    <tr><td>Người dùng app web / mobile</td><td>Cognito</td></tr>
+    <tr><td><em>temporary credentials</em></td><td>STS</td></tr>
+    <tr><td>Allow ở một policy, Deny ở policy khác</td><td>Deny thắng</td></tr>
+    <tr><td>Giới hạn trần quyền của một user/role</td><td>Permissions boundary</td></tr>
+    <tr><td>Giới hạn trần quyền của cả account, kể cả root</td><td>SCP</td></tr>
+    <tr><td>Chỉ cho dùng một số Region</td><td>Deny + Condition aws:RequestedRegion</td></tr>
+    <tr><td><em>least privilege</em>, tìm quyền thừa</td><td>Access Analyzer, credential report, Access Advisor</td></tr>
+    <tr><td>Cảnh báo khi chi tiêu vượt ngưỡng</td><td>AWS Budgets</td></tr>
+    <tr><td>Phân tích chi phí theo dịch vụ, theo tag</td><td>Cost Explorer, cost allocation tags</td></tr>
+    <tr><td>Dữ liệu billing chi tiết nhất</td><td>Cost and Usage Report</td></tr>
+    <tr><td>Data transfer giữa 2 AZ</td><td>Có tính tiền; cùng AZ private IP thì không</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ CHECKLIST ============ -->
+<section id="checklist">
+  <span class="eyebrow">Theo dõi</span>
+  <h2>Checklist tuần 1</h2>
+  <p style="font-size:.94rem;color:var(--muted)">Tick ở đây để tự theo dõi trên máy này. Khi xong mục nào, nói với Claude trong session để tick vào <code>AWS-SAA-checklist.md</code>.</p>
+  <div class="card">
+    <h4>Lý thuyết</h4>
+    <label class="check"><input type="checkbox" id="c1" data-ck><span>Region, Availability Zone, Edge location</span></label>
+    <label class="check"><input type="checkbox" id="c2" data-ck><span>Shared responsibility model</span></label>
+    <label class="check"><input type="checkbox" id="c3" data-ck><span>IAM: user, group, role, policy</span></label>
+    <label class="check"><input type="checkbox" id="c4" data-ck><span>IAM: thứ tự đánh giá policy</span></label>
+    <label class="check"><input type="checkbox" id="c5" data-ck><span>Cách tính tiền cơ bản, Free Tier hiện hành</span></label>
+    <h4>Hands-on</h4>
+    <label class="check"><input type="checkbox" id="c6" data-ck><span>Tạo tài khoản AWS, bật MFA cho root</span></label>
+    <label class="check"><input type="checkbox" id="c7" data-ck><span>Tạo IAM user admin, từ đây chỉ dùng user này</span></label>
+    <label class="check"><input type="checkbox" id="c8" data-ck><span>Tạo AWS Budget 10 USD có email cảnh báo</span></label>
+    <label class="check"><input type="checkbox" id="c9" data-ck><span>Cài AWS CLI, cấu hình profile, chạy <code>aws sts get-caller-identity</code></span></label>
+    <label class="check"><input type="checkbox" id="c10" data-ck><span>Viết IAM policy chỉ đọc một bucket, kiểm tra bằng Policy Simulator</span></label>
+    <h4>Mốc kiểm tra</h4>
+    <label class="check"><input type="checkbox" id="c11" data-ck><span>Giải thích được khi nào dùng role thay vì user</span></label>
+    <label class="check"><input type="checkbox" id="c12" data-ck><span>Giải thích được vì sao explicit deny thắng allow</span></label>
+    <h4>Tài nguyên (chốt ở tuần 1)</h4>
+    <label class="check"><input type="checkbox" id="c13" data-ck><span>Chọn khóa học chính: Stephane Maarek hoặc Adrian Cantrill</span></label>
+    <label class="check"><input type="checkbox" id="c14" data-ck><span>Mua bộ đề Tutorials Dojo, đăng ký AWS Skill Builder</span></label>
+    <label class="check"><input type="checkbox" id="c15" data-ck><span>Quiz tuần 1 đạt từ 80%</span></label>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  // Xem đáp án
+  document.querySelectorAll('[data-reveal]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var a=b.parentElement.querySelector('.ans');
+      a.hidden=!a.hidden; b.textContent=a.hidden?'Xem đáp án':'Ẩn đáp án';
+    });
+  });
+  // Checklist lưu trên máy này
+  var boxes=document.querySelectorAll('[data-ck]'), KEY='saa-tuan-01';
+  var saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  function update(){
+    var n=0; boxes.forEach(function(c){ c.closest('.check').classList.toggle('done',c.checked); if(c.checked)n++; });
+    document.getElementById('bar').style.width=(n/boxes.length*100)+'%';
+    document.getElementById('pct').textContent=n+'/'+boxes.length;
+  }
+  boxes.forEach(function(c){
+    if(saved[c.id])c.checked=true;
+    c.addEventListener('change',function(){ saved[c.id]=c.checked; try{ localStorage.setItem(KEY,JSON.stringify(saved)); }catch(e){} update(); });
+  });
+  update();
+  // Đánh dấu mục đang đọc
+  var links=document.querySelectorAll('.toc a'), secs=[];
+  links.forEach(function(l){ var s=document.querySelector(l.getAttribute('href')); if(s)secs.push([s,l]); });
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ links.forEach(function(l){l.classList.remove('active')}); secs.forEach(function(p){ if(p[0]===e.target)p[1].classList.add('active'); }); } }); },{rootMargin:'-20% 0px -70% 0px'});
+    secs.forEach(function(p){ io.observe(p[0]); });
+  }
+})();
+</script>

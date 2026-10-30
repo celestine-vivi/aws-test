@@ -1,0 +1,1293 @@
+<title>SAA Tuần 7 Serverless Container</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky mục lục bên trái (desktop), cột nội dung 760px bên phải; xếp một cột ở màn hẹp. */
+:root{
+  --bg:#f2f4f7; --surface:#ffffff; --surface-2:#e9edf2; --line:#d3dae3;
+  --fg:#172030; --muted:#5a6676; --accent:#1c6e8c; --accent-soft:#dcecf3;
+  --warm:#b35a00; --warm-soft:#fbe9d6; --ok:#2a7d4f; --ok-soft:#dcf0e4; --bad:#b3362b; --bad-soft:#f8dedb;
+  --display:"Manrope","IBM Plex Sans",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+a{color:var(--accent)}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:800}
+h2{font-size:1.5rem;font-weight:800;padding-top:8px}
+h3{font-size:1.12rem;font-weight:700}
+h4{font-size:.95rem;font-weight:700}
+p{margin:0}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+pre{font-family:var(--mono);font-size:.84rem;line-height:1.5;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:0}
+pre code{background:none;padding:0;font-size:inherit}
+em{color:var(--warm);font-style:italic}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* Header */
+.hero{max-width:1120px;margin:0 auto;padding-block:36px 20px;display:flex;flex-direction:column;gap:12px}
+.hero .lead{max-width:62ch;color:var(--muted);font-size:1.02rem}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.88rem;color:var(--muted)}
+.meta b{color:var(--fg);font-weight:600}
+.progress{display:flex;align-items:center;gap:12px;font-size:.88rem;color:var(--muted)}
+.bar{flex:1;max-width:320px;height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+
+/* Two columns */
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;align-items:start}
+.toc{position:sticky;top:max(12px,env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:2px;font-size:.9rem}
+.toc a{color:var(--muted);text-decoration:none;padding:6px 10px;border-left:2px solid var(--line);display:block}
+.toc a:hover,.toc a.active{color:var(--fg);border-left-color:var(--accent)}
+.toc .grp{margin-top:10px}
+main{display:flex;flex-direction:column;gap:56px;min-width:0;max-width:780px}
+section{display:flex;flex-direction:column;gap:18px;scroll-margin-top:16px}
+@media (max-width:860px){ .wrap{grid-template-columns:1fr;gap:24px} .toc{position:static;flex-direction:row;flex-wrap:wrap;gap:6px} .toc a{border:1px solid var(--line);border-radius:99px;padding:4px 10px} .toc .grp{margin:0} .toc a.active{border-color:var(--accent)} }
+
+/* Blocks */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.block{display:flex;flex-direction:column;gap:8px}
+.block > .eyebrow{color:var(--accent)}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:5px}
+li::marker{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.kw{display:flex;flex-wrap:wrap;gap:8px}
+.kw span{background:var(--warm-soft);color:var(--warm);border-radius:4px;padding:3px 9px;font-size:.86rem;font-style:italic}
+.kw span b{font-style:normal;font-weight:600;color:var(--fg)}
+.note{border-left:3px solid var(--warm);background:var(--warm-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.94rem}
+.note.ok{border-color:var(--ok);background:var(--ok-soft)}
+.note.bad{border-color:var(--bad);background:var(--bad-soft)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;font-size:.84rem}
+tr:last-child td{border-bottom:0}
+td.c{text-align:center}
+
+/* Checklist */
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:6px;cursor:pointer}
+.check:hover{background:var(--surface-2)}
+.check input{margin-top:5px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.check.done{color:var(--muted);text-decoration:line-through}
+
+/* Quiz reveal */
+.q{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.q .qt{font-weight:500}
+.q button{align-self:flex-start;font:inherit;font-size:.86rem;padding:5px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer}
+.q button:hover{background:var(--accent);color:var(--surface)}
+.q button:focus-visible,.check input:focus-visible,.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.q .ans{font-size:.94rem;border-top:1px dashed var(--line);padding-top:8px}
+.q .ans b{color:var(--ok)}
+
+/* Steps */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:12px;padding:0;list-style:none}
+.steps li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:start}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--mono);font-size:.8rem;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:500;margin-top:2px}
+.steps li > div{display:flex;flex-direction:column;gap:6px;min-width:0}
+
+/* Flow diagram */
+.flow{display:flex;flex-direction:column;gap:0;align-items:stretch;max-width:520px}
+.flow .n{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:.94rem}
+.flow .n .tag{font-family:var(--mono);font-size:.74rem;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.tag.deny{background:var(--bad-soft);color:var(--bad)} .tag.allow{background:var(--ok-soft);color:var(--ok)} .tag.next{background:var(--surface-2);color:var(--muted)}
+.flow .arrow{height:22px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--mono);font-size:.78rem}
+.flow .arrow::before{content:"";width:1px;height:100%;background:var(--line);position:absolute}
+.flow .arrow{position:relative} .flow .arrow span{background:var(--bg);padding:0 6px;position:relative}
+
+svg text{font-family:var(--body)}
+.diag{overflow-x:auto}
+.diag svg{width:100%;max-width:700px;height:auto;display:block}
+.sv-region{fill:var(--surface);stroke:var(--accent)} .sv-az{fill:var(--accent-soft);stroke:var(--accent)} .sv-edge{fill:var(--warm-soft);stroke:var(--warm)}
+.sv-t{fill:var(--fg);font-size:13px} .sv-m{fill:var(--muted);font-size:11px} .sv-line{stroke:var(--line)}
+@media (prefers-reduced-motion: reduce){ .bar i{transition:none} }
+</style>
+
+<header class="hero">
+  <span class="eyebrow">AWS SAA-C03 · Lộ trình 12 tuần · Tuần 7</span>
+  <h1>Serverless, tích hợp, container</h1>
+  <p class="lead">Tuần này học cách dựng ứng dụng không phải quản lý server: Lambda chạy code, API Gateway nhận request, Step Functions nối các bước, SQS / SNS / EventBridge / Kinesis nối các thành phần lại với nhau, rồi container trên ECS, Fargate, EKS. Mục tiêu cuối tuần: nhìn đề là chọn đúng SQS hay SNS hay EventBridge hay Kinesis, và nói được ECS trên EC2 khác Fargate ở đâu.</p>
+  <div class="meta"><span>Nhịp học: <b>1,5 đến 2 giờ/ngày</b></span><span>Domain liên quan: <b>PERF 24%</b>, <b>RES 26%</b></span><span>Chi phí lab tuần này: <b>dưới 2 USD</b> nếu xóa ALB và Fargate trong ngày</span></div>
+  <div class="progress"><span>Tiến độ checklist</span><div class="bar"><i id="bar"></i></div><span id="pct">0/17</span></div>
+</header>
+
+<div class="wrap">
+<nav class="toc" aria-label="Mục lục">
+  <a href="#ke-hoach">Kế hoạch 7 ngày</a>
+  <span class="grp eyebrow">Lý thuyết</span>
+  <a href="#lambda">1. Lambda</a>
+  <a href="#apigw">2. API Gateway</a>
+  <a href="#stepfn">3. Step Functions</a>
+  <a href="#sqs-sns">4. SQS và SNS</a>
+  <a href="#eventbridge">5. EventBridge</a>
+  <a href="#kinesis">6. Kinesis</a>
+  <a href="#container">7. ECS, EKS, Fargate, App Runner</a>
+  <span class="grp eyebrow">Thực hành</span>
+  <a href="#handson">Hands-on 5 lab</a>
+  <a href="#moc">Mốc kiểm tra</a>
+  <a href="#tukhoa">Bảng từ khóa đề thi</a>
+  <a href="#checklist">Checklist tuần</a>
+</nav>
+
+<main>
+
+<section id="ke-hoach">
+  <h2>Kế hoạch 7 ngày</h2>
+  <p>Tuần này nhiều dịch vụ nhưng cùng một ý: tách ứng dụng thành các mảnh nhỏ rồi nối lại bằng hàng đợi, sự kiện hoặc stream. Học lý thuyết buổi sáng, làm lab buổi tối, xóa ALB và Fargate ngay trong ngày.</p>
+  <div class="tbl"><table>
+    <tr><th>Ngày</th><th>Lý thuyết</th><th>Hands-on</th></tr>
+    <tr><td>1</td><td>Lambda: limit, concurrency, event source, VPC</td><td>Lab 1 phần đầu: DynamoDB table, Lambda Python, test bằng <code>aws lambda invoke</code></td></tr>
+    <tr><td>2</td><td>API Gateway và Step Functions</td><td>Lab 1 phần sau: HTTP API, test CRUD bằng <code>curl.exe</code>; Lab 4: làm lại bằng CDK</td></tr>
+    <tr><td>3</td><td>SQS, SNS, EventBridge</td><td>Lab 2: SNS fan-out ra hai SQS, DLQ, filter policy</td></tr>
+    <tr><td>4</td><td>Kinesis và bảng so sánh SQS / SNS / EventBridge / Kinesis</td><td>Lab 3 phần đầu: Dockerfile, đẩy image lên ECR</td></tr>
+    <tr><td>5</td><td>ECS, EKS, Fargate, ECR, App Runner, Amazon MQ, AppSync</td><td>Lab 3 phần sau: ECS Fargate service sau ALB, rồi Lab 5 dọn dẹp ngay</td></tr>
+    <tr><td>6 đến 7</td><td>Ôn hai mốc kiểm tra, đọc lại bảng từ khóa</td><td>Kiểm tra Billing; nói "cho quiz" trong session để nhận <code>quiz/tuan-07.md</code> (30 câu), cần đạt 80%</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ 1. LAMBDA ============ -->
+<section id="lambda">
+  <span class="eyebrow">Lý thuyết 1 / 7</span>
+  <h2>Lambda: limit, concurrency, layer, VPC, event source</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <p><b>Lambda</b> chạy một hàm (function) khi có sự kiện, bạn chỉ nộp code và chọn memory, AWS lo server, OS, scale. Tính tiền theo <b>số request</b> và <b>GB-second</b> (memory cấp × thời gian chạy, làm tròn 1 ms). Không có request thì không mất tiền. Always free: 1 triệu request và 400.000 GB-s mỗi tháng.</p>
+      <ul>
+        <li>Runtime có sẵn: Python, Node.js, Java, .NET, Ruby, Go (dạng <code>provided</code>), hoặc custom runtime, hoặc <b>container image</b> (tới 10 GB) dựa trên base image của AWS.</li>
+        <li>Một lần gọi = một <b>execution environment</b> (micro VM Firecracker). Môi trường được giữ ấm một lúc để tái dùng cho lần gọi sau, nên biến khởi tạo ngoài handler (kết nối DB, SDK client) được giữ lại.</li>
+        <li><b>Execution role</b>: IAM role Lambda assume để gọi dịch vụ khác (ghi CloudWatch Logs, đọc DynamoDB). Ngược lại, ai được gọi Lambda là chuyện của <b>resource-based policy</b> trên function (S3, API Gateway, account khác cần được thêm vào đây).</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Giới hạn phải thuộc</span>
+      <div class="tbl"><table>
+        <tr><th>Mục</th><th>Giá trị</th><th>Bẫy đề thi</th></tr>
+        <tr><td>Timeout</td><td>Mặc định 3 giây, tối đa <b>15 phút</b> (900 giây)</td><td>Job chạy hơn 15 phút → không phải Lambda. Nghĩ tới Fargate, Batch, EC2, hoặc chia nhỏ bằng Step Functions.</td></tr>
+        <tr><td>Memory</td><td><b>128 MB đến 10.240 MB</b>, bước 1 MB</td><td><b>CPU tỉ lệ theo memory</b>, khoảng 1.769 MB = 1 vCPU. Hàm chậm vì CPU → tăng memory, không có nút chỉnh CPU riêng.</td></tr>
+        <tr><td>/tmp</td><td>512 MB mặc định, cấu hình tới <b>10 GB</b></td><td>Ephemeral, mất khi môi trường bị thu hồi. Cần lưu bền hoặc chia sẻ giữa các lần gọi → S3 hoặc mount <b>EFS</b> (Lambda phải ở trong VPC).</td></tr>
+        <tr><td>Deployment package</td><td>50 MB zip upload trực tiếp, <b>250 MB</b> giải nén (tính cả layer); container image tới 10 GB (cần kiểm tra lại)</td><td>Thư viện ML nặng vượt 250 MB → đóng thành container image.</td></tr>
+        <tr><td>Environment variable</td><td>Tổng 4 KB</td><td>Secret để ở Secrets Manager / Parameter Store, không nhét vào env.</td></tr>
+        <tr><td>Payload</td><td>Synchronous 6 MB request và response; asynchronous 256 KB (cần kiểm tra lại)</td><td>Trả file lớn cho client → đưa lên S3 rồi trả presigned URL.</td></tr>
+        <tr><td>Concurrency</td><td><b>1.000</b> đồng thời mỗi Region cho cả account (mặc định, xin tăng được)</td><td>Một hàm "ăn" hết 1.000 thì hàm khác bị throttle (lỗi 429). Dùng reserved concurrency để chia phần.</td></tr>
+        <tr><td>Layer</td><td>Tối đa <b>5 layer</b> mỗi function</td><td>Layer để chia sẻ thư viện / runtime chung, không phải để tăng giới hạn 250 MB.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Concurrency và cold start</span>
+      <ul>
+        <li><b>Cold start</b>: lần gọi đầu (hoặc khi phải tạo thêm môi trường) mất thêm thời gian tải code, khởi tạo runtime, chạy phần init. Java, .NET lâu nhất; Python, Node.js nhanh. Hàm trong VPC ngày nay không còn cold start lâu như xưa vì ENI đã được tạo sẵn khi deploy (Hyperplane ENI).</li>
+        <li><b>Reserved concurrency</b>: dành riêng một số slot cho hàm này, đồng thời là <b>trần</b> của hàm đó. Không mất tiền. Đặt bằng 0 là cách tắt hàm khẩn cấp. Dùng khi muốn bảo vệ downstream (DB chỉ chịu được 50 kết nối → reserved 50).</li>
+        <li><b>Provisioned concurrency</b>: giữ sẵn N môi trường đã init, <b>không còn cold start</b>, có tính tiền theo giờ dù không gọi. Scale theo lịch hoặc Application Auto Scaling. Đề nói <em>consistent low latency</em>, <em>eliminate cold start</em> → provisioned.</li>
+        <li><b>SnapStart</b> (nhận diện): chụp snapshot môi trường sau init rồi khôi phục khi gọi, giảm cold start tới 10 lần. Ban đầu chỉ cho Java, đã mở rộng sang Python và .NET (cần kiểm tra lại). Khác provisioned concurrency: SnapStart không giữ môi trường chạy sẵn.</li>
+        <li>Scale: Lambda thêm môi trường mới theo tốc độ khoảng 1.000 mỗi 10 giây cho mỗi function (cần kiểm tra lại); downstream không chịu nổi thì phải tự giới hạn bằng reserved concurrency hoặc chèn SQS làm buffer.</li>
+      </ul>
+    </div>
+
+    <div class="block diag"><span class="eyebrow">Hình dung: ba kiểu gọi Lambda</span>
+      <svg viewBox="0 0 700 290" role="img" aria-label="Ba kiểu gọi Lambda: synchronous, asynchronous, poll-based qua event source mapping">
+        <rect x="10" y="40" width="215" height="230" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="117" y="64" text-anchor="middle" class="sv-t" font-weight="600">Synchronous</text>
+        <text x="117" y="82" text-anchor="middle" class="sv-m">API Gateway · ALB · Function URL</text>
+        <text x="117" y="97" text-anchor="middle" class="sv-m">Cognito · CLI RequestResponse</text>
+        <rect x="40" y="115" width="155" height="40" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="117" y="140" text-anchor="middle" class="sv-t">Lambda chạy ngay</text>
+        <line x1="117" y1="155" x2="117" y2="180" class="sv-line" stroke-width="2"/>
+        <text x="117" y="198" text-anchor="middle" class="sv-m">Kết quả hoặc lỗi trả thẳng</text>
+        <text x="117" y="214" text-anchor="middle" class="sv-m">về người gọi</text>
+        <text x="117" y="244" text-anchor="middle" class="sv-m">Retry: client tự làm</text>
+        <text x="117" y="260" text-anchor="middle" class="sv-m">Không có DLQ</text>
+
+        <rect x="242" y="40" width="215" height="230" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="349" y="64" text-anchor="middle" class="sv-t" font-weight="600">Asynchronous</text>
+        <text x="349" y="82" text-anchor="middle" class="sv-m">S3 · SNS · EventBridge · SES</text>
+        <text x="349" y="97" text-anchor="middle" class="sv-m">CLI InvocationType=Event</text>
+        <rect x="272" y="115" width="155" height="40" rx="8" class="sv-edge" stroke-width="1.5"/>
+        <text x="349" y="140" text-anchor="middle" class="sv-t">Hàng đợi nội bộ của Lambda</text>
+        <line x1="349" y1="155" x2="349" y2="180" class="sv-line" stroke-width="2"/>
+        <rect x="272" y="180" width="155" height="34" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="349" y="202" text-anchor="middle" class="sv-t">Lambda chạy, trả 202 ngay</text>
+        <text x="349" y="244" text-anchor="middle" class="sv-m">Lỗi: retry 2 lần (1 phút, 2 phút)</text>
+        <text x="349" y="260" text-anchor="middle" class="sv-m">rồi DLQ (SQS/SNS) hoặc Destination</text>
+
+        <rect x="474" y="40" width="215" height="230" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="581" y="64" text-anchor="middle" class="sv-t" font-weight="600">Poll-based</text>
+        <text x="581" y="82" text-anchor="middle" class="sv-m">SQS · Kinesis · DynamoDB Streams</text>
+        <text x="581" y="97" text-anchor="middle" class="sv-m">MSK · Amazon MQ</text>
+        <rect x="504" y="115" width="155" height="40" rx="8" class="sv-edge" stroke-width="1.5"/>
+        <text x="581" y="134" text-anchor="middle" class="sv-t">Event source mapping</text>
+        <text x="581" y="149" text-anchor="middle" class="sv-m">Lambda tự poll, gom batch</text>
+        <line x1="581" y1="155" x2="581" y2="180" class="sv-line" stroke-width="2"/>
+        <rect x="504" y="180" width="155" height="34" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="581" y="202" text-anchor="middle" class="sv-t">Lambda nhận cả batch</text>
+        <text x="581" y="244" text-anchor="middle" class="sv-m">SQS: lỗi → message quay lại queue</text>
+        <text x="581" y="260" text-anchor="middle" class="sv-m">Stream: lỗi chặn shard tới khi hết hạn</text>
+      </svg>
+    </div>
+
+    <div class="block"><span class="eyebrow">Event source: ba kiểu, ba cách xử lý lỗi</span>
+      <div class="tbl"><table>
+        <tr><th>Kiểu</th><th>Nguồn</th><th>Cách chạy</th><th>Khi lỗi</th></tr>
+        <tr><td><b>Synchronous</b></td><td>API Gateway, ALB (target group type lambda), Function URL, Cognito, CloudFront (Lambda@Edge), gọi SDK <code>RequestResponse</code></td><td>Chờ kết quả, trả về ngay</td><td>Lỗi trả thẳng cho client, client tự retry. Lambda không retry, không có DLQ cho kiểu này.</td></tr>
+        <tr><td><b>Asynchronous</b></td><td>S3 event, SNS, EventBridge, SES, CodeCommit, CloudWatch Logs, gọi SDK <code>Event</code></td><td>Sự kiện vào hàng đợi nội bộ, Lambda trả 202 rồi chạy sau</td><td>Tự retry <b>2 lần</b> (chờ 1 phút rồi 2 phút). Hết retry → <b>DLQ</b> (SQS hoặc SNS, cấu hình trên function) hoặc <b>Destination</b> (SQS, SNS, Lambda, EventBridge; có cả on-success). Destination mới hơn, mang theo cả ngữ cảnh lỗi, AWS khuyên dùng thay DLQ.</td></tr>
+        <tr><td><b>Poll-based</b> (event source mapping)</td><td>SQS, Kinesis Data Streams, DynamoDB Streams, MSK, Amazon MQ, self-managed Kafka</td><td>Lambda tự poll nguồn, gom <b>batch</b> (batch size, batch window) rồi gọi hàm</td><td><b>SQS</b>: batch lỗi thì message quay lại queue sau visibility timeout, quá <code>maxReceiveCount</code> thì sang DLQ của SQS; bật <code>ReportBatchItemFailures</code> để chỉ trả lại record lỗi. <b>Stream</b>: lỗi chặn cả shard đến khi record hết hạn, nên đặt <em>maximum retry attempts</em>, <em>bisect batch on error</em>, và <em>on-failure destination</em>.</td></tr>
+      </table></div>
+      <div class="note">Với SQS → Lambda: đặt <b>visibility timeout của queue ≥ 6 lần timeout của function</b> (khuyến nghị AWS), nếu không message có thể được giao lại khi hàm vẫn đang xử lý. Lambda đọc SQS cần quyền <code>sqs:ReceiveMessage</code>, <code>DeleteMessage</code>, <code>GetQueueAttributes</code> trong execution role.</div>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Lambda trong VPC</span>
+        <ul>
+          <li>Mặc định Lambda chạy ngoài VPC của bạn, <b>có Internet</b>, gọi được dịch vụ AWS public, nhưng <b>không</b> vào được RDS / ElastiCache private.</li>
+          <li>Gắn vào VPC: chọn subnet và Security Group, Lambda tạo ENI trong subnet đó. Từ đây hàm chỉ có mạng như một máy trong subnet: muốn ra Internet phải là <b>private subnet + NAT Gateway</b> (đặt vào public subnet không có tác dụng vì Lambda không có public IP). Muốn gọi S3, DynamoDB không qua Internet → VPC endpoint.</li>
+          <li>Execution role cần <code>AWSLambdaVPCAccessExecutionRole</code> để tạo ENI.</li>
+          <li>Đề nói <em>Lambda cannot connect to RDS in private subnet</em> → đặt Lambda vào VPC, mở Security Group của RDS cho SG của Lambda. Thêm <b>RDS Proxy</b> khi nhiều Lambda mở quá nhiều kết nối DB.</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Layer, URL, Edge</span>
+        <ul>
+          <li><b>Layer</b>: gói zip chứa thư viện, runtime tùy chỉnh hoặc file cấu hình, gắn vào nhiều function. Giảm kích thước package, chia sẻ dependency, nhưng tổng vẫn tính vào 250 MB.</li>
+          <li><b>Function URL</b>: HTTPS endpoint gắn thẳng vào function, auth <code>AWS_IAM</code> hoặc <code>NONE</code>. Đủ cho webhook đơn giản, không có throttling, usage plan, cache như API Gateway.</li>
+          <li><b>Lambda@Edge</b>: chạy ở Edge location của CloudFront, viết bằng Node.js hoặc Python, deploy từ <code>us-east-1</code>, hook 4 sự kiện (viewer request / response, origin request / response). Dùng cho A/B test, chỉnh header, chọn origin theo quốc gia, xác thực token. So với <b>CloudFront Functions</b> (JavaScript, chạy dưới 1 ms, chỉ viewer request / response, rẻ hơn, không gọi mạng): việc nhẹ như rewrite URL, thêm header → CloudFront Functions; cần gọi dịch vụ khác, xử lý lâu → Lambda@Edge.</li>
+          <li><b>Alias và version</b>: publish version bất biến, alias (prod, dev) trỏ tới version; alias chia tải theo tỉ lệ để <em>canary</em>.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>Hàm chậm vì tính toán nặng, muốn nhanh hơn</td><td>Tăng memory (CPU tăng theo)</td><td>Tăng timeout (chỉ cho phép chạy lâu hơn, không nhanh hơn)</td></tr>
+        <tr><td>API có độ trễ ổn định, không chấp nhận cold start</td><td>Provisioned concurrency</td><td>Reserved concurrency (chỉ chia slot, vẫn cold start)</td></tr>
+        <tr><td>Bảo vệ DB phía sau không bị quá tải khi Lambda scale</td><td>Reserved concurrency, hoặc SQS làm buffer, hoặc RDS Proxy</td><td>Provisioned concurrency (làm scale nhanh hơn, ngược mục đích)</td></tr>
+        <tr><td>Xử lý video 40 phút</td><td>Fargate task, AWS Batch, hoặc Step Functions chia bước</td><td>Lambda (trần 15 phút)</td></tr>
+        <tr><td>Lambda trong VPC cần gọi API bên ngoài</td><td>Private subnet + NAT Gateway</td><td>Public subnet (Lambda không có public IP)</td></tr>
+        <tr><td>S3 → Lambda bị lỗi, không được mất sự kiện</td><td>Destination on-failure hoặc DLQ cho async invoke</td><td>Để S3 retry (S3 không retry cho bạn)</td></tr>
+        <tr><td>Thêm header bảo mật cho mọi response CloudFront, rẻ nhất</td><td>CloudFront Functions</td><td>Lambda@Edge (đắt hơn, dư sức)</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>event-driven, pay only when running <b>→ Lambda</b></span><span>runs longer than 15 minutes <b>→ không phải Lambda</b></span><span>cold start, consistent latency <b>→ provisioned concurrency</b></span><span>limit concurrent executions, protect downstream <b>→ reserved concurrency</b></span><span>access RDS in private subnet <b>→ Lambda trong VPC</b></span><span>Lambda needs Internet from VPC <b>→ NAT Gateway</b></span><span>share libraries across functions <b>→ layer</b></span><span>failed async events <b>→ DLQ / destination</b></span><span>customize content at edge <b>→ Lambda@Edge</b></span><span>too many DB connections from Lambda <b>→ RDS Proxy</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">1. Một Lambda xử lý ảnh mất 20 giây với memory 512 MB. Developer muốn hàm chạy nhanh hơn mà không sửa code. Làm gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Tăng memory.</b> CPU của Lambda tỉ lệ với memory, khoảng 1.769 MB thì được trọn 1 vCPU. Tăng timeout chỉ cho phép chạy lâu hơn chứ không nhanh hơn. Nhiều người chọn "thêm layer" nhưng layer chỉ là cách đóng gói thư viện.</p></div>
+      <div class="q"><p class="qt">2. Lambda được S3 gọi khi có file upload. Thỉnh thoảng hàm lỗi vì dịch vụ bên ngoài hết hạn mức, công ty không muốn mất sự kiện nào. Cách <em>least operational overhead</em>?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Cấu hình on-failure destination (hoặc DLQ) là một SQS queue cho function.</b> S3 gọi Lambda theo kiểu asynchronous, Lambda tự retry 2 lần rồi đẩy sự kiện lỗi ra destination để xử lý lại sau. Viết code tự ghi lỗi ra DynamoDB cũng được nhưng tốn công hơn. S3 không tự retry.</p></div>
+      <div class="q"><p class="qt">3. Lambda đặt trong private subnet không gọi được một API public trên Internet, dù Security Group cho phép outbound. Vì sao?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Thiếu NAT Gateway (route 0.0.0.0/0 của private subnet).</b> Lambda trong VPC không có public IP nên dù đặt ở public subnet có Internet Gateway cũng không ra được. Đáp án "chuyển Lambda sang public subnet" là bẫy kinh điển.</p></div>
+      <div class="q"><p class="qt">4. Account có 20 Lambda. Một hàm xử lý batch ban đêm thỉnh thoảng chiếm gần hết concurrency, khiến hàm phục vụ API của khách bị 429. Sửa thế nào rẻ nhất?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Đặt reserved concurrency cho hàm batch (ví dụ 200) và / hoặc cho hàm API.</b> Reserved vừa là phần dành riêng vừa là trần, không mất tiền. Provisioned concurrency cũng giúp hàm API nhưng tốn tiền theo giờ và không ngăn hàm batch ăn hết phần còn lại.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. API GATEWAY ============ -->
+<section id="apigw">
+  <span class="eyebrow">Lý thuyết 2 / 7</span>
+  <h2>API Gateway: REST với HTTP API, throttling, cache, authorizer</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <p><b>API Gateway</b> là "cửa trước" managed cho API: nhận HTTPS request, xác thực, giới hạn tốc độ, cache, chuyển đổi, rồi gọi backend (Lambda, HTTP endpoint, dịch vụ AWS). Có ba loại API: <b>REST API</b> (đầy đủ tính năng nhất), <b>HTTP API</b> (nhẹ, rẻ, đủ cho đa số app mới) và <b>WebSocket API</b> (kết nối hai chiều lâu dài).</p>
+      <ul>
+        <li>Ba lớp cấu hình: <b>API</b> → <b>resource / route</b> và <b>method</b> → <b>integration</b> tới backend. Deploy ra <b>stage</b> (dev, prod) có URL riêng, mỗi stage có <b>stage variable</b> để trỏ tới Lambda alias khác nhau.</li>
+        <li>Integration timeout tối đa <b>29 giây</b> (REST API Regional có thể xin nâng, cần kiểm tra lại); quá thì client nhận <b>504</b>. Payload tối đa <b>10 MB</b>.</li>
+        <li>Mã lỗi hay gặp: <b>429</b> bị throttle, <b>502</b> backend trả sai định dạng (Lambda proxy không trả <code>statusCode</code>), <b>504</b> backend quá 29 giây, <b>403</b> authorizer từ chối hoặc thiếu API key.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">REST API với HTTP API</span>
+      <div class="tbl"><table>
+        <tr><th>Mục</th><th>REST API</th><th>HTTP API</th></tr>
+        <tr><td>Giá</td><td>Khoảng 3,50 USD / triệu request (cần kiểm tra lại)</td><td>Khoảng 1,00 USD / triệu request, rẻ hơn khoảng 70%, độ trễ thấp hơn</td></tr>
+        <tr><td>Authorizer</td><td>IAM, Cognito User Pool, Lambda authorizer</td><td>IAM, <b>JWT authorizer</b> native (OIDC / OAuth 2.0, dùng được với Cognito), Lambda authorizer</td></tr>
+        <tr><td>Cache response</td><td class="c">Có</td><td class="c">Không</td></tr>
+        <tr><td>Usage plan, API key</td><td class="c">Có</td><td class="c">Không</td></tr>
+        <tr><td>WAF</td><td class="c">Có</td><td class="c">Không (cần kiểm tra lại)</td></tr>
+        <tr><td>Request validation, mapping template (VTL), X-Ray</td><td class="c">Có</td><td class="c">Không</td></tr>
+        <tr><td>Endpoint type</td><td>Edge-optimized, Regional, Private</td><td>Regional</td></tr>
+        <tr><td>Canary release</td><td class="c">Có</td><td class="c">Không</td></tr>
+        <tr><td>Resource policy (ví dụ chặn theo IP, VPC)</td><td class="c">Có</td><td class="c">Không</td></tr>
+        <tr><td>VPC Link tới backend private</td><td>NLB</td><td>ALB, NLB, Cloud Map</td></tr>
+        <tr><td>CORS, auto deploy</td><td>Tự cấu hình OPTIONS</td><td>Bật CORS bằng một cấu hình, stage <code>$default</code> auto deploy</td></tr>
+      </table></div>
+      <div class="note ok">Quy tắc chọn: đề nói <em>lowest cost</em>, <em>simple proxy to Lambda</em>, <em>JWT / OIDC</em> → HTTP API. Đề cần <em>caching</em>, <em>API key cho khách hàng</em>, <em>usage plan / quota</em>, <em>WAF</em>, <em>private API trong VPC</em>, <em>request validation</em> → REST API.</div>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Endpoint type (REST API)</span>
+        <ul>
+          <li><b>Edge-optimized</b> (mặc định): đi qua mạng CloudFront do AWS quản lý, tốt cho client toàn cầu.</li>
+          <li><b>Regional</b>: client cùng Region, hoặc khi bạn tự đặt CloudFront riêng ở trước để kiểm soát cache, WAF.</li>
+          <li><b>Private</b>: chỉ gọi được từ trong VPC qua <b>interface VPC endpoint</b> (<code>execute-api</code>), kết hợp resource policy giới hạn <code>aws:SourceVpce</code>. Đề nói <em>API must not be reachable from the Internet</em> → Private.</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Throttling và caching</span>
+        <ul>
+          <li>Giới hạn account mỗi Region: <b>10.000 request/giây</b>, burst <b>5.000</b> (cần kiểm tra lại). Vượt → 429. Đặt thêm giới hạn theo stage, theo method, hoặc theo khách hàng qua <b>usage plan + API key</b> (rate, burst, quota tháng).</li>
+          <li><b>Cache</b> (REST): bật theo stage, TTL mặc định 300 giây (0 đến 3.600), dung lượng 0,5 đến 237 GB, tính tiền theo giờ. Client có quyền <code>execute-api:InvalidateCache</code> gửi header <code>Cache-Control: max-age=0</code> để bỏ cache. Giảm tải Lambda / DB, giảm độ trễ cho dữ liệu ít đổi.</li>
+          <li>Backend bị quá tải → ngoài throttling, cân nhắc đổi integration sang SQS (API Gateway ghi thẳng vào queue, Lambda xử lý sau).</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Authorizer: ai được gọi API</span>
+      <div class="tbl"><table>
+        <tr><th>Loại</th><th>Cách hoạt động</th><th>Chọn khi</th></tr>
+        <tr><td><b>IAM</b></td><td>Client ký request bằng SigV4 với credential AWS; policy IAM cấp <code>execute-api:Invoke</code></td><td>Người gọi là dịch vụ AWS, IAM user / role, app nội bộ, cross-account</td></tr>
+        <tr><td><b>Cognito User Pool</b> (REST) / <b>JWT</b> (HTTP)</td><td>Client gửi token do Cognito (hoặc OIDC provider) cấp, API Gateway tự xác minh</td><td>Người dùng app web / mobile đăng ký, đăng nhập; <em>least operational overhead</em> vì không viết code</td></tr>
+        <tr><td><b>Lambda authorizer</b></td><td>Lambda của bạn nhận token hoặc request param, trả về IAM policy Allow / Deny (có cache kết quả theo TTL)</td><td>Token tùy chỉnh, OAuth bên thứ ba, logic phức tạp, tra DB</td></tr>
+        <tr><td><b>Resource policy</b></td><td>Policy gắn vào API, lọc theo IP, VPC, account</td><td>Chặn theo nguồn, kết hợp với các loại trên</td></tr>
+      </table></div>
+      <p style="font-size:.92rem">API key <b>không</b> phải cơ chế xác thực, chỉ để nhận diện khách hàng cho usage plan. Đề hỏi <em>authentication</em> mà đáp án là API key thì là bẫy.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Integration: API Gateway gọi gì phía sau</span>
+      <ul>
+        <li><b>Lambda proxy</b>: chuyển nguyên request (header, path, query, body) thành event, Lambda phải trả object có <code>statusCode</code>, <code>headers</code>, <code>body</code>. Đơn giản nhất, dùng trong lab.</li>
+        <li><b>Lambda non-proxy</b> (custom, REST): dùng <b>mapping template</b> VTL để biến đổi request / response, Lambda không cần biết HTTP.</li>
+        <li><b>HTTP</b>: chuyển tiếp tới endpoint HTTP bất kỳ (EC2 public, on-prem, ALB). Backend private trong VPC → qua <b>VPC Link</b>.</li>
+        <li><b>AWS service</b>: gọi thẳng API của dịch vụ AWS <b>không cần Lambda</b>: ghi vào SQS, Kinesis, DynamoDB, start Step Functions. Đề nói <em>without writing code</em>, <em>directly to SQS</em> → integration kiểu này.</li>
+        <li><b>Mock</b>: trả response cố định, dùng để làm CORS preflight hoặc test khi chưa có backend.</li>
+      </ul>
+      <p style="font-size:.92rem"><b>CORS</b>: trình duyệt gọi API từ domain khác cần header <code>Access-Control-Allow-Origin</code>. HTTP API bật bằng cấu hình; REST API proxy integration thì Lambda phải tự trả header này, còn method OPTIONS tạo bằng Mock. Lỗi CORS trên trình duyệt nhưng curl chạy được là dấu hiệu quên bật CORS.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">WebSocket API, stage, canary</span>
+      <ul>
+        <li><b>WebSocket API</b>: kết nối hai chiều lâu dài cho chat, dashboard real-time, game. Route <code>$connect</code>, <code>$disconnect</code>, <code>$default</code> và route tùy chỉnh theo nội dung message; backend gửi ngược cho client qua <code>@connections</code> callback URL bằng <code>connectionId</code> (thường lưu trong DynamoDB).</li>
+        <li><b>Stage</b>: mỗi lần sửa REST API phải <b>deploy</b> lại vào stage, quên deploy là lỗi hay gặp. Stage variable ánh xạ tới Lambda alias để cùng một API trỏ dev / prod khác nhau.</li>
+        <li><b>Canary release</b> (REST): chia một phần trăm traffic sang deployment mới của cùng stage, xem metric rồi promote hoặc rollback.</li>
+        <li>Monitoring: CloudWatch metric <code>4XXError</code>, <code>5XXError</code>, <code>Latency</code>, <code>IntegrationLatency</code>, <code>Count</code>; access log và execution log; X-Ray trace end-to-end.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Cặp</th><th>Khác nhau ở chỗ</th></tr>
+        <tr><td>API Gateway với ALB (cả hai gọi được Lambda)</td><td>ALB tính theo giờ + LCU, không có throttling theo client, usage plan, cache, API key, mapping; phù hợp khi đã có ALB cho EC2 / ECS và muốn thêm vài route Lambda. API Gateway tính theo request, có đủ tính năng quản lý API.</td></tr>
+        <tr><td>API Gateway với AppSync</td><td>API Gateway cho REST / WebSocket. AppSync cho <b>GraphQL</b> với subscription real-time, offline sync (xem mục 7).</td></tr>
+        <tr><td>Lambda authorizer với Cognito authorizer</td><td>Cognito authorizer không cần code, chỉ xác minh token của User Pool. Lambda authorizer linh hoạt nhưng bạn viết và bảo trì code.</td></tr>
+        <tr><td>Edge-optimized với CloudFront tự đặt trước Regional API</td><td>Edge-optimized dùng CloudFront của AWS, không chỉnh được. Tự đặt CloudFront + Regional API khi cần WAF ở CloudFront, cache theo ý, custom domain nhiều origin.</td></tr>
+        <tr><td>Throttling với usage plan</td><td>Throttling mức stage / method bảo vệ backend cho mọi người. Usage plan + API key giới hạn <b>từng khách hàng</b> (gói Free 100 request/ngày, gói Pro 10.000).</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>lowest cost API for Lambda <b>→ HTTP API</b></span><span>API key, usage plan, quota per customer <b>→ REST API</b></span><span>reduce backend calls for static data <b>→ API Gateway cache</b></span><span>429 Too Many Requests <b>→ throttling, xin tăng hoặc usage plan</b></span><span>504 <b>→ backend quá 29 giây</b></span><span>mobile users sign in <b>→ Cognito User Pool authorizer</b></span><span>custom auth logic / third-party token <b>→ Lambda authorizer</b></span><span>only from within VPC <b>→ Private endpoint + VPC endpoint</b></span><span>two-way real-time communication <b>→ WebSocket API</b></span><span>send request straight to SQS without code <b>→ AWS service integration</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">5. Một công ty SaaS bán API cho nhiều khách, mỗi gói có giới hạn số request mỗi tháng khác nhau. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>REST API với usage plan và API key cho từng khách.</b> HTTP API không có usage plan. Lambda authorizer có thể đếm request nhưng là tự viết, không phải <em>least operational overhead</em>.</p></div>
+      <div class="q"><p class="qt">6. API Gateway gọi Lambda tổng hợp báo cáo mất 45 giây, client luôn nhận lỗi 504. Sửa thế nào?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Chuyển sang mô hình bất đồng bộ: API nhận yêu cầu rồi đẩy vào SQS (hoặc Step Functions), trả ngay job id; client poll kết quả hoặc nhận qua WebSocket.</b> Integration timeout của API Gateway là 29 giây, tăng timeout Lambda lên 15 phút không giải quyết được. (Regional REST API mới cho phép xin nâng quá 29 giây, cần kiểm tra lại, nhưng đáp án chuẩn trong đề vẫn là bất đồng bộ.)</p></div>
+      <div class="q"><p class="qt">7. Trang web tĩnh trên S3 + CloudFront gọi REST API trên API Gateway. Dùng curl thì OK nhưng trình duyệt báo lỗi "blocked by CORS policy". Nguyên nhân?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Chưa bật CORS trên API Gateway / Lambda chưa trả header Access-Control-Allow-Origin.</b> curl không kiểm tra CORS nên vẫn chạy. Không phải lỗi Security Group hay WAF.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. STEP FUNCTIONS ============ -->
+<section id="stepfn">
+  <span class="eyebrow">Lý thuyết 3 / 7</span>
+  <h2>Step Functions: điều phối workflow</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <p><b>Step Functions</b> là dịch vụ <b>orchestration</b>: bạn vẽ một <b>state machine</b> (file JSON theo Amazon States Language, hoặc kéo thả trong Workflow Studio) gồm các bước, mỗi bước gọi Lambda hoặc hơn 200 dịch vụ AWS khác, có rẽ nhánh, chạy song song, chờ, retry. Step Functions giữ trạng thái và lịch sử từng lần chạy (execution), bạn nhìn được bước nào lỗi ngay trên Console.</p>
+      <ul>
+        <li>Gọi dịch vụ không cần Lambda: <b>SDK integration</b> (DynamoDB PutItem, SNS Publish, ECS RunTask, Glue, Athena, EMR, Bedrock...). Đề nói <em>without custom code</em> cho một bước ghi DynamoDB → Step Functions gọi thẳng.</li>
+        <li>Ba mẫu tích hợp: <b>Request Response</b> (gọi rồi đi tiếp), <b>Run a Job</b> <code>.sync</code> (chờ job như ECS task, Glue, Batch xong), <b>Wait for Callback</b> <code>.waitForTaskToken</code> (dừng chờ ai đó gửi token về, ví dụ người duyệt bấm nút trong email: đây là mẫu <em>human approval</em>).</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Các loại state</span>
+      <div class="tbl"><table>
+        <tr><th>State</th><th>Làm gì</th><th>Ví dụ</th></tr>
+        <tr><td><b>Task</b></td><td>Làm một việc: gọi Lambda, dịch vụ AWS, hoặc Activity (worker tự host poll về)</td><td>Gọi Lambda xác thực đơn hàng</td></tr>
+        <tr><td><b>Choice</b></td><td>Rẽ nhánh theo điều kiện trên dữ liệu (if / else)</td><td>Tổng tiền &gt; 1.000 USD → cần duyệt thủ công</td></tr>
+        <tr><td><b>Parallel</b></td><td>Chạy nhiều nhánh <b>cố định</b> cùng lúc, chờ tất cả xong</td><td>Vừa tạo thumbnail vừa quét virus</td></tr>
+        <tr><td><b>Map</b></td><td>Lặp cùng một bước cho <b>từng phần tử</b> của mảng, số lượng động. <b>Distributed Map</b> chạy tới 10.000 nhánh song song trên dữ liệu lớn trong S3</td><td>Xử lý 500 file trong một đơn</td></tr>
+        <tr><td><b>Wait</b></td><td>Dừng N giây hoặc tới một mốc thời gian, không tốn tiền compute</td><td>Chờ 3 ngày rồi gửi email nhắc</td></tr>
+        <tr><td><b>Pass</b>, <b>Succeed</b>, <b>Fail</b></td><td>Chuyển dữ liệu không làm gì; kết thúc thành công; kết thúc lỗi</td><td></td></tr>
+      </table></div>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Standard với Express workflow</span>
+        <div class="tbl"><table>
+          <tr><th></th><th>Standard</th><th>Express</th></tr>
+          <tr><td>Thời gian tối đa</td><td><b>1 năm</b></td><td><b>5 phút</b></td></tr>
+          <tr><td>Ngữ nghĩa</td><td>Exactly-once, mỗi bước chạy đúng một lần</td><td>At-least-once (async) hoặc at-most-once (sync)</td></tr>
+          <tr><td>Tính tiền</td><td>Theo <b>số state transition</b></td><td>Theo số lần chạy, thời gian và memory</td></tr>
+          <tr><td>Lịch sử</td><td>Lưu 90 ngày, xem từng bước trên Console</td><td>Chỉ qua CloudWatch Logs</td></tr>
+          <tr><td>Tốc độ</td><td>2.000 execution/giây (cần kiểm tra lại)</td><td>Hơn 100.000 execution/giây</td></tr>
+          <tr><td>Chọn khi</td><td>Workflow dài, cần audit, human approval, idempotent không bảo đảm</td><td>Xử lý sự kiện tốc độ cao, ngắn, IoT, streaming, bước phải idempotent</td></tr>
+        </table></div>
+      </div>
+      <div class="block"><span class="eyebrow">Error handling: Retry và Catch</span>
+<pre><code>"ChargeCard": {
+  "Type": "Task",
+  "Resource": "arn:aws:lambda:...:function:charge",
+  "Retry": [{
+    "ErrorEquals": ["States.Timeout", "ServiceUnavailable"],
+    "IntervalSeconds": 2, "MaxAttempts": 3, "BackoffRate": 2.0
+  }],
+  "Catch": [{
+    "ErrorEquals": ["States.ALL"],
+    "Next": "RefundAndNotify"
+  }],
+  "Next": "ShipOrder"
+}</code></pre>
+        <ul>
+          <li><b>Retry</b>: thử lại cùng bước với <em>exponential backoff</em>. <b>Catch</b>: hết retry thì chuyển sang state xử lý lỗi (bù trừ, thông báo). Lỗi có sẵn: <code>States.ALL</code>, <code>States.Timeout</code>, <code>States.TaskFailed</code>, <code>States.Permissions</code>.</li>
+          <li>Retry / catch nằm ở Step Functions nên code Lambda gọn, không tự viết vòng lặp thử lại.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Khi nào dùng Step Functions thay vì Lambda gọi chuỗi</span>
+      <ul>
+        <li>Lambda A gọi Lambda B gọi Lambda C (synchronous): A phải chờ cả chuỗi, trả tiền cho thời gian chờ, timeout 15 phút tính gộp, lỗi ở C thì A phải tự xử lý, không ai nhìn thấy toàn cảnh. Đề nói <em>Lambda functions calling each other</em>, <em>complex retry logic in code</em>, <em>visualize workflow</em>, <em>long-running multi-step process</em>, <em>human approval step</em> → Step Functions.</li>
+        <li>Cần chạy quá 15 phút nhưng từng bước ngắn → Step Functions nối các Lambda, tổng thời gian tới 1 năm.</li>
+        <li>Không cần Step Functions khi chỉ có một hàm, hoặc khi các bước độc lập không cần điều phối (dùng sự kiện).</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Orchestration với choreography</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>Orchestration (Step Functions)</th><th>Choreography (EventBridge, SNS)</th></tr>
+        <tr><td>Ai điều khiển</td><td>Một "nhạc trưởng" trung tâm biết toàn bộ các bước, gọi từng dịch vụ</td><td>Không ai điều khiển; mỗi dịch vụ phát sự kiện, dịch vụ khác tự nghe và phản ứng</td></tr>
+        <tr><td>Ưu</td><td>Nhìn thấy trạng thái, retry, rollback, dễ debug một quy trình cụ thể</td><td>Lỏng lẻo (<em>loosely coupled</em>), thêm consumer mới không sửa producer, scale độc lập</td></tr>
+        <tr><td>Nhược</td><td>Phụ thuộc trung tâm, workflow lớn thành phức tạp</td><td>Khó biết "đơn hàng này đang ở đâu", khó đảm bảo thứ tự</td></tr>
+        <tr><td>Chọn khi</td><td>Quy trình nghiệp vụ có thứ tự rõ: đặt hàng → thanh toán → giao hàng</td><td>Nhiều team, nhiều microservice phản ứng với cùng một sự kiện</td></tr>
+      </table></div>
+      <p style="font-size:.92rem">Thực tế kết hợp cả hai: EventBridge nhận sự kiện "OrderPlaced" rồi khởi động một Step Functions execution xử lý đơn đó.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Cặp</th><th>Khác nhau ở chỗ</th></tr>
+        <tr><td>Step Functions với SWF (Simple Workflow)</td><td>SWF là dịch vụ cũ, bạn tự viết decider, chỉ dùng khi đề nói cần "external signal" kiểu cũ hoặc code SWF sẵn có. Mặc định chọn Step Functions.</td></tr>
+        <tr><td>Step Functions với MWAA (Managed Workflows for Apache Airflow)</td><td>Airflow cho data pipeline viết bằng Python DAG, team data đã quen Airflow. Step Functions cho ứng dụng serverless chung.</td></tr>
+        <tr><td>Parallel với Map</td><td>Parallel: số nhánh cố định, mỗi nhánh làm việc khác nhau. Map: cùng một việc, lặp theo số phần tử.</td></tr>
+        <tr><td>Wait state với Lambda sleep</td><td>Wait không tốn tiền compute, chờ được cả ngày. Lambda sleep trả tiền từng ms và trần 15 phút.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>orchestrate multiple Lambda functions <b>→ Step Functions</b></span><span>visual workflow, audit each step <b>→ Standard workflow</b></span><span>high-volume short event processing <b>→ Express workflow</b></span><span>manual approval before next step <b>→ waitForTaskToken</b></span><span>retry with exponential backoff without code <b>→ Retry trong state machine</b></span><span>process each item in a list in parallel <b>→ Map state</b></span><span>wait days between steps <b>→ Wait state</b></span><span>loosely coupled, event-driven microservices <b>→ EventBridge (choreography)</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">8. Quy trình xử lý hồ sơ vay gồm 6 Lambda, bước thứ 4 cần nhân viên duyệt tay, có thể mất vài ngày. Thiết kế thế nào?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Step Functions Standard workflow, bước duyệt dùng Task với <code>.waitForTaskToken</code> (gửi token qua SNS / email, nhân viên duyệt thì gọi <code>SendTaskSuccess</code>).</b> Express không được vì trần 5 phút. Lambda gọi chuỗi không chờ được vài ngày.</p></div>
+      <div class="q"><p class="qt">9. Ứng dụng IoT nhận 50.000 sự kiện mỗi giây, mỗi sự kiện qua 3 bước xử lý ngắn dưới 1 giây, bước đều idempotent. Chọn loại workflow nào để <em>most cost-effective</em>?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Express workflow.</b> Tính tiền theo lần chạy và thời gian, chịu được hơn 100.000 execution/giây. Standard tính theo state transition, với 50.000 × 3 bước mỗi giây sẽ rất đắt và vượt giới hạn tốc độ.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. SQS VÀ SNS ============ -->
+<section id="sqs-sns">
+  <span class="eyebrow">Lý thuyết 4 / 7</span>
+  <h2>SQS và SNS: hàng đợi và pub/sub</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <p><b>SQS (Simple Queue Service)</b> là hàng đợi: producer gửi message vào, consumer <b>kéo</b> (poll) ra xử lý rồi <b>xóa</b>. Mỗi message được một consumer xử lý. Dùng để <b>decouple</b> và <b>làm buffer</b>: frontend nhận đơn nhanh, backend xử lý theo tốc độ của nó, downstream chết thì message vẫn nằm chờ. <b>SNS (Simple Notification Service)</b> là pub/sub: publisher gửi vào <b>topic</b>, SNS <b>đẩy</b> (push) ngay tới mọi subscriber, không lưu lại. Dùng để <b>fan-out</b> một sự kiện tới nhiều nơi.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">SQS Standard với FIFO</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>Standard</th><th>FIFO</th></tr>
+        <tr><td>Throughput</td><td><b>Không giới hạn</b></td><td><b>300 msg/s</b> không batch, <b>3.000 msg/s</b> với batch 10; high throughput mode cao hơn nhiều (cần kiểm tra lại)</td></tr>
+        <tr><td>Giao hàng</td><td><b>At-least-once</b>: có thể nhận trùng</td><td><b>Exactly-once processing</b>: dedup trong 5 phút</td></tr>
+        <tr><td>Thứ tự</td><td><b>Best-effort</b>: có thể đảo</td><td>Đúng thứ tự trong cùng <b>message group</b></td></tr>
+        <tr><td>Tên</td><td>Tùy ý</td><td>Bắt buộc hậu tố <code>.fifo</code></td></tr>
+        <tr><td>Tham số bắt buộc</td><td></td><td><code>MessageGroupId</code> (nhóm cần giữ thứ tự, ví dụ mã khách hàng); <code>MessageDeduplicationId</code> hoặc bật <b>content-based deduplication</b> (hash SHA-256 nội dung)</td></tr>
+        <tr><td>Chọn khi</td><td>Mặc định; consumer tự idempotent</td><td>Đề nói <em>order must be preserved</em>, <em>no duplicates</em>, <em>exactly once</em></td></tr>
+      </table></div>
+      <p style="font-size:.92rem">Chuyển Standard sang FIFO không được tại chỗ, phải tạo queue mới. Nhiều message group song song thì FIFO vẫn scale: mỗi group là một "làn" có thứ tự riêng.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Các tham số SQS phải thuộc</span>
+      <div class="tbl"><table>
+        <tr><th>Tham số</th><th>Giá trị</th><th>Ý nghĩa, bẫy đề</th></tr>
+        <tr><td><b>Visibility timeout</b></td><td>Mặc định <b>30 giây</b>, 0 giây đến <b>12 giờ</b></td><td>Sau khi một consumer nhận message, message bị <b>ẩn</b> với consumer khác trong khoảng này. Không xóa kịp → message hiện lại, consumer khác xử lý <b>trùng</b>. Xử lý lâu hơn → tăng timeout hoặc gọi <code>ChangeMessageVisibility</code> trong khi chạy. Đề nói <em>messages processed twice</em> → visibility timeout quá ngắn.</td></tr>
+        <tr><td><b>Message retention</b></td><td>Mặc định <b>4 ngày</b>, 1 phút đến <b>14 ngày</b></td><td>Quá hạn thì mất. Consumer bảo trì dài ngày → tăng retention.</td></tr>
+        <tr><td><b>Message size</b></td><td><b>256 KB</b> (AWS đã nâng lên 1 MB từ 2025, cần kiểm tra lại; đề thi vẫn dùng mốc 256 KB)</td><td>Message lớn hơn → <b>SQS Extended Client Library</b> lưu payload ở S3, queue chỉ giữ con trỏ (tới 2 GB).</td></tr>
+        <tr><td><b>Long polling</b></td><td><code>WaitTimeSeconds</code> 1 đến <b>20 giây</b> (mặc định 0 = short polling)</td><td>Consumer chờ tới khi có message hoặc hết thời gian, giảm số lần gọi rỗng, <b>giảm chi phí và độ trễ</b>. Đặt ở queue (<code>ReceiveMessageWaitTimeSeconds</code>) hoặc từng request. Đề nói <em>reduce cost of empty responses</em>, <em>too many API calls</em> → long polling.</td></tr>
+        <tr><td><b>Delay queue</b></td><td><code>DelaySeconds</code> 0 đến <b>15 phút</b></td><td>Message được giữ ẩn ngay từ lúc gửi (khác visibility timeout: ẩn sau khi nhận). Standard đặt được theo từng message, FIFO chỉ theo cả queue.</td></tr>
+        <tr><td><b>Dead-letter queue</b></td><td><code>maxReceiveCount</code> trong redrive policy</td><td>Message bị nhận quá N lần mà không được xóa → chuyển sang DLQ để xem lỗi, không chặn queue chính. DLQ phải cùng loại (FIFO với FIFO). Retention của DLQ nên dài hơn queue nguồn. <b>DLQ redrive</b>: đẩy message từ DLQ về queue nguồn sau khi sửa lỗi.</td></tr>
+        <tr><td><b>Temporary queue</b></td><td>Temporary Queue Client</td><td>Mẫu request-response: mỗi client có queue tạm (virtual queue) nhận trả lời, rẻ vì nhiều virtual queue dùng chung một queue thật. Nhận diện là đủ.</td></tr>
+        <tr><td><b>Encryption</b></td><td>SSE-SQS (mặc định) hoặc SSE-KMS; HTTPS khi truyền</td><td>Producer / consumer cần quyền KMS tương ứng khi dùng CMK.</td></tr>
+        <tr><td><b>Access policy</b></td><td>Resource-based policy của queue</td><td>Cho SNS, S3, account khác gửi vào queue phải thêm Principal ở đây; đây là bước hay quên trong lab fan-out.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">SQS với Lambda, SQS với Auto Scaling</span>
+        <ul>
+          <li><b>SQS → Lambda</b>: event source mapping, Lambda poll và gom batch (tối đa 10 message cho FIFO, lớn hơn cho Standard khi dùng batch window, cần kiểm tra lại). Lambda scale số poller theo độ dài queue. Lỗi thì message quay lại queue; dùng DLQ của SQS, không phải DLQ của Lambda (DLQ Lambda chỉ cho async invoke).</li>
+          <li><b>SQS làm buffer cho Auto Scaling group</b>: EC2 worker poll queue. Scale theo metric <code>ApproximateNumberOfMessagesVisible</code>; tốt hơn nữa là custom metric <em>backlog per instance</em> = số message / số instance, target tracking về một giá trị chấp nhận được. Đề nói <em>scale workers based on queue depth</em> → cách này, không scale theo CPU.</li>
+          <li>Mẫu kinh điển trong đề: <b>Web tier → SQS → worker tier (ASG hoặc Lambda) → DB</b>. Web trả lời nhanh, không mất đơn khi backend chậm, DB không bị dội.</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">SNS: topic, subscription, filter</span>
+        <ul>
+          <li><b>Subscriber</b>: SQS, Lambda, HTTP/HTTPS, email, email-JSON, SMS, mobile push (APNs, FCM), <b>Kinesis Data Firehose</b>. Không gửi thẳng vào Kinesis Data Streams hay EventBridge.</li>
+          <li><b>Filter policy</b>: JSON trên message attribute (hoặc body) gắn vào từng subscription, subscriber chỉ nhận message khớp. Thay cho việc consumer nhận hết rồi tự lọc, hoặc tạo nhiều topic.</li>
+          <li><b>FIFO topic</b>: giữ thứ tự và dedup, chỉ fan-out ra <b>SQS FIFO</b> (và vài đích khác, cần kiểm tra lại). Tên <code>.fifo</code>.</li>
+          <li><b>Encryption</b>: SSE với KMS cho message at rest; HTTPS in transit. Publisher cần <code>kms:GenerateDataKey</code> trên key của topic.</li>
+          <li><b>Raw message delivery</b>: gửi nguyên body tới SQS / HTTP không bọc JSON của SNS. <b>Delivery retry</b> cho HTTP endpoint, và <b>DLQ theo subscription</b> (SQS) cho message không giao được.</li>
+          <li>Message tối đa 256 KB; gửi SMS có giá riêng, email cần xác nhận subscription.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block diag"><span class="eyebrow">Hình dung: fan-out SNS tới nhiều SQS</span>
+      <svg viewBox="0 0 700 300" role="img" aria-label="Sơ đồ fan-out: producer gửi vào SNS topic, topic đẩy tới ba subscriber gồm hai SQS queue và một Lambda, một queue có DLQ, một subscription có filter policy">
+        <rect x="10" y="118" width="130" height="56" rx="8" class="sv-region" stroke-width="1.5"/>
+        <text x="75" y="142" text-anchor="middle" class="sv-t" font-weight="600">Order service</text>
+        <text x="75" y="160" text-anchor="middle" class="sv-m">Publish 1 message</text>
+        <line x1="140" y1="146" x2="190" y2="146" class="sv-line" stroke-width="2"/>
+        <rect x="190" y="110" width="150" height="72" rx="8" class="sv-edge" stroke-width="1.5"/>
+        <text x="265" y="136" text-anchor="middle" class="sv-t" font-weight="600">SNS topic</text>
+        <text x="265" y="154" text-anchor="middle" class="sv-m">saa-orders</text>
+        <text x="265" y="170" text-anchor="middle" class="sv-m">push, không lưu</text>
+        <line x1="340" y1="130" x2="410" y2="56" class="sv-line" stroke-width="2"/>
+        <line x1="340" y1="146" x2="410" y2="146" class="sv-line" stroke-width="2"/>
+        <line x1="340" y1="162" x2="410" y2="236" class="sv-line" stroke-width="2"/>
+        <text x="372" y="92" text-anchor="middle" class="sv-m" font-style="italic">filter: type=vip</text>
+        <rect x="410" y="28" width="160" height="56" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="490" y="52" text-anchor="middle" class="sv-t" font-weight="600">SQS: email</text>
+        <text x="490" y="70" text-anchor="middle" class="sv-m">chỉ nhận đơn VIP</text>
+        <rect x="410" y="118" width="160" height="56" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="490" y="142" text-anchor="middle" class="sv-t" font-weight="600">SQS: analytics</text>
+        <text x="490" y="160" text-anchor="middle" class="sv-m">nhận mọi đơn</text>
+        <line x1="570" y1="146" x2="600" y2="146" class="sv-line" stroke-width="2" stroke-dasharray="4 4"/>
+        <rect x="600" y="118" width="90" height="56" rx="8" class="sv-region" stroke-width="1.5"/>
+        <text x="645" y="142" text-anchor="middle" class="sv-t" font-weight="600">DLQ</text>
+        <text x="645" y="160" text-anchor="middle" class="sv-m">sau 3 lần lỗi</text>
+        <rect x="410" y="208" width="160" height="56" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="490" y="232" text-anchor="middle" class="sv-t" font-weight="600">Lambda: cập nhật kho</text>
+        <text x="490" y="250" text-anchor="middle" class="sv-m">async invoke</text>
+        <text x="350" y="290" text-anchor="middle" class="sv-m">Thêm subscriber mới không phải sửa Order service. Mỗi queue xử lý độc lập, tốc độ riêng.</text>
+      </svg>
+      <p style="font-size:.92rem">Vì sao fan-out SNS → SQS thay vì SNS → Lambda thẳng: queue giữ message khi consumer chết, cho phép retry, buffer khi tải tăng đột ngột. Để SNS ghi được vào SQS, access policy của queue phải cho phép <code>sns.amazonaws.com</code> với điều kiện <code>aws:SourceArn</code> là topic.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>Một sự kiện phải tới nhiều hệ thống khác nhau</td><td>SNS fan-out ra nhiều SQS</td><td>Một SQS cho nhiều consumer (mỗi message chỉ một consumer nhận)</td></tr>
+        <tr><td>Message bị xử lý hai lần bởi hai worker</td><td>Tăng visibility timeout (hoặc dùng FIFO nếu cần exactly-once)</td><td>Tăng retention</td></tr>
+        <tr><td>Giữ đúng thứ tự giao dịch của từng tài khoản</td><td>SQS FIFO với MessageGroupId = mã tài khoản</td><td>SQS Standard (best-effort), hoặc FIFO không dùng group (chỉ một làn, chậm)</td></tr>
+        <tr><td>Message lỗi lặp lại làm nghẽn queue</td><td>DLQ với maxReceiveCount</td><td>Giảm visibility timeout</td></tr>
+        <tr><td>Giảm chi phí consumer gọi ReceiveMessage liên tục</td><td>Long polling 20 giây</td><td>Short polling nhiều consumer hơn</td></tr>
+        <tr><td>Message 2 MB</td><td>SQS Extended Client Library (S3)</td><td>Chia tay message, hoặc SNS (cũng 256 KB)</td></tr>
+        <tr><td>Chỉ một số subscriber nhận loại message nhất định</td><td>SNS filter policy trên subscription</td><td>Nhiều topic, hoặc consumer tự lọc</td></tr>
+        <tr><td>Gửi email / SMS cho người khi có cảnh báo</td><td>SNS</td><td>SQS (không có người đọc queue), SES (email giao dịch có template, không phải thông báo nhanh)</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>decouple, buffer, absorb spikes <b>→ SQS</b></span><span>at-least-once, best-effort ordering <b>→ SQS Standard</b></span><span>preserve order, exactly once, no duplicates <b>→ SQS FIFO</b></span><span>processed more than once <b>→ visibility timeout</b></span><span>poison message, isolate failures <b>→ DLQ + maxReceiveCount</b></span><span>reduce empty receives <b>→ long polling</b></span><span>message larger than 256 KB <b>→ Extended Client Library</b></span><span>scale EC2 workers by queue depth <b>→ ASG + ApproximateNumberOfMessagesVisible</b></span><span>fan-out, notify multiple systems <b>→ SNS → SQS</b></span><span>subscribers receive only relevant messages <b>→ filter policy</b></span><span>push notification, SMS, email alert <b>→ SNS</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">10. Worker EC2 xử lý mỗi message mất 2 phút. Log cho thấy nhiều message được xử lý hai lần bởi hai instance khác nhau. Sửa gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Tăng visibility timeout của queue (ví dụ lên 5 phút) hoặc gọi ChangeMessageVisibility trong khi xử lý.</b> Mặc định 30 giây nên message hiện lại trước khi worker xóa. Đổi sang FIFO không giải quyết nếu vẫn 30 giây, và tăng retention không liên quan.</p></div>
+      <div class="q"><p class="qt">11. Hệ thống đặt hàng phải gửi mỗi đơn tới dịch vụ kho, dịch vụ hóa đơn và dịch vụ phân tích. Mỗi dịch vụ xử lý độc lập, có thể bảo trì riêng mà không mất đơn. Kiến trúc?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>SNS topic, ba SQS queue subscribe vào topic (fan-out), mỗi dịch vụ đọc queue của mình.</b> Một SQS dùng chung thì mỗi đơn chỉ tới một dịch vụ. SNS → Lambda thẳng thì không có buffer khi dịch vụ bảo trì.</p></div>
+      <div class="q"><p class="qt">12. Ứng dụng ngân hàng cần xử lý giao dịch của từng tài khoản theo đúng thứ tự, nhưng tổng lượng là 2.000 giao dịch/giây trên hàng nghìn tài khoản. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>SQS FIFO với MessageGroupId là số tài khoản, gửi theo batch.</b> Thứ tự chỉ cần trong mỗi tài khoản, nhiều group chạy song song nên đạt 3.000 msg/s với batch (hoặc high throughput mode). Chọn một group duy nhất thì tắc ở 300 msg/s.</p></div>
+      <div class="q"><p class="qt">13. Fleet EC2 trong ASG đọc SQS. Lúc tải tăng, queue tồn hàng nghìn message nhưng CPU instance chỉ 40% nên ASG không scale. Cách đúng?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Scale theo custom metric backlog per instance (ApproximateNumberOfMessagesVisible chia cho số instance) với target tracking.</b> CPU không phản ánh độ dài hàng đợi khi worker bị chậm vì I/O hay chờ API ngoài.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. EVENTBRIDGE ============ -->
+<section id="eventbridge">
+  <span class="eyebrow">Lý thuyết 5 / 7</span>
+  <h2>EventBridge: event bus, rule, schedule</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <p><b>EventBridge</b> là <b>event bus</b> serverless: sự kiện (JSON) đổ vào bus, <b>rule</b> so khớp theo <b>event pattern</b> rồi gửi tới <b>target</b>. Là phiên bản mở rộng của CloudWatch Events (cùng API, cùng bus default), thêm custom bus, partner bus, schema registry, archive và replay. Chọn EventBridge khi cần <b>định tuyến sự kiện theo nội dung</b> giữa nhiều dịch vụ AWS, ứng dụng của bạn và SaaS bên ngoài.</p>
+      <ul>
+        <li><b>Default bus</b>: nhận sự kiện của các dịch vụ AWS (EC2 state change, S3 qua CloudTrail hoặc S3 Event Notifications, CodePipeline, Health, GuardDuty finding...). <b>Custom bus</b>: cho ứng dụng của bạn <code>PutEvents</code>. <b>Partner bus</b>: SaaS như Zendesk, Datadog, Auth0, Stripe đẩy sự kiện thẳng vào account bạn.</li>
+        <li><b>Rule</b>: một bus có nhiều rule; mỗi rule tối đa <b>5 target</b>. Target: Lambda, SQS, SNS, Step Functions, Kinesis Data Streams, Firehose, ECS task, Batch, CodeBuild, SSM Run Command, API Gateway, <b>API Destination</b> (HTTP endpoint ngoài có auth), bus khác (cross-account, cross-Region).</li>
+        <li><b>Event pattern</b> lọc theo field: <code>source</code>, <code>detail-type</code>, <code>detail.state</code>, có prefix, numeric, exists, anything-but. <b>Input transformer</b> chỉnh lại payload trước khi gửi target.</li>
+        <li>Giao hàng <b>at-least-once</b>, retry tới 24 giờ, có <b>DLQ</b> (SQS) theo từng target cho sự kiện không giao được.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Một rule mẫu</span>
+<pre><code>// Pattern: bắt EC2 chuyển sang stopped hoặc terminated
+{
+  "source": ["aws.ec2"],
+  "detail-type": ["EC2 Instance State-change Notification"],
+  "detail": { "state": ["stopped", "terminated"] }
+}
+
+// Pattern cho sự kiện của ứng dụng trên custom bus
+{
+  "source": ["com.myshop.orders"],
+  "detail-type": ["OrderPlaced"],
+  "detail": { "total": [{ "numeric": [">=", 1000] }] }
+}</code></pre>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Schedule và EventBridge Scheduler</span>
+        <ul>
+          <li><b>Scheduled rule</b> (cách cũ): rule chạy theo <code>rate(5 minutes)</code> hoặc <code>cron(0 2 * * ? *)</code> gọi target, chỉ trên default bus, giờ UTC.</li>
+          <li><b>EventBridge Scheduler</b> (dịch vụ riêng, mới hơn): lịch <b>một lần</b> hoặc lặp, chọn <b>time zone</b>, <b>flexible time window</b>, gọi hơn 270 dịch vụ qua API, giới hạn số lịch cao hơn nhiều (hàng triệu), tự xóa sau khi chạy. AWS khuyên dùng Scheduler cho mọi lịch mới. Đề nói <em>run a task at a specific time</em>, <em>schedule in local time zone</em>, <em>one-time schedule</em> → Scheduler.</li>
+          <li>Thay cho cron trên EC2: <em>eliminate the EC2 instance that only runs cron jobs</em> → EventBridge Scheduler + Lambda.</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Archive, replay, schema, Pipes</span>
+        <ul>
+          <li><b>Archive</b>: lưu sự kiện khớp pattern trong N ngày hoặc vô hạn. <b>Replay</b>: phát lại sự kiện trong khoảng thời gian vào bus để tái xử lý sau khi sửa bug, hoặc nạp consumer mới. SNS và SQS không có khả năng này.</li>
+          <li><b>Schema registry</b>: lưu cấu trúc sự kiện, <b>schema discovery</b> tự suy ra từ sự kiện trên bus, sinh <b>code binding</b> (Java, Python, TypeScript) để developer có type.</li>
+          <li><b>EventBridge Pipes</b> (nhận diện): nối <b>điểm tới điểm</b> một nguồn (SQS, Kinesis, DynamoDB Streams, MSK) với một target, có bước lọc và làm giàu (enrich bằng Lambda / API) ở giữa, không cần code glue.</li>
+          <li><b>Cross-account</b>: resource policy trên bus của account B cho phép account A (hoặc cả Organization qua <code>aws:PrincipalOrgID</code>) <code>PutEvents</code>; account A tạo rule với target là bus của B. Mẫu "central event bus" cho nhiều account.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">EventBridge với SNS với CloudWatch Events</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>EventBridge</th><th>SNS</th></tr>
+        <tr><td>Mô hình</td><td>Bus + rule lọc theo <b>nội dung</b> sự kiện (nhiều field, toán tử)</td><td>Topic + subscriber, lọc đơn giản bằng filter policy trên attribute</td></tr>
+        <tr><td>Nguồn</td><td>Hơn 200 dịch vụ AWS, ứng dụng của bạn, <b>SaaS partner</b></td><td>Ứng dụng của bạn publish</td></tr>
+        <tr><td>Target / subscriber</td><td>Hơn 20 loại dịch vụ AWS, API Destination; 5 target mỗi rule</td><td>SQS, Lambda, HTTP, email, SMS, push; tới 12,5 triệu subscription mỗi topic (cần kiểm tra lại)</td></tr>
+        <tr><td>Archive / replay, schema</td><td class="c">Có</td><td class="c">Không</td></tr>
+        <tr><td>Độ trễ, throughput</td><td>Khoảng nửa giây, throughput có giới hạn mềm</td><td>Gần tức thì, throughput rất cao</td></tr>
+        <tr><td>Chọn khi</td><td>Tích hợp dịch vụ AWS / SaaS, định tuyến theo nội dung, lịch chạy, cần replay</td><td>Fan-out tốc độ cao, gửi tới người (email, SMS), push mobile</td></tr>
+      </table></div>
+      <p style="font-size:.92rem"><b>CloudWatch Events</b> là tên cũ của default bus; đề cũ nhắc "CloudWatch Events rule" thì hiểu là EventBridge rule. Nếu đáp án có cả hai, EventBridge là đáp án hiện hành.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>Chạy Lambda mỗi đêm 2 giờ theo giờ Tokyo</td><td>EventBridge Scheduler (có time zone)</td><td>Cron trên EC2, hoặc Lambda tự sleep</td></tr>
+        <tr><td>Phản ứng khi GuardDuty có finding, Security Group bị sửa, EC2 bị stop</td><td>EventBridge rule trên default bus → SNS / Lambda</td><td>CloudTrail đọc log định kỳ, CloudWatch alarm (alarm cho metric, không cho sự kiện)</td></tr>
+        <tr><td>Nhận sự kiện từ SaaS (Zendesk ticket mới) vào AWS</td><td>Partner event bus</td><td>Viết Lambda poll API của SaaS</td></tr>
+        <tr><td>Xử lý lại các sự kiện của tuần trước sau khi sửa bug</td><td>EventBridge archive + replay</td><td>SNS (không lưu), SQS (đã xóa sau khi xử lý)</td></tr>
+        <tr><td>Gửi SMS cho đội trực khi có alarm</td><td>SNS (EventBridge không gửi SMS trực tiếp, có thể EventBridge → SNS)</td><td>EventBridge thẳng tới số điện thoại</td></tr>
+        <tr><td>Nhiều account gom sự kiện về một account bảo mật</td><td>Rule ở mỗi account, target là custom bus ở account trung tâm (resource policy)</td><td>Mỗi account tự gửi email</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>react to AWS service events, resource state change <b>→ EventBridge rule</b></span><span>route events based on content <b>→ event pattern</b></span><span>SaaS application events <b>→ partner event bus</b></span><span>scheduled, cron, rate, time zone <b>→ EventBridge Scheduler</b></span><span>replay past events <b>→ archive + replay</b></span><span>discover event structure, code bindings <b>→ schema registry</b></span><span>central event bus across accounts <b>→ cross-account bus + resource policy</b></span><span>call external HTTP API from events <b>→ API Destination</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">14. Công ty muốn tự động tạo ticket trong hệ thống nội bộ (HTTPS API có OAuth) mỗi khi một EC2 trong account bị terminate. <em>Least operational overhead</em>?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>EventBridge rule trên default bus bắt sự kiện EC2 state-change = terminated, target là API Destination tới HTTPS endpoint với connection OAuth.</b> Không cần Lambda. CloudTrail + Lambda poll cũng làm được nhưng chậm và tốn công. SNS HTTP subscription không có OAuth sẵn.</p></div>
+      <div class="q"><p class="qt">15. Một consumer bị bug trong 3 ngày, xử lý sai mọi sự kiện "OrderPlaced" nhận được. Sau khi sửa, cần xử lý lại đúng các sự kiện đó. Dịch vụ nào đã phải được dùng từ đầu?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>EventBridge với archive bật cho bus, giờ dùng replay 3 ngày đó.</b> SNS không lưu message; SQS xóa sau khi consumer xóa. Kinesis Data Streams cũng replay được nếu retention đủ dài, nhưng với sự kiện nghiệp vụ định tuyến theo nội dung thì EventBridge là đáp án.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. KINESIS ============ -->
+<section id="kinesis">
+  <span class="eyebrow">Lý thuyết 6 / 7</span>
+  <h2>Kinesis: Data Streams, Firehose, Flink, Video Streams</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <p><b>Kinesis</b> là họ dịch vụ cho <b>dữ liệu streaming</b>: log, clickstream, IoT telemetry, giao dịch đến liên tục với tốc độ lớn. Khác SQS ở chỗ dữ liệu trong stream <b>không bị xóa khi đọc</b>: nhiều consumer đọc cùng dữ liệu, đọc lại được (replay) trong thời gian retention, và giữ thứ tự trong mỗi shard. Đề nói <em>real-time</em>, <em>streaming</em>, <em>clickstream</em>, <em>multiple consumers read the same data</em>, <em>replay</em> → nghĩ tới Kinesis.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kinesis Data Streams (KDS)</span>
+      <div class="tbl"><table>
+        <tr><th>Mục</th><th>Giá trị</th><th>Ghi chú thi</th></tr>
+        <tr><td><b>Shard</b></td><td>Đơn vị throughput: <b>1 MB/s hoặc 1.000 record/s ghi vào</b>, <b>2 MB/s đọc ra</b> mỗi shard</td><td>Cần 10 MB/s ghi → 10 shard. 2 MB/s đọc là <b>chung</b> cho mọi consumer của shard đó.</td></tr>
+        <tr><td><b>Partition key</b></td><td>Chuỗi do producer gán, hash ra shard</td><td>Key ít giá trị (ví dụ theo thành phố, 80% là Tokyo) → <b>hot shard</b>, lỗi <code>ProvisionedThroughputExceededException</code>. Sửa: key phân tán hơn (user id, device id), thêm shard, retry với backoff.</td></tr>
+        <tr><td><b>Retention</b></td><td>Mặc định <b>24 giờ</b>, tới <b>365 ngày</b> (tính thêm tiền)</td><td>Consumer đọc lại từ đầu được trong thời gian này. SQS không có.</td></tr>
+        <tr><td><b>Record</b></td><td>Tối đa 1 MB</td><td></td></tr>
+        <tr><td><b>Capacity mode</b></td><td><b>Provisioned</b>: bạn chọn số shard, trả theo shard-giờ. <b>On-demand</b>: tự scale, trả theo GB ghi / đọc</td><td>Đề nói <em>unpredictable traffic</em>, <em>no capacity planning</em> → on-demand. Chuyển đổi giữa hai mode được, 2 lần mỗi 24 giờ (cần kiểm tra lại).</td></tr>
+        <tr><td><b>Thứ tự</b></td><td>Giữ đúng trong một shard (theo partition key)</td><td>Cần thứ tự theo thiết bị → partition key = device id.</td></tr>
+        <tr><td><b>Producer</b></td><td>SDK <code>PutRecord(s)</code>, <b>KPL</b> (Kinesis Producer Library: gom batch, aggregate, retry, hiệu quả cao), Kinesis Agent (đọc file log trên server), IoT Core, CloudWatch Logs subscription</td><td>KPL dùng aggregation thì consumer phải dùng KCL để de-aggregate.</td></tr>
+        <tr><td><b>Consumer</b></td><td>SDK <code>GetRecords</code>, <b>KCL</b> (Kinesis Client Library: chia shard giữa worker, <b>checkpoint</b> vào DynamoDB, tự cân bằng khi worker chết), Lambda (event source mapping), Firehose, Managed Flink</td><td>KCL: mỗi shard chỉ một worker xử lý tại một thời điểm, số worker tối đa = số shard. KCL app chạy trên EC2 / ECS cần quyền DynamoDB cho bảng checkpoint.</td></tr>
+        <tr><td><b>Enhanced fan-out</b></td><td>Mỗi consumer đăng ký được <b>2 MB/s riêng</b> mỗi shard, dữ liệu <b>push</b> qua HTTP/2, độ trễ khoảng 70 ms thay vì 200 ms</td><td>Đề nói <em>multiple consumers</em>, <em>each needs full throughput</em>, <em>lowest latency</em> → enhanced fan-out. Tối đa 20 consumer đăng ký mỗi stream (cần kiểm tra lại), tính thêm tiền.</td></tr>
+        <tr><td><b>Encryption</b></td><td>SSE với KMS, HTTPS in transit; VPC endpoint</td><td></td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Data Firehose, Managed Flink, Video Streams</span>
+      <div class="tbl"><table>
+        <tr><th>Dịch vụ</th><th>Làm gì</th><th>Điểm thi</th></tr>
+        <tr><td><b>Amazon Data Firehose</b> (tên cũ Kinesis Data Firehose)</td><td>Dịch vụ <b>giao hàng</b>: nhận dữ liệu (Direct PUT, từ KDS, MSK, CloudWatch Logs, IoT) rồi <b>ghi vào đích</b>: <b>S3</b>, <b>Redshift</b> (qua S3 COPY), <b>OpenSearch</b>, Splunk, Datadog, <b>HTTP endpoint</b> tùy chỉnh. Fully managed, tự scale, trả theo GB.</td><td><b>Near real-time</b>: gom theo <b>buffer</b> kích thước (1 đến 128 MB) hoặc thời gian (0 đến 900 giây; trước đây tối thiểu 60 giây, nay cho 0, cần kiểm tra lại). Biến đổi bằng <b>Lambda</b>, chuyển JSON sang <b>Parquet / ORC</b>, nén, mã hóa. <b>Không lưu</b> dữ liệu, <b>không replay</b>, không có consumer tùy ý. Đề nói <em>load streaming data into S3 / Redshift / OpenSearch with least effort</em> → Firehose.</td></tr>
+        <tr><td><b>Amazon Managed Service for Apache Flink</b> (tên cũ Kinesis Data Analytics)</td><td>Chạy ứng dụng Flink (Java, Scala, Python) hoặc <b>SQL</b> trên dữ liệu đang stream từ KDS / MSK: tính tổng theo cửa sổ thời gian, phát hiện bất thường, join hai stream; ghi kết quả ra KDS, Firehose, S3, OpenSearch...</td><td>Đề nói <em>real-time analytics on streaming data</em>, <em>SQL on stream</em>, <em>sliding window</em>, <em>anomaly detection in real time</em> → Managed Flink. Đề cũ vẫn viết "Kinesis Data Analytics". Flink Studio notebook để thử nhanh.</td></tr>
+        <tr><td><b>Kinesis Video Streams</b></td><td>Nhận video từ camera, thiết bị; lưu, mã hóa, đánh chỉ mục theo thời gian; phát lại; đưa vào Rekognition Video, SageMaker để phân tích.</td><td>Đề có chữ <em>video from cameras</em>, <em>computer vision on live video</em> → Video Streams. Nhận diện là đủ.</td></tr>
+      </table></div>
+      <p style="font-size:.92rem">Chuỗi kinh điển: <b>Producer → KDS → Managed Flink (phân tích) → Firehose → S3 (lưu) → Athena / QuickSight</b>. Hoặc đơn giản hơn nếu chỉ cần lưu: <b>Producer → Firehose → S3</b>, không cần KDS. KDS chỉ cần khi có nhiều consumer tùy ý, cần replay, hoặc xử lý từng record trong giây.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Bảng chọn: SQS với SNS với Kinesis với EventBridge (mốc kiểm tra 1)</span>
+      <div class="tbl"><table>
+        <tr><th>Từ khóa / nhu cầu</th><th>SQS</th><th>SNS</th><th>Kinesis Data Streams</th><th>EventBridge</th></tr>
+        <tr><td>Mô hình</td><td>Queue, consumer <b>pull</b>, mỗi message một consumer</td><td>Pub/sub, <b>push</b> tới nhiều subscriber</td><td>Stream, nhiều consumer đọc cùng dữ liệu theo shard</td><td>Bus + rule định tuyến theo nội dung</td></tr>
+        <tr><td><em>decouple</em>, <em>buffer</em>, <em>absorb spikes</em></td><td class="c"><b>Chọn</b></td><td></td><td></td><td></td></tr>
+        <tr><td><em>fan-out</em>, <em>notify many</em>, email / SMS</td><td></td><td class="c"><b>Chọn</b></td><td></td><td>Có thể (5 target / rule)</td></tr>
+        <tr><td><em>real-time streaming</em>, <em>clickstream</em>, <em>IoT telemetry</em>, MB/s</td><td></td><td></td><td class="c"><b>Chọn</b></td><td></td></tr>
+        <tr><td><em>replay</em>, đọc lại dữ liệu cũ</td><td>Không (xóa sau xử lý)</td><td>Không (không lưu)</td><td class="c"><b>Có</b> trong retention</td><td class="c"><b>Có</b> archive + replay</td></tr>
+        <tr><td><em>ordering</em></td><td>FIFO queue</td><td>FIFO topic</td><td>Trong shard theo partition key</td><td>Không bảo đảm</td></tr>
+        <tr><td><em>AWS service events</em>, <em>SaaS integration</em>, <em>schedule</em></td><td></td><td></td><td></td><td class="c"><b>Chọn</b></td></tr>
+        <tr><td>Lưu dữ liệu</td><td>Tới 14 ngày</td><td>Không</td><td>24 giờ đến 365 ngày</td><td>Archive tùy chọn</td></tr>
+        <tr><td>Scale</td><td>Tự động, không giới hạn (Standard)</td><td>Tự động</td><td>Theo shard, hoặc on-demand</td><td>Tự động</td></tr>
+        <tr><td>Giá</td><td>Theo request</td><td>Theo message và loại giao hàng</td><td>Theo shard-giờ hoặc GB</td><td>Theo sự kiện</td></tr>
+      </table></div>
+      <div class="note ok">Cách nói nhanh: <b>SQS</b> khi một việc cần được làm <b>đúng một lần bởi một worker</b> và chịu được trễ. <b>SNS</b> khi một tin phải <b>tới nhiều nơi ngay</b>. <b>Kinesis</b> khi dữ liệu là <b>dòng chảy liên tục</b> cần phân tích theo thời gian thực hoặc đọc lại. <b>EventBridge</b> khi muốn <b>định tuyến sự kiện</b> của dịch vụ AWS / SaaS / ứng dụng theo nội dung, hoặc chạy theo lịch.</div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>Gom log từ hàng nghìn server đổ vào S3 rồi query bằng Athena, ít vận hành nhất</td><td>Firehose → S3 (chuyển Parquet)</td><td>KDS + Lambda tự ghi S3 (nhiều code hơn)</td></tr>
+        <tr><td>Dashboard real-time đếm số click mỗi phút theo trang</td><td>KDS → Managed Flink (window) → OpenSearch / Firehose</td><td>Firehose một mình (không tính toán), SQS</td></tr>
+        <tr><td>Ba team khác nhau đều cần đọc toàn bộ stream, độ trễ thấp</td><td>KDS với enhanced fan-out</td><td>Chia 2 MB/s dùng chung (consumer chậm), SQS (một consumer)</td></tr>
+        <tr><td>Một shard bị quá tải dù tổng lưu lượng thấp</td><td>Đổi partition key phân tán hơn</td><td>Thêm shard (không giúp nếu key vẫn dồn một chỗ)</td></tr>
+        <tr><td>Lưu lượng không đoán được, không muốn quản lý shard</td><td>KDS on-demand mode</td><td>Provisioned + tự viết script resharding</td></tr>
+        <tr><td>Chuyển ứng dụng Kafka sẵn có lên AWS</td><td>Amazon MSK (managed Kafka), nhận diện</td><td>Kinesis (API khác Kafka)</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>real-time, streaming, clickstream, telemetry <b>→ Kinesis Data Streams</b></span><span>near real-time, deliver to S3 / Redshift / OpenSearch <b>→ Firehose</b></span><span>transform records before delivery <b>→ Firehose + Lambda</b></span><span>SQL on streaming data, windowed aggregation <b>→ Managed Flink</b></span><span>hot shard, ProvisionedThroughputExceeded <b>→ partition key / thêm shard</b></span><span>multiple consumers, dedicated throughput <b>→ enhanced fan-out</b></span><span>replay stream data <b>→ tăng retention</b></span><span>unpredictable throughput <b>→ on-demand mode</b></span><span>video from cameras <b>→ Kinesis Video Streams</b></span><span>existing Kafka application <b>→ MSK</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">16. Ứng dụng mobile gửi 5 MB/s sự kiện. Cần lưu toàn bộ vào S3 ở định dạng Parquet để phân tích bằng Athena, đồng thời một team khác cần đọc dữ liệu thô trong vòng 1 giây để phát hiện gian lận. Kiến trúc?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Kinesis Data Streams (ít nhất 5 shard hoặc on-demand); một consumer là Firehose ghi S3 chuyển Parquet; consumer thứ hai là Lambda / Managed Flink phát hiện gian lận (bật enhanced fan-out nếu cần).</b> Chỉ Firehose thì không có consumer thứ hai đọc trong 1 giây (buffer tối thiểu vài chục giây và không có API đọc). SQS không cho hai consumer cùng đọc một dữ liệu.</p></div>
+      <div class="q"><p class="qt">17. KDS có 10 shard, tổng lưu lượng chỉ 2 MB/s nhưng producer liên tục bị ProvisionedThroughputExceededException. Partition key là mã quốc gia. Sửa gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Đổi partition key sang giá trị phân tán cao (user id, session id, hoặc thêm hậu tố ngẫu nhiên).</b> Đây là hot shard: 90% dữ liệu cùng một quốc gia dồn vào một shard 1 MB/s. Thêm shard không giúp vì hash key vẫn trỏ về một shard.</p></div>
+      <div class="q"><p class="qt">18. Công ty cần đưa log ứng dụng từ EC2 vào OpenSearch để tìm kiếm, chấp nhận trễ 1 phút, <em>least operational overhead</em>. Chọn?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Kinesis Agent (hoặc CloudWatch Logs subscription) → Data Firehose → OpenSearch.</b> Firehose giao thẳng, tự scale, không cần code. KDS + Lambda hoặc Logstash trên EC2 là nhiều việc vận hành hơn.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. CONTAINER ============ -->
+<section id="container">
+  <span class="eyebrow">Lý thuyết 7 / 7</span>
+  <h2>ECS, EKS, Fargate, ECR, App Runner, Amazon MQ, AppSync</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <p><b>Container</b> đóng gói ứng dụng cùng thư viện thành một image chạy giống nhau ở mọi nơi. AWS có hai <b>orchestrator</b> (điều phối container): <b>ECS</b> (của AWS, đơn giản) và <b>EKS</b> (Kubernetes managed). Cả hai chạy container trên hai loại <b>hạ tầng</b>: <b>EC2</b> (bạn quản lý instance) hoặc <b>Fargate</b> (serverless, AWS quản lý). Image lưu ở <b>ECR</b>. Ở tầng trên cùng, <b>App Runner</b> chạy web app từ container hoặc source code mà gần như không cấu hình gì.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">ECS: các khái niệm</span>
+      <div class="tbl"><table>
+        <tr><th>Khái niệm</th><th>Là gì</th><th>Điểm thi</th></tr>
+        <tr><td><b>Cluster</b></td><td>Nhóm logic chứa task và service; với EC2 launch type là nhóm container instance (EC2 chạy ECS agent)</td><td>Cluster Fargate không có EC2 nào để quản lý.</td></tr>
+        <tr><td><b>Task definition</b></td><td>"Bản thiết kế" (JSON): image, CPU / memory, port, env, volume, log driver, IAM role, network mode. Có version (revision)</td><td>Một task definition chứa 1 đến 10 container (sidecar).</td></tr>
+        <tr><td><b>Task</b></td><td>Một lần chạy task definition (một hoặc vài container)</td><td>Chạy task lẻ cho batch job; EventBridge có thể <code>RunTask</code> theo lịch.</td></tr>
+        <tr><td><b>Service</b></td><td>Giữ <b>N task luôn chạy</b>, thay task chết, gắn vào <b>ALB / NLB</b>, rolling update hoặc blue/green (qua CodeDeploy)</td><td>Web app lâu dài → service. ALB với ECS: target group kiểu <b>IP</b> (awsvpc / Fargate) hoặc <b>instance</b> với <b>dynamic port mapping</b> (EC2 bridge mode: nhiều task cùng image trên một instance, mỗi task port host ngẫu nhiên).</td></tr>
+        <tr><td><b>Launch type</b></td><td><b>EC2</b>: bạn tạo ASG các EC2 (ECS-optimized AMI), trả tiền EC2. <b>Fargate</b>: khai báo CPU / memory cho task, AWS chạy ở đâu không cần biết, trả theo vCPU-giờ và GB-giờ của task</td><td>Xem bảng so sánh bên dưới (mốc kiểm tra 2).</td></tr>
+        <tr><td><b>Capacity provider</b></td><td>Nguồn hạ tầng cho cluster: <code>FARGATE</code>, <code>FARGATE_SPOT</code> (rẻ tới 70%, có thể bị thu hồi), hoặc ASG với <b>managed scaling</b> (ECS tự thêm bớt EC2 theo nhu cầu task)</td><td>Đề nói <em>ECS on EC2 fails to place tasks because no capacity</em> → capacity provider với managed scaling. Fault-tolerant batch → FARGATE_SPOT.</td></tr>
+        <tr><td><b>Service auto scaling</b></td><td>Application Auto Scaling thay đổi số task theo CPU / memory trung bình, <code>ALBRequestCountPerTarget</code>, hoặc metric tùy chỉnh (độ dài SQS)</td><td>Với EC2 launch type có <b>hai tầng</b> scale: số task (service auto scaling) và số EC2 (ASG / capacity provider). Fargate chỉ cần tầng task.</td></tr>
+        <tr><td><b>Network mode</b></td><td><b>awsvpc</b>: mỗi task có ENI và IP riêng, Security Group riêng (bắt buộc với Fargate). <b>bridge</b>, <b>host</b>: chỉ EC2</td><td>Task cần Security Group riêng → awsvpc.</td></tr>
+        <tr><td><b>Storage</b></td><td>Ephemeral (Fargate 20 GB, tới 200 GB); <b>EFS</b> để lưu bền và chia sẻ giữa task / AZ; EBS gắn vào task (mới, nhận diện)</td><td><em>shared persistent storage for containers across AZs</em> → EFS.</td></tr>
+        <tr><td><b>ECS Anywhere</b></td><td>Đăng ký server on-prem / cloud khác vào cluster ECS để quản lý container ở đó bằng cùng API</td><td>Nhận diện. Tương tự EKS Anywhere.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Task role với task execution role</span>
+        <div class="tbl"><table>
+          <tr><th></th><th>Task execution role</th><th>Task role</th></tr>
+          <tr><td>Ai dùng</td><td><b>ECS agent</b> thay mặt bạn</td><td><b>Ứng dụng</b> trong container</td></tr>
+          <tr><td>Để làm gì</td><td>Pull image từ <b>ECR</b>, ghi log lên <b>CloudWatch Logs</b>, đọc secret từ Secrets Manager / Parameter Store để nạp vào env</td><td>Gọi dịch vụ AWS: đọc S3, ghi DynamoDB, gửi SQS</td></tr>
+          <tr><td>Hay sai</td><td>Task không start, lỗi <code>CannotPullContainerError</code> → execution role thiếu quyền ECR hoặc task không có đường ra ECR (NAT / VPC endpoint / public IP)</td><td>Container chạy nhưng <code>AccessDenied</code> khi gọi S3 → task role thiếu quyền</td></tr>
+        </table></div>
+        <p style="font-size:.92rem">Đặt trong task definition, mỗi task definition có task role riêng → <em>least privilege per service</em>. Không dùng instance role của EC2 cho ứng dụng vì mọi task trên instance đó sẽ chung quyền.</p>
+      </div>
+      <div class="block"><span class="eyebrow">ECR, EKS, App Runner</span>
+        <ul>
+          <li><b>ECR</b>: registry private (và public gallery), image mã hóa at rest, <b>image scanning</b> (basic khi push, hoặc enhanced bằng Inspector quét liên tục cả OS và ngôn ngữ), <b>lifecycle policy</b> xóa image cũ để tiết kiệm, <b>cross-Region / cross-account replication</b>, <b>tag immutability</b>. Đăng nhập: <code>aws ecr get-login-password | docker login</code>. Fargate / EC2 pull image cần đường mạng tới ECR (NAT, VPC endpoint <code>ecr.api</code>, <code>ecr.dkr</code>, <code>s3</code>, hoặc public IP).</li>
+          <li><b>EKS</b>: Kubernetes control plane do AWS quản lý (0,10 USD/giờ mỗi cluster, cần kiểm tra lại), bạn chạy pod trên <b>managed node group</b> (EC2 do EKS tạo ASG), <b>self-managed node</b>, hoặc <b>Fargate profile</b> (pod serverless). Hỗ trợ storage qua CSI driver EBS / EFS / FSx, load balancer qua AWS Load Balancer Controller. Chọn EKS khi: đã dùng <b>Kubernetes</b> on-prem hoặc cloud khác, cần <b>portability / multi-cloud</b>, team có kỹ năng k8s, dùng tool trong hệ sinh thái k8s (Helm, Istio). Không có các lý do đó → ECS đơn giản hơn.</li>
+          <li><b>App Runner</b>: đưa container image (ECR) hoặc source (GitHub, Python / Node.js...) → App Runner tự build, deploy, cấp HTTPS, load balancer, auto scaling, scale về 0 gần hết tiền khi không dùng (vẫn tính memory provisioned, cần kiểm tra lại). <b>Ít vận hành nhất</b> cho web app / API. Kết nối VPC qua VPC connector. Không điều khiển được chi tiết như ECS.</li>
+          <li>Nhận diện thêm: <b>AWS Batch</b> chạy batch job trên ECS / Fargate / EC2 với hàng đợi job; <b>Lightsail</b> cho VPS / container đơn giản giá cố định; <b>Elastic Beanstalk</b> cũng chạy Docker (tuần 8).</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">ECS trên EC2 khác Fargate ở đâu (mốc kiểm tra 2)</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>ECS trên EC2</th><th>Fargate</th></tr>
+        <tr><td>Ai quản lý host</td><td><b>Bạn</b>: chọn instance type, AMI, vá OS, ECS agent, ASG, capacity</td><td><b>AWS</b>: không thấy, không SSH vào host</td></tr>
+        <tr><td>Tính tiền</td><td>Theo <b>EC2 instance</b> chạy, dù task có dùng hết hay không; dùng được Reserved / Savings Plans / Spot cho EC2</td><td>Theo <b>vCPU và memory của từng task</b>, tính theo giây (tối thiểu 1 phút); Fargate Spot và Compute Savings Plans</td></tr>
+        <tr><td>Khi nào rẻ hơn</td><td>Tải ổn định, <b>mật độ cao</b> (nhiều task nhét đầy instance), đã có RI</td><td>Tải thưa, biến động, nhiều service nhỏ, không muốn trả cho chỗ trống</td></tr>
+        <tr><td>Tính năng chỉ có một bên</td><td><b>GPU</b>, Windows container đầy đủ, instance store, cần chạm vào host / docker daemon, network mode bridge / host, dynamic port mapping, tuân thủ đặc biệt (dedicated host)</td><td>Mỗi task có ENI riêng (awsvpc bắt buộc), cô lập tốt hơn, ephemeral tới 200 GB</td></tr>
+        <tr><td>Scale</td><td>Hai tầng: task và EC2 (capacity provider managed scaling)</td><td>Một tầng: chỉ số task</td></tr>
+        <tr><td>Overhead vận hành</td><td>Cao hơn: patch AMI, thay instance, theo dõi cluster</td><td>Thấp: <em>serverless containers</em>, <em>no infrastructure to manage</em></td></tr>
+      </table></div>
+      <div class="note ok">Câu trả lời ngắn: <b>Fargate</b> khi đề nói <em>serverless</em>, <em>no server management</em>, <em>least operational overhead</em>, tải biến động. <b>ECS trên EC2</b> khi đề nói <em>GPU</em>, <em>cost-optimize steady high-utilization workload</em>, <em>existing Reserved Instances</em>, cần truy cập host hoặc Spot instance giá rẻ nhất.</div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Bảng chọn compute cho ứng dụng container / code</span>
+      <div class="tbl"><table>
+        <tr><th>Lựa chọn</th><th>Bạn quản lý</th><th>Chọn khi</th><th>Không chọn khi</th></tr>
+        <tr><td><b>Lambda</b></td><td>Chỉ code (hoặc image tới 10 GB)</td><td>Event-driven, chạy dưới 15 phút, tải lắt nhắt, trả theo ms</td><td>Chạy dài, cần WebSocket giữ kết nối, GPU, package quá lớn, cold start không chấp nhận được</td></tr>
+        <tr><td><b>App Runner</b></td><td>Image hoặc source</td><td>Web app / API HTTP đơn giản, muốn deploy nhanh nhất, không cần điều khiển hạ tầng</td><td>Cần worker không phải HTTP, sidecar, điều khiển mạng chi tiết</td></tr>
+        <tr><td><b>ECS Fargate</b></td><td>Task definition, service</td><td>Microservice container, không muốn quản lý EC2, tải biến động</td><td>Cần GPU, cần mật độ cao để tiết kiệm, cần daemon trên host</td></tr>
+        <tr><td><b>ECS trên EC2</b></td><td>EC2 + task definition</td><td>GPU, tải ổn định mật độ cao, RI sẵn có, cần tùy chỉnh host</td><td>Team nhỏ không muốn vá OS</td></tr>
+        <tr><td><b>EKS</b> (EC2 hoặc Fargate)</td><td>Manifest Kubernetes, node group</td><td>Đã dùng Kubernetes, cần portable, dùng hệ sinh thái k8s, multi-cloud / hybrid</td><td>Team chưa biết k8s và không có lý do đặc biệt (ECS đơn giản hơn, không mất tiền control plane)</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Amazon MQ và AppSync (nhận diện)</span>
+      <div class="grid2">
+        <div>
+          <ul>
+            <li><b>Amazon MQ</b>: message broker managed chạy <b>Apache ActiveMQ</b> hoặc <b>RabbitMQ</b>. Dùng khi <b>migrate ứng dụng sẵn có</b> đang nói chuyện bằng giao thức chuẩn <b>MQTT, AMQP, STOMP, OpenWire, JMS</b> mà không muốn sửa code. Chạy trong VPC trên instance, HA kiểu active/standby (ActiveMQ dùng EFS chia sẻ) hoặc cluster (RabbitMQ), <b>không scale vô hạn</b> như SQS / SNS, có giới hạn throughput theo instance.</li>
+            <li>Quy tắc: ứng dụng <b>mới</b> → SQS / SNS. Ứng dụng <b>cũ dùng JMS / AMQP, cần migrate nhanh</b> → Amazon MQ.</li>
+          </ul>
+        </div>
+        <div>
+          <ul>
+            <li><b>AppSync</b>: dịch vụ <b>GraphQL</b> managed (và Pub/Sub API). Client hỏi đúng field mình cần trong một request; <b>resolver</b> nối tới DynamoDB, Lambda, Aurora, OpenSearch, HTTP. Điểm mạnh: <b>real-time subscription</b> qua WebSocket (chat, bảng điểm live, collaborative app) và <b>offline sync</b> cho mobile (Amplify DataStore). Auth: API key, IAM, Cognito User Pool, OIDC, Lambda.</li>
+            <li>Đề nói <em>GraphQL</em>, <em>real-time updates to many mobile clients</em>, <em>offline data synchronization</em> → AppSync. Đề nói REST / WebSocket thuần → API Gateway.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>Container pull image từ ECR bị lỗi, task ở private subnet</td><td>Thêm NAT Gateway hoặc VPC endpoint ecr.api + ecr.dkr + s3, kiểm tra execution role</td><td>Sửa task role (role của ứng dụng, không liên quan pull)</td></tr>
+        <tr><td>Nhiều container cùng image trên một EC2 sau ALB</td><td>Bridge mode + dynamic port mapping, target group instance</td><td>Cố định port 80 (xung đột)</td></tr>
+        <tr><td>Chạy ML training cần GPU bằng container</td><td>ECS / EKS trên EC2 GPU instance (p, g family)</td><td>Fargate (không có GPU)</td></tr>
+        <tr><td>Chuyển app Kubernetes on-prem lên AWS giữ manifest</td><td>EKS</td><td>ECS (phải viết lại task definition)</td></tr>
+        <tr><td>Deploy web app container nhanh nhất, ít cấu hình nhất</td><td>App Runner</td><td>ECS + ALB tự dựng, EKS</td></tr>
+        <tr><td>Migrate app Java dùng JMS / ActiveMQ lên AWS không sửa code</td><td>Amazon MQ</td><td>SQS (API khác, phải sửa code)</td></tr>
+        <tr><td>Mobile app cần cập nhật real-time và làm việc offline</td><td>AppSync</td><td>API Gateway REST + polling</td></tr>
+        <tr><td>Tiết kiệm chi phí image cũ trong ECR</td><td>Lifecycle policy</td><td>Xóa tay định kỳ</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>serverless containers, no EC2 to manage <b>→ Fargate</b></span><span>GPU containers, high-density, existing RIs <b>→ ECS on EC2</b></span><span>Kubernetes, portable, multi-cloud <b>→ EKS</b></span><span>deploy web app from container with least effort <b>→ App Runner</b></span><span>container image registry, vulnerability scan <b>→ ECR</b></span><span>pull image / write logs permissions <b>→ task execution role</b></span><span>application calls S3 / DynamoDB <b>→ task role</b></span><span>scale tasks by request count <b>→ service auto scaling</b></span><span>not enough EC2 capacity for tasks <b>→ capacity provider managed scaling</b></span><span>persistent shared storage for containers <b>→ EFS</b></span><span>JMS, AMQP, MQTT, ActiveMQ, RabbitMQ <b>→ Amazon MQ</b></span><span>GraphQL, real-time subscription, offline sync <b>→ AppSync</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">19. Một service trên ECS Fargate chạy được nhưng mọi lệnh ghi DynamoDB đều AccessDenied. Container pull image và ghi log bình thường. Sửa ở đâu?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Thêm quyền DynamoDB vào task role trong task definition.</b> Pull image và log là việc của task execution role (đang ổn). Bẫy: chọn sửa execution role hoặc instance role (Fargate không có instance).</p></div>
+      <div class="q"><p class="qt">20. Công ty có 40 microservice chạy 24/7 với CPU ổn định 70%, đã mua Compute Savings Plans; muốn giảm chi phí container. ECS trên EC2 hay Fargate?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>ECS trên EC2</b> (xếp nhiều task vào instance lớn, tận dụng mật độ cao, và nếu có EC2 Reserved thì càng rẻ). Fargate tốt cho tải biến động hoặc đội không muốn quản lý host; với tải ổn định dày đặc thì EC2 thường rẻ hơn. (Compute Savings Plans áp dụng cho cả hai, nên không phải yếu tố quyết định.)</p></div>
+      <div class="q"><p class="qt">21. Team không có kinh nghiệm Kubernetes cần chạy một web API container sau load balancer, tự scale theo lượng request, <em>least operational overhead</em>. Chọn?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>AWS App Runner</b> (hoặc ECS Fargate + ALB nếu App Runner không có trong đáp án). App Runner tự lo build, HTTPS, LB, scale. EKS mang thêm độ phức tạp của Kubernetes không cần thiết.</p></div>
+      <div class="q"><p class="qt">22. Ứng dụng Java on-prem dùng ActiveMQ với giao thức JMS, cần chuyển lên AWS trong 2 tuần, không được sửa code. Chọn?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Amazon MQ (engine ActiveMQ).</b> SQS / SNS cần đổi code sang API AWS. Đề nói <em>new application</em> thì mới chọn SQS / SNS.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HANDS-ON ============ -->
+<section id="handson">
+  <span class="eyebrow">Thực hành</span>
+  <h2>Hands-on: 5 lab</h2>
+  <p>Làm theo thứ tự. Mọi lệnh chạy trong PowerShell trên Windows với AWS CLI v2, profile <code>saa</code>, Region <code>ap-northeast-1</code>. Đặt trước <code>$env:AWS_PROFILE = "saa"</code> và <code>$env:AWS_DEFAULT_REGION = "ap-northeast-1"</code>. Lab 1, 2, 4 gần như miễn phí. Lab 3 có <b>ALB và Fargate tính tiền theo giờ</b>, làm xong xóa ngay trong ngày (Lab 5).</p>
+
+  <div class="card">
+    <h3>Lab 1. CRUD API: API Gateway HTTP API + Lambda (Python) + DynamoDB</h3>
+    <ol class="steps">
+      <li><div><p>Tạo bảng DynamoDB on-demand, partition key <code>id</code>:</p>
+<pre><code>aws dynamodb create-table --table-name saa-items `
+  --attribute-definitions AttributeName=id,AttributeType=S `
+  --key-schema AttributeName=id,KeyType=HASH `
+  --billing-mode PAY_PER_REQUEST
+aws dynamodb wait table-exists --table-name saa-items</code></pre></div></li>
+      <li><div><p>Tạo execution role cho Lambda. File <code>trust.json</code>:</p>
+<pre><code>{ "Version": "2012-10-17", "Statement": [{ "Effect": "Allow",
+  "Principal": { "Service": "lambda.amazonaws.com" }, "Action": "sts:AssumeRole" }] }</code></pre>
+<p>File <code>ddb-policy.json</code> (chỉ bảng này, đây là task role kiểu Lambda):</p>
+<pre><code>{ "Version": "2012-10-17", "Statement": [{ "Effect": "Allow",
+  "Action": ["dynamodb:GetItem","dynamodb:PutItem","dynamodb:DeleteItem","dynamodb:Scan"],
+  "Resource": "arn:aws:dynamodb:ap-northeast-1:&lt;account-id&gt;:table/saa-items" }] }</code></pre>
+<pre><code>aws iam create-role --role-name saa-items-lambda-role --assume-role-policy-document file://trust.json
+aws iam attach-role-policy --role-name saa-items-lambda-role `
+  --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+aws iam put-role-policy --role-name saa-items-lambda-role --policy-name ddb --policy-document file://ddb-policy.json</code></pre>
+<p><code>AWSLambdaBasicExecutionRole</code> chỉ cho ghi CloudWatch Logs. Quyền DynamoDB là inline policy riêng, giới hạn đúng một bảng.</p></div></li>
+      <li><div><p>Viết <code>lambda_function.py</code>. Hàm nhận event của HTTP API (payload v2), rẽ nhánh theo method và path, trả object có <code>statusCode</code> và <code>body</code> (Lambda proxy integration):</p>
+<pre><code>import json, os, boto3
+table = boto3.resource("dynamodb").Table(os.environ["TABLE"])
+
+def lambda_handler(event, context):
+    method = event["requestContext"]["http"]["method"]
+    path = event.get("rawPath", "/")
+    parts = [p for p in path.split("/") if p]      # ["items"] hoặc ["items","1"]
+    item_id = parts[1] if len(parts) &gt; 1 else None
+    try:
+        if method == "GET" and item_id:
+            r = table.get_item(Key={"id": item_id})
+            body, code = r.get("Item", {}), 200 if "Item" in r else 404
+        elif method == "GET":
+            body, code = table.scan(Limit=50).get("Items", []), 200
+        elif method == "PUT":
+            data = json.loads(event.get("body") or "{}")
+            table.put_item(Item=data)
+            body, code = {"ok": True, "id": data.get("id")}, 200
+        elif method == "DELETE" and item_id:
+            table.delete_item(Key={"id": item_id})
+            body, code = {"deleted": item_id}, 200
+        else:
+            body, code = {"error": "unsupported route"}, 400
+    except Exception as e:
+        body, code = {"error": str(e)}, 500
+    return {"statusCode": code, "headers": {"content-type": "application/json"},
+            "body": json.dumps(body, default=str)}</code></pre>
+<p>Lưu ý: giá trị số trong DynamoDB trả về dạng <code>Decimal</code>, <code>default=str</code> để <code>json.dumps</code> không lỗi.</p></div></li>
+      <li><div><p>Đóng gói và tạo function (Python 3.12, memory 256 MB, timeout 10 giây). Chờ vài giây cho IAM role lan truyền nếu gặp lỗi "role cannot be assumed":</p>
+<pre><code>Compress-Archive -Path .\lambda_function.py -DestinationPath .\function.zip -Force
+aws lambda create-function --function-name saa-items-api --runtime python3.12 `
+  --handler lambda_function.lambda_handler --zip-file fileb://function.zip `
+  --role arn:aws:iam::&lt;account-id&gt;:role/saa-items-lambda-role `
+  --memory-size 256 --timeout 10 --environment "Variables={TABLE=saa-items}"</code></pre>
+<p>Test trực tiếp không qua API (gọi synchronous <code>RequestResponse</code>):</p>
+<pre><code>'{"requestContext":{"http":{"method":"GET"}},"rawPath":"/items"}' | Set-Content -Encoding ascii evt.json
+aws lambda invoke --function-name saa-items-api --payload fileb://evt.json out.json
+Get-Content out.json      # mong đợi statusCode 200, body "[]"</code></pre></div></li>
+      <li><div><p>Tạo HTTP API bằng quick create (tự sinh integration Lambda proxy, route <code>$default</code> và stage <code>$default</code> auto deploy), rồi cấp quyền cho API Gateway gọi Lambda (resource-based policy của function):</p>
+<pre><code>aws apigatewayv2 create-api --name saa-items-http --protocol-type HTTP `
+  --target arn:aws:lambda:ap-northeast-1:&lt;account-id&gt;:function:saa-items-api
+# ghi lại ApiId và ApiEndpoint trong kết quả
+aws lambda add-permission --function-name saa-items-api --statement-id apigw `
+  --action lambda:InvokeFunction --principal apigateway.amazonaws.com `
+  --source-arn "arn:aws:execute-api:ap-northeast-1:&lt;account-id&gt;:&lt;ApiId&gt;/*"</code></pre>
+<p>Mở Console → API Gateway → API vừa tạo → <b>Routes</b>: chỉ có <code>$default</code> bắt mọi path, nên code mới phải tự đọc <code>rawPath</code>. Thử thêm route tường minh <code>GET /items/{id}</code> trỏ cùng integration để thấy <code>event["routeKey"]</code> và <code>pathParameters</code> đổi.</p></div></li>
+      <li><div><p>Test CRUD bằng curl. Trong PowerShell <code>curl</code> là alias của Invoke-WebRequest nên dùng <code>curl.exe</code>:</p>
+<pre><code>$API = "https://&lt;ApiId&gt;.execute-api.ap-northeast-1.amazonaws.com"
+curl.exe -s -X PUT "$API/items" -H "content-type: application/json" -d '{\"id\":\"1\",\"name\":\"pen\",\"price\":3}'
+curl.exe -s -X PUT "$API/items" -H "content-type: application/json" -d '{\"id\":\"2\",\"name\":\"book\",\"price\":12}'
+curl.exe -s "$API/items"
+curl.exe -s "$API/items/1"
+curl.exe -s -X DELETE "$API/items/1"
+curl.exe -s -i "$API/items/1"     # mong đợi HTTP 404</code></pre></div></li>
+      <li><div><p>Quan sát: Console → Lambda → Monitor → <b>View CloudWatch logs</b>, xem dòng <code>REPORT</code> có <code>Duration</code>, <code>Billed Duration</code>, <code>Max Memory Used</code>, và <code>Init Duration</code> ở lần gọi đầu (cold start). Gọi lại ngay thì không còn Init Duration. Vào tab <b>Configuration → Concurrency</b> để thấy reserved và provisioned concurrency. Ở API Gateway → <b>Throttling</b> trên stage để thấy giới hạn mặc định.</p></div></li>
+      <li><div><p>Thí nghiệm nhỏ: đặt reserved concurrency của function bằng <code>0</code> rồi gọi API: nhận 500 / 429 ngay lập tức, đây là cách "tắt" hàm khẩn cấp. Xóa reserved concurrency sau khi thử.</p></div></li>
+    </ol>
+    <div class="note ok">Lab này nằm trong always free (1 triệu request Lambda, 25 GB DynamoDB, 1 triệu request HTTP API trong 12 tháng đầu với account cũ, cần kiểm tra lại). Giữ lại API, Lambda, bảng cho Lab 4 đối chiếu, xóa ở Lab 5.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 2. SNS fan-out ra hai SQS queue, DLQ, filter policy</h3>
+    <ol class="steps">
+      <li><div><p>Tạo topic và ba queue (hai queue nhận, một DLQ):</p>
+<pre><code>aws sns create-topic --name saa-orders
+aws sqs create-queue --queue-name saa-orders-email
+aws sqs create-queue --queue-name saa-orders-analytics
+aws sqs create-queue --queue-name saa-orders-dlq
+# Lấy URL và ARN, ghi lại
+aws sqs get-queue-attributes --queue-url &lt;url-analytics&gt; --attribute-names QueueArn</code></pre></div></li>
+      <li><div><p>Bật DLQ cho queue analytics với <code>maxReceiveCount</code> = 3 và giảm visibility timeout xuống 5 giây để thí nghiệm nhanh. File <code>redrive.json</code> (giá trị RedrivePolicy là chuỗi JSON lồng, phải escape):</p>
+<pre><code>{
+  "VisibilityTimeout": "5",
+  "RedrivePolicy": "{\"deadLetterTargetArn\":\"arn:aws:sqs:ap-northeast-1:&lt;account-id&gt;:saa-orders-dlq\",\"maxReceiveCount\":\"3\"}"
+}</code></pre>
+<pre><code>aws sqs set-queue-attributes --queue-url &lt;url-analytics&gt; --attributes file://redrive.json</code></pre></div></li>
+      <li><div><p>Cho phép SNS gửi vào hai queue (access policy của queue, bước hay quên nhất). File <code>qpolicy-email.json</code>, làm tương tự cho analytics:</p>
+<pre><code>{
+  "Policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"sns.amazonaws.com\"},\"Action\":\"sqs:SendMessage\",\"Resource\":\"arn:aws:sqs:ap-northeast-1:&lt;account-id&gt;:saa-orders-email\",\"Condition\":{\"ArnEquals\":{\"aws:SourceArn\":\"arn:aws:sns:ap-northeast-1:&lt;account-id&gt;:saa-orders\"}}}]}"
+}</code></pre>
+<pre><code>aws sqs set-queue-attributes --queue-url &lt;url-email&gt; --attributes file://qpolicy-email.json
+aws sqs set-queue-attributes --queue-url &lt;url-analytics&gt; --attributes file://qpolicy-analytics.json</code></pre></div></li>
+      <li><div><p>Subscribe hai queue vào topic, bật raw message delivery để message trong queue là body gốc:</p>
+<pre><code>aws sns subscribe --topic-arn arn:aws:sns:ap-northeast-1:&lt;account-id&gt;:saa-orders `
+  --protocol sqs --notification-endpoint arn:aws:sqs:ap-northeast-1:&lt;account-id&gt;:saa-orders-email `
+  --attributes RawMessageDelivery=true --return-subscription-arn
+aws sns subscribe --topic-arn arn:aws:sns:ap-northeast-1:&lt;account-id&gt;:saa-orders `
+  --protocol sqs --notification-endpoint arn:aws:sqs:ap-northeast-1:&lt;account-id&gt;:saa-orders-analytics `
+  --attributes RawMessageDelivery=true --return-subscription-arn</code></pre></div></li>
+      <li><div><p>Publish một message có attribute <code>type=normal</code> rồi nhận ở cả hai queue bằng long polling 10 giây:</p>
+<pre><code>aws sns publish --topic-arn arn:aws:sns:ap-northeast-1:&lt;account-id&gt;:saa-orders `
+  --message '{\"orderId\":101,\"total\":40}' `
+  --message-attributes '{\"type\":{\"DataType\":\"String\",\"StringValue\":\"normal\"}}'
+aws sqs receive-message --queue-url &lt;url-email&gt; --wait-time-seconds 10
+aws sqs receive-message --queue-url &lt;url-analytics&gt; --wait-time-seconds 10</code></pre>
+<p>Cả hai queue đều có message: đó là fan-out. Nếu queue trống, kiểm tra lại access policy ở bước 3 (Console → SNS → Subscriptions → cột Status phải là Confirmed).</p></div></li>
+      <li><div><p>Thêm filter policy cho subscription email, chỉ nhận <code>type=vip</code>:</p>
+<pre><code>aws sns set-subscription-attributes --subscription-arn &lt;arn-sub-email&gt; `
+  --attribute-name FilterPolicy --attribute-value '{\"type\":[\"vip\"]}'</code></pre>
+<p>Publish thêm hai message, một <code>type=vip</code> (orderId 102) và một <code>type=normal</code> (orderId 103). Nhận lại: queue email chỉ có 102, queue analytics có cả 102 và 103. Xóa message đã đọc bằng <code>aws sqs delete-message --receipt-handle</code> hoặc Console → Purge.</p></div></li>
+      <li><div><p>Thí nghiệm DLQ: publish một message mới, rồi <code>receive-message</code> trên queue analytics <b>4 lần liên tiếp, mỗi lần cách nhau hơn 5 giây, không delete</b>. Lần 1 đến 3 thấy message, lần 4 trống. Kiểm tra DLQ:</p>
+<pre><code>aws sqs get-queue-attributes --queue-url &lt;url-dlq&gt; --attribute-names ApproximateNumberOfMessages</code></pre>
+<p>Message đã sang DLQ vì bị nhận quá <code>maxReceiveCount</code> = 3. Vào Console → SQS → saa-orders-dlq → <b>Start DLQ redrive</b> để đẩy ngược về queue nguồn, đây chính là "redrive" trong đề.</p></div></li>
+      <li><div><p>Đọc lại trên Console: SNS topic → tab Subscriptions xem filter policy; SQS queue → Monitoring xem <code>NumberOfMessagesSent</code>, <code>ApproximateAgeOfOldestMessage</code> (metric hay dùng để cảnh báo consumer chết).</p></div></li>
+    </ol>
+    <div class="note ok">SQS và SNS có 1 triệu request miễn phí mỗi tháng, lab này 0 USD. Queue và topic để không cũng không tốn tiền, nhưng vẫn xóa ở Lab 5 để account sạch.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 3. Build container, đẩy lên ECR, chạy ECS Fargate service sau ALB</h3>
+    <ol class="steps">
+      <li><div><p>Cài <b>Docker Desktop</b> (hoặc Rancher Desktop) trên Windows, bật WSL 2 backend. Kiểm tra <code>docker version</code>. Tạo thư mục <code>saa-web</code> với hai file:</p>
+<pre><code># index.html
+&lt;h1&gt;SAA week 7: hello from Fargate&lt;/h1&gt;
+
+# Dockerfile
+FROM nginx:alpine
+COPY index.html /usr/share/nginx/html/index.html
+EXPOSE 80</code></pre>
+<pre><code>docker build --platform linux/amd64 -t saa-web:1 .
+docker run -d -p 8080:80 saa-web:1
+curl.exe http://localhost:8080      # thấy dòng h1
+docker ps; docker stop &lt;container-id&gt;</code></pre>
+<p><code>--platform linux/amd64</code> để image chạy được trên Fargate x86 kể cả khi build trên máy ARM.</p></div></li>
+      <li><div><p>Tạo ECR repository có scan on push, đăng nhập, tag và push:</p>
+<pre><code>aws ecr create-repository --repository-name saa-web --image-scanning-configuration scanOnPush=true
+aws ecr get-login-password | docker login --username AWS --password-stdin &lt;account-id&gt;.dkr.ecr.ap-northeast-1.amazonaws.com
+docker tag saa-web:1 &lt;account-id&gt;.dkr.ecr.ap-northeast-1.amazonaws.com/saa-web:1
+docker push &lt;account-id&gt;.dkr.ecr.ap-northeast-1.amazonaws.com/saa-web:1
+aws ecr describe-image-scan-findings --repository-name saa-web --image-id imageTag=1</code></pre>
+<p>Ghi lại <b>image URI</b> đầy đủ. Xem kết quả scan trên Console → ECR → saa-web → Images → Vulnerabilities.</p></div></li>
+      <li><div><p>Console → <b>ECS → Clusters → Create cluster</b>: tên <code>saa-cluster</code>, Infrastructure chỉ tick <b>AWS Fargate (serverless)</b>. Không có EC2 nào được tạo.</p></div></li>
+      <li><div><p><b>Task definitions → Create new task definition</b>: family <code>saa-web-task</code>, Launch type <b>Fargate</b>, OS Linux/X86_64, CPU <b>.25 vCPU</b>, Memory <b>.5 GB</b>. <b>Task role</b>: để trống (nginx không gọi AWS). <b>Task execution role</b>: chọn <code>ecsTaskExecutionRole</code> (Console tự tạo nếu chưa có; role này pull ECR và ghi log). Container: name <code>web</code>, Image URI vừa push, port mapping 80/TCP, bật log CloudWatch (awslogs). Create.</p></div></li>
+      <li><div><p>Trong cluster → <b>Services → Create</b>: Compute options <b>Launch type Fargate</b>; Application type Service; task definition <code>saa-web-task</code>; service name <code>saa-web-svc</code>; Desired tasks <b>1</b>. Networking: VPC default (hoặc VPC lab tuần 4), chọn 2 <b>public subnet</b>, Security Group mới <code>saa-task-sg</code> cho phép TCP 80 từ 0.0.0.0/0 (sẽ siết sau), <b>Public IP: Turned on</b> (để task pull image từ ECR mà không cần NAT). Load balancing: <b>Application Load Balancer</b> → Create new, tên <code>saa-alb</code>, listener 80, target group mới <code>saa-web-tg</code> (type IP tự chọn), health check path <code>/</code>. Create service.</p></div></li>
+      <li><div><p>Chờ 2 đến 3 phút tới khi tab Tasks có 1 task <b>Running</b> và target group <b>healthy</b>. Lấy DNS của ALB: Console → EC2 → Load Balancers → saa-alb, hoặc:</p>
+<pre><code>aws elbv2 describe-load-balancers --names saa-alb --query "LoadBalancers[0].DNSName" --output text
+curl.exe http://&lt;dns-cua-alb&gt;</code></pre>
+<p>Mở trong trình duyệt thấy dòng h1. Nếu task lỗi <code>CannotPullContainerError</code>: task không có public IP hoặc execution role sai (đúng như bảng task role với execution role ở mục 7).</p></div></li>
+      <li><div><p>Quan sát: click vào task → tab Networking thấy <b>ENI riêng</b> và private IP của task (awsvpc). Service → <b>Update</b> → Desired tasks 2 → target group có 2 target, ALB chia tải. Đổi lại 1. Service → tab <b>Auto scaling</b> xem cách đặt target tracking theo <code>ALBRequestCountPerTarget</code>. Siết bảo mật: sửa <code>saa-task-sg</code> chỉ cho phép 80 từ Security Group của ALB.</p></div></li>
+    </ol>
+    <div class="note bad">ALB tính khoảng 0,02 đến 0,03 USD/giờ + LCU, Fargate 0,25 vCPU / 0,5 GB khoảng 0,015 USD/giờ (giá Tokyo, cần kiểm tra lại). Để qua đêm khoảng 0,5 USD, để quên một tháng khoảng 30 USD. Làm xong Lab 3 thì sang Lab 5 xóa ALB và service ngay, hoặc ít nhất đặt desired tasks = 0 và xóa ALB.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 4. Làm lại CRUD API bằng CDK (TypeScript) để đối chiếu với Console</h3>
+    <ol class="steps">
+      <li><div><p>Cài Node.js LTS (winget) và CDK CLI, rồi bootstrap account một lần (tạo S3 bucket và role cho CDK deploy):</p>
+<pre><code>winget install OpenJS.NodeJS.LTS
+npm install -g aws-cdk
+cdk --version
+aws sts get-caller-identity --query Account --output text
+cdk bootstrap aws://&lt;account-id&gt;/ap-northeast-1</code></pre></div></li>
+      <li><div><p>Tạo project và chép code Lambda của Lab 1 vào thư mục <code>lambda/</code>:</p>
+<pre><code>mkdir saa-cdk-api; cd saa-cdk-api
+cdk init app --language typescript
+mkdir lambda; copy ..\lambda_function.py lambda\</code></pre></div></li>
+      <li><div><p>Thay nội dung <code>lib/saa-cdk-api-stack.ts</code> bằng đoạn ngắn này (Table + Function + HttpApi):</p>
+<pre><code>import * as cdk from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as apigwv2 from 'aws-cdk-lib/aws-apigatewayv2';
+import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
+
+export class SaaCdkApiStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    const table = new dynamodb.Table(this, 'Items', {
+      partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,   // để cdk destroy xóa luôn bảng
+    });
+
+    const fn = new lambda.Function(this, 'ItemsFn', {
+      runtime: lambda.Runtime.PYTHON_3_12,
+      handler: 'lambda_function.lambda_handler',
+      code: lambda.Code.fromAsset('lambda'),
+      memorySize: 256,
+      timeout: cdk.Duration.seconds(10),
+      environment: { TABLE: table.tableName },
+    });
+    table.grantReadWriteData(fn);                  // tự sinh IAM policy đúng bảng
+
+    const api = new apigwv2.HttpApi(this, 'ItemsApi', {
+      defaultIntegration: new HttpLambdaIntegration('ItemsInt', fn),
+    });
+    new cdk.CfnOutput(this, 'ApiUrl', { value: api.apiEndpoint });
+  }
+}</code></pre>
+<p>Nếu import <code>aws-apigatewayv2-integrations</code> báo lỗi, nâng <code>aws-cdk-lib</code> trong <code>package.json</code> lên bản 2.x mới (module này đã vào aws-cdk-lib ổn định, cần kiểm tra lại phiên bản tối thiểu) rồi <code>npm install</code>.</p></div></li>
+      <li><div><p>Xem CloudFormation template được sinh ra, so với số bước làm tay ở Lab 1, rồi deploy:</p>
+<pre><code>npm run build
+cdk synth | Select-String -Pattern "Type: AWS::" </code></pre>
+<p>Thấy đủ: <code>AWS::DynamoDB::Table</code>, <code>AWS::IAM::Role</code>, <code>AWS::IAM::Policy</code>, <code>AWS::Lambda::Function</code>, <code>AWS::Lambda::Permission</code>, <code>AWS::ApiGatewayV2::Api</code>, <code>Integration</code>, <code>Route</code>, <code>Stage</code>. Ở Lab 1 bạn đã tạo tay từng thứ này.</p>
+<pre><code>cdk deploy      # gõ y khi hỏi về IAM changes
+# Output: SaaCdkApiStack.ApiUrl = https://xxxx.execute-api.ap-northeast-1.amazonaws.com</code></pre></div></li>
+      <li><div><p>Test y hệt Lab 1 với URL mới (PUT, GET, DELETE bằng <code>curl.exe</code>). Mở Console → CloudFormation → stack <code>SaaCdkApiStack</code> → tab Resources để thấy mọi resource có tag của stack. Sửa <code>memorySize</code> thành 512, chạy <code>cdk diff</code> để xem thay đổi, rồi <code>cdk deploy</code> lại.</p></div></li>
+      <li><div><p>Đối chiếu: với CDK, role, policy, permission cho API Gateway gọi Lambda, log group đều được sinh đúng và nhất quán; xóa một lệnh là sạch. Đây là lý do đề thi hay chọn <em>infrastructure as code</em> cho <em>repeatable deployments across accounts / Regions</em>. Dọn ngay:</p>
+<pre><code>cdk destroy     # gõ y</code></pre></div></li>
+    </ol>
+    <div class="note">CDK bootstrap để lại một S3 bucket <code>cdk-hnb659fds-assets-...</code> và vài IAM role; gần như không tốn tiền, giữ lại cho tuần 8 (CloudFormation, Elastic Beanstalk, CDK).</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 5. Dọn dẹp và kiểm tra Billing</h3>
+    <ol class="steps">
+      <li><div><p>ECS và ALB (tốn tiền theo giờ, xóa trước tiên):</p>
+<pre><code>aws ecs update-service --cluster saa-cluster --service saa-web-svc --desired-count 0
+aws ecs delete-service --cluster saa-cluster --service saa-web-svc --force
+aws elbv2 delete-load-balancer --load-balancer-arn &lt;alb-arn&gt;
+aws elbv2 delete-target-group --target-group-arn &lt;tg-arn&gt;
+aws ecs delete-cluster --cluster saa-cluster
+aws ecs deregister-task-definition --task-definition saa-web-task:1
+aws ecr delete-repository --repository-name saa-web --force
+aws ec2 delete-security-group --group-id &lt;sg-task&gt;; aws ec2 delete-security-group --group-id &lt;sg-alb&gt;</code></pre>
+<p>Kiểm tra lại Console → EC2 → Load Balancers và Target Groups trống; ECS → Clusters trống. Trên máy: <code>docker image prune -a</code> nếu muốn.</p></div></li>
+      <li><div><p>API, Lambda, DynamoDB của Lab 1 và CDK:</p>
+<pre><code>aws apigatewayv2 delete-api --api-id &lt;ApiId&gt;
+aws lambda delete-function --function-name saa-items-api
+aws dynamodb delete-table --table-name saa-items
+aws iam delete-role-policy --role-name saa-items-lambda-role --policy-name ddb
+aws iam detach-role-policy --role-name saa-items-lambda-role --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+aws iam delete-role --role-name saa-items-lambda-role
+aws logs delete-log-group --log-group-name /aws/lambda/saa-items-api
+cdk destroy    # nếu Lab 4 chưa destroy; kiểm tra CloudFormation → Stacks không còn SaaCdkApiStack</code></pre></div></li>
+      <li><div><p>SNS và SQS của Lab 2:</p>
+<pre><code>aws sns delete-topic --topic-arn arn:aws:sns:ap-northeast-1:&lt;account-id&gt;:saa-orders
+aws sqs delete-queue --queue-url &lt;url-email&gt;
+aws sqs delete-queue --queue-url &lt;url-analytics&gt;
+aws sqs delete-queue --queue-url &lt;url-dlq&gt;</code></pre></div></li>
+      <li><div><p>Kiểm tra tổng: <code>aws resourcegroupstaggingapi get-resources --region ap-northeast-1 --query "ResourceTagMappingList[].ResourceARN"</code> để liệt kê resource còn lại trong Region (không liệt kê hết mọi loại nhưng đủ bắt ALB, ECS, Lambda, SQS). Mở <b>Billing and Cost Management → Bills</b> xem dòng Elastic Load Balancing và ECS (Fargate) chỉ vài cent. Mở <b>Cost Explorer</b> lọc theo dịch vụ 7 ngày gần nhất.</p></div></li>
+    </ol>
+    <div class="note ok">Tuần này nếu xóa ALB và Fargate trong ngày thì hóa đơn dưới 2 USD. Tuần 8 có KMS key (1 USD/tháng mỗi key) và vài dịch vụ bảo mật có phí, nhớ đọc phần chi phí trước khi làm lab.</div>
+  </div>
+</section>
+
+<!-- ============ MỐC KIỂM TRA ============ -->
+<section id="moc">
+  <span class="eyebrow">Mốc kiểm tra</span>
+  <h2>Hai câu phải tự nói được không nhìn tài liệu</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>1. Khi nào dùng SQS, SNS, EventBridge, Kinesis?</h3>
+      <p style="font-size:.94rem">Gợi ý khung trả lời (che lại rồi tự nói):</p>
+      <ul style="font-size:.94rem">
+        <li><b>SQS</b>: hàng đợi, consumer <b>pull</b>, mỗi message <b>một</b> consumer xử lý rồi xóa. Dùng để <b>decouple</b> và <b>buffer</b> (web tier → queue → worker). Standard: không giới hạn, at-least-once; FIFO: thứ tự + exactly-once, 300/3.000 msg/s. Nhớ visibility timeout, DLQ, long polling.</li>
+        <li><b>SNS</b>: pub/sub, <b>push</b> tới <b>nhiều</b> subscriber ngay, không lưu. Dùng để <b>fan-out</b> (SNS → nhiều SQS) và gửi cho <b>người</b> (email, SMS, push). Filter policy để lọc.</li>
+        <li><b>EventBridge</b>: event bus, rule <b>định tuyến theo nội dung</b>; nguồn là dịch vụ AWS, SaaS partner, app của bạn; có <b>schedule</b>, <b>archive / replay</b>, schema registry. Dùng cho tích hợp event-driven giữa nhiều dịch vụ và lịch chạy.</li>
+        <li><b>Kinesis</b>: <b>streaming real-time</b> tốc độ MB/s, dữ liệu giữ trong shard 24 giờ đến 365 ngày, <b>nhiều consumer đọc cùng dữ liệu</b>, <b>replay</b>, thứ tự theo partition key. Firehose khi chỉ cần đổ vào S3 / Redshift / OpenSearch gần real-time.</li>
+        <li>Kể được 1 ví dụ mỗi loại: đơn hàng vào SQS cho worker; thông báo đơn tới kho + hóa đơn + email qua SNS; EC2 terminate tạo ticket qua EventBridge; clickstream phân tích theo phút qua Kinesis.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>2. ECS trên EC2 khác Fargate ở đâu?</h3>
+      <p style="font-size:.94rem">Gợi ý khung trả lời:</p>
+      <ul style="font-size:.94rem">
+        <li>Cùng ECS (cluster, task definition, service), khác ở <b>ai quản lý host</b>: EC2 là bạn (instance type, AMI, vá OS, ECS agent, ASG); Fargate là AWS, bạn chỉ khai báo vCPU / memory cho task.</li>
+        <li><b>Tính tiền</b>: EC2 theo instance chạy (trả cả chỗ trống, dùng được RI / Spot); Fargate theo vCPU và memory của từng task theo giây.</li>
+        <li><b>Khi nào chọn EC2</b>: GPU, mật độ cao tải ổn định để rẻ hơn, cần truy cập host / docker daemon, network mode bridge / host, RI sẵn có. <b>Khi nào chọn Fargate</b>: <em>serverless</em>, <em>least operational overhead</em>, tải biến động, nhiều service nhỏ, cô lập từng task bằng ENI riêng (awsvpc bắt buộc).</li>
+        <li><b>Scale</b>: EC2 có hai tầng (task và instance, cần capacity provider managed scaling); Fargate chỉ một tầng task.</li>
+        <li>Kể được: task role (ứng dụng) khác task execution role (pull ECR, ghi log) ở cả hai launch type.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TỪ KHÓA ============ -->
+<section id="tukhoa">
+  <span class="eyebrow">Ôn nhanh</span>
+  <h2>Bảng từ khóa tuần 7</h2>
+  <div class="tbl"><table>
+    <tr><th>Đề bài có chữ</th><th>Nghĩ ngay tới</th></tr>
+    <tr><td><em>event-driven</em>, <em>pay only for compute used</em>, chạy dưới 15 phút</td><td>Lambda</td></tr>
+    <tr><td><em>cold start</em>, <em>consistent low latency</em></td><td>Provisioned concurrency (SnapStart cho Java)</td></tr>
+    <tr><td><em>limit concurrency</em>, bảo vệ downstream, tắt hàm khẩn cấp</td><td>Reserved concurrency</td></tr>
+    <tr><td>Lambda cần vào RDS private / cần Internet từ VPC</td><td>Lambda trong VPC / private subnet + NAT Gateway</td></tr>
+    <tr><td>Sự kiện async bị lỗi, không được mất</td><td>Lambda DLQ hoặc on-failure destination</td></tr>
+    <tr><td><em>customize content at the edge</em></td><td>Lambda@Edge; việc nhẹ → CloudFront Functions</td></tr>
+    <tr><td><em>lowest cost</em> API proxy tới Lambda, JWT</td><td>HTTP API</td></tr>
+    <tr><td><em>API keys</em>, <em>usage plans</em>, <em>caching</em>, <em>WAF</em>, private API</td><td>REST API</td></tr>
+    <tr><td>429 từ API Gateway</td><td>Throttling: tăng limit, usage plan, hoặc SQS buffer</td></tr>
+    <tr><td>Backend quá 29 giây, 504</td><td>Chuyển sang bất đồng bộ (SQS, Step Functions)</td></tr>
+    <tr><td>Người dùng app đăng nhập gọi API</td><td>Cognito User Pool authorizer / JWT authorizer</td></tr>
+    <tr><td><em>two-way real-time</em>, chat</td><td>WebSocket API (hoặc AppSync subscription)</td></tr>
+    <tr><td><em>orchestrate</em>, <em>visual workflow</em>, <em>human approval</em>, retry không code</td><td>Step Functions (Standard; Express cho tốc độ cao ngắn)</td></tr>
+    <tr><td><em>decouple</em>, <em>buffer</em>, <em>absorb traffic spikes</em></td><td>SQS</td></tr>
+    <tr><td><em>exactly once</em>, <em>preserve order</em></td><td>SQS FIFO (MessageGroupId) / SNS FIFO</td></tr>
+    <tr><td><em>processed twice</em>, duplicate processing</td><td>Visibility timeout quá ngắn</td></tr>
+    <tr><td><em>poison message</em>, message lỗi lặp</td><td>DLQ + maxReceiveCount, redrive</td></tr>
+    <tr><td><em>reduce cost of polling</em>, empty responses</td><td>Long polling (WaitTimeSeconds 20)</td></tr>
+    <tr><td>Message lớn hơn 256 KB</td><td>SQS Extended Client Library (S3)</td></tr>
+    <tr><td><em>scale workers based on queue length</em></td><td>ASG + ApproximateNumberOfMessagesVisible / backlog per instance</td></tr>
+    <tr><td><em>fan-out</em>, <em>notify multiple systems</em>, email / SMS / push</td><td>SNS (→ nhiều SQS)</td></tr>
+    <tr><td><em>subscribers receive only certain messages</em></td><td>SNS filter policy</td></tr>
+    <tr><td><em>react to AWS events</em>, <em>SaaS events</em>, <em>route by content</em></td><td>EventBridge rule / partner bus</td></tr>
+    <tr><td><em>cron</em>, <em>schedule</em>, <em>time zone</em>, <em>one-time</em></td><td>EventBridge Scheduler</td></tr>
+    <tr><td><em>replay events</em>, xử lý lại sự kiện cũ</td><td>EventBridge archive + replay (hoặc Kinesis retention)</td></tr>
+    <tr><td><em>real-time streaming</em>, clickstream, IoT, MB/s, nhiều consumer</td><td>Kinesis Data Streams (shard, enhanced fan-out)</td></tr>
+    <tr><td><em>near real-time</em> đổ vào S3 / Redshift / OpenSearch, <em>least effort</em></td><td>Data Firehose (+ Lambda transform, Parquet)</td></tr>
+    <tr><td><em>SQL on streaming data</em>, windowed analytics</td><td>Managed Service for Apache Flink</td></tr>
+    <tr><td><em>hot shard</em>, ProvisionedThroughputExceeded</td><td>Partition key phân tán hơn, thêm shard, on-demand</td></tr>
+    <tr><td><em>serverless containers</em>, <em>no infrastructure to manage</em></td><td>Fargate</td></tr>
+    <tr><td>GPU, mật độ cao, RI sẵn có, cần host access</td><td>ECS trên EC2</td></tr>
+    <tr><td><em>Kubernetes</em>, <em>portable</em>, hybrid / multi-cloud</td><td>EKS</td></tr>
+    <tr><td>Deploy web app container <em>fastest</em>, <em>least overhead</em></td><td>App Runner</td></tr>
+    <tr><td>Container pull image / ghi log lỗi vs app AccessDenied</td><td>Task execution role vs task role</td></tr>
+    <tr><td><em>JMS</em>, <em>AMQP</em>, <em>MQTT</em>, ActiveMQ, RabbitMQ, migrate không sửa code</td><td>Amazon MQ</td></tr>
+    <tr><td><em>GraphQL</em>, <em>real-time subscription</em>, <em>offline sync</em></td><td>AppSync</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ CHECKLIST ============ -->
+<section id="checklist">
+  <span class="eyebrow">Theo dõi</span>
+  <h2>Checklist tuần 7</h2>
+  <p style="font-size:.94rem;color:var(--muted)">Tick ở đây để tự theo dõi trên máy này. Khi xong mục nào, nói với Claude trong session để tick vào <code>AWS-SAA-checklist.md</code>.</p>
+  <div class="card">
+    <h4>Lý thuyết</h4>
+    <label class="check"><input type="checkbox" id="c1" data-ck><span>Lambda: limit, concurrency, layer, chạy trong VPC, event source</span></label>
+    <label class="check"><input type="checkbox" id="c2" data-ck><span>API Gateway: REST với HTTP API, throttling, cache, authorizer</span></label>
+    <label class="check"><input type="checkbox" id="c3" data-ck><span>Step Functions</span></label>
+    <label class="check"><input type="checkbox" id="c4" data-ck><span>SQS: standard với FIFO, DLQ, visibility timeout, long polling</span></label>
+    <label class="check"><input type="checkbox" id="c5" data-ck><span>SNS: topic, fan-out, filter policy</span></label>
+    <label class="check"><input type="checkbox" id="c6" data-ck><span>EventBridge</span></label>
+    <label class="check"><input type="checkbox" id="c7" data-ck><span>Kinesis: Data Streams, Firehose, Data Analytics (Managed Flink), Video Streams</span></label>
+    <label class="check"><input type="checkbox" id="c8" data-ck><span>ECS, EKS, Fargate, ECR, App Runner</span></label>
+    <label class="check"><input type="checkbox" id="c9" data-ck><span>Amazon MQ, AppSync (nhận diện)</span></label>
+    <h4>Hands-on</h4>
+    <label class="check"><input type="checkbox" id="c10" data-ck><span>API Gateway + Lambda + DynamoDB thành CRUD API, test bằng curl</span></label>
+    <label class="check"><input type="checkbox" id="c11" data-ck><span>SNS fan-out ra hai SQS queue, bật DLQ cho một queue, thử filter policy</span></label>
+    <label class="check"><input type="checkbox" id="c12" data-ck><span>Build container, đẩy lên ECR, chạy bằng Fargate sau ALB</span></label>
+    <label class="check"><input type="checkbox" id="c13" data-ck><span>Làm lại CRUD API bằng CDK để đối chiếu với lần làm trên console</span></label>
+    <h4>Mốc kiểm tra</h4>
+    <label class="check"><input type="checkbox" id="c14" data-ck><span>Giải thích được khi nào dùng SQS, SNS, EventBridge, Kinesis</span></label>
+    <label class="check"><input type="checkbox" id="c15" data-ck><span>Giải thích được ECS trên EC2 khác Fargate ở đâu</span></label>
+    <h4>Khác</h4>
+    <label class="check"><input type="checkbox" id="c16" data-ck><span>Đã xóa ALB, ECS service / cluster, ECR, API, Lambda, DynamoDB, cdk destroy; Billing tuần này dưới 2 USD</span></label>
+    <label class="check"><input type="checkbox" id="c17" data-ck><span>Quiz tuần 7 đạt từ 80%</span></label>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  // Xem đáp án
+  document.querySelectorAll('[data-reveal]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var a=b.parentElement.querySelector('.ans');
+      a.hidden=!a.hidden; b.textContent=a.hidden?'Xem đáp án':'Ẩn đáp án';
+    });
+  });
+  // Checklist lưu trên máy này
+  var boxes=document.querySelectorAll('[data-ck]'), KEY='saa-tuan-07';
+  var saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  function update(){
+    var n=0; boxes.forEach(function(c){ c.closest('.check').classList.toggle('done',c.checked); if(c.checked)n++; });
+    document.getElementById('bar').style.width=(n/boxes.length*100)+'%';
+    document.getElementById('pct').textContent=n+'/'+boxes.length;
+  }
+  boxes.forEach(function(c){
+    if(saved[c.id])c.checked=true;
+    c.addEventListener('change',function(){ saved[c.id]=c.checked; try{ localStorage.setItem(KEY,JSON.stringify(saved)); }catch(e){} update(); });
+  });
+  update();
+  // Đánh dấu mục đang đọc
+  var links=document.querySelectorAll('.toc a'), secs=[];
+  links.forEach(function(l){ var s=document.querySelector(l.getAttribute('href')); if(s)secs.push([s,l]); });
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ links.forEach(function(l){l.classList.remove('active')}); secs.forEach(function(p){ if(p[0]===e.target)p[1].classList.add('active'); }); } }); },{rootMargin:'-20% 0px -70% 0px'});
+    secs.forEach(function(p){ io.observe(p[0]); });
+  }
+})();
+</script>

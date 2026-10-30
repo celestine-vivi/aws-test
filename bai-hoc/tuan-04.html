@@ -1,0 +1,882 @@
+<title>SAA Tuần 4 VPC</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky mục lục bên trái (desktop), cột nội dung 760px bên phải; xếp một cột ở màn hẹp. */
+:root{
+  --bg:#f2f4f7; --surface:#ffffff; --surface-2:#e9edf2; --line:#d3dae3;
+  --fg:#172030; --muted:#5a6676; --accent:#1c6e8c; --accent-soft:#dcecf3;
+  --warm:#b35a00; --warm-soft:#fbe9d6; --ok:#2a7d4f; --ok-soft:#dcf0e4; --bad:#b3362b; --bad-soft:#f8dedb;
+  --display:"Manrope","IBM Plex Sans",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+a{color:var(--accent)}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:800}
+h2{font-size:1.5rem;font-weight:800;padding-top:8px}
+h3{font-size:1.12rem;font-weight:700}
+h4{font-size:.95rem;font-weight:700}
+p{margin:0}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+pre{font-family:var(--mono);font-size:.84rem;line-height:1.5;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:0}
+pre code{background:none;padding:0;font-size:inherit}
+em{color:var(--warm);font-style:italic}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* Header */
+.hero{max-width:1120px;margin:0 auto;padding-block:36px 20px;display:flex;flex-direction:column;gap:12px}
+.hero .lead{max-width:62ch;color:var(--muted);font-size:1.02rem}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.88rem;color:var(--muted)}
+.meta b{color:var(--fg);font-weight:600}
+.progress{display:flex;align-items:center;gap:12px;font-size:.88rem;color:var(--muted)}
+.bar{flex:1;max-width:320px;height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+
+/* Two columns */
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;align-items:start}
+.toc{position:sticky;top:max(12px,env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:2px;font-size:.9rem}
+.toc a{color:var(--muted);text-decoration:none;padding:6px 10px;border-left:2px solid var(--line);display:block}
+.toc a:hover,.toc a.active{color:var(--fg);border-left-color:var(--accent)}
+.toc .grp{margin-top:10px}
+main{display:flex;flex-direction:column;gap:56px;min-width:0;max-width:780px}
+section{display:flex;flex-direction:column;gap:18px;scroll-margin-top:16px}
+@media (max-width:860px){ .wrap{grid-template-columns:1fr;gap:24px} .toc{position:static;flex-direction:row;flex-wrap:wrap;gap:6px} .toc a{border:1px solid var(--line);border-radius:99px;padding:4px 10px} .toc .grp{margin:0} .toc a.active{border-color:var(--accent)} }
+
+/* Blocks */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.block{display:flex;flex-direction:column;gap:8px}
+.block > .eyebrow{color:var(--accent)}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:5px}
+li::marker{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.kw{display:flex;flex-wrap:wrap;gap:8px}
+.kw span{background:var(--warm-soft);color:var(--warm);border-radius:4px;padding:3px 9px;font-size:.86rem;font-style:italic}
+.kw span b{font-style:normal;font-weight:600;color:var(--fg)}
+.note{border-left:3px solid var(--warm);background:var(--warm-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.94rem}
+.note.ok{border-color:var(--ok);background:var(--ok-soft)}
+.note.bad{border-color:var(--bad);background:var(--bad-soft)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;font-size:.84rem}
+tr:last-child td{border-bottom:0}
+td.c{text-align:center}
+
+/* Checklist */
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:6px;cursor:pointer}
+.check:hover{background:var(--surface-2)}
+.check input{margin-top:5px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.check.done{color:var(--muted);text-decoration:line-through}
+
+/* Quiz reveal */
+.q{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.q .qt{font-weight:500}
+.q button{align-self:flex-start;font:inherit;font-size:.86rem;padding:5px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer}
+.q button:hover{background:var(--accent);color:var(--surface)}
+.q button:focus-visible,.check input:focus-visible,.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.q .ans{font-size:.94rem;border-top:1px dashed var(--line);padding-top:8px}
+.q .ans b{color:var(--ok)}
+
+/* Steps */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:12px;padding:0;list-style:none}
+.steps li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:start}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--mono);font-size:.8rem;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:500;margin-top:2px}
+.steps li > div{display:flex;flex-direction:column;gap:6px;min-width:0}
+
+/* Flow diagram */
+.flow{display:flex;flex-direction:column;gap:0;align-items:stretch;max-width:520px}
+.flow .n{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:.94rem}
+.flow .n .tag{font-family:var(--mono);font-size:.74rem;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.tag.deny{background:var(--bad-soft);color:var(--bad)} .tag.allow{background:var(--ok-soft);color:var(--ok)} .tag.next{background:var(--surface-2);color:var(--muted)}
+.flow .arrow{height:22px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--mono);font-size:.78rem}
+.flow .arrow::before{content:"";width:1px;height:100%;background:var(--line);position:absolute}
+.flow .arrow{position:relative} .flow .arrow span{background:var(--bg);padding:0 6px;position:relative}
+
+svg text{font-family:var(--body)}
+.diag{overflow-x:auto}
+.diag svg{width:100%;max-width:700px;height:auto;display:block}
+.sv-region{fill:var(--surface);stroke:var(--accent)} .sv-az{fill:var(--accent-soft);stroke:var(--accent)} .sv-edge{fill:var(--warm-soft);stroke:var(--warm)}
+.sv-t{fill:var(--fg);font-size:13px} .sv-m{fill:var(--muted);font-size:11px} .sv-line{stroke:var(--line)}
+.sv-sub{fill:var(--surface);stroke:var(--line)} .sv-ok{fill:var(--ok-soft);stroke:var(--ok)}
+@media (prefers-reduced-motion: reduce){ .bar i{transition:none} }
+</style>
+
+<header class="hero">
+  <span class="eyebrow">AWS SAA-C03 · Lộ trình 12 tuần · Tuần 4</span>
+  <h1>VPC: mạng riêng trên AWS</h1>
+  <p class="lead">Tuần này là nửa đầu khối Networking, khối nặng nhất của đề SAA. Học sáu mục: cách chia VPC thành subnet và route table, các cổng ra Internet (IGW, NAT, Egress-only), hai lớp tường lửa Security Group và NACL, VPC endpoint, nối VPC với nhau (peering, Transit Gateway) và nối về on-premises (VPN, Direct Connect). Mục tiêu cuối tuần: tự vẽ lại VPC hai AZ không nhìn console và kể được một gói tin từ private EC2 ra Internet đi qua những gì. Tuần 5 học tiếp ELB, Auto Scaling, Route 53, CloudFront, Global Accelerator rồi mới làm quiz chung của khối.</p>
+  <div class="meta"><span>Nhịp học: <b>2 giờ/ngày</b></span><span>Domain liên quan: <b>SEC 30%</b>, <b>RES 26%</b></span><span>Chi phí lab tuần này: <b>khoảng 1 đến 2 USD</b> nếu xóa NAT Gateway trong ngày</span></div>
+  <div class="progress"><span>Tiến độ checklist</span><div class="bar"><i id="bar"></i></div><span id="pct">0/16</span></div>
+</header>
+
+<div class="wrap">
+<nav class="toc" aria-label="Mục lục">
+  <a href="#ke-hoach">Kế hoạch 7 ngày</a>
+  <span class="grp eyebrow">Lý thuyết</span>
+  <a href="#vpc">1. VPC, CIDR, subnet, route table</a>
+  <a href="#gateway">2. IGW, NAT, Egress-only IGW</a>
+  <a href="#sg-nacl">3. Security Group với NACL</a>
+  <a href="#endpoint">4. VPC endpoint, PrivateLink</a>
+  <a href="#peering-tgw">5. Peering, Transit Gateway</a>
+  <a href="#vpn-dx">6. VPN, Direct Connect</a>
+  <span class="grp eyebrow">Thực hành</span>
+  <a href="#handson">Hands-on 5 lab</a>
+  <a href="#moc">Mốc kiểm tra</a>
+  <a href="#tukhoa">Bảng từ khóa đề thi</a>
+  <a href="#checklist">Checklist tuần</a>
+</nav>
+
+<main>
+
+<section id="ke-hoach">
+  <h2>Kế hoạch 7 ngày</h2>
+  <p>Lab 2, 3 và 4 dùng chung bastion và NAT Gateway, nên gom vào cùng một buổi rồi xóa NAT ngay cuối buổi. NAT Gateway tính tiền theo giờ kể cả khi không có traffic, để quên một đêm mất khoảng 1,5 USD.</p>
+  <div class="tbl"><table>
+    <tr><th>Ngày</th><th>Lý thuyết</th><th>Hands-on</th></tr>
+    <tr><td>1</td><td>VPC, CIDR, subnet, route table</td><td>Lab 1: dựng VPC hai AZ bằng "VPC and more", tự kiểm tra từng thành phần (miễn phí)</td></tr>
+    <tr><td>2</td><td>IGW, NAT Gateway, NAT Instance, Egress-only IGW</td><td>Lab 2 và Lab 3 liền nhau: NAT Gateway, bastion, SSH nhảy vào private EC2, gateway endpoint S3. <b>Xóa NAT Gateway cuối buổi</b></td></tr>
+    <tr><td>3</td><td>Security Group với NACL</td><td>Lab 4: NACL deny một IP, quan sát SG không chặn được (chỉ cần bastion, không cần NAT)</td></tr>
+    <tr><td>4</td><td>VPC endpoint, PrivateLink; VPC peering, Transit Gateway</td><td>Xem lại route table có prefix list của endpoint; vẽ sơ đồ 3 VPC nối peering và nối Transit Gateway để thấy khác nhau</td></tr>
+    <tr><td>5</td><td>Site-to-Site VPN, Client VPN, Direct Connect</td><td>Lab 5: dọn dẹp, release Elastic IP, terminate EC2, kiểm tra Billing</td></tr>
+    <tr><td>6 đến 7</td><td>Ôn ba mốc kiểm tra, tự vẽ VPC trên giấy, đọc lại bảng từ khóa</td><td>Nói "cho mini quiz 15 câu VPC" trong session để tự kiểm tra. Quiz chung của khối là <code>quiz/tuan-04-05.md</code> (40 câu), làm ở cuối tuần 5</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ 1. VPC ============ -->
+<section id="vpc">
+  <span class="eyebrow">Lý thuyết 1 / 6</span>
+  <h2>VPC, CIDR, subnet, route table</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <ul>
+        <li><b>VPC</b> (Virtual Private Cloud): một mạng riêng ảo, cô lập về logic, nằm trong <b>một Region</b> và trải trên mọi AZ của Region đó. Mọi thứ có địa chỉ IP (EC2, RDS, Lambda trong VPC, ALB, interface endpoint) đều phải nằm trong một VPC. Mỗi Region được tối đa 5 VPC mặc định (quota, nâng được).</li>
+        <li><b>CIDR</b> của VPC: từ <b>/16</b> (65.536 địa chỉ) đến <b>/28</b> (16 địa chỉ). Nên dùng dải private theo RFC 1918: <code>10.0.0.0/8</code>, <code>172.16.0.0/12</code>, <code>192.168.0.0/16</code>. CIDR chính không đổi được sau khi tạo, nhưng thêm được <b>secondary CIDR</b> (quota mặc định 5 dải, cần kiểm tra lại) khi hết IP. Chọn CIDR phải nghĩ trước tới việc peering hay VPN về công ty: <b>trùng dải là không nối được</b>.</li>
+        <li><b>Subnet</b>: một lát cắt CIDR của VPC, nằm trong <b>đúng một AZ</b>, không trải AZ. CIDR subnet cũng từ /16 đến /28 và không được chồng nhau. Trong mỗi subnet AWS <b>giữ 5 địa chỉ</b>: địa chỉ đầu (network), địa chỉ thứ hai (VPC router), thứ ba (DNS resolver, Route 53 Resolver), thứ tư (dự phòng), và địa chỉ cuối (broadcast, VPC không hỗ trợ broadcast nhưng vẫn giữ). Subnet /24 thực dùng được 251 IP, subnet /28 chỉ còn 11 IP.</li>
+        <li><b>Route table</b>: bảng định tuyến, mỗi subnet gắn với <b>đúng một</b> route table, một route table gắn được nhiều subnet. Subnet không gắn rõ ràng thì tự dùng <b>main route table</b> của VPC. Mọi route table luôn có dòng <b>local</b> (CIDR của VPC → local) để các subnet trong VPC nói chuyện với nhau; dòng này không xóa, không sửa được. Chọn route theo <b>longest prefix match</b>: dải hẹp hơn thắng, <code>0.0.0.0/0</code> chỉ là đường đi cuối cùng.</li>
+        <li><b>Public subnet với private subnet</b>: khác nhau <b>chỉ ở route table</b>. Subnet có route <code>0.0.0.0/0 → igw-xxx</code> là public; không có thì là private. Không có cờ "public" nào trên subnet. Instance ở public subnet còn cần <b>public IPv4</b> (auto-assign hoặc Elastic IP) mới ra Internet được.</li>
+        <li><b>Default VPC</b>: AWS tạo sẵn mỗi Region một VPC <code>172.31.0.0/16</code>, mỗi AZ một public subnet /20, có IGW, main route table đã trỏ <code>0.0.0.0/0</code> ra IGW, instance tự nhận public IP. Tiện để thử nhanh, không dùng cho production.</li>
+        <li><b>IPv6 cơ bản</b>: VPC nhận một dải <b>/56</b> do AWS cấp (hoặc dải tự mang qua BYOIP), mỗi subnet một dải <b>/64</b>. Địa chỉ IPv6 trên AWS đều là <b>global unicast, route được trên Internet</b>, không có khái niệm NAT cho IPv6. Muốn subnet IPv6 chỉ ra không vào thì dùng Egress-only Internet Gateway (mục 2). IPv6 chạy song song IPv4 (dual-stack); từ 2024 có cả subnet IPv6-only.</li>
+        <li><b>DNS trong VPC</b>: hai cờ <code>enableDnsSupport</code> và <code>enableDnsHostnames</code>. Cả hai phải bật thì instance mới có hostname <code>ip-10-0-2-15.ap-northeast-1.compute.internal</code> và private DNS của interface endpoint mới hoạt động. DHCP option set quyết định DNS server mà instance dùng (mặc định là AmazonProvidedDNS ở địa chỉ thứ hai của VPC, hay gọi là <code>.2</code>).</li>
+      </ul>
+    </div>
+
+    <div class="block diag"><span class="eyebrow">Hình dung: VPC hai AZ, chính là thứ bạn dựng ở Lab 1 và 2</span>
+      <svg viewBox="0 0 700 460" role="img" aria-label="Sơ đồ VPC 10.0.0.0/16 có hai AZ, mỗi AZ một public subnet và một private subnet, Internet Gateway ở trên, NAT Gateway trong public subnet, route table của public subnet trỏ 0.0.0.0/0 ra IGW, route table của private subnet trỏ 0.0.0.0/0 vào NAT">
+        <rect x="280" y="8" width="140" height="30" rx="8" class="sv-edge" stroke-width="1.5"/>
+        <text x="350" y="28" text-anchor="middle" class="sv-t" font-weight="600">Internet</text>
+        <line x1="350" y1="38" x2="350" y2="60" class="sv-line" stroke-width="2"/>
+        <rect x="20" y="60" width="660" height="392" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="36" y="84" class="sv-t" font-weight="600">VPC saa-vpc 10.0.0.0/16 (Region ap-northeast-1)</text>
+        <rect x="280" y="66" width="140" height="28" rx="6" class="sv-edge" stroke-width="1.5"/>
+        <text x="350" y="85" text-anchor="middle" class="sv-t" font-weight="600">Internet Gateway</text>
+        <rect x="40" y="110" width="305" height="330" rx="8" class="sv-az" stroke-width="1.5"/>
+        <rect x="355" y="110" width="305" height="330" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="52" y="130" class="sv-t" font-weight="600">AZ ap-northeast-1a</text>
+        <text x="367" y="130" class="sv-t" font-weight="600">AZ ap-northeast-1c</text>
+        <rect x="52" y="142" width="281" height="120" rx="6" class="sv-sub" stroke-width="1.5"/>
+        <rect x="367" y="142" width="281" height="120" rx="6" class="sv-sub" stroke-width="1.5"/>
+        <text x="62" y="160" class="sv-t" font-weight="600">Public subnet 10.0.0.0/24</text>
+        <text x="377" y="160" class="sv-t" font-weight="600">Public subnet 10.0.1.0/24</text>
+        <rect x="62" y="170" width="120" height="36" rx="5" class="sv-ok" stroke-width="1.5"/>
+        <text x="122" y="185" text-anchor="middle" class="sv-t">NAT Gateway</text>
+        <text x="122" y="200" text-anchor="middle" class="sv-m">+ Elastic IP</text>
+        <rect x="196" y="170" width="128" height="36" rx="5" class="sv-ok" stroke-width="1.5"/>
+        <text x="260" y="185" text-anchor="middle" class="sv-t">Bastion EC2</text>
+        <text x="260" y="200" text-anchor="middle" class="sv-m">SG: SSH từ IP bạn</text>
+        <rect x="377" y="170" width="120" height="36" rx="5" class="sv-ok" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <text x="437" y="185" text-anchor="middle" class="sv-t">NAT Gateway 2</text>
+        <text x="437" y="200" text-anchor="middle" class="sv-m">(production, cho HA)</text>
+        <text x="62" y="226" class="sv-m">Route table public (dùng chung 2 subnet):</text>
+        <text x="62" y="241" class="sv-m">10.0.0.0/16 → local   0.0.0.0/0 → igw</text>
+        <text x="377" y="226" class="sv-m">Route table public (dùng chung 2 subnet):</text>
+        <text x="377" y="241" class="sv-m">10.0.0.0/16 → local   0.0.0.0/0 → igw</text>
+        <rect x="52" y="276" width="281" height="150" rx="6" class="sv-sub" stroke-width="1.5"/>
+        <rect x="367" y="276" width="281" height="150" rx="6" class="sv-sub" stroke-width="1.5"/>
+        <text x="62" y="294" class="sv-t" font-weight="600">Private subnet 10.0.2.0/24</text>
+        <text x="377" y="294" class="sv-t" font-weight="600">Private subnet 10.0.3.0/24</text>
+        <rect x="62" y="304" width="128" height="36" rx="5" class="sv-ok" stroke-width="1.5"/>
+        <text x="126" y="319" text-anchor="middle" class="sv-t">App EC2</text>
+        <text x="126" y="334" text-anchor="middle" class="sv-m">chỉ private IP 10.0.2.x</text>
+        <rect x="377" y="304" width="128" height="36" rx="5" class="sv-ok" stroke-width="1.5"/>
+        <text x="441" y="319" text-anchor="middle" class="sv-t">App EC2</text>
+        <text x="441" y="334" text-anchor="middle" class="sv-m">chỉ private IP 10.0.3.x</text>
+        <text x="62" y="362" class="sv-m">Route table private-1a:</text>
+        <text x="62" y="377" class="sv-m">10.0.0.0/16 → local   0.0.0.0/0 → nat-1a</text>
+        <text x="62" y="392" class="sv-m">pl-s3 → vpce (gateway endpoint, Lab 3)</text>
+        <text x="377" y="362" class="sv-m">Route table private-1c:</text>
+        <text x="377" y="377" class="sv-m">10.0.0.0/16 → local   0.0.0.0/0 → nat-1c</text>
+        <text x="377" y="392" class="sv-m">(lab: tạm trỏ nat-1a, production thì nat-1c)</text>
+        <line x1="126" y1="304" x2="126" y2="206" class="sv-line" stroke-width="2"/>
+        <line x1="122" y1="170" x2="122" y2="150" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="280" y1="80" x2="186" y2="150" class="sv-line" stroke-width="2"/>
+        <line x1="420" y1="80" x2="437" y2="150" class="sv-line" stroke-width="2" stroke-dasharray="4 3"/>
+        <text x="350" y="444" text-anchor="middle" class="sv-m">Public hay private chỉ khác ở route 0.0.0.0/0 → igw. Subnet gắn một AZ; NAT Gateway cũng gắn một AZ.</text>
+      </svg>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Cách chia CIDR hay dùng</span>
+        <ul>
+          <li>VPC <code>10.0.0.0/16</code>, mỗi subnet <code>/24</code> (251 IP) đủ cho lab và hầu hết workload; production hay dùng /20 cho subnet có Auto Scaling, EKS, Lambda lớn.</li>
+          <li>Mỗi AZ ít nhất một public và một private subnet; đặt ALB, NAT, bastion ở public; app, DB ở private. DB có thể thêm một lớp subnet riêng "isolated" không có route ra NAT.</li>
+          <li>Tính nhanh: /16 = 65.536, /20 = 4.096, /24 = 256, /28 = 16 địa chỉ; mỗi bậc giảm 1 là chia đôi.</li>
+          <li>Đừng dùng <code>172.17.0.0/16</code> vì Docker mặc định chiếm dải này, cũng tránh trùng với VPN công ty.</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Route table: đọc một dòng như thế nào</span>
+        <ul>
+          <li><b>Destination</b> (đi đâu) → <b>Target</b> (qua cái gì): <code>local</code>, <code>igw-</code>, <code>nat-</code>, <code>vgw-</code>, <code>pcx-</code> (peering), <code>tgw-</code>, <code>vpce-</code>, <code>eni-</code> (NAT instance, appliance), <code>eigw-</code>.</li>
+          <li>Có cả <b>propagated route</b>: Virtual Private Gateway tự đẩy route của on-prem vào, bật bằng Route propagation.</li>
+          <li>Main route table không nên có route ra IGW: mọi subnet mới tạo sẽ vô tình thành public.</li>
+          <li>Route table là <b>một chiều quyết định gói đi ra khỏi subnet</b>; gói về được quyết định bởi route table của subnet bên kia.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>Hết IP trong VPC, không thể tạo lại</td><td>Thêm secondary CIDR, tạo subnet mới trong dải mới</td><td>Sửa CIDR chính (không được) hay đổi subnet sang /23 (không resize được subnet)</td></tr>
+        <tr><td>Instance ở "public subnet" nhưng không ra Internet được</td><td>Kiểm tra public IP đã gán chưa, route 0.0.0.0/0 → igw, SG outbound, NACL</td><td>Tạo NAT Gateway (NAT là cho private subnet)</td></tr>
+        <tr><td>Một subnet chịu được AZ hỏng</td><td>Không thể, subnet gắn một AZ; phải tạo subnet ở AZ khác</td><td>Subnet trải nhiều AZ (không tồn tại)</td></tr>
+        <tr><td>Subnet /28 nhưng chỉ chạy được 11 instance</td><td>Đúng, AWS giữ 5 địa chỉ mỗi subnet</td><td>Lỗi cấu hình</td></tr>
+        <tr><td>Hai VPC sẽ peering sau này</td><td>Chọn CIDR không trùng ngay từ đầu</td><td>Để mặc định cả hai là 10.0.0.0/16</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>subnet cannot span AZ <b>→ một subnet một AZ</b></span><span>5 reserved IP addresses <b>→ /24 còn 251</b></span><span>route 0.0.0.0/0 to igw <b>→ public subnet</b></span><span>ran out of IP addresses <b>→ secondary CIDR</b></span><span>overlapping CIDR <b>→ không peering được</b></span><span>longest prefix match <b>→ route hẹp thắng</b></span><span>main route table <b>→ subnet chưa gắn rõ dùng nó</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">1. Subnet <code>10.0.5.0/26</code> dự định chạy 60 instance. Chạy được không?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Không.</b> /26 có 64 địa chỉ, AWS giữ 5 nên còn 59. Thiếu một IP. Bẫy: quên 5 địa chỉ giữ, đặc biệt câu hỏi về subnet nhỏ cho Lambda hay ENI của interface endpoint.</p></div>
+      <div class="q"><p class="qt">2. Một EC2 có public IP, nằm ở subnet có route table chỉ có dòng <code>10.0.0.0/16 → local</code>. Ping <code>8.8.8.8</code> được không?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Không.</b> Có public IP nhưng không có route 0.0.0.0/0 → igw thì gói tin không biết đi đâu. Public IP chỉ là một nửa; route table là nửa còn lại. Subnet này thực chất là private dù instance có IP public.</p></div>
+      <div class="q"><p class="qt">3. Route table có hai dòng: <code>0.0.0.0/0 → nat-abc</code> và <code>10.20.0.0/16 → pcx-123</code> (peering). Gói tin tới <code>10.20.1.7</code> đi đâu?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Qua peering pcx-123.</b> Longest prefix match: /16 hẹp hơn /0 nên thắng, thứ tự dòng không quan trọng. Đây là nguyên lý giúp gateway endpoint S3 (prefix list) thắng route NAT ở Lab 3.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. GATEWAY ============ -->
+<section id="gateway">
+  <span class="eyebrow">Lý thuyết 2 / 6</span>
+  <h2>Internet Gateway, NAT Gateway, NAT Instance, Egress-only IGW</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <ul>
+        <li><b>Internet Gateway (IGW)</b>: cổng hai chiều giữa VPC và Internet. Gắn <b>đúng một IGW cho một VPC</b>, mức VPC chứ không thuộc AZ nào, AWS tự lo scale và HA, <b>miễn phí</b>. Nó làm hai việc: là target cho route <code>0.0.0.0/0</code> và thực hiện <b>1:1 NAT</b> giữa private IP của instance và public IP / Elastic IP. Instance không hề biết public IP của mình (xem <code>ip addr</code> chỉ thấy 10.x), chính IGW đổi địa chỉ.</li>
+        <li><b>NAT Gateway</b>: dịch vụ managed cho instance ở <b>private subnet đi ra Internet</b> (tải package, gọi API bên ngoài) mà Internet <b>không chủ động vào được</b>. Phải đặt NAT Gateway ở <b>public subnet</b>, gắn một <b>Elastic IP</b>, và route table của private subnet trỏ <code>0.0.0.0/0 → nat-xxx</code>. Bản thân NAT đi ra ngoài qua IGW của public subnet.</li>
+        <li>NAT Gateway nằm trong <b>một AZ</b>. AZ đó hỏng thì mọi private subnet trỏ vào nó mất Internet, kể cả subnet ở AZ khác. Muốn HA phải tạo <b>một NAT Gateway mỗi AZ</b> và route table private của AZ nào trỏ vào NAT của AZ đó. Trỏ chéo AZ còn tốn thêm phí data transfer liên AZ.</li>
+        <li>Băng thông: bắt đầu <b>5 Gbps</b>, tự scale tới <b>100 Gbps</b>; khoảng 55.000 kết nối đồng thời tới cùng một đích (cần kiểm tra lại). Tiền: tính <b>theo giờ</b> (Tokyo khoảng 0,062 USD/giờ, cần kiểm tra lại) cộng <b>theo GB</b> đi qua. Không có Security Group cho NAT Gateway, chỉ chịu NACL của subnet chứa nó. Không dùng được làm bastion, không port forwarding.</li>
+        <li><b>NAT Instance</b>: một EC2 chạy AMI NAT (cách cũ, AMI NAT của Amazon Linux đã hết hỗ trợ, muốn dùng phải tự cấu hình iptables). Phải <b>tắt Source/Destination check</b> trên instance vì nó chuyển tiếp gói tin không phải của mình. Có Security Group, có thể làm bastion, có thể port forwarding, rẻ với traffic nhỏ (t3.nano), nhưng bạn tự lo HA, băng thông phụ thuộc instance type, và tự vá OS. Route table private trỏ <code>0.0.0.0/0 → eni-xxx</code> của instance.</li>
+        <li><b>Egress-only Internet Gateway</b>: chỉ cho <b>IPv6</b>. Vì IPv6 không có NAT, muốn instance IPv6 ở private subnet ra ngoài mà Internet không vào được thì route <code>::/0 → eigw-xxx</code>. Stateful, miễn phí. IPv4 thì dùng NAT, IPv6 thì dùng Egress-only; hai cái không thay nhau được.</li>
+        <li><b>Elastic IP (EIP)</b>: public IPv4 tĩnh thuộc về account, gắn và tháo khỏi instance hay NAT được. Instance dừng rồi bật lại <b>giữ EIP</b> nhưng <b>mất public IP tự gán</b>. Từ 2024 mọi public IPv4 đều tính tiền khoảng 0,005 USD/giờ, EIP không gắn vào gì cũng tính. Quota mặc định 5 EIP mỗi Region.</li>
+        <li><b>Private NAT Gateway</b> (nhận diện): NAT không có EIP, dùng để hai mạng trùng CIDR (ví dụ VPC và on-prem) vẫn nói chuyện qua Transit Gateway bằng cách dịch sang dải không trùng.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Gói tin từ private EC2 ra Internet đi qua những gì (mốc kiểm tra 2)</span>
+      <div class="flow">
+        <div class="n"><span>App trên EC2 private 10.0.2.15 gửi tới 93.184.216.34:443</span><span class="tag next">bắt đầu</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span><b>ENI</b> của EC2: <b>Security Group outbound</b> có cho 443 ra ngoài không? (mặc định all) Ghi nhớ kết nối vì stateful</span><span class="tag allow">cho qua</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span><b>NACL outbound</b> của private subnet: rule nào khớp đích 0.0.0.0/0 port 443 (mặc định allow all)</span><span class="tag allow">cho qua</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span><b>Route table private</b>: 93.184.216.34 không khớp local → khớp <code>0.0.0.0/0 → nat-1a</code></span><span class="tag next">đi NAT</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span><b>NACL inbound</b> của public subnet (gói đi vào subnet chứa NAT), rồi <b>NAT Gateway</b> đổi source thành EIP, nhớ mapping port</span><span class="tag next">SNAT</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span><b>NACL outbound</b> public subnet → <b>route table public</b>: <code>0.0.0.0/0 → igw</code> → <b>Internet Gateway</b> → Internet</span><span class="tag allow">ra ngoài</span></div>
+        <div class="arrow"><span>chiều về ↓</span></div>
+        <div class="n"><span>Trả lời tới EIP → IGW → NACL inbound public (cần allow ephemeral port 1024-65535) → NAT tra mapping, đổi đích về 10.0.2.15 → NACL outbound public → route local → NACL inbound private (ephemeral) → SG của EC2 <b>tự cho vào vì stateful</b></span><span class="tag allow">về app</span></div>
+      </div>
+      <p style="font-size:.9rem;color:var(--muted)">Nhớ thứ tự ở mỗi chặng: gói ra khỏi instance gặp SG trước rồi NACL; gói vào instance gặp NACL trước rồi SG. NAT và IGW không có SG, chỉ chịu NACL của subnet. Với NACL mặc định (allow all) thì mọi dòng NACL ở trên đều cho qua, bẫy đề thi nằm ở custom NACL quên ephemeral port.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">So sánh NAT Gateway với NAT Instance</span>
+      <div class="tbl"><table>
+        <tr><th>Tiêu chí</th><th>NAT Gateway</th><th>NAT Instance</th></tr>
+        <tr><td>Quản lý</td><td>AWS managed, <em>least operational overhead</em></td><td>Tự quản, tự vá OS, tự script failover</td></tr>
+        <tr><td>HA</td><td>HA trong AZ tự động; muốn chịu AZ hỏng thì một NAT mỗi AZ</td><td>Tự làm (script đổi route, ASG)</td></tr>
+        <tr><td>Băng thông</td><td>5 Gbps tự scale tới 100 Gbps</td><td>Theo instance type</td></tr>
+        <tr><td>Security Group</td><td>Không gắn được</td><td>Có</td></tr>
+        <tr><td>Bastion, port forwarding</td><td>Không</td><td>Có</td></tr>
+        <tr><td>Source/Dest check</td><td>Không liên quan</td><td>Phải tắt</td></tr>
+        <tr><td>Chi phí</td><td>Theo giờ + GB, đắt khi traffic nhỏ</td><td>Chỉ tiền EC2, rẻ với traffic nhỏ, có Free Tier</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>Private EC2 tải update từ Internet, <em>highly available</em></td><td>NAT Gateway ở mỗi AZ, route table private từng AZ trỏ NAT cùng AZ</td><td>Một NAT Gateway dùng chung (mất khi AZ hỏng), hoặc gắn public IP cho EC2</td></tr>
+        <tr><td>Instance IPv6 ở private subnet ra Internet, không cho vào</td><td>Egress-only Internet Gateway</td><td>NAT Gateway (không làm NAT cho IPv6)</td></tr>
+        <tr><td>NAT Instance tạo xong nhưng private subnet không ra được</td><td>Tắt Source/Destination check; kiểm tra SG của NAT instance cho inbound từ private CIDR</td><td>Tạo thêm IGW thứ hai (một VPC chỉ một IGW)</td></tr>
+        <tr><td>Giữ IP cố định cho server sau khi stop/start</td><td>Elastic IP</td><td>Public IP tự gán (đổi sau mỗi stop/start)</td></tr>
+        <tr><td>NAT Gateway bị chậm, muốn tăng băng thông</td><td>Chia workload ra nhiều NAT Gateway ở nhiều subnet, hoặc kiểm tra giới hạn kết nối tới cùng đích</td><td>Đổi instance type (NAT Gateway không có instance type)</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>private subnet needs outbound Internet <b>→ NAT Gateway ở public subnet</b></span><span>NAT must survive AZ failure <b>→ một NAT Gateway mỗi AZ</b></span><span>IPv6 outbound only <b>→ Egress-only IGW</b></span><span>source/destination check <b>→ NAT Instance</b></span><span>static public IP <b>→ Elastic IP</b></span><span>one IGW per VPC <b>→ IGW mức VPC, HA sẵn</b></span><span>least operational overhead for NAT <b>→ NAT Gateway</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">4. Công ty có private subnet ở 3 AZ, tất cả route <code>0.0.0.0/0</code> tới một NAT Gateway ở AZ 1a. AZ 1a mất điện. Chuyện gì xảy ra và sửa thế nào?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Cả ba subnet mất Internet.</b> NAT Gateway gắn một AZ. Sửa: tạo NAT Gateway ở 1c và 1d, route table private của mỗi AZ trỏ NAT cùng AZ. Đáp án "NAT Gateway tự động HA" chỉ đúng <b>trong</b> một AZ.</p></div>
+      <div class="q"><p class="qt">5. Startup có 3 instance private chỉ cần tải patch vài MB mỗi tuần, muốn <em>most cost-effective</em>. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>NAT Instance (t3.nano) với Source/Dest check tắt.</b> NAT Gateway tính theo giờ dù không có traffic, khoảng 45 USD/tháng, quá đắt cho vài MB. Nếu đề nói <em>highly available</em> hoặc <em>least operational overhead</em> thì mới chọn NAT Gateway.</p></div>
+      <div class="q"><p class="qt">6. Một EC2 ở public subnet có public IP. Stop rồi start lại, SSH bằng IP cũ không được. Vì sao, và tránh thế nào?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Public IP tự gán đổi sau mỗi stop/start.</b> Gắn Elastic IP để cố định. Lưu ý reboot không đổi IP, chỉ stop/start mới đổi. EIP tốn khoảng 0,005 USD/giờ.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. SG vs NACL ============ -->
+<section id="sg-nacl">
+  <span class="eyebrow">Lý thuyết 3 / 6</span>
+  <h2>Security Group với Network ACL</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <ul>
+        <li><b>Security Group (SG)</b>: tường lửa gắn vào <b>ENI</b> (card mạng của EC2, RDS, ALB, Lambda trong VPC, interface endpoint, EFS mount target). <b>Stateful</b>: cho gói đi ra thì gói trả lời tự được vào và ngược lại, không cần rule chiều ngược. Chỉ có rule <b>Allow</b>, không có Deny; mọi thứ không được allow là bị chặn. Mọi rule được xét cùng lúc, không có thứ tự. Một ENI gắn được tới 5 SG (quota mặc định, nâng tới 16); mỗi SG mặc định 60 rule inbound và 60 outbound (cần kiểm tra lại).</li>
+        <li>SG tạo mới: <b>không có inbound</b>, outbound <b>allow all</b>. <b>Default SG</b> của VPC: inbound cho phép mọi traffic từ chính SG đó (instance cùng default SG nói chuyện được với nhau), outbound all.</li>
+        <li>Source/Destination của rule SG có thể là CIDR, <b>một SG khác</b> (hoặc chính nó), hoặc prefix list. "Source = sg-app" nghĩa là cho phép mọi ENI đang gắn sg-app, bất kể IP; đây là cách chuẩn để DB chỉ nhận kết nối từ tầng app mà không cần biết IP. Tham chiếu SG qua peering được nếu cùng Region.</li>
+        <li><b>Network ACL (NACL)</b>: tường lửa gắn vào <b>subnet</b>, mỗi subnet đúng một NACL, một NACL gắn được nhiều subnet. <b>Stateless</b>: xét từng gói tin độc lập, nên phải mở cả rule inbound lẫn outbound, kể cả cho gói trả lời. Có cả <b>Allow và Deny</b>. Rule có <b>số thứ tự từ 1 đến 32766</b>, xét từ số nhỏ tới lớn, <b>gặp rule khớp đầu tiên là dừng</b>; cuối cùng là rule <code>*</code> deny all không xóa được. AWS khuyên đánh số cách 100 để chèn sau.</li>
+        <li><b>Default NACL</b> của VPC: allow all inbound và outbound (rule 100). <b>Custom NACL</b> tạo mới: <b>deny all</b> hai chiều cho tới khi bạn thêm rule. Subnet mới tạo tự gắn default NACL.</li>
+        <li><b>Ephemeral port</b>: vì NACL stateless, gói trả lời đi về client qua một port tạm do client chọn. Phải mở dải này ở chiều ngược: Linux (Amazon Linux) dùng 32768-60999, Windows Server 49152-65535, NAT Gateway và ELB dùng 1024-65535. Thực tế thường mở <b>1024-65535</b> cho an toàn.</li>
+        <li><b>Thứ tự gặp</b>: gói vào instance gặp NACL của subnet trước, rồi SG của ENI. Gói ra gặp SG trước rồi NACL. Hai instance <b>cùng subnet</b> nói chuyện không qua NACL (NACL chỉ ở biên subnet), chỉ qua SG.</li>
+        <li><b>Chặn một IP cụ thể</b>: SG không làm được vì không có Deny; phải dùng NACL với rule Deny số nhỏ, hoặc AWS WAF (nếu là HTTP qua ALB/CloudFront). Đây là câu đề thi hay ra nhất của mục này.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Bảng so sánh</span>
+      <div class="tbl"><table>
+        <tr><th>Tiêu chí</th><th>Security Group</th><th>Network ACL</th></tr>
+        <tr><td>Gắn vào</td><td>ENI (instance, RDS, ALB, endpoint)</td><td>Subnet</td></tr>
+        <tr><td>Trạng thái</td><td><b>Stateful</b>, gói trả lời tự qua</td><td><b>Stateless</b>, phải mở cả hai chiều</td></tr>
+        <tr><td>Loại rule</td><td>Chỉ Allow</td><td>Allow và Deny</td></tr>
+        <tr><td>Thứ tự</td><td>Xét tất cả, không có số</td><td>Theo số rule, khớp đầu tiên thắng</td></tr>
+        <tr><td>Mặc định tạo mới</td><td>Inbound: không gì; outbound: all</td><td>Custom: deny all. Default NACL: allow all</td></tr>
+        <tr><td>Source</td><td>CIDR, SG khác, prefix list</td><td>Chỉ CIDR</td></tr>
+        <tr><td>Áp cho</td><td>Chỉ ENI được gắn</td><td>Mọi instance trong subnet</td></tr>
+        <tr><td>Dùng khi</td><td>Kiểm soát chi tiết theo vai trò (web, app, db)</td><td>Lớp phòng thủ thứ hai, chặn IP hoặc dải IP cụ thể</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Ví dụ cụ thể một gói tin: client 203.0.113.10 gọi HTTPS tới web server 10.0.0.20 (mốc kiểm tra 3)</span>
+      <div class="tbl"><table>
+        <tr><th>Chặng</th><th>Gói tin</th><th>SG của web server cần gì</th><th>NACL của public subnet cần gì</th></tr>
+        <tr><td>1. Request vào</td><td>src 203.0.113.10:51234 → dst 10.0.0.20:443</td><td>Inbound allow TCP 443 từ 0.0.0.0/0. SG ghi nhớ kết nối này.</td><td>Inbound rule allow TCP 443 từ 0.0.0.0/0 (ví dụ rule 100)</td></tr>
+        <tr><td>2. Response ra</td><td>src 10.0.0.20:443 → dst 203.0.113.10:51234</td><td><b>Không cần rule</b>, stateful tự cho qua dù outbound có bị xóa hết</td><td>Outbound rule allow TCP <b>1024-65535</b> tới 0.0.0.0/0, thiếu dòng này là client treo</td></tr>
+        <tr><td>3. Web server gọi API ngoài</td><td>src 10.0.0.20:40000 → dst 198.51.100.5:443</td><td>Outbound allow 443 (mặc định có)</td><td>Outbound allow 443, và inbound allow 1024-65535 cho gói trả lời</td></tr>
+        <tr><td>4. Muốn chặn riêng 203.0.113.10</td><td>mọi gói từ IP này</td><td><b>Không làm được</b>, không có Deny; thu hẹp source thì chặn luôn người khác</td><td>Thêm rule <b>số nhỏ hơn 100</b>, ví dụ 90 Deny all từ 203.0.113.10/32. Đặt số 110 thì vô dụng vì 100 đã allow</td></tr>
+      </table></div>
+      <div class="note">Dấu hiệu đề thi: "kết nối vào được nhưng <b>không nhận được phản hồi</b>" sau khi tạo custom NACL → thiếu outbound ephemeral port. VPC Flow Logs sẽ thấy inbound ACCEPT, outbound REJECT; nếu SG chặn thì chỉ thấy một dòng REJECT ở chiều vào vì SG stateful không bao giờ chặn gói trả lời.</div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Mẫu thiết kế 3 tầng bằng SG tham chiếu SG</span>
+      <ul>
+        <li><code>sg-alb</code>: inbound 443 từ 0.0.0.0/0.</li>
+        <li><code>sg-app</code>: inbound 8080 từ <b>source sg-alb</b>. Không ghi CIDR, nên ALB đổi IP hay scale thêm node vẫn đúng.</li>
+        <li><code>sg-db</code>: inbound 3306 từ <b>source sg-app</b>. Ai không mang sg-app thì không vào DB, kể cả cùng subnet.</li>
+        <li><code>sg-bastion</code>: inbound 22 từ IP công ty /32; <code>sg-app</code> thêm inbound 22 từ source sg-bastion. Lab 2 làm đúng mẫu này.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>Chặn một IP đang tấn công vào EC2</td><td>NACL rule Deny số nhỏ cho IP đó</td><td>Security Group (không có Deny)</td></tr>
+        <tr><td>Chặn IP tấn công HTTP vào ALB / CloudFront</td><td>AWS WAF IP set (tuần 8), hoặc NACL ở subnet ALB</td><td>SG của ALB</td></tr>
+        <tr><td>Chỉ cho app server vào DB, app scale tự động</td><td>SG của DB có source là SG của app</td><td>Liệt kê IP app vào SG DB</td></tr>
+        <tr><td>Tạo custom NACL xong không vào được gì</td><td>Custom NACL mặc định deny all, phải thêm rule allow cả hai chiều</td><td>Lỗi SG</td></tr>
+        <tr><td>SSH vào được, nhưng tải file về rất lâu rồi đứt</td><td>Xem MTU, NACL ephemeral, không phải SG</td><td>Thêm rule outbound SG (stateful đã cho)</td></tr>
+        <tr><td>Hai EC2 cùng subnet không ping được nhau</td><td>SG chưa allow ICMP từ nhau (NACL không áp cho traffic nội subnet)</td><td>Sửa NACL hay route table</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>stateful <b>→ Security Group</b></span><span>stateless <b>→ NACL</b></span><span>block a specific IP address <b>→ NACL Deny</b></span><span>rules evaluated in order <b>→ NACL</b></span><span>reference another security group <b>→ SG source = sg-id</b></span><span>ephemeral ports <b>→ NACL outbound 1024-65535</b></span><span>subnet level <b>→ NACL</b></span><span>instance level <b>→ SG</b></span><span>default security group <b>→ cho nhau trong cùng SG</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">7. Web server trong subnet có custom NACL: inbound rule 100 allow TCP 80 từ 0.0.0.0/0, outbound rule 100 allow TCP 80 tới 0.0.0.0/0. SG allow 80 inbound. Người dùng mở trang web bị treo. Sửa thế nào?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Thêm NACL outbound allow TCP 1024-65535 tới 0.0.0.0/0.</b> Response đi về port ephemeral của client, không phải port 80. Outbound port 80 chỉ đúng khi web server chủ động gọi ra ngoài. Bẫy: nhiều người nghĩ "mở 80 cả hai chiều là xong".</p></div>
+      <div class="q"><p class="qt">8. NACL có inbound rule 100 allow all từ 0.0.0.0/0 và rule 200 deny all từ 198.51.100.0/24. Traffic từ 198.51.100.7 có bị chặn không?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Không bị chặn.</b> Rule 100 khớp trước (0.0.0.0/0 chứa mọi IP) và NACL dừng ngay khi khớp. Muốn chặn, đổi deny thành số nhỏ hơn 100, ví dụ 50.</p></div>
+      <div class="q"><p class="qt">9. Kiến trúc sư xóa toàn bộ rule outbound trong SG của EC2 web. Người dùng còn vào web được không? EC2 còn chạy <code>yum update</code> được không?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Người dùng vẫn vào được</b> vì response thuộc kết nối đã được inbound allow, stateful tự cho ra. <b>yum update không chạy được</b> vì đó là kết nối mới do EC2 khởi tạo, cần outbound allow. Câu này tách được ai hiểu stateful thật.</p></div>
+      <div class="q"><p class="qt">10. Chọn 2 phát biểu đúng: (A) SG có thể gắn vào subnet, (B) NACL đánh giá rule theo số từ thấp tới cao, (C) SG có rule Deny, (D) một subnet chỉ gắn được một NACL, (E) NACL stateful.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>B và D.</b> A sai: SG gắn ENI. C sai: SG chỉ Allow. E sai: NACL stateless. Dạng "chọn 2" luôn có 2 đáp án sai rõ và 1 đáp án gần đúng để gây nhiễu.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. ENDPOINT ============ -->
+<section id="endpoint">
+  <span class="eyebrow">Lý thuyết 4 / 6</span>
+  <h2>VPC endpoint: gateway, interface (PrivateLink)</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <p>Mặc định, EC2 gọi S3 hay DynamoDB là gọi tới <b>public endpoint</b> của dịch vụ, nghĩa là gói tin phải ra Internet qua IGW hoặc NAT dù hai bên cùng nằm trong AWS. <b>VPC endpoint</b> tạo đường đi riêng trong mạng AWS: không cần IGW, NAT, public IP; traffic không rời mạng AWS; giảm tiền NAT; và khóa được bằng policy. Có hai loại, đề thi hỏi phân biệt rất nhiều.</p>
+      <ul>
+        <li><b>Gateway endpoint</b>: chỉ cho <b>S3 và DynamoDB</b>. Là một target trong <b>route table</b>: AWS thêm dòng <code>pl-xxxx (prefix list của S3) → vpce-xxxx</code> vào các route table bạn chọn. <b>Miễn phí</b>, không có ENI, không có SG, không giới hạn băng thông. Chỉ dùng được từ <b>trong cùng VPC, cùng Region</b>: không đi qua peering, Transit Gateway, VPN hay Direct Connect được. Có <b>endpoint policy</b> (giới hạn bucket nào được gọi qua endpoint) và bucket policy có thể bắt buộc <code>aws:SourceVpce</code> để chỉ nhận request từ endpoint đó.</li>
+        <li><b>Interface endpoint</b> (xây trên <b>AWS PrivateLink</b>): một <b>ENI với private IP</b> đặt trong subnet bạn chọn (nên mỗi AZ một ENI), có <b>Security Group</b>. Dùng cho hầu hết dịch vụ AWS (SQS, SNS, Kinesis, KMS, Secrets Manager, CloudWatch, EC2 API, ECR, SSM, S3 cũng có bản interface), dịch vụ của partner trên Marketplace, và dịch vụ do bạn tự expose. Tính tiền <b>theo giờ mỗi ENI (mỗi AZ)</b> khoảng 0,01 đến 0,014 USD cộng tiền theo GB (cần kiểm tra lại). Bật <b>private DNS</b> thì hostname mặc định như <code>sqs.ap-northeast-1.amazonaws.com</code> tự phân giải ra private IP của ENI, code không phải đổi gì; cần VPC bật cả <code>enableDnsHostnames</code> và <code>enableDnsSupport</code>. Vì là ENI trong VPC nên <b>truy cập được từ on-prem qua VPN / Direct Connect và từ VPC peering</b>.</li>
+        <li><b>S3 có cả hai loại</b>: gateway endpoint miễn phí cho EC2 trong VPC; interface endpoint cho S3 khi cần gọi S3 từ on-prem qua Direct Connect, hoặc từ VPC khác qua peering, chấp nhận trả tiền theo giờ. Đề hỏi "on-premises access S3 privately" thì là interface endpoint.</li>
+        <li><b>Expose dịch vụ của mình qua PrivateLink</b> (Endpoint Service): bên cung cấp đặt dịch vụ sau một <b>Network Load Balancer</b> (hoặc Gateway Load Balancer), tạo Endpoint Service trỏ vào NLB; bên dùng tạo interface endpoint trong VPC của họ, bên cung cấp chấp nhận (hoặc tự động chấp nhận). Kết quả: hàng nghìn VPC khách hàng, kể cả account khác, gọi được dịch vụ bằng private IP mà <b>không cần peering, không cần route table, không sợ trùng CIDR</b>, và chỉ một chiều từ khách tới dịch vụ. Đây là đáp án cho câu "SaaS provider wants to expose service to customers' VPCs privately".</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Bảng so sánh</span>
+      <div class="tbl"><table>
+        <tr><th>Tiêu chí</th><th>Gateway endpoint</th><th>Interface endpoint (PrivateLink)</th></tr>
+        <tr><td>Dịch vụ</td><td>Chỉ S3, DynamoDB</td><td>Hầu hết dịch vụ AWS, partner, dịch vụ tự expose, cả S3</td></tr>
+        <tr><td>Hình thức</td><td>Dòng trong route table (prefix list)</td><td>ENI có private IP trong subnet</td></tr>
+        <tr><td>Giá</td><td>Miễn phí</td><td>Theo giờ mỗi AZ + theo GB</td></tr>
+        <tr><td>Security Group</td><td>Không</td><td>Có</td></tr>
+        <tr><td>Từ on-prem (VPN/DX), từ VPC peering</td><td>Không</td><td>Có</td></tr>
+        <tr><td>DNS</td><td>Dùng DNS public bình thường, route table lo phần còn lại</td><td>Private DNS override hostname mặc định, hoặc dùng hostname riêng của endpoint</td></tr>
+        <tr><td>Policy</td><td>Endpoint policy</td><td>Endpoint policy + SG</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">PrivateLink so với VPC peering khi muốn dùng dịch vụ ở VPC khác</span>
+      <div class="tbl"><table>
+        <tr><th>Cặp</th><th>Khác nhau ở chỗ</th></tr>
+        <tr><td>PrivateLink với peering</td><td>Peering mở <b>toàn bộ mạng hai chiều</b> giữa hai VPC, cần CIDR không trùng và sửa route table hai bên, giới hạn số peering. PrivateLink chỉ mở <b>một dịch vụ, một chiều</b>, không quan tâm CIDR, scale tới hàng nghìn consumer. Đề nói <em>expose a single service</em>, <em>thousands of VPCs</em>, <em>overlapping CIDR</em>, <em>do not want to expose entire network</em> → PrivateLink.</td></tr>
+        <tr><td>Gateway endpoint với NAT Gateway cho S3</td><td>Cả hai đều cho private EC2 tới S3. Gateway endpoint miễn phí và traffic không ra Internet. Đề nói <em>reduce NAT Gateway data processing charges</em> cho S3/DynamoDB → gateway endpoint.</td></tr>
+        <tr><td>Interface endpoint với public endpoint qua IGW</td><td>Public endpoint cần public IP hoặc NAT và traffic đi qua Internet (vẫn mã hóa TLS). Đề nói <em>must not traverse the public Internet</em> → endpoint.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>Private EC2 ghi S3, <em>most cost-effective</em>, không qua Internet</td><td>Gateway endpoint S3 + route table private</td><td>Interface endpoint (tốn tiền), NAT Gateway</td></tr>
+        <tr><td>On-prem qua Direct Connect đọc S3 bằng private IP</td><td>Interface endpoint cho S3</td><td>Gateway endpoint (không đi qua DX)</td></tr>
+        <tr><td>Lambda trong VPC private gọi Secrets Manager</td><td>Interface endpoint cho Secrets Manager</td><td>Gateway endpoint (không có cho Secrets Manager)</td></tr>
+        <tr><td>Tạo gateway endpoint xong EC2 vẫn không tới S3</td><td>Kiểm tra endpoint có gắn đúng route table của subnet đó, endpoint policy, bucket cùng Region, SG outbound 443</td><td>Thêm IGW</td></tr>
+        <tr><td>Interface endpoint tạo xong, app vẫn gọi ra public IP</td><td>Bật private DNS, bật DNS hostnames/support của VPC</td><td>Sửa route table (interface endpoint không dùng route)</td></tr>
+        <tr><td>Chỉ cho bucket nhận request từ trong VPC</td><td>Bucket policy Deny khi <code>aws:SourceVpce</code> khác endpoint id</td><td>SG trên bucket (S3 không có SG)</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>S3 or DynamoDB privately, no cost <b>→ gateway endpoint</b></span><span>other AWS services privately <b>→ interface endpoint</b></span><span>PrivateLink <b>→ interface endpoint, ENI</b></span><span>expose service to other VPCs / accounts <b>→ PrivateLink + NLB</b></span><span>traffic must not leave AWS network <b>→ VPC endpoint</b></span><span>aws:SourceVpce <b>→ bucket policy khóa theo endpoint</b></span><span>private DNS <b>→ interface endpoint</b></span><span>overlapping CIDR, single service <b>→ PrivateLink thay vì peering</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">11. Hóa đơn NAT Gateway tăng cao, phân tích thấy 90% là traffic EC2 private đẩy log lên S3 cùng Region. Giảm chi phí <em>least effort</em>?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Tạo gateway endpoint S3, gắn vào route table của private subnet.</b> Miễn phí, không đổi code, không đổi hostname. Interface endpoint cũng chạy nhưng tốn tiền theo giờ nên không phải "most cost-effective".</p></div>
+      <div class="q"><p class="qt">12. Công ty SaaS có 500 khách hàng, mỗi khách có VPC riêng với CIDR tùy ý, muốn họ gọi API nội bộ qua private IP. Chọn kiến trúc nào?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Đặt API sau NLB, tạo Endpoint Service (PrivateLink); khách tạo interface endpoint.</b> Peering 500 VPC vượt quota và chắc chắn trùng CIDR. Transit Gateway cũng vướng CIDR trùng và mở cả mạng, không phù hợp với khách hàng bên ngoài.</p></div>
+      <div class="q"><p class="qt">13. Data center kết nối AWS qua Direct Connect, cần tải file từ S3 mà không đi qua Internet. Gateway endpoint S3 có đáp ứng không?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Không.</b> Gateway endpoint chỉ dùng được từ trong VPC đó. Từ on-prem phải dùng <b>interface endpoint cho S3</b> (có private IP trong VPC, on-prem route tới đó qua DX), hoặc public VIF của Direct Connect tới public endpoint của S3.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. PEERING, TGW ============ -->
+<section id="peering-tgw">
+  <span class="eyebrow">Lý thuyết 5 / 6</span>
+  <h2>VPC peering và Transit Gateway</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <ul>
+        <li><b>VPC peering</b>: nối <b>hai VPC</b> thành một mạng dùng private IP, không IGW, không NAT, băng thông không giới hạn thêm, không tốn tiền kết nối (chỉ tính data transfer như liên AZ hoặc liên Region). Dùng được <b>cross-account</b> và <b>cross-Region</b> (traffic liên Region được mã hóa). Một bên tạo request, bên kia accept, rồi <b>cả hai bên tự thêm route</b> trỏ CIDR của nhau vào <code>pcx-xxx</code>; quên một bên là chỉ đi được một chiều. Hai CIDR <b>không được trùng</b>, dù chỉ một phần.</li>
+        <li>Peering <b>không transitive</b>: A peering B, B peering C thì A không tới C được; muốn thì phải peering A với C. Cũng không có <b>edge-to-edge routing</b>: A không dùng ké IGW, NAT, VPN, Direct Connect, gateway endpoint của B. Với n VPC cần n(n-1)/2 peering: 10 VPC là 45 kết nối, quá sức quản lý. Quota khoảng 50 peering mỗi VPC, nâng tới 125 (cần kiểm tra lại). Tham chiếu SG qua peering được nếu cùng Region.</li>
+        <li><b>Transit Gateway (TGW)</b>: <b>hub</b> mức Region, nối hàng nghìn VPC, VPN, Direct Connect Gateway theo kiểu <b>hub-and-spoke</b>; mỗi VPC chỉ tạo <b>một attachment</b> vào TGW thay vì n-1 peering. <b>Transitive</b>: mọi thứ gắn vào TGW nói chuyện được với nhau theo route table của TGW. Hỗ trợ <b>multicast</b> (thứ duy nhất trên AWS hỗ trợ), VPN ECMP để gộp băng thông nhiều tunnel. Giá tính <b>theo attachment mỗi giờ</b> cộng theo GB (cần kiểm tra lại), đắt hơn peering nếu chỉ có 2 đến 3 VPC.</li>
+        <li><b>TGW route table</b>: mỗi attachment <b>associate</b> với một route table của TGW (quyết định gói tin từ attachment đó đi đâu) và <b>propagate</b> route của mình vào các route table bạn chọn. Nhờ đó làm được phân vùng: VPC Dev và Prod cùng gắn TGW nhưng không thấy nhau, chỉ cùng thấy VPC Shared Services. Route table bên trong mỗi VPC vẫn phải có dòng trỏ dải đích → <code>tgw-xxx</code>, TGW không tự sửa route table của VPC.</li>
+        <li><b>TGW peering</b> liên Region (và cross-account): nối hai TGW ở hai Region bằng một peering attachment, route tĩnh, traffic đi trên backbone AWS và được mã hóa. Dùng cho kiến trúc nhiều Region. Trong một Region hai TGW cũng peering được.</li>
+        <li><b>VPC sharing</b> qua <b>AWS Resource Access Manager (RAM)</b> (nhận diện): account chủ VPC chia sẻ <b>subnet</b> cho account khác trong cùng Organization; account được chia sẻ tạo EC2, RDS, ALB của mình ngay trong subnet đó. Không phải peering, không có route gì thêm, mọi resource dùng chung một VPC nên giảm số VPC, giảm NAT và endpoint trùng lặp. RAM cũng dùng để share Transit Gateway cho account khác attach vào.</li>
+        <li>Nhận diện thêm: <b>Transit Gateway Network Manager</b> (nhìn toàn mạng), <b>Cloud WAN</b> (mạng toàn cầu managed trên TGW), <b>Transit Gateway Connect</b> (attach SD-WAN appliance bằng GRE).</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Hình dung: 4 VPC nối bằng peering với nối bằng Transit Gateway</span>
+      <div class="grid2">
+        <div class="block"><span class="eyebrow">Peering (full mesh)</span>
+          <ul>
+            <li>4 VPC cần <b>6</b> peering; 10 VPC cần 45.</li>
+            <li>Mỗi peering sửa route table ở <b>cả hai</b> VPC.</li>
+            <li>Thêm VPC thứ 5: tạo 4 peering mới, sửa 8 route table.</li>
+            <li>On-prem muốn tới cả 4 VPC: cần VPN/DX riêng tới từng VPC (không đi ké qua peering).</li>
+            <li>Rẻ nhất khi chỉ 2 đến 3 VPC, băng thông cao, không tính giờ.</li>
+          </ul>
+        </div>
+        <div class="block"><span class="eyebrow">Transit Gateway (hub-and-spoke)</span>
+          <ul>
+            <li>4 VPC cần <b>4</b> attachment; 10 VPC cần 10.</li>
+            <li>Mỗi VPC một route trỏ dải chung (ví dụ 10.0.0.0/8) → tgw.</li>
+            <li>Thêm VPC thứ 5: một attachment, một dòng route.</li>
+            <li>Một VPN hoặc DX Gateway gắn vào TGW là tới được mọi VPC.</li>
+            <li>Tiền attachment theo giờ; phân vùng bằng TGW route table.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>Hai VPC cùng account, cùng Region nói chuyện, <em>most cost-effective</em></td><td>VPC peering, route table hai bên</td><td>Transit Gateway (tốn tiền attachment), VPN giữa hai VPC</td></tr>
+        <tr><td>Hàng chục VPC ở nhiều account cộng on-prem, <em>simplify</em>, <em>scalable</em></td><td>Transit Gateway, share qua RAM</td><td>Full mesh peering</td></tr>
+        <tr><td>A peering B, B peering C, A cần tới C</td><td>Peering A với C, hoặc chuyển sang TGW</td><td>Thêm route ở B (peering không transitive)</td></tr>
+        <tr><td>VPC A dùng NAT Gateway của VPC B qua peering</td><td>Không được (no edge-to-edge); dùng TGW thì làm được NAT tập trung</td><td>Sửa route A trỏ NAT của B qua pcx</td></tr>
+        <tr><td>Peering tạo xong, chỉ A ping B được, B không ping A được</td><td>Thiếu route ở B trỏ CIDR của A → pcx, hoặc SG/NACL ở A chặn ICMP</td><td>Tạo peering chiều ngược (peering đã hai chiều)</td></tr>
+        <tr><td>Dev và Prod cùng gắn TGW nhưng không được thấy nhau</td><td>Hai TGW route table riêng, chỉ propagate Shared Services vào cả hai</td><td>Hai TGW riêng (tốn, không cần)</td></tr>
+        <tr><td>Nhiều account dùng chung một VPC để tiết kiệm NAT, endpoint</td><td>VPC sharing qua RAM</td><td>Peering từng account</td></tr>
+        <tr><td>Ứng dụng cần multicast giữa các VPC</td><td>Transit Gateway</td><td>Peering (không hỗ trợ multicast)</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>connect two VPCs <b>→ peering</b></span><span>not transitive <b>→ peering</b></span><span>overlapping CIDR <b>→ peering/TGW không được, nghĩ tới PrivateLink hoặc private NAT</b></span><span>hub-and-spoke, hundreds of VPCs <b>→ Transit Gateway</b></span><span>transitive routing <b>→ Transit Gateway</b></span><span>multicast <b>→ Transit Gateway</b></span><span>share subnets across accounts <b>→ VPC sharing (RAM)</b></span><span>inter-Region connectivity between TGWs <b>→ TGW peering</b></span><span>centralized egress / inspection <b>→ TGW + VPC tập trung</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">14. VPC A <code>10.0.0.0/16</code> và VPC B <code>10.0.0.0/16</code> ở hai account cần trao đổi dữ liệu bằng private IP. Peering được không?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Không, CIDR trùng.</b> Lựa chọn: đổi CIDR một bên (thêm secondary CIDR không trùng rồi đặt resource ở đó), dùng PrivateLink nếu chỉ cần expose một dịch vụ, hoặc private NAT Gateway qua TGW. Cross-account không phải vấn đề, CIDR mới là vấn đề.</p></div>
+      <div class="q"><p class="qt">15. Công ty có 30 VPC ở 5 account, data center nối qua một Direct Connect, muốn mọi VPC đều tới on-prem và tới nhau, <em>least operational overhead</em>. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Transit Gateway share qua RAM, mỗi VPC một attachment, Direct Connect Gateway gắn vào TGW qua transit VIF.</b> Peering 30 VPC là 435 kết nối và peering không cho on-prem đi ké. Chi tiết DX Gateway ở mục 6.</p></div>
+      <div class="q"><p class="qt">16. Sau khi gắn VPC vào Transit Gateway và propagate route, EC2 trong VPC vẫn không tới được VPC khác. Thiếu gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Route trong route table của subnet VPC trỏ CIDR đích (hoặc dải chung) → tgw-xxx.</b> TGW chỉ quản lý route table của chính nó; route table của subnet bạn phải tự thêm. Sau đó mới xét tới SG và NACL.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. VPN, DX ============ -->
+<section id="vpn-dx">
+  <span class="eyebrow">Lý thuyết 6 / 6</span>
+  <h2>Site-to-Site VPN, Client VPN, Direct Connect</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Site-to-Site VPN</span>
+      <ul>
+        <li>Kết nối <b>IPsec mã hóa qua Internet</b> giữa data center (hoặc văn phòng) và VPC. Ba thành phần: <b>Virtual Private Gateway (VGW)</b> gắn vào VPC phía AWS (hoặc dùng Transit Gateway thay VGW), <b>Customer Gateway (CGW)</b> là bản ghi mô tả thiết bị router/firewall phía bạn (public IP, ASN), và <b>VPN connection</b> nối hai bên.</li>
+        <li>Mỗi VPN connection có <b>2 tunnel</b> tới hai endpoint AWS ở hai AZ khác nhau, nên HA sẵn phía AWS; phía bạn cần hai CGW ở hai thiết bị mới HA cả hai đầu. Mỗi tunnel tối đa khoảng <b>1,25 Gbps</b>; muốn hơn thì dùng TGW với <b>ECMP</b> gộp nhiều tunnel.</li>
+        <li>Route tĩnh hoặc <b>BGP</b> (dynamic). Bật <b>route propagation</b> trên route table của VPC để VGW tự đẩy route on-prem vào. Thiết lập trong <b>vài phút đến vài giờ</b>, giá khoảng 0,05 USD/giờ mỗi connection cộng data out (cần kiểm tra lại). Độ trễ và băng thông <b>không ổn định</b> vì đi Internet.</li>
+        <li><b>VPN CloudHub</b>: một VGW nhận nhiều VPN từ nhiều chi nhánh (mỗi chi nhánh một CGW, BGP với ASN khác nhau); các chi nhánh nói chuyện được với nhau <b>qua AWS</b> theo hub-and-spoke, rẻ, dùng làm đường phụ hay nối văn phòng nhỏ.</li>
+        <li><b>Accelerated Site-to-Site VPN</b>: tunnel đi vào edge của <b>AWS Global Accelerator</b> gần bạn rồi chạy trên backbone AWS, giảm jitter; <b>bắt buộc dùng Transit Gateway</b>, không dùng với VGW.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Client VPN</span>
+      <ul>
+        <li>VPN managed cho <b>từng người dùng</b> (laptop, remote worker) vào VPC bằng client <b>OpenVPN</b>. Tạo Client VPN endpoint, gán vào subnet (association) trong VPC, đặt dải CIDR cho client (không trùng VPC), thêm <b>authorization rule</b> cho dải đích và route.</li>
+        <li>Xác thực: <b>mutual TLS</b> (certificate), <b>Active Directory</b> (qua AWS Directory Service), hoặc <b>SAML / SSO</b> (IAM Identity Center, Okta). Có <b>split-tunnel</b> để chỉ traffic tới VPC đi qua VPN, phần còn lại ra Internet trực tiếp.</li>
+        <li>Từ VPC đi tiếp được tới VPC peering, on-prem qua VPN/DX, và Internet (qua NAT của VPC). Giá: theo giờ mỗi association subnet cộng theo giờ mỗi kết nối client (cần kiểm tra lại).</li>
+        <li>Phân biệt: Site-to-Site là <b>mạng với mạng</b>, Client VPN là <b>người với mạng</b>. Đề nói <em>remote employees</em>, <em>OpenVPN</em>, <em>Active Directory authentication for users</em> → Client VPN.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Direct Connect (DX)</span>
+      <ul>
+        <li>Đường <b>cáp vật lý riêng</b> từ data center của bạn tới một <b>Direct Connect location</b> (tòa nhà colocation có router AWS), <b>không đi Internet</b>: băng thông ổn định, độ trễ thấp và đều, giảm phí data transfer ra (giá DX data out rẻ hơn Internet). Thiết lập mất <b>nhiều tuần đến vài tháng</b> vì phải kéo cross-connect và làm việc với partner.</li>
+        <li><b>Dedicated connection</b>: cổng vật lý riêng cho bạn, tốc độ <b>1, 10, 100 Gbps</b> (một số location có 400 Gbps, cần kiểm tra lại), đặt trực tiếp với AWS. <b>Hosted connection</b>: thuê một phần cổng qua <b>AWS Direct Connect Partner</b>, từ <b>50 Mbps đến 10 Gbps</b> (một số partner cao hơn, cần kiểm tra lại), nhanh hơn và rẻ hơn khi cần ít băng thông.</li>
+        <li>Trên một connection tạo các <b>Virtual Interface (VIF)</b>: <b>private VIF</b> vào VPC qua VGW; <b>public VIF</b> tới dịch vụ AWS có public endpoint (S3, DynamoDB) bằng public IP mà không qua Internet; <b>transit VIF</b> tới Transit Gateway qua Direct Connect Gateway.</li>
+        <li><b>Direct Connect Gateway</b>: tài nguyên global cho một connection ở một location tới được <b>nhiều VPC ở nhiều Region và nhiều account</b> (qua VGW của từng VPC hoặc qua TGW). Không có DX Gateway thì một private VIF chỉ tới một VGW của một VPC cùng Region với location.</li>
+        <li><b>Không mã hóa mặc định</b>: DX là layer 2 riêng, dữ liệu đi trần. Muốn mã hóa: <b>MACsec</b> trên dedicated 10/100 Gbps ở location hỗ trợ, hoặc <b>VPN over Direct Connect</b> (dựng Site-to-Site VPN chạy qua public VIF, IPsec mã hóa, chấp nhận tốn hiệu năng và giới hạn 1,25 Gbps mỗi tunnel). Đề nói <em>encrypted</em> cộng <em>consistent low latency</em> → VPN over DX.</li>
+        <li><b>LAG (Link Aggregation Group)</b>: gộp nhiều dedicated connection <b>cùng tốc độ, cùng location</b> thành một đường logic (tối đa 4 connection, cần kiểm tra lại) để tăng băng thông; LAG không giúp chống location hỏng.</li>
+        <li><b>Resiliency</b> theo khuyến nghị AWS: <b>Maximum</b> là hai location, mỗi location hai connection trên hai thiết bị; <b>High</b> là hai location, mỗi location một connection; <b>Development</b> là một location (hai connection hoặc một). Cách rẻ để có đường dự phòng: <b>DX chính + Site-to-Site VPN backup</b>, BGP ưu tiên DX, VPN tự lên khi DX đứt. Hai DX ở hai location là đắt nhất nhưng đúng khi đề nói <em>maximum resiliency</em>, <em>mission-critical</em>.</li>
+        <li><b>Direct Connect SiteLink</b> (nhận diện): nối hai data center của bạn với nhau qua các DX location, dùng backbone AWS mà không cần đi vào VPC.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Bảng chọn VPN với Direct Connect</span>
+      <div class="tbl"><table>
+        <tr><th>Tiêu chí</th><th>Site-to-Site VPN</th><th>Direct Connect</th><th>Đề bài nói gì thì chọn</th></tr>
+        <tr><td>Băng thông</td><td>1,25 Gbps mỗi tunnel, gộp bằng ECMP trên TGW</td><td>50 Mbps đến 100 Gbps (400 Gbps một số nơi), ổn định</td><td><em>large data transfer</em>, <em>consistent throughput</em> → DX</td></tr>
+        <tr><td>Thời gian thiết lập</td><td>Phút đến giờ</td><td>Tuần đến tháng</td><td><em>quickly</em>, <em>within days</em>, <em>immediately</em> → VPN (có thể VPN tạm trong lúc chờ DX)</td></tr>
+        <tr><td>Đường đi</td><td>Internet công cộng, độ trễ dao động</td><td>Cáp riêng, độ trễ thấp và đều</td><td><em>predictable latency</em>, <em>bypass the Internet</em> → DX</td></tr>
+        <tr><td>Bảo mật</td><td>IPsec mã hóa sẵn</td><td>Riêng tư nhưng không mã hóa, thêm MACsec hoặc VPN over DX</td><td><em>encrypted in transit</em> + DX → VPN over DX</td></tr>
+        <tr><td>Chi phí</td><td>Thấp, theo giờ connection</td><td>Cao: port-hour + cross-connect + partner; data out rẻ hơn</td><td><em>cost-effective</em>, <em>low volume</em> → VPN</td></tr>
+        <tr><td>HA</td><td>2 tunnel sẵn; cần 2 CGW để HA phía bạn</td><td>Phải tự mua 2 connection / 2 location, hoặc VPN backup</td><td><em>backup for Direct Connect</em> → Site-to-Site VPN</td></tr>
+        <tr><td>Nối nhiều VPC / Region</td><td>VGW mỗi VPC, hoặc TGW</td><td>Direct Connect Gateway (+ TGW)</td><td><em>multiple Regions over one DX</em> → DX Gateway</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Ba công cụ quan sát mạng và Network Firewall (nhận diện, tuần 8 học kỹ)</span>
+      <div class="tbl"><table>
+        <tr><th>Công cụ</th><th>Làm gì</th><th>Dấu hiệu đề thi</th></tr>
+        <tr><td><b>VPC Flow Logs</b></td><td>Ghi metadata của traffic IP (src, dst, port, protocol, ACCEPT/REJECT) ở mức VPC, subnet hoặc ENI, đẩy vào CloudWatch Logs, S3 hoặc Kinesis Data Firehose. Không ghi nội dung gói, không ghi traffic tới DNS của Amazon, metadata 169.254.169.254, DHCP, license activation. Không real-time.</td><td><em>troubleshoot why connection is rejected</em>, <em>audit network traffic</em>, <em>which SG or NACL blocked</em> → Flow Logs rồi phân tích bằng Athena hay CloudWatch Logs Insights</td></tr>
+        <tr><td><b>Reachability Analyzer</b></td><td>Phân tích <b>cấu hình</b> (route, SG, NACL, peering, TGW) giữa hai điểm (ENI, IGW, VPN...) và chỉ ra thành phần chặn, <b>không gửi gói tin thật</b>.</td><td><em>verify connectivity configuration</em>, <em>identify the component blocking traffic</em> → Reachability Analyzer</td></tr>
+        <tr><td><b>AWS Network Firewall</b></td><td>Tường lửa managed mức <b>VPC</b>: stateful và stateless rule, lọc theo <b>domain</b>, IPS kiểu Suricata, đặt ở firewall subnet và điều hướng traffic qua nó bằng route table. Mạnh hơn SG/NACL (lọc domain, deep inspection) và khác WAF (WAF là layer 7 cho HTTP qua ALB/CloudFront/API Gateway).</td><td><em>filter outbound traffic by domain name</em>, <em>intrusion prevention</em>, <em>centralized inspection across VPCs</em> → Network Firewall (thường kết hợp TGW)</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>Nối data center tới AWS trong tuần này, dữ liệu phải mã hóa</td><td>Site-to-Site VPN (VGW + CGW)</td><td>Direct Connect (mất hàng tháng)</td></tr>
+        <tr><td>Chuyển 50 TB mỗi tháng, độ trễ đều, đã dùng lâu dài</td><td>Direct Connect</td><td>VPN (1,25 Gbps mỗi tunnel, Internet dao động)</td></tr>
+        <tr><td>DX đã có, cần mã hóa traffic qua DX</td><td>VPN over Direct Connect (public VIF) hoặc MACsec</td><td>Cho rằng DX mã hóa sẵn</td></tr>
+        <tr><td>DX đứt phải có đường dự phòng, <em>cost-effective</em></td><td>Site-to-Site VPN làm backup, BGP ưu tiên DX</td><td>DX thứ hai (đắt), đúng chỉ khi đề nói maximum resiliency</td></tr>
+        <tr><td>Một DX tới VPC ở Tokyo, Singapore và Virginia</td><td>Direct Connect Gateway</td><td>Ba DX riêng</td></tr>
+        <tr><td>Nhân viên làm từ xa vào VPC bằng tài khoản AD</td><td>Client VPN với AD authentication</td><td>Site-to-Site VPN (cần thiết bị router tại chỗ)</td></tr>
+        <tr><td>Năm chi nhánh nhỏ cần nói chuyện với nhau qua AWS, rẻ</td><td>VPN CloudHub trên một VGW</td><td>Direct Connect cho từng chi nhánh</td></tr>
+        <tr><td>VPN qua Internet bị jitter, muốn ổn hơn mà không mua DX</td><td>Accelerated Site-to-Site VPN (cần TGW)</td><td>Tăng số tunnel trên VGW</td></tr>
+        <tr><td>Muốn biết SG hay NACL nào chặn mà không gửi gói thử</td><td>Reachability Analyzer</td><td>Flow Logs (cần traffic thật)</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>IPsec over the Internet <b>→ Site-to-Site VPN</b></span><span>Virtual Private Gateway, Customer Gateway <b>→ Site-to-Site VPN</b></span><span>two tunnels <b>→ VPN HA phía AWS</b></span><span>dedicated private connection, consistent latency <b>→ Direct Connect</b></span><span>takes weeks or months <b>→ Direct Connect</b></span><span>encrypt Direct Connect <b>→ VPN over DX, MACsec</b></span><span>one DX to many Regions <b>→ Direct Connect Gateway</b></span><span>DX backup, cost-effective <b>→ Site-to-Site VPN</b></span><span>remote users, OpenVPN <b>→ Client VPN</b></span><span>multiple branch offices via AWS <b>→ VPN CloudHub</b></span><span>bandwidth above 1.25 Gbps over VPN <b>→ TGW + ECMP</b></span><span>capture network traffic metadata <b>→ VPC Flow Logs</b></span><span>filter by domain, IPS <b>→ Network Firewall</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">17. Công ty đang chờ Direct Connect (dự kiến 2 tháng) nhưng phải migrate dữ liệu bắt đầu từ tuần sau, dữ liệu nhạy cảm. Làm gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Dựng Site-to-Site VPN dùng ngay, giữ làm backup sau khi DX xong.</b> VPN mã hóa IPsec sẵn, thiết lập trong vài giờ. Chờ DX là loại ngay vì đề nói thời gian. Nếu khối lượng quá lớn cho 1,25 Gbps thì cân nhắc Snowball (tuần 3) nhưng câu này nhấn vào kết nối.</p></div>
+      <div class="q"><p class="qt">18. Chọn 2 cách mã hóa traffic giữa on-prem và VPC khi đã có Direct Connect 10 Gbps: (A) bật encryption trên private VIF, (B) VPN over DX qua public VIF, (C) MACsec trên dedicated connection, (D) dùng Transit Gateway, (E) bật SSL trên VGW.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>B và C.</b> A và E không tồn tại (VIF, VGW không có nút encryption). D là hub định tuyến, không mã hóa gì. Bẫy: nhiều người tưởng DX "riêng" nghĩa là "mã hóa".</p></div>
+      <div class="q"><p class="qt">19. Một Direct Connect ở location Tokyo cần tới 6 VPC ở Tokyo và 3 VPC ở Singapore, <em>least operational overhead</em>. Kiến trúc?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Direct Connect Gateway, gắn transit VIF tới Transit Gateway ở mỗi Region (hoặc private VIF tới VGW từng VPC nếu ít VPC).</b> Một DX Gateway tới nhiều Region và account. 9 private VIF tới 9 VGW cũng chạy nhưng vượt quota VIF trên một connection và quá nhiều việc tay.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HANDS-ON ============ -->
+<section id="handson">
+  <span class="eyebrow">Thực hành</span>
+  <h2>Hands-on: 5 lab</h2>
+  <p>Làm theo thứ tự. Lab 1 miễn phí. Từ Lab 2 có NAT Gateway (khoảng 0,062 USD/giờ) và Elastic IP: làm Lab 2 và Lab 3 trong cùng buổi rồi <b>xóa NAT Gateway ngay</b>. Lab 4 chỉ cần bastion. Mọi lệnh CLI chạy trong PowerShell trên Windows với profile <code>saa</code>, Region <code>ap-northeast-1</code>. Đặt trước <code>$env:AWS_PROFILE = "saa"</code> cho cửa sổ hiện tại. Resource đặt tên bắt đầu bằng <code>saa-</code> để lúc dọn không sót.</p>
+
+  <div class="card">
+    <h3>Lab 1. Dựng VPC hai AZ với public và private subnet, Internet Gateway, route table</h3>
+    <ol class="steps">
+      <li><div><p>Console → <b>VPC → Your VPCs → Create VPC</b> → chọn <b>VPC and more</b>. Name tag auto-generation: <code>saa</code>. IPv4 CIDR <code>10.0.0.0/16</code>. IPv6: No IPv6 CIDR block. Tenancy: Default.</p></div></li>
+      <li><div><p>Number of AZs: <b>2</b> (mở Customize AZs, chọn <code>ap-northeast-1a</code> và <code>ap-northeast-1c</code>). Public subnets: <b>2</b>, Private subnets: <b>2</b>. Mở Customize subnets CIDR blocks và sửa thành <code>10.0.0.0/24</code>, <code>10.0.1.0/24</code> cho public và <code>10.0.2.0/24</code>, <code>10.0.3.0/24</code> cho private (mặc định wizard chia /20, đổi /24 cho dễ đọc).</p></div></li>
+      <li><div><p>NAT gateways: <b>None</b> (tự tạo ở Lab 2 để hiểu từng bước). VPC endpoints: <b>None</b> (tự tạo ở Lab 3). DNS options: tick cả <b>Enable DNS hostnames</b> và <b>Enable DNS resolution</b>. Nhìn sơ đồ Preview bên phải: 4 subnet, 1 IGW, 3 route table do wizard tạo. Bấm <b>Create VPC</b>, chờ vài giây.</p></div></li>
+      <li><div><p>Tự kiểm tra từng thành phần trên Console. <b>Subnets</b>: lọc theo VPC <code>saa-vpc</code>, mỗi subnet cột Available IPv4 phải là <b>251</b> (256 trừ 5 địa chỉ AWS giữ). <b>Internet gateways</b>: <code>saa-igw</code> trạng thái Attached vào saa-vpc. <b>Route tables</b>: có 4 bảng gồm 1 main (không tên, chỉ có dòng local, không gắn subnet nào rõ ràng), <code>saa-rtb-public</code> gắn 2 public subnet với route <code>0.0.0.0/0 → igw</code>, và <code>saa-rtb-private1-ap-northeast-1a</code>, <code>saa-rtb-private2-ap-northeast-1c</code> mỗi bảng gắn một private subnet, chỉ có dòng local.</p></div></li>
+      <li><div><p>Mở từng public subnet → <b>Actions → Edit subnet settings</b> → tick <b>Enable auto-assign public IPv4 address</b> nếu chưa tick. Không có cờ này thì EC2 ở public subnet sẽ không nhận public IP và không SSH được.</p></div></li>
+      <li><div><p>Kiểm tra lại bằng CLI, thay <code>&lt;vpc-id&gt;</code> bằng id thật (dạng <code>vpc-0abc...</code>):</p>
+<pre><code>$env:AWS_PROFILE = "saa"
+aws ec2 describe-vpcs --filters Name=tag:Name,Values=saa-vpc --query "Vpcs[].[VpcId,CidrBlock]" --output table
+aws ec2 describe-subnets --filters Name=vpc-id,Values=&lt;vpc-id&gt; --query "Subnets[].[Tags[?Key=='Name']|[0].Value,CidrBlock,AvailabilityZone,AvailableIpAddressCount,MapPublicIpOnLaunch]" --output table
+aws ec2 describe-route-tables --filters Name=vpc-id,Values=&lt;vpc-id&gt; --query "RouteTables[].[RouteTableId,Associations[0].Main,Routes[].[DestinationCidrBlock,GatewayId]]" --output json
+aws ec2 describe-internet-gateways --filters Name=attachment.vpc-id,Values=&lt;vpc-id&gt; --output table</code></pre><p>Đọc kết quả và tự trả lời: subnet nào là public, dựa vào dòng nào? Đây là nửa đầu của mốc kiểm tra 1.</p></div></li>
+      <li><div><p>Vẽ VPC vừa tạo ra giấy: hộp VPC, hai AZ, bốn subnet với CIDR, IGW, ba route table và từng dòng route. So với sơ đồ ở mục 1.</p></div></li>
+    </ol>
+    <div class="note ok">VPC, subnet, route table, IGW, Security Group đều miễn phí. Giữ nguyên VPC này cho tuần 5 (ALB, ASG) để khỏi dựng lại.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 2. NAT Gateway cho private subnet, bastion host, SSH nhảy vào private EC2 và curl ra Internet</h3>
+    <ol class="steps">
+      <li><div><p><b>VPC → Elastic IPs → Allocate Elastic IP address</b> → Allocate. Đặt tag Name <code>saa-eip-nat</code>. Từ lúc này EIP tính khoảng 0,005 USD/giờ.</p></div></li>
+      <li><div><p><b>VPC → NAT gateways → Create NAT gateway</b>: Name <code>saa-nat</code>, Subnet chọn <code>saa-subnet-public1-ap-northeast-1a</code> (phải là public subnet), Connectivity type <b>Public</b>, Elastic IP allocation ID chọn EIP vừa tạo → Create. Chờ trạng thái từ Pending sang <b>Available</b> (1 đến 3 phút). <b>Đồng hồ tính tiền bắt đầu chạy từ đây.</b></p></div></li>
+      <li><div><p><b>Route tables → saa-rtb-private1-ap-northeast-1a → Routes → Edit routes → Add route</b>: Destination <code>0.0.0.0/0</code>, Target NAT Gateway → <code>saa-nat</code> → Save. Làm tương tự cho <code>saa-rtb-private2-ap-northeast-1c</code> trỏ cùng NAT (cho lab chấp nhận chéo AZ; production thì mỗi AZ một NAT).</p></div></li>
+      <li><div><p><b>EC2 → Key Pairs → Create key pair</b>: Name <code>saa-key</code>, type RSA, format <code>.pem</code>. Lưu file vào <code>C:\Users\&lt;bạn&gt;\.ssh\saa-key.pem</code>. Siết quyền file để OpenSSH trên Windows không từ chối:</p>
+<pre><code>icacls "$env:USERPROFILE\.ssh\saa-key.pem" /inheritance:r /grant:r "$env:USERNAME:R"</code></pre></div></li>
+      <li><div><p>Lấy public IP của bạn để mở SSH đúng một địa chỉ:</p>
+<pre><code>(Invoke-WebRequest -Uri https://checkip.amazonaws.com -UseBasicParsing).Content.Trim()</code></pre><p><b>EC2 → Security Groups → Create security group</b> hai lần, cả hai chọn VPC <code>saa-vpc</code>: (a) <code>saa-sg-bastion</code>: inbound SSH TCP 22, Source Custom <code>&lt;ip-của-bạn&gt;/32</code>. (b) <code>saa-sg-private</code>: inbound SSH TCP 22, Source chọn <b>security group</b> <code>saa-sg-bastion</code> (gõ "saa" vào ô source sẽ gợi ý). Outbound để mặc định all. Đây là mẫu SG tham chiếu SG ở mục 3.</p></div></li>
+      <li><div><p><b>EC2 → Launch instance</b> cho bastion: Name <code>saa-bastion</code>, AMI <b>Amazon Linux 2023</b>, type <code>t3.micro</code> (hoặc <code>t2.micro</code> nếu Free Tier cũ), Key pair <code>saa-key</code>. Network settings → Edit: VPC <code>saa-vpc</code>, Subnet <code>saa-subnet-public1-ap-northeast-1a</code>, Auto-assign public IP <b>Enable</b>, Select existing security group <code>saa-sg-bastion</code> → Launch.</p></div></li>
+      <li><div><p>Launch instance thứ hai: Name <code>saa-private</code>, cùng AMI và type, key <code>saa-key</code>, Subnet <code>saa-subnet-private1-ap-northeast-1a</code>, Auto-assign public IP <b>Disable</b>, SG <code>saa-sg-private</code> → Launch. Ghi lại private IP (dạng <code>10.0.2.x</code>) và public IP của bastion.</p></div></li>
+      <li><div><p>SSH nhảy qua bastion bằng OpenSSH có sẵn trên Windows (tùy chọn <code>-J</code> là ProxyJump, key nằm trên máy bạn, không copy key lên bastion):</p>
+<pre><code>ssh -i "$env:USERPROFILE\.ssh\saa-key.pem" -J ec2-user@&lt;bastion-public-ip&gt; ec2-user@&lt;private-ip&gt;</code></pre><p>Lần đầu hỏi fingerprint hai lần (bastion rồi private), gõ yes. Prompt hiện <code>[ec2-user@ip-10-0-2-x ~]$</code> là đã vào máy private.</p></div></li>
+      <li><div><p>Trong máy private, kiểm tra đường ra Internet đi qua NAT:</p>
+<pre><code>curl -s https://checkip.amazonaws.com
+curl -sI https://aws.amazon.com | head -n 1
+ip addr show eth0 | grep "inet "</code></pre><p>Dòng đầu phải in ra <b>đúng Elastic IP của NAT Gateway</b>, chứng tỏ gói tin được SNAT. Dòng cuối chỉ thấy 10.0.2.x: instance không hề có public IP.</p></div></li>
+      <li><div><p>Thí nghiệm route table: trên Console xóa route <code>0.0.0.0/0</code> khỏi <code>saa-rtb-private1-ap-northeast-1a</code>, chạy lại <code>curl -m 5 https://checkip.amazonaws.com</code> trong máy private → timeout. Thêm lại route → chạy lại được ngay. Phiên SSH không bị đứt vì traffic SSH đi dòng local từ bastion. Kết luận: route table, không phải SG, quyết định có đường ra hay không.</p></div></li>
+      <li><div><p>Thử ngược: SSH thẳng từ máy bạn tới private IP <code>ssh ec2-user@10.0.2.x</code> → không tới được, vì 10.0.2.x là private và không có đường từ Internet vào. NAT chỉ một chiều ra.</p></div></li>
+    </ol>
+    <div class="note">NAT Gateway và Elastic IP đang tính tiền theo giờ. Làm tiếp Lab 3 ngay, rồi xóa NAT Gateway và release EIP ở cuối Lab 3. Nếu phải dừng giữa chừng, xóa NAT trước rồi tạo lại sau (vài phút), rẻ hơn để qua đêm.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 3. EC2 private truy cập S3 qua gateway endpoint, xóa NAT vẫn chạy</h3>
+    <ol class="steps">
+      <li><div><p>Tạo IAM role cho EC2: <b>IAM → Roles → Create role</b> → Trusted entity AWS service, Use case <b>EC2</b> → policy <code>AmazonS3ReadOnlyAccess</code> → Role name <code>saa-ec2-s3-readonly</code> → Create. Gắn vào instance: <b>EC2 → saa-private → Actions → Security → Modify IAM role</b> → chọn role → Update. Không có role thì <code>aws s3 ls</code> sẽ báo "Unable to locate credentials", là lỗi quyền chứ không phải lỗi mạng, đừng nhầm.</p></div></li>
+      <li><div><p>Trong phiên SSH máy private (Amazon Linux 2023 có sẵn AWS CLI v2), đặt Region rồi thử khi vẫn còn NAT:</p>
+<pre><code>export AWS_DEFAULT_REGION=ap-northeast-1
+aws s3 ls
+aws sts get-caller-identity</code></pre><p>Thấy ARN dạng <code>assumed-role/saa-ec2-s3-readonly/i-...</code> là role đã vào. Lúc này request S3 đang đi qua NAT ra public endpoint của S3.</p></div></li>
+      <li><div><p>Tạo gateway endpoint: <b>VPC → Endpoints → Create endpoint</b>: Name <code>saa-s3-gw</code>, Type <b>AWS services</b>, Services tìm <code>com.amazonaws.ap-northeast-1.s3</code> và chọn dòng có Type <b>Gateway</b> (không chọn dòng Interface), VPC <code>saa-vpc</code>, Route tables tick cả hai bảng <code>saa-rtb-private1</code> và <code>saa-rtb-private2</code>, Policy Full access → Create endpoint.</p></div></li>
+      <li><div><p>Mở <code>saa-rtb-private1-ap-northeast-1a</code> → tab Routes: xuất hiện dòng mới Destination <code>pl-xxxxxxxx</code> (prefix list chứa các dải IP public của S3 Tokyo) → Target <code>vpce-xxxx</code>. Xem nội dung prefix list bằng CLI:</p>
+<pre><code>aws ec2 describe-prefix-lists --filters Name=prefix-list-name,Values=com.amazonaws.ap-northeast-1.s3 --query "PrefixLists[].Cidrs" --output text</code></pre></div></li>
+      <li><div><p>Thí nghiệm chính: trên Console <b>xóa route <code>0.0.0.0/0 → nat</code></b> khỏi cả hai route table private (hoặc xóa luôn NAT Gateway ở bước 7 rồi mới thử). Trong máy private:</p>
+<pre><code>curl -m 5 -s https://checkip.amazonaws.com ; echo "exit=$?"
+aws s3 ls
+aws s3 ls s3://&lt;một-bucket-của-bạn&gt;/</code></pre><p>curl timeout (exit 28) vì không còn đường ra Internet, nhưng <code>aws s3 ls</code> <b>vẫn chạy</b>: IP của S3 nằm trong prefix list, route hẹp hơn thắng <code>0.0.0.0/0</code> và gói đi thẳng tới endpoint trong mạng AWS. Đây là bằng chứng của longest prefix match và của gateway endpoint.</p></div></li>
+      <li><div><p>Thử giới hạn Region: <code>aws s3 ls --region us-east-1</code> (liệt kê bucket qua endpoint Virginia) sẽ treo rồi lỗi, vì gateway endpoint chỉ phục vụ S3 cùng Region. Thử endpoint policy: sửa policy của endpoint thành chỉ Allow <code>s3:ListBucket</code> trên một bucket cụ thể và chạy lại để thấy AccessDenied với bucket khác; xong trả về Full access.</p></div></li>
+      <li><div><p><b>Xóa NAT Gateway ngay</b>: <b>VPC → NAT gateways → saa-nat → Actions → Delete NAT gateway</b>, gõ delete. Trạng thái Deleting mất vài phút rồi Deleted; tiền dừng khi Deleted. Sau đó <b>Elastic IPs → saa-eip-nat → Actions → Release</b>. Kiểm tra bằng CLI, cả hai lệnh phải trống:</p>
+<pre><code>aws ec2 describe-nat-gateways --filter Name=state,Values=available,pending --query "NatGateways[].NatGatewayId"
+aws ec2 describe-addresses --query "Addresses[].PublicIp"</code></pre></div></li>
+    </ol>
+    <div class="note">Đã xóa NAT Gateway và release EIP chưa? Hai instance t3.micro để lại qua đêm tốn ít (khoảng 0,0136 USD/giờ mỗi cái ở Tokyo, cần kiểm tra lại, hoặc miễn phí với Free Tier cũ) và còn cần cho Lab 4; nếu Lab 4 làm ngày khác thì Stop cả hai, bastion sẽ đổi public IP khi Start lại.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 4. Thử NACL deny một IP và quan sát Security Group không chặn được</h3>
+    <ol class="steps">
+      <li><div><p>Chắc chắn SSH vào bastion đang chạy: <code>ssh -i "$env:USERPROFILE\.ssh\saa-key.pem" ec2-user@&lt;bastion-public-ip&gt;</code>. Giữ cửa sổ này mở để xem nó có bị đứt không.</p></div></li>
+      <li><div><p>Thử chặn bằng Security Group trước: mở <code>saa-sg-bastion</code> → Edit inbound rules. Nhận xét: cột Type chỉ có Allow, <b>không có cách nào viết "Deny từ IP X"</b>. Cách duy nhất là xóa rule SSH đi, khi đó mọi người bị chặn chứ không chặn riêng được một IP. Không sửa gì, Cancel.</p></div></li>
+      <li><div><p><b>VPC → Network ACLs → Create network ACL</b>: Name <code>saa-nacl-test</code>, VPC <code>saa-vpc</code> → Create. Mở nó, tab <b>Inbound rules</b>: thấy chỉ có rule <code>*</code> Deny, nghĩa là custom NACL mặc định chặn hết.</p></div></li>
+      <li><div><p>Edit inbound rules, thêm hai rule: <b>Rule 100</b>: Type All traffic, Source <code>&lt;ip-của-bạn&gt;/32</code>, Allow/Deny <b>Deny</b>. <b>Rule 200</b>: All traffic, Source <code>0.0.0.0/0</code>, <b>Allow</b>. Save. Tab <b>Outbound rules</b>: thêm Rule 100 All traffic, Destination <code>0.0.0.0/0</code>, Allow. Save.</p></div></li>
+      <li><div><p>Tab <b>Subnet associations → Edit subnet associations</b> → tick <code>saa-subnet-public1-ap-northeast-1a</code> (subnet chứa bastion) → Save. Subnet này rời default NACL và dùng NACL test.</p></div></li>
+      <li><div><p>Quay lại cửa sổ SSH: gõ vài lệnh, phiên đứng im rồi đứt. Mở SSH mới → <code>Connection timed out</code>. SG của bastion vẫn Allow 22 từ IP bạn nhưng gói tin bị NACL chặn <b>trước khi tới ENI</b>, SG không có cơ hội xét. Flow Logs (nếu bật) sẽ ghi REJECT ở mức subnet.</p></div></li>
+      <li><div><p>Thí nghiệm thứ tự rule: sửa rule Deny từ số 100 thành <b>300</b> (sau Allow 200). SSH lại → vào được. Rule 200 Allow 0.0.0.0/0 khớp trước, NACL dừng xét, Deny 300 không bao giờ được chạm tới. Đổi lại thành 100 → bị chặn lại. Đây là lý do đề thi luôn nhắc "rule number thấp hơn thắng".</p></div></li>
+      <li><div><p>Thí nghiệm stateless: xóa rule Deny, giữ inbound 200 Allow all; ở <b>Outbound</b> sửa rule 100 thành chỉ Allow TCP port 22 tới 0.0.0.0/0 (không mở ephemeral). SSH → timeout, vì gói trả lời từ bastion đi về port ephemeral (ví dụ 51234) của bạn, không phải port 22. Đổi outbound thành Allow TCP <b>1024-65535</b> → SSH vào được. Đây là bẫy ephemeral port.</p></div></li>
+      <li><div><p>Trả lại: Subnet associations của <b>default NACL</b> (dòng có cột Default = Yes) → Edit → tick lại public1 subnet → Save. Rồi xóa <code>saa-nacl-test</code>. SSH kiểm tra lại lần cuối.</p></div></li>
+    </ol>
+    <div class="note ok">NACL không tốn tiền. Kết luận cho mốc kiểm tra 3: SG stateful, chỉ Allow, gắn ENI; NACL stateless, có Deny, gắn subnet, xét theo số, chặn IP cụ thể thì dùng NACL.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 5. Dọn dẹp: xóa NAT Gateway, release Elastic IP, terminate EC2, kiểm tra Billing</h3>
+    <ol class="steps">
+      <li><div><p>Terminate hai instance: <b>EC2 → Instances</b> → chọn <code>saa-bastion</code> và <code>saa-private</code> → Instance state → Terminate. Sau đó mở <b>Elastic Block Store → Volumes</b>: không còn volume nào trạng thái available (root volume mặc định Delete on termination).</p></div></li>
+      <li><div><p>Kiểm tra lần cuối ba thứ tính tiền theo giờ, mọi lệnh phải trả về rỗng:</p>
+<pre><code>aws ec2 describe-nat-gateways --filter Name=state,Values=available,pending,deleting --query "NatGateways[].[NatGatewayId,State]" --output table
+aws ec2 describe-addresses --query "Addresses[].[PublicIp,AssociationId]" --output table
+aws ec2 describe-instances --filters Name=instance-state-name,Values=running,stopped --query "Reservations[].Instances[].[InstanceId,State.Name,Tags[?Key=='Name']|[0].Value]" --output table
+aws ec2 describe-volumes --query "Volumes[].[VolumeId,State,Size]" --output table</code></pre><p>Nếu còn NAT Gateway hay EIP: VPC → NAT gateways → Delete; Elastic IPs → Release. Chạy lại tới khi trống.</p></div></li>
+      <li><div><p>Giữ lại cho tuần 5: VPC, subnet, route table, IGW, gateway endpoint S3, hai Security Group, key pair, IAM role. Tất cả miễn phí. Nếu muốn xóa sạch: <b>VPC → Your VPCs → saa-vpc → Actions → Delete VPC</b> sẽ xóa kèm subnet, route table, IGW, endpoint, SG (phải không còn ENI nào trong VPC).</p></div></li>
+      <li><div><p><b>Billing and Cost Management → Bills</b>: xem dòng <b>EC2-Other</b> (NAT Gateway và EIP nằm ở đây, không nằm ở dòng VPC) và <b>EC2-Instances</b>. Mục tiêu tổng tuần này khoảng 1 đến 2 USD. Mở <b>Cost Explorer</b>, lọc Service = EC2-Other, Group by Usage type để thấy <code>NatGateway-Hours</code> và <code>NatGateway-Bytes</code>. Dữ liệu trễ khoảng 24 giờ, kiểm tra lại ngày hôm sau.</p></div></li>
+      <li><div><p>Kiểm tra budget 1 USD đã tạo ở tuần 1 có gửi email chưa. Nếu nhận email cảnh báo mà mọi thứ đã xóa thì không sao, đó là chi phí của buổi lab.</p></div></li>
+    </ol>
+    <div class="note">Hai thứ hay bị quên nhất của tuần này: <b>NAT Gateway</b> (khoảng 45 USD/tháng nếu để quên) và <b>Elastic IP</b> chưa release (khoảng 3,6 USD/tháng). Kiểm tra ở cả hai Region nếu từng lỡ đổi Region trên Console.</div>
+  </div>
+</section>
+
+<!-- ============ MỐC KIỂM TRA ============ -->
+<section id="moc">
+  <span class="eyebrow">Mốc kiểm tra</span>
+  <h2>Ba việc phải tự làm được không nhìn tài liệu</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>1. Vẽ lại VPC vừa dựng trên giấy</h3>
+      <p style="font-size:.94rem">Gợi ý khung (vẽ xong mới đối chiếu Console):</p>
+      <ul style="font-size:.94rem">
+        <li>Hộp ngoài: VPC <code>10.0.0.0/16</code>, Region Tokyo. IGW gắn ở biên VPC.</li>
+        <li>Hai cột AZ 1a và 1c; mỗi cột một public subnet (/24) và một private subnet (/24), ghi CIDR.</li>
+        <li>Trong public 1a: NAT Gateway + EIP, bastion. Trong private 1a: app EC2 chỉ có private IP.</li>
+        <li>Ba route table và từng dòng: public có <code>0.0.0.0/0 → igw</code>; private có <code>0.0.0.0/0 → nat</code> và <code>pl-s3 → vpce</code>; mọi bảng có <code>10.0.0.0/16 → local</code>.</li>
+        <li>Ghi chú 5 IP AWS giữ, subnet một AZ, NAT một AZ.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>2. Gói tin từ private EC2 ra Internet đi qua những gì</h3>
+      <p style="font-size:.94rem">Gợi ý khung trả lời:</p>
+      <ul style="font-size:.94rem">
+        <li>Chiều đi: app → <b>ENI</b> → <b>SG outbound</b> (stateful, ghi nhớ) → <b>NACL outbound</b> private subnet → <b>route table</b> private khớp <code>0.0.0.0/0 → nat</code> → NACL inbound public subnet → <b>NAT Gateway</b> đổi source thành EIP → NACL outbound public → route table public <code>0.0.0.0/0 → igw</code> → <b>IGW</b> → Internet.</li>
+        <li>Chiều về: Internet → IGW → NACL inbound public (ephemeral) → NAT tra bảng, đổi đích về private IP → NACL outbound public → local → NACL inbound private (ephemeral) → SG tự cho vào vì stateful → app.</li>
+        <li>Nhấn: NAT và IGW không có SG; NACL stateless nên cần ephemeral; với S3 thì prefix list thắng route NAT.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>3. Phân biệt Security Group với NACL bằng ví dụ cụ thể</h3>
+      <p style="font-size:.94rem">Gợi ý khung trả lời:</p>
+      <ul style="font-size:.94rem">
+        <li>Năm trục: gắn vào (ENI với subnet), trạng thái (stateful với stateless), loại rule (chỉ Allow với Allow và Deny), thứ tự (xét hết với theo số, khớp đầu dừng), mặc định (SG mới không inbound; custom NACL deny all).</li>
+        <li>Ví dụ 1 (Lab 4): chặn IP 203.0.113.10 vào bastion. SG không làm được; NACL rule 100 Deny /32 trước rule 200 Allow.</li>
+        <li>Ví dụ 2: web server HTTPS. SG chỉ cần inbound 443; NACL cần inbound 443 <b>và</b> outbound 1024-65535, thiếu là client treo.</li>
+        <li>Ví dụ 3: DB chỉ nhận từ app: SG của DB source = SG app, NACL không viết được theo SG.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TỪ KHÓA ============ -->
+<section id="tukhoa">
+  <span class="eyebrow">Ôn nhanh</span>
+  <h2>Bảng từ khóa tuần 4</h2>
+  <div class="tbl"><table>
+    <tr><th>Đề bài có chữ</th><th>Nghĩ ngay tới</th></tr>
+    <tr><td><em>subnet</em> cần chịu AZ hỏng</td><td>Không thể, subnet gắn một AZ; tạo subnet ở AZ khác</td></tr>
+    <tr><td><em>5 reserved addresses</em>, số instance tối đa trong subnet</td><td>Kích thước CIDR trừ 5</td></tr>
+    <tr><td><em>ran out of IP addresses</em> trong VPC</td><td>Secondary CIDR</td></tr>
+    <tr><td>Subnet là public hay private</td><td>Route <code>0.0.0.0/0 → igw</code> có hay không</td></tr>
+    <tr><td><em>longest prefix match</em>, hai route chồng nhau</td><td>Dải hẹp hơn thắng</td></tr>
+    <tr><td><em>private subnet outbound Internet</em></td><td>NAT Gateway ở public subnet + EIP, route private trỏ NAT</td></tr>
+    <tr><td><em>NAT must be highly available</em></td><td>Một NAT Gateway mỗi AZ</td></tr>
+    <tr><td><em>IPv6 outbound only</em></td><td>Egress-only Internet Gateway</td></tr>
+    <tr><td><em>source/destination check</em></td><td>NAT Instance (phải tắt)</td></tr>
+    <tr><td><em>static public IP</em> sau stop/start</td><td>Elastic IP</td></tr>
+    <tr><td><em>stateful</em>, chỉ Allow, gắn instance</td><td>Security Group</td></tr>
+    <tr><td><em>stateless</em>, có Deny, gắn subnet, theo số rule</td><td>Network ACL</td></tr>
+    <tr><td><em>block a specific IP</em></td><td>NACL Deny số nhỏ (hoặc WAF nếu là HTTP)</td></tr>
+    <tr><td>Kết nối vào được nhưng không có phản hồi sau khi tạo NACL</td><td>Thiếu outbound ephemeral 1024-65535</td></tr>
+    <tr><td>DB chỉ nhận từ tầng app đang auto scale</td><td>SG của DB source = SG của app</td></tr>
+    <tr><td><em>S3 / DynamoDB privately</em>, <em>no additional cost</em></td><td>Gateway endpoint + route table</td></tr>
+    <tr><td>Dịch vụ AWS khác <em>privately</em>, <em>PrivateLink</em>, ENI</td><td>Interface endpoint</td></tr>
+    <tr><td>S3 từ on-prem qua DX/VPN bằng private IP</td><td>Interface endpoint cho S3 (gateway không đi qua DX)</td></tr>
+    <tr><td><em>expose service to thousands of VPCs</em>, <em>overlapping CIDR</em></td><td>PrivateLink + NLB (Endpoint Service)</td></tr>
+    <tr><td><em>connect two VPCs</em>, rẻ, không transitive</td><td>VPC peering, route table hai bên, CIDR không trùng</td></tr>
+    <tr><td><em>hub-and-spoke</em>, hàng chục VPC, <em>transitive</em>, <em>multicast</em></td><td>Transit Gateway</td></tr>
+    <tr><td><em>share subnets with other accounts</em></td><td>VPC sharing qua RAM</td></tr>
+    <tr><td><em>IPsec over Internet</em>, VGW + CGW, 2 tunnel</td><td>Site-to-Site VPN</td></tr>
+    <tr><td>Nhiều chi nhánh nói chuyện với nhau qua AWS</td><td>VPN CloudHub</td></tr>
+    <tr><td><em>remote users</em>, <em>OpenVPN</em>, AD / SAML cho người dùng</td><td>Client VPN</td></tr>
+    <tr><td><em>dedicated connection</em>, <em>consistent latency</em>, mất tuần tới tháng</td><td>Direct Connect</td></tr>
+    <tr><td>DX cần mã hóa</td><td>VPN over DX (public VIF) hoặc MACsec</td></tr>
+    <tr><td>Một DX tới nhiều Region / account</td><td>Direct Connect Gateway</td></tr>
+    <tr><td>Backup cho DX, <em>cost-effective</em></td><td>Site-to-Site VPN</td></tr>
+    <tr><td>Xem traffic bị ACCEPT/REJECT, audit mạng</td><td>VPC Flow Logs</td></tr>
+    <tr><td>Tìm cấu hình nào chặn, không gửi gói thật</td><td>Reachability Analyzer</td></tr>
+    <tr><td>Lọc theo domain, IPS, tường lửa mức VPC</td><td>AWS Network Firewall</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ CHECKLIST ============ -->
+<section id="checklist">
+  <span class="eyebrow">Theo dõi</span>
+  <h2>Checklist tuần 4</h2>
+  <p style="font-size:.94rem;color:var(--muted)">Tick ở đây để tự theo dõi trên máy này. Khi xong mục nào, nói với Claude trong session để tick vào <code>AWS-SAA-checklist.md</code>. Quiz chung của khối tuần 4 đến 5 làm ở cuối tuần 5.</p>
+  <div class="card">
+    <h4>Lý thuyết</h4>
+    <label class="check"><input type="checkbox" id="c1" data-ck><span>VPC, CIDR, subnet, route table</span></label>
+    <label class="check"><input type="checkbox" id="c2" data-ck><span>Internet Gateway, NAT Gateway, NAT Instance, Egress-only IGW</span></label>
+    <label class="check"><input type="checkbox" id="c3" data-ck><span>Security Group với NACL (stateful và stateless)</span></label>
+    <label class="check"><input type="checkbox" id="c4" data-ck><span>VPC endpoint: gateway (S3, DynamoDB) và interface (PrivateLink)</span></label>
+    <label class="check"><input type="checkbox" id="c5" data-ck><span>VPC peering, Transit Gateway</span></label>
+    <label class="check"><input type="checkbox" id="c6" data-ck><span>Site-to-Site VPN, Client VPN, Direct Connect</span></label>
+    <h4>Hands-on</h4>
+    <label class="check"><input type="checkbox" id="c7" data-ck><span>Dựng VPC hai AZ với public và private subnet, Internet Gateway, route table</span></label>
+    <label class="check"><input type="checkbox" id="c8" data-ck><span>NAT Gateway cho private subnet, bastion host, SSH nhảy vào private EC2 và curl ra Internet</span></label>
+    <label class="check"><input type="checkbox" id="c9" data-ck><span>EC2 private truy cập S3 qua gateway endpoint, bỏ NAT vẫn chạy <code>aws s3 ls</code></span></label>
+    <label class="check"><input type="checkbox" id="c10" data-ck><span>NACL deny một IP, quan sát SG không chặn được</span></label>
+    <label class="check"><input type="checkbox" id="c11" data-ck><span>Xóa NAT Gateway, release Elastic IP, terminate EC2, kiểm tra Billing</span></label>
+    <h4>Mốc kiểm tra</h4>
+    <label class="check"><input type="checkbox" id="c12" data-ck><span>Vẽ lại VPC vừa dựng trên giấy không nhìn console</span></label>
+    <label class="check"><input type="checkbox" id="c13" data-ck><span>Giải thích gói tin từ private EC2 ra Internet đi qua những gì, cả chiều về</span></label>
+    <label class="check"><input type="checkbox" id="c14" data-ck><span>Phân biệt Security Group với NACL bằng ví dụ cụ thể</span></label>
+    <h4>Khác</h4>
+    <label class="check"><input type="checkbox" id="c15" data-ck><span>Ngày 6 đến 7: tự vẽ sơ đồ peering với Transit Gateway, làm mini quiz 15 câu VPC trong session</span></label>
+    <label class="check"><input type="checkbox" id="c16" data-ck><span>Quiz tuần 4 đến 5 (<code>quiz/tuan-04-05.md</code>, làm cuối tuần 5) đạt từ 80%</span></label>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  // Xem đáp án
+  document.querySelectorAll('[data-reveal]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var a=b.parentElement.querySelector('.ans');
+      a.hidden=!a.hidden; b.textContent=a.hidden?'Xem đáp án':'Ẩn đáp án';
+    });
+  });
+  // Checklist lưu trên máy này
+  var boxes=document.querySelectorAll('[data-ck]'), KEY='saa-tuan-04';
+  var saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  function update(){
+    var n=0; boxes.forEach(function(c){ c.closest('.check').classList.toggle('done',c.checked); if(c.checked)n++; });
+    document.getElementById('bar').style.width=(n/boxes.length*100)+'%';
+    document.getElementById('pct').textContent=n+'/'+boxes.length;
+  }
+  boxes.forEach(function(c){
+    if(saved[c.id])c.checked=true;
+    c.addEventListener('change',function(){ saved[c.id]=c.checked; try{ localStorage.setItem(KEY,JSON.stringify(saved)); }catch(e){} update(); });
+  });
+  update();
+  // Đánh dấu mục đang đọc
+  var links=document.querySelectorAll('.toc a'), secs=[];
+  links.forEach(function(l){ var s=document.querySelector(l.getAttribute('href')); if(s)secs.push([s,l]); });
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ links.forEach(function(l){l.classList.remove('active')}); secs.forEach(function(p){ if(p[0]===e.target)p[1].classList.add('active'); }); } }); },{rootMargin:'-20% 0px -70% 0px'});
+    secs.forEach(function(p){ io.observe(p[0]); });
+  }
+})();
+</script>

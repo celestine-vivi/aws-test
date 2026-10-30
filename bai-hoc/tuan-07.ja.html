@@ -1,0 +1,1293 @@
+<title>SAA 第7週 Serverless Container</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky mục lục bên trái (desktop), cột nội dung 760px bên phải; xếp một cột ở màn hẹp. */
+:root{
+  --bg:#f2f4f7; --surface:#ffffff; --surface-2:#e9edf2; --line:#d3dae3;
+  --fg:#172030; --muted:#5a6676; --accent:#1c6e8c; --accent-soft:#dcecf3;
+  --warm:#b35a00; --warm-soft:#fbe9d6; --ok:#2a7d4f; --ok-soft:#dcf0e4; --bad:#b3362b; --bad-soft:#f8dedb;
+  --display:"Manrope","IBM Plex Sans",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+a{color:var(--accent)}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:800}
+h2{font-size:1.5rem;font-weight:800;padding-top:8px}
+h3{font-size:1.12rem;font-weight:700}
+h4{font-size:.95rem;font-weight:700}
+p{margin:0}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+pre{font-family:var(--mono);font-size:.84rem;line-height:1.5;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:0}
+pre code{background:none;padding:0;font-size:inherit}
+em{color:var(--warm);font-style:italic}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* Header */
+.hero{max-width:1120px;margin:0 auto;padding-block:36px 20px;display:flex;flex-direction:column;gap:12px}
+.hero .lead{max-width:62ch;color:var(--muted);font-size:1.02rem}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.88rem;color:var(--muted)}
+.meta b{color:var(--fg);font-weight:600}
+.progress{display:flex;align-items:center;gap:12px;font-size:.88rem;color:var(--muted)}
+.bar{flex:1;max-width:320px;height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+
+/* Two columns */
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;align-items:start}
+.toc{position:sticky;top:max(12px,env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:2px;font-size:.9rem}
+.toc a{color:var(--muted);text-decoration:none;padding:6px 10px;border-left:2px solid var(--line);display:block}
+.toc a:hover,.toc a.active{color:var(--fg);border-left-color:var(--accent)}
+.toc .grp{margin-top:10px}
+main{display:flex;flex-direction:column;gap:56px;min-width:0;max-width:780px}
+section{display:flex;flex-direction:column;gap:18px;scroll-margin-top:16px}
+@media (max-width:860px){ .wrap{grid-template-columns:1fr;gap:24px} .toc{position:static;flex-direction:row;flex-wrap:wrap;gap:6px} .toc a{border:1px solid var(--line);border-radius:99px;padding:4px 10px} .toc .grp{margin:0} .toc a.active{border-color:var(--accent)} }
+
+/* Blocks */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.block{display:flex;flex-direction:column;gap:8px}
+.block > .eyebrow{color:var(--accent)}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:5px}
+li::marker{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.kw{display:flex;flex-wrap:wrap;gap:8px}
+.kw span{background:var(--warm-soft);color:var(--warm);border-radius:4px;padding:3px 9px;font-size:.86rem;font-style:italic}
+.kw span b{font-style:normal;font-weight:600;color:var(--fg)}
+.note{border-left:3px solid var(--warm);background:var(--warm-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.94rem}
+.note.ok{border-color:var(--ok);background:var(--ok-soft)}
+.note.bad{border-color:var(--bad);background:var(--bad-soft)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;font-size:.84rem}
+tr:last-child td{border-bottom:0}
+td.c{text-align:center}
+
+/* Checklist */
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:6px;cursor:pointer}
+.check:hover{background:var(--surface-2)}
+.check input{margin-top:5px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.check.done{color:var(--muted);text-decoration:line-through}
+
+/* Quiz reveal */
+.q{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.q .qt{font-weight:500}
+.q button{align-self:flex-start;font:inherit;font-size:.86rem;padding:5px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer}
+.q button:hover{background:var(--accent);color:var(--surface)}
+.q button:focus-visible,.check input:focus-visible,.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.q .ans{font-size:.94rem;border-top:1px dashed var(--line);padding-top:8px}
+.q .ans b{color:var(--ok)}
+
+/* Steps */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:12px;padding:0;list-style:none}
+.steps li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:start}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--mono);font-size:.8rem;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:500;margin-top:2px}
+.steps li > div{display:flex;flex-direction:column;gap:6px;min-width:0}
+
+/* Flow diagram */
+.flow{display:flex;flex-direction:column;gap:0;align-items:stretch;max-width:520px}
+.flow .n{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:.94rem}
+.flow .n .tag{font-family:var(--mono);font-size:.74rem;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.tag.deny{background:var(--bad-soft);color:var(--bad)} .tag.allow{background:var(--ok-soft);color:var(--ok)} .tag.next{background:var(--surface-2);color:var(--muted)}
+.flow .arrow{height:22px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--mono);font-size:.78rem}
+.flow .arrow::before{content:"";width:1px;height:100%;background:var(--line);position:absolute}
+.flow .arrow{position:relative} .flow .arrow span{background:var(--bg);padding:0 6px;position:relative}
+
+svg text{font-family:var(--body)}
+.diag{overflow-x:auto}
+.diag svg{width:100%;max-width:700px;height:auto;display:block}
+.sv-region{fill:var(--surface);stroke:var(--accent)} .sv-az{fill:var(--accent-soft);stroke:var(--accent)} .sv-edge{fill:var(--warm-soft);stroke:var(--warm)}
+.sv-t{fill:var(--fg);font-size:13px} .sv-m{fill:var(--muted);font-size:11px} .sv-line{stroke:var(--line)}
+@media (prefers-reduced-motion: reduce){ .bar i{transition:none} }
+</style>
+
+<header class="hero">
+  <span class="eyebrow">AWS SAA-C03 · 12週間ロードマップ · 第7週</span>
+  <h1>Serverless、統合、コンテナ</h1>
+  <p class="lead">今週はサーバーを管理せずにアプリケーションを構築する方法を学びます。Lambda がコードを実行し、API Gateway がリクエストを受け、Step Functions が各ステップをつなぎ、SQS / SNS / EventBridge / Kinesis がコンポーネント同士を結び付けます。さらに ECS、Fargate、EKS 上のコンテナも扱います。週末の目標は、問題文を見て SQS、SNS、EventBridge、Kinesis のどれかを正しく選べること、そして ECS on EC2 と Fargate の違いを説明できることです。</p>
+  <div class="meta"><span>学習ペース: <b>1日1.5〜2時間</b></span><span>関連ドメイン: <b>PERF 24%</b>、<b>RES 26%</b></span><span>今週のラボ費用: ALB と Fargate を当日中に削除すれば <b>2 USD 未満</b></span></div>
+  <div class="progress"><span>チェックリスト進捗</span><div class="bar"><i id="bar"></i></div><span id="pct">0/17</span></div>
+</header>
+
+<div class="wrap">
+<nav class="toc" aria-label="目次">
+  <a href="#ke-hoach">7日間の計画</a>
+  <span class="grp eyebrow">理論</span>
+  <a href="#lambda">1. Lambda</a>
+  <a href="#apigw">2. API Gateway</a>
+  <a href="#stepfn">3. Step Functions</a>
+  <a href="#sqs-sns">4. SQS と SNS</a>
+  <a href="#eventbridge">5. EventBridge</a>
+  <a href="#kinesis">6. Kinesis</a>
+  <a href="#container">7. ECS、EKS、Fargate、App Runner</a>
+  <span class="grp eyebrow">ハンズオン</span>
+  <a href="#handson">ハンズオン 5 ラボ</a>
+  <a href="#moc">確認ポイント</a>
+  <a href="#tukhoa">試験キーワード表</a>
+  <a href="#checklist">週のチェックリスト</a>
+</nav>
+
+<main>
+
+<section id="ke-hoach">
+  <h2>7日間の計画</h2>
+  <p>今週はサービスの数が多いものの、考え方は一つです。アプリケーションを小さな部品に分け、キュー、イベント、ストリームでつなぎ直します。午前に理論、夜にラボを行い、ALB と Fargate はその日のうちに削除してください。</p>
+  <div class="tbl"><table>
+    <tr><th>日</th><th>理論</th><th>ハンズオン</th></tr>
+    <tr><td>1</td><td>Lambda: 制限、concurrency、event source、VPC</td><td>Lab 1 前半: DynamoDB テーブル、Python の Lambda、<code>aws lambda invoke</code> でテスト</td></tr>
+    <tr><td>2</td><td>API Gateway と Step Functions</td><td>Lab 1 後半: HTTP API、<code>curl.exe</code> で CRUD をテスト。Lab 4: CDK で作り直す</td></tr>
+    <tr><td>3</td><td>SQS、SNS、EventBridge</td><td>Lab 2: SNS から 2 つの SQS への fan-out、DLQ、filter policy</td></tr>
+    <tr><td>4</td><td>Kinesis と SQS / SNS / EventBridge / Kinesis の比較表</td><td>Lab 3 前半: Dockerfile、イメージを ECR へ push</td></tr>
+    <tr><td>5</td><td>ECS、EKS、Fargate、ECR、App Runner、Amazon MQ、AppSync</td><td>Lab 3 後半: ALB の背後に ECS Fargate service、続けて Lab 5 ですぐ片付け</td></tr>
+    <tr><td>6〜7</td><td>2 つの確認ポイントを復習し、キーワード表を読み直す</td><td>Billing を確認。セッションで「cho quiz」と伝えて <code>quiz/tuan-07.md</code>（30問）を受け取り、80% 以上を目指す</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ 1. LAMBDA ============ -->
+<section id="lambda">
+  <span class="eyebrow">理論 1 / 7</span>
+  <h2>Lambda: 制限、concurrency、layer、VPC、event source</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <p><b>Lambda</b> はイベントが発生したときに関数（function）を実行します。利用者はコードを渡して memory を選ぶだけで、サーバー、OS、スケールは AWS が担当します。料金は <b>リクエスト数</b> と <b>GB-second</b>（割り当て memory × 実行時間、1 ms 単位で切り上げ）で決まります。リクエストがなければ費用はかかりません。Always free: 毎月 100万リクエストと 400,000 GB-s。</p>
+      <ul>
+        <li>利用できる runtime: Python、Node.js、Java、.NET、Ruby、Go（<code>provided</code> 形式）、custom runtime、または AWS の base image をもとにした <b>container image</b>（最大 10 GB）。</li>
+        <li>1 回の呼び出しは 1 つの <b>execution environment</b>（Firecracker の micro VM）で処理されます。環境はしばらくウォームな状態で保持され、次の呼び出しで再利用されるため、handler の外で初期化した変数（DB 接続、SDK client）は残ります。</li>
+        <li><b>Execution role</b>: Lambda が他のサービスを呼ぶときに assume する IAM role です（CloudWatch Logs への書き込み、DynamoDB の読み取りなど）。逆に、誰が Lambda を呼べるかは function の <b>resource-based policy</b> で決まります（S3、API Gateway、他アカウントはここに追加します）。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">必ず覚える制限値</span>
+      <div class="tbl"><table>
+        <tr><th>項目</th><th>値</th><th>試験のひっかけ</th></tr>
+        <tr><td>Timeout</td><td>デフォルト 3 秒、最大 <b>15 分</b>（900 秒）</td><td>15 分を超えるジョブ → Lambda ではありません。Fargate、Batch、EC2、または Step Functions での分割を検討します。</td></tr>
+        <tr><td>Memory</td><td><b>128 MB〜10,240 MB</b>、1 MB 単位</td><td><b>CPU は memory に比例</b>し、約 1,769 MB で 1 vCPU です。CPU が原因で遅い関数 → memory を増やします。CPU 単独の設定項目はありません。</td></tr>
+        <tr><td>/tmp</td><td>デフォルト 512 MB、最大 <b>10 GB</b> まで設定可能</td><td>Ephemeral で、環境が回収されると消えます。永続化や呼び出し間の共有が必要 → S3、または <b>EFS</b> をマウント（Lambda は VPC 内に置く必要あり）。</td></tr>
+        <tr><td>Deployment package</td><td>直接アップロードの zip は 50 MB、展開後 <b>250 MB</b>（layer を含む）。container image は最大 10 GB（AWSドキュメントで要確認）</td><td>重い ML ライブラリで 250 MB を超える → container image にします。</td></tr>
+        <tr><td>Environment variable</td><td>合計 4 KB</td><td>Secret は Secrets Manager / Parameter Store に置き、環境変数には入れません。</td></tr>
+        <tr><td>Payload</td><td>Synchronous はリクエストとレスポンスで各 6 MB、asynchronous は 256 KB（AWSドキュメントで要確認）</td><td>大きなファイルをクライアントに返す → S3 に置いて presigned URL を返します。</td></tr>
+        <tr><td>Concurrency</td><td>アカウント全体で Region ごとに同時 <b>1,000</b>（デフォルト、引き上げ申請可能）</td><td>1 つの関数が 1,000 を使い切ると他の関数が throttle されます（429 エラー）。reserved concurrency で枠を分けます。</td></tr>
+        <tr><td>Layer</td><td>function あたり最大 <b>5 layer</b></td><td>Layer は共通ライブラリや runtime を共有するためのもので、250 MB の上限を増やすものではありません。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Concurrency と cold start</span>
+      <ul>
+        <li><b>Cold start</b>: 最初の呼び出し（または環境を追加で作るとき）は、コードの読み込み、runtime の初期化、init 部分の実行に追加の時間がかかります。Java、.NET が最も遅く、Python、Node.js は速いです。VPC 内の関数は、デプロイ時に ENI が作成済みになる（Hyperplane ENI）ため、現在は以前ほど cold start が長くありません。</li>
+        <li><b>Reserved concurrency</b>: その関数専用に一定数の枠を確保し、同時にその関数の <b>上限</b> にもなります。費用はかかりません。0 に設定すると関数を緊急停止できます。downstream を守りたいとき（DB の接続上限が 50 → reserved 50）に使います。</li>
+        <li><b>Provisioned concurrency</b>: 初期化済みの環境を N 個待機させるので <b>cold start がなくなります</b>。呼び出しがなくても時間単位で課金されます。スケジュールまたは Application Auto Scaling でスケールします。問題文に <em>consistent low latency</em>、<em>eliminate cold start</em> → provisioned。</li>
+        <li><b>SnapStart</b>（名前を知っていれば十分）: init 後の環境のスナップショットを取り、呼び出し時に復元することで cold start を最大 10 分の 1 に短縮します。当初は Java のみでしたが、Python と .NET にも拡大されています（AWSドキュメントで要確認）。provisioned concurrency との違いは、SnapStart は環境を常時起動しておかない点です。</li>
+        <li>スケール: Lambda は function ごとに 10 秒あたり約 1,000 の速度で新しい環境を追加します（AWSドキュメントで要確認）。downstream が耐えられない場合は、reserved concurrency で制限するか、SQS をバッファとして挟みます。</li>
+      </ul>
+    </div>
+
+    <div class="block diag"><span class="eyebrow">イメージ: Lambda の 3 つの呼び出し方式</span>
+      <svg viewBox="0 0 700 290" role="img" aria-label="Lambda の 3 つの呼び出し方式: synchronous、asynchronous、event source mapping による poll-based">
+        <rect x="10" y="40" width="215" height="230" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="117" y="64" text-anchor="middle" class="sv-t" font-weight="600">Synchronous</text>
+        <text x="117" y="82" text-anchor="middle" class="sv-m">API Gateway · ALB · Function URL</text>
+        <text x="117" y="97" text-anchor="middle" class="sv-m">Cognito · CLI RequestResponse</text>
+        <rect x="40" y="115" width="155" height="40" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="117" y="140" text-anchor="middle" class="sv-t">Lambda が即実行</text>
+        <line x1="117" y1="155" x2="117" y2="180" class="sv-line" stroke-width="2"/>
+        <text x="117" y="198" text-anchor="middle" class="sv-m">結果またはエラーを</text>
+        <text x="117" y="214" text-anchor="middle" class="sv-m">呼び出し元へ直接返す</text>
+        <text x="117" y="244" text-anchor="middle" class="sv-m">Retry: クライアント側で行う</text>
+        <text x="117" y="260" text-anchor="middle" class="sv-m">DLQ なし</text>
+
+        <rect x="242" y="40" width="215" height="230" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="349" y="64" text-anchor="middle" class="sv-t" font-weight="600">Asynchronous</text>
+        <text x="349" y="82" text-anchor="middle" class="sv-m">S3 · SNS · EventBridge · SES</text>
+        <text x="349" y="97" text-anchor="middle" class="sv-m">CLI InvocationType=Event</text>
+        <rect x="272" y="115" width="155" height="40" rx="8" class="sv-edge" stroke-width="1.5"/>
+        <text x="349" y="140" text-anchor="middle" class="sv-t">Lambda 内部のキュー</text>
+        <line x1="349" y1="155" x2="349" y2="180" class="sv-line" stroke-width="2"/>
+        <rect x="272" y="180" width="155" height="34" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="349" y="202" text-anchor="middle" class="sv-t">即 202 を返し、後で実行</text>
+        <text x="349" y="244" text-anchor="middle" class="sv-m">エラー: 2 回 retry（1 分、2 分）</text>
+        <text x="349" y="260" text-anchor="middle" class="sv-m">その後 DLQ（SQS/SNS）か Destination</text>
+
+        <rect x="474" y="40" width="215" height="230" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="581" y="64" text-anchor="middle" class="sv-t" font-weight="600">Poll-based</text>
+        <text x="581" y="82" text-anchor="middle" class="sv-m">SQS · Kinesis · DynamoDB Streams</text>
+        <text x="581" y="97" text-anchor="middle" class="sv-m">MSK · Amazon MQ</text>
+        <rect x="504" y="115" width="155" height="40" rx="8" class="sv-edge" stroke-width="1.5"/>
+        <text x="581" y="134" text-anchor="middle" class="sv-t">Event source mapping</text>
+        <text x="581" y="149" text-anchor="middle" class="sv-m">Lambda が poll し batch 化</text>
+        <line x1="581" y1="155" x2="581" y2="180" class="sv-line" stroke-width="2"/>
+        <rect x="504" y="180" width="155" height="34" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="581" y="202" text-anchor="middle" class="sv-t">Lambda が batch を受信</text>
+        <text x="581" y="244" text-anchor="middle" class="sv-m">SQS: エラー → message はキューへ戻る</text>
+        <text x="581" y="260" text-anchor="middle" class="sv-m">Stream: 期限切れまで shard が停止</text>
+      </svg>
+    </div>
+
+    <div class="block"><span class="eyebrow">Event source: 3 つの方式と 3 つのエラー処理</span>
+      <div class="tbl"><table>
+        <tr><th>方式</th><th>ソース</th><th>実行のしかた</th><th>エラー時</th></tr>
+        <tr><td><b>Synchronous</b></td><td>API Gateway、ALB（target group type lambda）、Function URL、Cognito、CloudFront（Lambda@Edge）、SDK の <code>RequestResponse</code> 呼び出し</td><td>結果を待ち、すぐに返す</td><td>エラーはクライアントに直接返り、クライアントが retry します。Lambda は retry せず、この方式には DLQ もありません。</td></tr>
+        <tr><td><b>Asynchronous</b></td><td>S3 event、SNS、EventBridge、SES、CodeCommit、CloudWatch Logs、SDK の <code>Event</code> 呼び出し</td><td>イベントは内部キューに入り、Lambda は 202 を返してから後で実行</td><td>自動で <b>2 回</b> retry（1 分、次に 2 分待機）。retry が尽きると <b>DLQ</b>（SQS または SNS、function で設定）か <b>Destination</b>（SQS、SNS、Lambda、EventBridge。on-success もあり）へ送ります。Destination は新しい仕組みでエラーのコンテキストも含むため、AWS は DLQ より Destination を推奨しています。</td></tr>
+        <tr><td><b>Poll-based</b>（event source mapping）</td><td>SQS、Kinesis Data Streams、DynamoDB Streams、MSK、Amazon MQ、self-managed Kafka</td><td>Lambda がソースを poll し、<b>batch</b>（batch size、batch window）にまとめて関数を呼ぶ</td><td><b>SQS</b>: batch が失敗すると message は visibility timeout 後にキューへ戻り、<code>maxReceiveCount</code> を超えると SQS の DLQ へ移ります。<code>ReportBatchItemFailures</code> を有効にすると失敗したレコードだけを戻せます。<b>Stream</b>: エラーがあるとレコードの期限切れまで shard 全体が止まるため、<em>maximum retry attempts</em>、<em>bisect batch on error</em>、<em>on-failure destination</em> を設定します。</td></tr>
+      </table></div>
+      <div class="note">SQS → Lambda では、<b>キューの visibility timeout を function の timeout の 6 倍以上</b>（AWS 推奨）にします。そうしないと、関数の処理中に message が再配信されることがあります。Lambda が SQS を読むには、execution role に <code>sqs:ReceiveMessage</code>、<code>DeleteMessage</code>、<code>GetQueueAttributes</code> の権限が必要です。</div>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">VPC 内の Lambda</span>
+        <ul>
+          <li>デフォルトでは Lambda は利用者の VPC の外で動き、<b>Internet に出られ</b>、public な AWS サービスも呼べますが、private な RDS / ElastiCache には <b>アクセスできません</b>。</li>
+          <li>VPC に接続する: subnet と Security Group を選ぶと、Lambda はその subnet に ENI を作成します。以後、関数のネットワークは subnet 内の 1 台のマシンと同じになります。Internet に出るには <b>private subnet + NAT Gateway</b> が必要です（Lambda には public IP がないため public subnet に置いても効果はありません）。Internet を経由せずに S3、DynamoDB を呼ぶ → VPC endpoint。</li>
+          <li>ENI を作成するため、Execution role に <code>AWSLambdaVPCAccessExecutionRole</code> が必要です。</li>
+          <li>問題文に <em>Lambda cannot connect to RDS in private subnet</em> → Lambda を VPC に入れ、RDS の Security Group で Lambda の SG からの通信を許可します。多数の Lambda が DB 接続を開きすぎる場合は <b>RDS Proxy</b> を追加します。</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Layer、URL、Edge</span>
+        <ul>
+          <li><b>Layer</b>: ライブラリ、custom runtime、設定ファイルを含む zip で、複数の function に付けられます。package のサイズを減らし依存関係を共有できますが、合計は 250 MB に含まれます。</li>
+          <li><b>Function URL</b>: function に直接付く HTTPS endpoint で、認証は <code>AWS_IAM</code> か <code>NONE</code>。シンプルな webhook には十分ですが、API Gateway のような throttling、usage plan、キャッシュはありません。</li>
+          <li><b>Lambda@Edge</b>: CloudFront の Edge location で実行され、Node.js か Python で書き、<code>us-east-1</code> からデプロイし、4 つのイベント（viewer request / response、origin request / response）にフックします。A/B テスト、ヘッダーの変更、国別の origin 選択、トークン認証に使います。<b>CloudFront Functions</b>（JavaScript、1 ms 未満で実行、viewer request / response のみ、より安価、ネットワーク呼び出し不可）との比較: URL の書き換えやヘッダー追加など軽い処理 → CloudFront Functions。他サービスの呼び出しや時間のかかる処理 → Lambda@Edge。</li>
+          <li><b>Alias と version</b>: 不変の version を publish し、alias（prod、dev）が version を指します。alias で比率を指定して負荷を分け、<em>canary</em> を行えます。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>重い計算で関数が遅く、速くしたい</td><td>memory を増やす（CPU も増える）</td><td>timeout を延ばす（長く実行できるだけで速くはならない）</td></tr>
+        <tr><td>レイテンシーが安定した API、cold start は許容しない</td><td>Provisioned concurrency</td><td>Reserved concurrency（枠を分けるだけで cold start は残る）</td></tr>
+        <tr><td>Lambda がスケールしても背後の DB を過負荷から守る</td><td>Reserved concurrency、SQS をバッファにする、または RDS Proxy</td><td>Provisioned concurrency（スケールが速くなり目的と逆）</td></tr>
+        <tr><td>40 分かかる動画処理</td><td>Fargate task、AWS Batch、または Step Functions でステップ分割</td><td>Lambda（上限 15 分）</td></tr>
+        <tr><td>VPC 内の Lambda が外部 API を呼ぶ必要がある</td><td>Private subnet + NAT Gateway</td><td>Public subnet（Lambda には public IP がない）</td></tr>
+        <tr><td>S3 → Lambda でエラー、イベントを失ってはいけない</td><td>async invoke 用の Destination on-failure または DLQ</td><td>S3 に retry させる（S3 は retry してくれない）</td></tr>
+        <tr><td>CloudFront のすべてのレスポンスにセキュリティヘッダーを付ける、最も安く</td><td>CloudFront Functions</td><td>Lambda@Edge（高価で過剰）</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>event-driven, pay only when running <b>→ Lambda</b></span><span>runs longer than 15 minutes <b>→ Lambda ではない</b></span><span>cold start, consistent latency <b>→ provisioned concurrency</b></span><span>limit concurrent executions, protect downstream <b>→ reserved concurrency</b></span><span>access RDS in private subnet <b>→ VPC 内の Lambda</b></span><span>Lambda needs Internet from VPC <b>→ NAT Gateway</b></span><span>share libraries across functions <b>→ layer</b></span><span>failed async events <b>→ DLQ / destination</b></span><span>customize content at edge <b>→ Lambda@Edge</b></span><span>too many DB connections from Lambda <b>→ RDS Proxy</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">1. 画像を処理する Lambda が memory 512 MB で 20 秒かかっています。開発者はコードを変えずに速くしたいと考えています。どうしますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>memory を増やします。</b> Lambda の CPU は memory に比例し、約 1,769 MB で 1 vCPU 分になります。timeout を延ばしても長く実行できるだけで速くはなりません。「layer を追加する」を選ぶ人もいますが、layer はライブラリをパッケージする手段にすぎません。</p></div>
+      <div class="q"><p class="qt">2. ファイルがアップロードされると S3 から Lambda が呼ばれます。外部サービスの利用上限に達して関数がときどき失敗しますが、イベントを一つも失いたくありません。<em>least operational overhead</em> な方法は？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>function に on-failure destination（または DLQ）として SQS キューを設定します。</b> S3 は Lambda を asynchronous で呼ぶため、Lambda は 2 回 retry した後、失敗したイベントを destination に送り、後で再処理できます。エラーを DynamoDB に書き出すコードを自作しても可能ですが手間がかかります。S3 は自動で retry しません。</p></div>
+      <div class="q"><p class="qt">3. private subnet に置いた Lambda が、Security Group で outbound を許可しているのに Internet 上の public API を呼べません。なぜですか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>NAT Gateway（private subnet の 0.0.0.0/0 ルート）がないためです。</b> VPC 内の Lambda には public IP がないため、Internet Gateway のある public subnet に置いても外に出られません。「Lambda を public subnet に移す」は典型的なひっかけです。</p></div>
+      <div class="q"><p class="qt">4. アカウントに 20 個の Lambda があります。夜間バッチの関数がときどき concurrency をほぼ使い切り、顧客向け API の関数が 429 になります。最も安く直す方法は？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>バッチ関数（例: 200）と / または API 関数に reserved concurrency を設定します。</b> Reserved は専用枠であると同時に上限でもあり、費用はかかりません。Provisioned concurrency も API 関数の助けにはなりますが、時間単位の費用がかかり、バッチ関数が残りを使い切るのを防げません。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. API GATEWAY ============ -->
+<section id="apigw">
+  <span class="eyebrow">理論 2 / 7</span>
+  <h2>API Gateway: REST と HTTP API、throttling、キャッシュ、authorizer</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <p><b>API Gateway</b> は API のためのマネージドな「玄関口」です。HTTPS リクエストを受け、認証、レート制限、キャッシュ、変換を行い、バックエンド（Lambda、HTTP endpoint、AWS サービス）を呼び出します。API は 3 種類あります。<b>REST API</b>（最も機能が多い）、<b>HTTP API</b>（軽量で安価、新規アプリの大半はこれで十分）、<b>WebSocket API</b>（長時間の双方向接続）です。</p>
+      <ul>
+        <li>設定は 3 層です: <b>API</b> → <b>resource / route</b> と <b>method</b> → バックエンドへの <b>integration</b>。<b>stage</b>（dev、prod）にデプロイすると stage ごとに URL があり、<b>stage variable</b> で stage ごとに別の Lambda alias を指せます。</li>
+        <li>Integration timeout は最大 <b>29 秒</b>（Regional の REST API は引き上げ申請可能、AWSドキュメントで要確認）。超えるとクライアントは <b>504</b> を受け取ります。Payload は最大 <b>10 MB</b>。</li>
+        <li>よく出るエラーコード: <b>429</b> throttle された、<b>502</b> バックエンドの応答形式が不正（Lambda proxy が <code>statusCode</code> を返さない）、<b>504</b> バックエンドが 29 秒を超えた、<b>403</b> authorizer が拒否した、または API key がない。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">REST API と HTTP API</span>
+      <div class="tbl"><table>
+        <tr><th>項目</th><th>REST API</th><th>HTTP API</th></tr>
+        <tr><td>料金</td><td>100万リクエストあたり約 3.50 USD（AWSドキュメントで要確認）</td><td>100万リクエストあたり約 1.00 USD、約 70% 安く、レイテンシーも低い</td></tr>
+        <tr><td>Authorizer</td><td>IAM、Cognito User Pool、Lambda authorizer</td><td>IAM、ネイティブの <b>JWT authorizer</b>（OIDC / OAuth 2.0、Cognito と併用可）、Lambda authorizer</td></tr>
+        <tr><td>レスポンスのキャッシュ</td><td class="c">あり</td><td class="c">なし</td></tr>
+        <tr><td>Usage plan、API key</td><td class="c">あり</td><td class="c">なし</td></tr>
+        <tr><td>WAF</td><td class="c">あり</td><td class="c">なし（AWSドキュメントで要確認）</td></tr>
+        <tr><td>Request validation、mapping template（VTL）、X-Ray</td><td class="c">あり</td><td class="c">なし</td></tr>
+        <tr><td>Endpoint type</td><td>Edge-optimized、Regional、Private</td><td>Regional</td></tr>
+        <tr><td>Canary release</td><td class="c">あり</td><td class="c">なし</td></tr>
+        <tr><td>Resource policy（例: IP、VPC による制限）</td><td class="c">あり</td><td class="c">なし</td></tr>
+        <tr><td>private バックエンドへの VPC Link</td><td>NLB</td><td>ALB、NLB、Cloud Map</td></tr>
+        <tr><td>CORS、auto deploy</td><td>OPTIONS を自分で設定</td><td>CORS は設定 1 つで有効化、stage <code>$default</code> は auto deploy</td></tr>
+      </table></div>
+      <div class="note ok">選び方: 問題文に <em>lowest cost</em>、<em>simple proxy to Lambda</em>、<em>JWT / OIDC</em> → HTTP API。<em>caching</em>、<em>顧客ごとの API key</em>、<em>usage plan / quota</em>、<em>WAF</em>、<em>VPC 内の private API</em>、<em>request validation</em> が必要 → REST API。</div>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Endpoint type（REST API）</span>
+        <ul>
+          <li><b>Edge-optimized</b>（デフォルト）: AWS が管理する CloudFront ネットワークを経由し、世界中のクライアントに向いています。</li>
+          <li><b>Regional</b>: クライアントが同じ Region にいる場合、または自前の CloudFront を前段に置いてキャッシュや WAF を制御したい場合。</li>
+          <li><b>Private</b>: <b>interface VPC endpoint</b>（<code>execute-api</code>）経由で VPC 内からのみ呼べます。<code>aws:SourceVpce</code> を制限する resource policy と組み合わせます。問題文に <em>API must not be reachable from the Internet</em> → Private。</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Throttling とキャッシュ</span>
+        <ul>
+          <li>Region ごとのアカウント上限: <b>10,000 リクエスト/秒</b>、burst <b>5,000</b>（AWSドキュメントで要確認）。超えると 429。さらに stage 単位、method 単位、または <b>usage plan + API key</b>（rate、burst、月間 quota）で顧客単位の制限をかけられます。</li>
+          <li><b>キャッシュ</b>（REST）: stage 単位で有効化し、TTL はデフォルト 300 秒（0〜3,600）、容量 0.5〜237 GB、時間単位で課金されます。<code>execute-api:InvalidateCache</code> 権限を持つクライアントは <code>Cache-Control: max-age=0</code> ヘッダーでキャッシュを無視できます。変更の少ないデータで Lambda / DB の負荷とレイテンシーを下げます。</li>
+          <li>バックエンドが過負荷 → throttling に加えて、integration を SQS に変えることも検討します（API Gateway がキューに直接書き込み、Lambda が後で処理）。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Authorizer: 誰が API を呼べるか</span>
+      <div class="tbl"><table>
+        <tr><th>種類</th><th>仕組み</th><th>選ぶ場面</th></tr>
+        <tr><td><b>IAM</b></td><td>クライアントが AWS の認証情報で SigV4 署名し、IAM policy で <code>execute-api:Invoke</code> を許可</td><td>呼び出し元が AWS サービス、IAM user / role、社内アプリ、cross-account</td></tr>
+        <tr><td><b>Cognito User Pool</b>（REST）/ <b>JWT</b>（HTTP）</td><td>クライアントが Cognito（または OIDC provider）発行のトークンを送り、API Gateway が自動で検証</td><td>Web / モバイルアプリのユーザーがサインアップ、サインインする場合。コードを書かないので <em>least operational overhead</em></td></tr>
+        <tr><td><b>Lambda authorizer</b></td><td>自作の Lambda がトークンまたはリクエストパラメータを受け取り、Allow / Deny の IAM policy を返す（TTL で結果をキャッシュ可能）</td><td>独自トークン、サードパーティの OAuth、複雑なロジック、DB 参照</td></tr>
+        <tr><td><b>Resource policy</b></td><td>API に付ける policy で、IP、VPC、アカウントで絞り込む</td><td>送信元で制限し、上記の種類と組み合わせる</td></tr>
+      </table></div>
+      <p style="font-size:.92rem">API key は認証の仕組みでは <b>ありません</b>。usage plan のために顧客を識別するだけです。<em>authentication</em> を問う設問で API key が選択肢にあればひっかけです。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Integration: API Gateway が背後で何を呼ぶか</span>
+      <ul>
+        <li><b>Lambda proxy</b>: リクエスト全体（header、path、query、body）をそのまま event に変換し、Lambda は <code>statusCode</code>、<code>headers</code>、<code>body</code> を持つオブジェクトを返す必要があります。最も簡単で、ラボでも使います。</li>
+        <li><b>Lambda non-proxy</b>（custom、REST）: VTL の <b>mapping template</b> でリクエスト / レスポンスを変換し、Lambda は HTTP を意識しなくて済みます。</li>
+        <li><b>HTTP</b>: 任意の HTTP endpoint（public な EC2、オンプレミス、ALB）へ転送します。VPC 内の private なバックエンド → <b>VPC Link</b> 経由。</li>
+        <li><b>AWS service</b>: <b>Lambda を使わずに</b> AWS サービスの API を直接呼びます。SQS、Kinesis、DynamoDB への書き込み、Step Functions の開始など。問題文に <em>without writing code</em>、<em>directly to SQS</em> → この integration。</li>
+        <li><b>Mock</b>: 固定のレスポンスを返します。CORS の preflight や、バックエンドがまだない段階のテストに使います。</li>
+      </ul>
+      <p style="font-size:.92rem"><b>CORS</b>: ブラウザが別ドメインの API を呼ぶには <code>Access-Control-Allow-Origin</code> ヘッダーが必要です。HTTP API は設定で有効化できます。REST API の proxy integration では Lambda 自身がこのヘッダーを返し、OPTIONS method は Mock で作ります。ブラウザでは CORS エラーなのに curl では動く場合、CORS の設定忘れのサインです。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">WebSocket API、stage、canary</span>
+      <ul>
+        <li><b>WebSocket API</b>: チャット、リアルタイムダッシュボード、ゲーム向けの長時間の双方向接続です。route は <code>$connect</code>、<code>$disconnect</code>、<code>$default</code> と、message の内容による独自 route。バックエンドは <code>connectionId</code>（通常 DynamoDB に保存）を使い、<code>@connections</code> callback URL でクライアントに送り返します。</li>
+        <li><b>Stage</b>: REST API は変更のたびに stage へ <b>デプロイ</b> し直す必要があり、デプロイ忘れはよくあるミスです。stage variable を Lambda alias に対応付けると、同じ API で dev / prod を別々に指せます。</li>
+        <li><b>Canary release</b>（REST）: 同じ stage の新しいデプロイメントにトラフィックの一部を振り分け、メトリクスを見て promote または rollback します。</li>
+        <li>モニタリング: CloudWatch メトリクス <code>4XXError</code>、<code>5XXError</code>、<code>Latency</code>、<code>IntegrationLatency</code>、<code>Count</code>。access log と execution log。X-Ray によるエンドツーエンドのトレース。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>組み合わせ</th><th>違い</th></tr>
+        <tr><td>API Gateway と ALB（どちらも Lambda を呼べる）</td><td>ALB は時間 + LCU で課金され、クライアント単位の throttling、usage plan、キャッシュ、API key、mapping がありません。EC2 / ECS 用に ALB がすでにあり、Lambda の route をいくつか足したい場合に向きます。API Gateway はリクエスト単位で課金され、API 管理機能が揃っています。</td></tr>
+        <tr><td>API Gateway と AppSync</td><td>API Gateway は REST / WebSocket 向け。AppSync はリアルタイム subscription とオフライン同期を備えた <b>GraphQL</b> 向けです（7 章を参照）。</td></tr>
+        <tr><td>Lambda authorizer と Cognito authorizer</td><td>Cognito authorizer はコード不要で、User Pool のトークンを検証するだけ。Lambda authorizer は柔軟ですが、コードを自分で書いて保守します。</td></tr>
+        <tr><td>Edge-optimized と、Regional API の前に自前の CloudFront</td><td>Edge-optimized は AWS の CloudFront を使い、調整できません。CloudFront で WAF を使いたい、キャッシュを自由に制御したい、複数 origin の custom domain が必要なときは、自前の CloudFront + Regional API にします。</td></tr>
+        <tr><td>Throttling と usage plan</td><td>stage / method 単位の throttling は全利用者に対してバックエンドを守ります。Usage plan + API key は <b>顧客ごと</b> に制限します（Free プランは 1日 100 リクエスト、Pro プランは 10,000）。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>lowest cost API for Lambda <b>→ HTTP API</b></span><span>API key, usage plan, quota per customer <b>→ REST API</b></span><span>reduce backend calls for static data <b>→ API Gateway cache</b></span><span>429 Too Many Requests <b>→ throttling、上限緩和申請か usage plan</b></span><span>504 <b>→ バックエンドが 29 秒超過</b></span><span>mobile users sign in <b>→ Cognito User Pool authorizer</b></span><span>custom auth logic / third-party token <b>→ Lambda authorizer</b></span><span>only from within VPC <b>→ Private endpoint + VPC endpoint</b></span><span>two-way real-time communication <b>→ WebSocket API</b></span><span>send request straight to SQS without code <b>→ AWS service integration</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">5. ある SaaS 企業が複数の顧客に API を販売しており、プランごとに月間リクエスト数の上限が異なります。何を選びますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>顧客ごとの usage plan と API key を備えた REST API。</b> HTTP API には usage plan がありません。Lambda authorizer でリクエスト数を数えることもできますが自作になり、<em>least operational overhead</em> ではありません。</p></div>
+      <div class="q"><p class="qt">6. API Gateway がレポート集計の Lambda を呼んでおり 45 秒かかるため、クライアントは常に 504 エラーを受け取ります。どう直しますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>非同期モデルに変えます。API はリクエストを受けて SQS（または Step Functions）に送り、すぐに job id を返します。クライアントは結果を poll するか WebSocket で受け取ります。</b> API Gateway の integration timeout は 29 秒なので、Lambda の timeout を 15 分に延ばしても解決しません。（Regional の REST API では 29 秒を超える引き上げを申請できるようになりましたが（AWSドキュメントで要確認）、試験の標準解答は非同期化です。）</p></div>
+      <div class="q"><p class="qt">7. S3 + CloudFront 上の静的 Web サイトが API Gateway の REST API を呼んでいます。curl では問題ないのに、ブラウザでは "blocked by CORS policy" と表示されます。原因は？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>API Gateway で CORS が有効になっていない / Lambda が Access-Control-Allow-Origin ヘッダーを返していない。</b> curl は CORS をチェックしないので動きます。Security Group や WAF の問題ではありません。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. STEP FUNCTIONS ============ -->
+<section id="stepfn">
+  <span class="eyebrow">理論 3 / 7</span>
+  <h2>Step Functions: ワークフローのオーケストレーション</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <p><b>Step Functions</b> は <b>orchestration</b> サービスです。複数のステップからなる <b>state machine</b>（Amazon States Language の JSON、または Workflow Studio でドラッグ＆ドロップ）を描きます。各ステップは Lambda や 200 以上の AWS サービスを呼び、分岐、並列実行、待機、retry ができます。Step Functions は実行（execution）ごとの状態と履歴を保持するので、どのステップで失敗したかを Console ですぐ確認できます。</p>
+      <ul>
+        <li>Lambda なしでサービスを呼ぶ: <b>SDK integration</b>（DynamoDB PutItem、SNS Publish、ECS RunTask、Glue、Athena、EMR、Bedrock など）。問題文で DynamoDB に書き込むステップについて <em>without custom code</em> → Step Functions から直接呼びます。</li>
+        <li>3 つの統合パターン: <b>Request Response</b>（呼んだら次へ進む）、<b>Run a Job</b> <code>.sync</code>（ECS task、Glue、Batch などのジョブ完了を待つ）、<b>Wait for Callback</b> <code>.waitForTaskToken</code>（誰かがトークンを返すまで停止。例えば承認者がメール内のボタンを押す。これが <em>human approval</em> のパターンです）。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">state の種類</span>
+      <div class="tbl"><table>
+        <tr><th>State</th><th>役割</th><th>例</th></tr>
+        <tr><td><b>Task</b></td><td>1 つの処理を行う: Lambda、AWS サービス、または Activity（自前でホストした worker が poll する）を呼ぶ</td><td>注文を検証する Lambda を呼ぶ</td></tr>
+        <tr><td><b>Choice</b></td><td>データの条件で分岐（if / else）</td><td>合計金額 &gt; 1,000 USD → 手動承認が必要</td></tr>
+        <tr><td><b>Parallel</b></td><td><b>固定</b> の複数ブランチを同時に実行し、すべての完了を待つ</td><td>サムネイル作成とウイルススキャンを同時に行う</td></tr>
+        <tr><td><b>Map</b></td><td>配列の <b>要素ごと</b> に同じステップを繰り返す、件数は動的。<b>Distributed Map</b> は S3 上の大量データに対して最大 10,000 ブランチを並列実行</td><td>1 件の注文に含まれる 500 ファイルを処理</td></tr>
+        <tr><td><b>Wait</b></td><td>N 秒、または指定時刻まで停止。compute の費用はかからない</td><td>3 日待ってからリマインドメールを送る</td></tr>
+        <tr><td><b>Pass</b>、<b>Succeed</b>、<b>Fail</b></td><td>何もせずデータを渡す、成功で終了、失敗で終了</td><td></td></tr>
+      </table></div>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Standard と Express workflow</span>
+        <div class="tbl"><table>
+          <tr><th></th><th>Standard</th><th>Express</th></tr>
+          <tr><td>最大実行時間</td><td><b>1 年</b></td><td><b>5 分</b></td></tr>
+          <tr><td>セマンティクス</td><td>Exactly-once、各ステップはちょうど 1 回実行</td><td>At-least-once（async）または at-most-once（sync）</td></tr>
+          <tr><td>課金</td><td><b>state transition の数</b> で課金</td><td>実行回数、時間、memory で課金</td></tr>
+          <tr><td>履歴</td><td>90 日保存、Console で各ステップを確認可能</td><td>CloudWatch Logs のみ</td></tr>
+          <tr><td>速度</td><td>2,000 execution/秒（AWSドキュメントで要確認）</td><td>100,000 execution/秒 以上</td></tr>
+          <tr><td>選ぶ場面</td><td>長いワークフロー、監査が必要、human approval、冪等性が保証されない</td><td>高頻度で短いイベント処理、IoT、ストリーミング、各ステップが冪等</td></tr>
+        </table></div>
+      </div>
+      <div class="block"><span class="eyebrow">エラー処理: Retry と Catch</span>
+<pre><code>"ChargeCard": {
+  "Type": "Task",
+  "Resource": "arn:aws:lambda:...:function:charge",
+  "Retry": [{
+    "ErrorEquals": ["States.Timeout", "ServiceUnavailable"],
+    "IntervalSeconds": 2, "MaxAttempts": 3, "BackoffRate": 2.0
+  }],
+  "Catch": [{
+    "ErrorEquals": ["States.ALL"],
+    "Next": "RefundAndNotify"
+  }],
+  "Next": "ShipOrder"
+}</code></pre>
+        <ul>
+          <li><b>Retry</b>: <em>exponential backoff</em> で同じステップを再試行します。<b>Catch</b>: retry が尽きたらエラー処理用の state（補償処理、通知）へ移ります。組み込みのエラー: <code>States.ALL</code>、<code>States.Timeout</code>、<code>States.TaskFailed</code>、<code>States.Permissions</code>。</li>
+          <li>Retry / catch は Step Functions 側にあるので、Lambda のコードはすっきりし、再試行ループを自作する必要がありません。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Lambda の連鎖呼び出しではなく Step Functions を使う場面</span>
+      <ul>
+        <li>Lambda A が Lambda B を呼び、B が Lambda C を呼ぶ（synchronous）: A はチェーン全体を待つ必要があり、待ち時間にも費用がかかり、15 分の timeout は合算で数えられ、C で起きたエラーは A が自分で処理しなければならず、全体を見渡せる人がいません。問題文に <em>Lambda functions calling each other</em>、<em>complex retry logic in code</em>、<em>visualize workflow</em>、<em>long-running multi-step process</em>、<em>human approval step</em> → Step Functions。</li>
+        <li>全体では 15 分を超えるが各ステップは短い → Step Functions で Lambda をつなぎ、合計で最長 1 年まで実行できます。</li>
+        <li>関数が 1 つだけのとき、または各ステップが独立していて調整が不要なとき（イベントを使う）は Step Functions は不要です。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Orchestration と choreography</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>Orchestration（Step Functions）</th><th>Choreography（EventBridge、SNS）</th></tr>
+        <tr><td>誰が制御するか</td><td>全ステップを把握する中央の「指揮者」が各サービスを呼ぶ</td><td>制御役はいない。各サービスがイベントを発行し、他のサービスが自分で受け取って反応する</td></tr>
+        <tr><td>長所</td><td>状態が見える、retry、rollback、特定のプロセスをデバッグしやすい</td><td>疎結合（<em>loosely coupled</em>）、producer を変えずに consumer を追加できる、独立してスケール</td></tr>
+        <tr><td>短所</td><td>中央に依存し、大きなワークフローは複雑になる</td><td>「この注文は今どこにあるか」がわかりにくく、順序の保証も難しい</td></tr>
+        <tr><td>選ぶ場面</td><td>順序が明確な業務プロセス: 注文 → 支払い → 配送</td><td>複数のチーム、複数のマイクロサービスが同じイベントに反応する</td></tr>
+      </table></div>
+      <p style="font-size:.92rem">実際には両方を組み合わせます。EventBridge が「OrderPlaced」イベントを受け、その注文を処理する Step Functions の execution を開始する、という形です。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>組み合わせ</th><th>違い</th></tr>
+        <tr><td>Step Functions と SWF（Simple Workflow）</td><td>SWF は旧来のサービスで、decider を自分で書きます。問題文が旧式の「external signal」や既存の SWF コードを求める場合にだけ使います。基本は Step Functions を選びます。</td></tr>
+        <tr><td>Step Functions と MWAA（Managed Workflows for Apache Airflow）</td><td>Airflow は Python の DAG で書くデータパイプライン向けで、Airflow に慣れたデータチーム向けです。Step Functions は一般的な serverless アプリケーション向けです。</td></tr>
+        <tr><td>Parallel と Map</td><td>Parallel: ブランチ数が固定で、各ブランチは別々の処理。Map: 同じ処理を要素数だけ繰り返す。</td></tr>
+        <tr><td>Wait state と Lambda の sleep</td><td>Wait は compute の費用がかからず、何日でも待てます。Lambda の sleep はミリ秒単位で課金され、上限は 15 分です。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>orchestrate multiple Lambda functions <b>→ Step Functions</b></span><span>visual workflow, audit each step <b>→ Standard workflow</b></span><span>high-volume short event processing <b>→ Express workflow</b></span><span>manual approval before next step <b>→ waitForTaskToken</b></span><span>retry with exponential backoff without code <b>→ state machine の Retry</b></span><span>process each item in a list in parallel <b>→ Map state</b></span><span>wait days between steps <b>→ Wait state</b></span><span>loosely coupled, event-driven microservices <b>→ EventBridge (choreography)</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">8. ローン申請の処理は 6 つの Lambda で構成され、4 番目のステップでは担当者の手動承認が必要で、数日かかることがあります。どう設計しますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Step Functions の Standard workflow を使い、承認ステップは <code>.waitForTaskToken</code> 付きの Task にします（SNS / メールでトークンを送り、担当者が承認したら <code>SendTaskSuccess</code> を呼ぶ）。</b> Express は上限 5 分なので使えません。Lambda の連鎖呼び出しでは数日待てません。</p></div>
+      <div class="q"><p class="qt">9. IoT アプリが毎秒 50,000 件のイベントを受け、各イベントは 1 秒未満の短い処理を 3 ステップ通ります。各ステップは冪等です。<em>most cost-effective</em> にするにはどの workflow を選びますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Express workflow。</b> 実行回数と時間で課金され、100,000 execution/秒 以上に対応します。Standard は state transition で課金されるため、毎秒 50,000 × 3 ステップでは非常に高額になり、速度の上限も超えます。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. SQS と SNS ============ -->
+<section id="sqs-sns">
+  <span class="eyebrow">理論 4 / 7</span>
+  <h2>SQS と SNS: キューと pub/sub</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <p><b>SQS（Simple Queue Service）</b> はキューです。producer が message を送り、consumer が <b>取りに行き</b>（poll）、処理してから <b>削除</b> します。各 message は 1 つの consumer が処理します。<b>decouple</b> と <b>バッファ</b> のために使います。フロントエンドは注文を素早く受け付け、バックエンドは自分のペースで処理し、downstream が落ちても message は残って待ちます。<b>SNS（Simple Notification Service）</b> は pub/sub です。publisher が <b>topic</b> に送ると、SNS はすべての subscriber へ即座に <b>プッシュ</b>（push）し、保存はしません。1 つのイベントを複数の宛先に <b>fan-out</b> するために使います。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">SQS Standard と FIFO</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>Standard</th><th>FIFO</th></tr>
+        <tr><td>Throughput</td><td><b>無制限</b></td><td>batch なしで <b>300 msg/s</b>、batch 10 で <b>3,000 msg/s</b>。high throughput mode ではさらに大幅に高い（AWSドキュメントで要確認）</td></tr>
+        <tr><td>配信</td><td><b>At-least-once</b>: 重複して受信することがある</td><td><b>Exactly-once processing</b>: 5 分間の重複排除</td></tr>
+        <tr><td>順序</td><td><b>Best-effort</b>: 入れ替わることがある</td><td>同じ <b>message group</b> 内で順序どおり</td></tr>
+        <tr><td>名前</td><td>任意</td><td>サフィックス <code>.fifo</code> が必須</td></tr>
+        <tr><td>必須パラメータ</td><td></td><td><code>MessageGroupId</code>（順序を保つグループ、例: 顧客コード）。<code>MessageDeduplicationId</code> を指定するか、<b>content-based deduplication</b>（内容の SHA-256 ハッシュ）を有効化</td></tr>
+        <tr><td>選ぶ場面</td><td>デフォルト。consumer 側で冪等にする</td><td>問題文に <em>order must be preserved</em>、<em>no duplicates</em>、<em>exactly once</em></td></tr>
+      </table></div>
+      <p style="font-size:.92rem">Standard から FIFO へはその場で変更できず、新しいキューを作る必要があります。message group を並列に複数使えば FIFO もスケールします。各 group は独自の順序を持つ「レーン」です。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">必ず覚える SQS のパラメータ</span>
+      <div class="tbl"><table>
+        <tr><th>パラメータ</th><th>値</th><th>意味、試験のひっかけ</th></tr>
+        <tr><td><b>Visibility timeout</b></td><td>デフォルト <b>30 秒</b>、0 秒〜<b>12 時間</b></td><td>ある consumer が message を受け取ると、その間ほかの consumer からは <b>見えなく</b> なります。時間内に削除しないと message が再び見えるようになり、別の consumer が <b>重複して</b> 処理します。処理が長い → timeout を延ばすか、処理中に <code>ChangeMessageVisibility</code> を呼びます。問題文に <em>messages processed twice</em> → visibility timeout が短すぎる。</td></tr>
+        <tr><td><b>Message retention</b></td><td>デフォルト <b>4 日</b>、1 分〜<b>14 日</b></td><td>期限を過ぎると消えます。consumer のメンテナンスが長期間に及ぶ → retention を延ばします。</td></tr>
+        <tr><td><b>Message size</b></td><td><b>256 KB</b>（AWS は 2025 年から 1 MB に引き上げ、AWSドキュメントで要確認。試験では今も 256 KB が基準）</td><td>それより大きい message → <b>SQS Extended Client Library</b> で payload を S3 に置き、キューにはポインタだけを保持します（最大 2 GB）。</td></tr>
+        <tr><td><b>Long polling</b></td><td><code>WaitTimeSeconds</code> 1〜<b>20 秒</b>（デフォルト 0 = short polling）</td><td>consumer は message が来るか時間切れになるまで待つので、空の呼び出しが減り、<b>コストとレイテンシーが下がります</b>。キュー（<code>ReceiveMessageWaitTimeSeconds</code>）またはリクエストごとに設定します。問題文に <em>reduce cost of empty responses</em>、<em>too many API calls</em> → long polling。</td></tr>
+        <tr><td><b>Delay queue</b></td><td><code>DelaySeconds</code> 0〜<b>15 分</b></td><td>message は送信直後から見えなくなります（visibility timeout は受信後に見えなくなる点が違う）。Standard は message ごとに設定でき、FIFO はキュー全体のみ。</td></tr>
+        <tr><td><b>Dead-letter queue</b></td><td>redrive policy の <code>maxReceiveCount</code></td><td>N 回を超えて受信されても削除されない message → DLQ に移し、メインのキューを詰まらせずにエラーを調べます。DLQ は同じ種類である必要があります（FIFO には FIFO）。DLQ の retention は元のキューより長くします。<b>DLQ redrive</b>: エラーを直したあと、DLQ の message を元のキューへ戻します。</td></tr>
+        <tr><td><b>Temporary queue</b></td><td>Temporary Queue Client</td><td>request-response パターン: 各クライアントが返信用の一時キュー（virtual queue）を持ちます。多数の virtual queue が 1 つの実キューを共有するので安価です。名前を知っていれば十分です。</td></tr>
+        <tr><td><b>Encryption</b></td><td>SSE-SQS（デフォルト）または SSE-KMS。転送中は HTTPS</td><td>CMK を使う場合、producer / consumer に対応する KMS 権限が必要です。</td></tr>
+        <tr><td><b>Access policy</b></td><td>キューの resource-based policy</td><td>SNS、S3、他アカウントからキューに送るにはここに Principal を追加します。fan-out のラボで忘れやすい手順です。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">SQS と Lambda、SQS と Auto Scaling</span>
+        <ul>
+          <li><b>SQS → Lambda</b>: event source mapping で Lambda が poll して batch にまとめます（FIFO は最大 10 message、Standard は batch window を使えばさらに多く、AWSドキュメントで要確認）。Lambda はキューの長さに応じて poller の数をスケールします。エラー時は message がキューに戻ります。使うのは SQS の DLQ で、Lambda の DLQ ではありません（Lambda の DLQ は async invoke 専用）。</li>
+          <li><b>Auto Scaling group のバッファとしての SQS</b>: EC2 の worker がキューを poll します。メトリクス <code>ApproximateNumberOfMessagesVisible</code> でスケールします。さらに良いのは custom metric <em>backlog per instance</em> = message 数 / instance 数 を使い、許容できる値に target tracking する方法です。問題文に <em>scale workers based on queue depth</em> → この方法で、CPU でスケールしません。</li>
+          <li>試験の典型パターン: <b>Web 層 → SQS → worker 層（ASG または Lambda）→ DB</b>。Web は素早く応答し、バックエンドが遅くても注文を失わず、DB に負荷が殺到しません。</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">SNS: topic、subscription、filter</span>
+        <ul>
+          <li><b>Subscriber</b>: SQS、Lambda、HTTP/HTTPS、email、email-JSON、SMS、mobile push（APNs、FCM）、<b>Kinesis Data Firehose</b>。Kinesis Data Streams や EventBridge には直接送れません。</li>
+          <li><b>Filter policy</b>: 各 subscription に付ける message attribute（または body）に対する JSON で、subscriber は一致する message だけを受け取ります。consumer が全件を受けて自分でふるい分けたり、topic を複数作ったりする代わりになります。</li>
+          <li><b>FIFO topic</b>: 順序を保ち重複を排除し、fan-out 先は <b>SQS FIFO</b>（ほか一部の宛先、AWSドキュメントで要確認）のみ。名前は <code>.fifo</code>。</li>
+          <li><b>Encryption</b>: 保存時の message は KMS による SSE、転送中は HTTPS。publisher には topic のキーに対する <code>kms:GenerateDataKey</code> が必要です。</li>
+          <li><b>Raw message delivery</b>: SNS の JSON で包まずに、元の body をそのまま SQS / HTTP へ送ります。HTTP endpoint 向けの <b>Delivery retry</b> と、配信できない message 用の <b>subscription ごとの DLQ</b>（SQS）があります。</li>
+          <li>Message は最大 256 KB。SMS 送信は別料金、email は subscription の確認が必要です。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block diag"><span class="eyebrow">イメージ: SNS から複数の SQS への fan-out</span>
+      <svg viewBox="0 0 700 300" role="img" aria-label="fan-out の図: producer が SNS topic に送り、topic は 2 つの SQS キューと 1 つの Lambda の計 3 つの subscriber にプッシュする。1 つのキューには DLQ があり、1 つの subscription には filter policy がある">
+        <rect x="10" y="118" width="130" height="56" rx="8" class="sv-region" stroke-width="1.5"/>
+        <text x="75" y="142" text-anchor="middle" class="sv-t" font-weight="600">Order service</text>
+        <text x="75" y="160" text-anchor="middle" class="sv-m">Publish 1 message</text>
+        <line x1="140" y1="146" x2="190" y2="146" class="sv-line" stroke-width="2"/>
+        <rect x="190" y="110" width="150" height="72" rx="8" class="sv-edge" stroke-width="1.5"/>
+        <text x="265" y="136" text-anchor="middle" class="sv-t" font-weight="600">SNS topic</text>
+        <text x="265" y="154" text-anchor="middle" class="sv-m">saa-orders</text>
+        <text x="265" y="170" text-anchor="middle" class="sv-m">push、保存しない</text>
+        <line x1="340" y1="130" x2="410" y2="56" class="sv-line" stroke-width="2"/>
+        <line x1="340" y1="146" x2="410" y2="146" class="sv-line" stroke-width="2"/>
+        <line x1="340" y1="162" x2="410" y2="236" class="sv-line" stroke-width="2"/>
+        <text x="372" y="92" text-anchor="middle" class="sv-m" font-style="italic">filter: type=vip</text>
+        <rect x="410" y="28" width="160" height="56" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="490" y="52" text-anchor="middle" class="sv-t" font-weight="600">SQS: email</text>
+        <text x="490" y="70" text-anchor="middle" class="sv-m">VIP 注文のみ受信</text>
+        <rect x="410" y="118" width="160" height="56" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="490" y="142" text-anchor="middle" class="sv-t" font-weight="600">SQS: analytics</text>
+        <text x="490" y="160" text-anchor="middle" class="sv-m">すべての注文を受信</text>
+        <line x1="570" y1="146" x2="600" y2="146" class="sv-line" stroke-width="2" stroke-dasharray="4 4"/>
+        <rect x="600" y="118" width="90" height="56" rx="8" class="sv-region" stroke-width="1.5"/>
+        <text x="645" y="142" text-anchor="middle" class="sv-t" font-weight="600">DLQ</text>
+        <text x="645" y="160" text-anchor="middle" class="sv-m">3 回失敗後</text>
+        <rect x="410" y="208" width="160" height="56" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="490" y="232" text-anchor="middle" class="sv-t" font-weight="600">Lambda: 在庫更新</text>
+        <text x="490" y="250" text-anchor="middle" class="sv-m">async invoke</text>
+        <text x="350" y="290" text-anchor="middle" class="sv-m">subscriber を追加しても Order service の変更は不要。各キューは独立して自分のペースで処理する。</text>
+      </svg>
+      <p style="font-size:.92rem">SNS → Lambda に直接つながず SNS → SQS で fan-out する理由: consumer が落ちてもキューが message を保持し、retry でき、急な負荷増加をバッファできるからです。SNS が SQS に書き込めるようにするには、キューの access policy で <code>sns.amazonaws.com</code> を、<code>aws:SourceArn</code> が topic であることを条件に許可します。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>1 つのイベントを複数の異なるシステムに届ける</td><td>SNS から複数の SQS へ fan-out</td><td>1 つの SQS を複数の consumer で共有（各 message は 1 つの consumer しか受け取らない）</td></tr>
+        <tr><td>message が 2 つの worker で 2 回処理される</td><td>visibility timeout を延ばす（exactly-once が必要なら FIFO）</td><td>retention を延ばす</td></tr>
+        <tr><td>口座ごとに取引の順序を正しく保つ</td><td>MessageGroupId = 口座番号 の SQS FIFO</td><td>SQS Standard（best-effort）、または group を使わない FIFO（レーンが 1 本で遅い）</td></tr>
+        <tr><td>エラーを繰り返す message がキューを詰まらせる</td><td>maxReceiveCount 付きの DLQ</td><td>visibility timeout を短くする</td></tr>
+        <tr><td>consumer が ReceiveMessage を呼び続けるコストを下げる</td><td>20 秒の long polling</td><td>short polling で consumer を増やす</td></tr>
+        <tr><td>2 MB の message</td><td>SQS Extended Client Library（S3）</td><td>message を分割する、または SNS（同じく 256 KB）</td></tr>
+        <tr><td>特定の種類の message を一部の subscriber だけが受け取る</td><td>subscription の SNS filter policy</td><td>topic を複数作る、または consumer 側でふるい分ける</td></tr>
+        <tr><td>アラーム時に人へ email / SMS を送る</td><td>SNS</td><td>SQS（キューを読む人がいない）、SES（テンプレート付きのトランザクションメール向けで、即時通知向けではない）</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>decouple, buffer, absorb spikes <b>→ SQS</b></span><span>at-least-once, best-effort ordering <b>→ SQS Standard</b></span><span>preserve order, exactly once, no duplicates <b>→ SQS FIFO</b></span><span>processed more than once <b>→ visibility timeout</b></span><span>poison message, isolate failures <b>→ DLQ + maxReceiveCount</b></span><span>reduce empty receives <b>→ long polling</b></span><span>message larger than 256 KB <b>→ Extended Client Library</b></span><span>scale EC2 workers by queue depth <b>→ ASG + ApproximateNumberOfMessagesVisible</b></span><span>fan-out, notify multiple systems <b>→ SNS → SQS</b></span><span>subscribers receive only relevant messages <b>→ filter policy</b></span><span>push notification, SMS, email alert <b>→ SNS</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">10. EC2 の worker は message 1 件の処理に 2 分かかります。ログを見ると、多くの message が 2 つの異なるインスタンスで 2 回処理されています。何を直しますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>キューの visibility timeout を延ばす（例: 5 分）か、処理中に ChangeMessageVisibility を呼びます。</b> デフォルトは 30 秒なので、worker が削除する前に message が再び見えるようになります。30 秒のまま FIFO に変えても解決せず、retention を延ばすのは無関係です。</p></div>
+      <div class="q"><p class="qt">11. 注文システムは各注文を在庫サービス、請求サービス、分析サービスに送る必要があります。各サービスは独立して処理し、注文を失わずに個別にメンテナンスできなければなりません。アーキテクチャは？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>SNS topic に 3 つの SQS キューを subscribe させ（fan-out）、各サービスは自分のキューを読みます。</b> SQS を共有すると各注文は 1 つのサービスにしか届きません。SNS → Lambda を直接つなぐと、サービスのメンテナンス中にバッファがありません。</p></div>
+      <div class="q"><p class="qt">12. 銀行アプリは口座ごとに取引を正しい順序で処理する必要がありますが、数千の口座で合計 2,000 取引/秒あります。何を選びますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>MessageGroupId を口座番号にした SQS FIFO で、batch で送信します。</b> 順序は口座ごとに保てばよく、複数の group が並列に動くので batch で 3,000 msg/s（または high throughput mode）に届きます。group を 1 つにすると 300 msg/s で詰まります。</p></div>
+      <div class="q"><p class="qt">13. ASG の EC2 フリートが SQS を読んでいます。負荷が増えるとキューに数千件の message が溜まりますが、インスタンスの CPU は 40% しかなく ASG がスケールしません。正しい方法は？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>custom metric の backlog per instance（ApproximateNumberOfMessagesVisible をインスタンス数で割る）で target tracking によりスケールします。</b> worker が I/O や外部 API の待ちで遅い場合、CPU はキューの長さを反映しません。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. EVENTBRIDGE ============ -->
+<section id="eventbridge">
+  <span class="eyebrow">理論 5 / 7</span>
+  <h2>EventBridge: event bus、rule、スケジュール</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <p><b>EventBridge</b> は serverless の <b>event bus</b> です。イベント（JSON）が bus に流れ込み、<b>rule</b> が <b>event pattern</b> で照合して <b>target</b> に送ります。CloudWatch Events の拡張版（同じ API、同じ default bus）で、custom bus、partner bus、schema registry、archive と replay が加わっています。多数の AWS サービス、自社アプリケーション、外部 SaaS の間で <b>イベントを内容に応じてルーティング</b> したいときに EventBridge を選びます。</p>
+      <ul>
+        <li><b>Default bus</b>: AWS サービスのイベントを受け取ります（EC2 の状態変化、CloudTrail または S3 Event Notifications 経由の S3、CodePipeline、Health、GuardDuty の finding など）。<b>Custom bus</b>: 自社アプリケーションが <code>PutEvents</code> するためのもの。<b>Partner bus</b>: Zendesk、Datadog、Auth0、Stripe などの SaaS がイベントを直接アカウントに送ります。</li>
+        <li><b>Rule</b>: 1 つの bus に複数の rule を置け、各 rule の target は最大 <b>5 個</b>。Target: Lambda、SQS、SNS、Step Functions、Kinesis Data Streams、Firehose、ECS task、Batch、CodeBuild、SSM Run Command、API Gateway、<b>API Destination</b>（認証付きの外部 HTTP endpoint）、別の bus（cross-account、cross-Region）。</li>
+        <li><b>Event pattern</b> はフィールドで絞り込みます: <code>source</code>、<code>detail-type</code>、<code>detail.state</code>。prefix、numeric、exists、anything-but が使えます。<b>Input transformer</b> で target に送る前に payload を整形します。</li>
+        <li>配信は <b>at-least-once</b>、最大 24 時間 retry し、配信できなかったイベント用に target ごとの <b>DLQ</b>（SQS）があります。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">rule の例</span>
+<pre><code>// Pattern: EC2 が stopped または terminated に変わったことを検知
+{
+  "source": ["aws.ec2"],
+  "detail-type": ["EC2 Instance State-change Notification"],
+  "detail": { "state": ["stopped", "terminated"] }
+}
+
+// Pattern: custom bus 上のアプリケーションのイベント
+{
+  "source": ["com.myshop.orders"],
+  "detail-type": ["OrderPlaced"],
+  "detail": { "total": [{ "numeric": [">=", 1000] }] }
+}</code></pre>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">スケジュールと EventBridge Scheduler</span>
+        <ul>
+          <li><b>Scheduled rule</b>（旧来の方法）: <code>rate(5 minutes)</code> や <code>cron(0 2 * * ? *)</code> で rule を実行して target を呼びます。default bus のみ、時刻は UTC。</li>
+          <li><b>EventBridge Scheduler</b>（独立した新しいサービス）: <b>1 回限り</b> または繰り返しのスケジュール、<b>time zone</b> の指定、<b>flexible time window</b>、API 経由で 270 以上のサービスを呼べ、スケジュール数の上限もはるかに高く（数百万）、実行後に自動削除できます。AWS は新しいスケジュールにはすべて Scheduler を推奨しています。問題文に <em>run a task at a specific time</em>、<em>schedule in local time zone</em>、<em>one-time schedule</em> → Scheduler。</li>
+          <li>EC2 上の cron の置き換え: <em>eliminate the EC2 instance that only runs cron jobs</em> → EventBridge Scheduler + Lambda。</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Archive、replay、schema、Pipes</span>
+        <ul>
+          <li><b>Archive</b>: pattern に一致するイベントを N 日間または無期限に保存します。<b>Replay</b>: 指定期間のイベントを bus に再送し、バグ修正後の再処理や新しい consumer への投入に使います。SNS と SQS にはこの機能はありません。</li>
+          <li><b>Schema registry</b>: イベントの構造を保存します。<b>schema discovery</b> が bus 上のイベントから自動で推定し、<b>code binding</b>（Java、Python、TypeScript）を生成するので、開発者は型を使えます。</li>
+          <li><b>EventBridge Pipes</b>（名前を知っていれば十分）: 1 つのソース（SQS、Kinesis、DynamoDB Streams、MSK）と 1 つの target を <b>ポイントツーポイント</b> でつなぎ、間にフィルタと enrich（Lambda / API で情報付加）のステップを置けます。つなぎのコードは不要です。</li>
+          <li><b>Cross-account</b>: アカウント B の bus の resource policy で、アカウント A（または <code>aws:PrincipalOrgID</code> で Organization 全体）に <code>PutEvents</code> を許可し、アカウント A は B の bus を target とする rule を作ります。複数アカウント向けの「central event bus」パターンです。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">EventBridge と SNS と CloudWatch Events</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>EventBridge</th><th>SNS</th></tr>
+        <tr><td>モデル</td><td>Bus + イベントの <b>内容</b> で絞り込む rule（複数フィールド、演算子）</td><td>Topic + subscriber、attribute の filter policy による簡単な絞り込み</td></tr>
+        <tr><td>ソース</td><td>200 以上の AWS サービス、自社アプリケーション、<b>SaaS partner</b></td><td>自社アプリケーションが publish</td></tr>
+        <tr><td>Target / subscriber</td><td>20 種類以上の AWS サービス、API Destination。rule あたり 5 target</td><td>SQS、Lambda、HTTP、email、SMS、push。topic あたり最大 1,250 万 subscription（AWSドキュメントで要確認）</td></tr>
+        <tr><td>Archive / replay、schema</td><td class="c">あり</td><td class="c">なし</td></tr>
+        <tr><td>レイテンシー、throughput</td><td>約 0.5 秒、throughput にはソフトリミットあり</td><td>ほぼ即時、throughput は非常に高い</td></tr>
+        <tr><td>選ぶ場面</td><td>AWS サービス / SaaS との統合、内容によるルーティング、スケジュール実行、replay が必要</td><td>高速な fan-out、人への送信（email、SMS）、モバイルプッシュ</td></tr>
+      </table></div>
+      <p style="font-size:.92rem"><b>CloudWatch Events</b> は default bus の旧名です。古い問題で「CloudWatch Events rule」とあれば EventBridge rule と読み替えます。両方が選択肢にあれば、現行の正解は EventBridge です。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>毎晩、東京時間の 2 時に Lambda を実行する</td><td>EventBridge Scheduler（time zone あり）</td><td>EC2 上の cron、または Lambda 自身の sleep</td></tr>
+        <tr><td>GuardDuty の finding、Security Group の変更、EC2 の停止に反応する</td><td>default bus の EventBridge rule → SNS / Lambda</td><td>CloudTrail のログを定期的に読む、CloudWatch alarm（alarm はメトリクス用で、イベント用ではない）</td></tr>
+        <tr><td>SaaS のイベント（Zendesk の新規チケット）を AWS に取り込む</td><td>Partner event bus</td><td>SaaS の API を poll する Lambda を書く</td></tr>
+        <tr><td>バグ修正後に先週のイベントを再処理する</td><td>EventBridge archive + replay</td><td>SNS（保存しない）、SQS（処理後に削除済み）</td></tr>
+        <tr><td>アラーム時に当番チームへ SMS を送る</td><td>SNS（EventBridge は SMS を直接送れない。EventBridge → SNS は可能）</td><td>EventBridge から電話番号へ直接</td></tr>
+        <tr><td>複数アカウントのイベントを 1 つのセキュリティアカウントに集約する</td><td>各アカウントに rule を置き、target を中央アカウントの custom bus にする（resource policy）</td><td>各アカウントがそれぞれメールを送る</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>react to AWS service events, resource state change <b>→ EventBridge rule</b></span><span>route events based on content <b>→ event pattern</b></span><span>SaaS application events <b>→ partner event bus</b></span><span>scheduled, cron, rate, time zone <b>→ EventBridge Scheduler</b></span><span>replay past events <b>→ archive + replay</b></span><span>discover event structure, code bindings <b>→ schema registry</b></span><span>central event bus across accounts <b>→ cross-account bus + resource policy</b></span><span>call external HTTP API from events <b>→ API Destination</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">14. アカウント内の EC2 が terminate されるたびに、社内システム（OAuth 付きの HTTPS API）にチケットを自動作成したいと考えています。<em>Least operational overhead</em> な方法は？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>default bus に EC2 state-change = terminated のイベントを捉える EventBridge rule を作り、target を OAuth の connection を設定した HTTPS endpoint への API Destination にします。</b> Lambda は不要です。CloudTrail + Lambda の poll でも可能ですが、遅く手間がかかります。SNS の HTTP subscription には OAuth が組み込まれていません。</p></div>
+      <div class="q"><p class="qt">15. ある consumer に 3 日間バグがあり、受け取った「OrderPlaced」イベントをすべて誤って処理しました。修正後、それらのイベントを正しく再処理する必要があります。最初からどのサービスを使っておくべきでしたか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>bus で archive を有効にした EventBridge。今その 3 日分を replay します。</b> SNS は message を保存せず、SQS は consumer が削除すると消えます。Kinesis Data Streams も retention が十分長ければ replay できますが、内容でルーティングする業務イベントなら EventBridge が正解です。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. KINESIS ============ -->
+<section id="kinesis">
+  <span class="eyebrow">理論 6 / 7</span>
+  <h2>Kinesis: Data Streams、Firehose、Flink、Video Streams</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <p><b>Kinesis</b> は <b>ストリーミングデータ</b> 向けのサービス群です。ログ、clickstream、IoT テレメトリ、取引など、大量に絶え間なく届くデータを扱います。SQS との違いは、ストリーム内のデータが <b>読んでも削除されない</b> ことです。複数の consumer が同じデータを読め、retention 期間内なら読み直し（replay）ができ、各 shard 内で順序が保たれます。問題文に <em>real-time</em>、<em>streaming</em>、<em>clickstream</em>、<em>multiple consumers read the same data</em>、<em>replay</em> → Kinesis を考えます。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kinesis Data Streams (KDS)</span>
+      <div class="tbl"><table>
+        <tr><th>項目</th><th>値</th><th>試験メモ</th></tr>
+        <tr><td><b>Shard</b></td><td>throughput の単位: shard あたり <b>書き込み 1 MB/s または 1,000 record/s</b>、<b>読み出し 2 MB/s</b></td><td>書き込み 10 MB/s が必要 → 10 shard。読み出し 2 MB/s はその shard のすべての consumer で <b>共有</b> です。</td></tr>
+        <tr><td><b>Partition key</b></td><td>producer が付ける文字列で、ハッシュして shard を決める</td><td>値の種類が少ないキー（例: 都市別で 80% が Tokyo）→ <b>hot shard</b> になり、<code>ProvisionedThroughputExceededException</code> が出ます。対策: より分散するキー（user id、device id）、shard の追加、backoff 付きの retry。</td></tr>
+        <tr><td><b>Retention</b></td><td>デフォルト <b>24 時間</b>、最大 <b>365 日</b>（追加料金）</td><td>この期間内なら consumer は最初から読み直せます。SQS にはありません。</td></tr>
+        <tr><td><b>Record</b></td><td>最大 1 MB</td><td></td></tr>
+        <tr><td><b>Capacity mode</b></td><td><b>Provisioned</b>: shard 数を自分で選び、shard 時間で課金。<b>On-demand</b>: 自動スケールし、書き込み / 読み出しの GB で課金</td><td>問題文に <em>unpredictable traffic</em>、<em>no capacity planning</em> → on-demand。2 つのモードは 24 時間に 2 回まで切り替え可能（AWSドキュメントで要確認）。</td></tr>
+        <tr><td><b>順序</b></td><td>1 つの shard 内で（partition key ごとに）保たれる</td><td>デバイスごとの順序が必要 → partition key = device id。</td></tr>
+        <tr><td><b>Producer</b></td><td>SDK の <code>PutRecord(s)</code>、<b>KPL</b>（Kinesis Producer Library: batch 化、aggregate、retry で高効率）、Kinesis Agent（サーバー上のログファイルを読む）、IoT Core、CloudWatch Logs subscription</td><td>KPL で aggregation を使う場合、consumer は KCL で de-aggregate する必要があります。</td></tr>
+        <tr><td><b>Consumer</b></td><td>SDK の <code>GetRecords</code>、<b>KCL</b>（Kinesis Client Library: shard を worker に割り振り、DynamoDB に <b>checkpoint</b>、worker が落ちると自動で再配分）、Lambda（event source mapping）、Firehose、Managed Flink</td><td>KCL: 各 shard は同時に 1 つの worker だけが処理し、worker の最大数 = shard 数。EC2 / ECS で動く KCL アプリには checkpoint テーブル用の DynamoDB 権限が必要です。</td></tr>
+        <tr><td><b>Enhanced fan-out</b></td><td>登録した consumer ごとに shard あたり <b>専用の 2 MB/s</b>、データは HTTP/2 で <b>push</b>、レイテンシーは 200 ms ではなく約 70 ms</td><td>問題文に <em>multiple consumers</em>、<em>each needs full throughput</em>、<em>lowest latency</em> → enhanced fan-out。ストリームあたり登録 consumer は最大 20（AWSドキュメントで要確認）、追加料金あり。</td></tr>
+        <tr><td><b>Encryption</b></td><td>KMS による SSE、転送中は HTTPS。VPC endpoint</td><td></td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Data Firehose、Managed Flink、Video Streams</span>
+      <div class="tbl"><table>
+        <tr><th>サービス</th><th>役割</th><th>試験のポイント</th></tr>
+        <tr><td><b>Amazon Data Firehose</b>（旧名 Kinesis Data Firehose）</td><td><b>配信</b> サービス: データ（Direct PUT、KDS、MSK、CloudWatch Logs、IoT から）を受け取り、<b>宛先に書き込みます</b>: <b>S3</b>、<b>Redshift</b>（S3 COPY 経由）、<b>OpenSearch</b>、Splunk、Datadog、独自の <b>HTTP endpoint</b>。フルマネージドで自動スケールし、GB 単位で課金。</td><td><b>Near real-time</b>: サイズ（1〜128 MB）または時間（0〜900 秒。以前は最小 60 秒で、現在は 0 も可能、AWSドキュメントで要確認）の <b>buffer</b> でまとめます。<b>Lambda</b> で変換、JSON から <b>Parquet / ORC</b> への変換、圧縮、暗号化ができます。データを <b>保存しない</b>、<b>replay できない</b>、任意の consumer を持てません。問題文に <em>load streaming data into S3 / Redshift / OpenSearch with least effort</em> → Firehose。</td></tr>
+        <tr><td><b>Amazon Managed Service for Apache Flink</b>（旧名 Kinesis Data Analytics）</td><td>KDS / MSK から流れるデータに対して Flink アプリ（Java、Scala、Python）または <b>SQL</b> を実行: 時間ウィンドウでの集計、異常検知、2 つのストリームの join。結果は KDS、Firehose、S3、OpenSearch などに出力。</td><td>問題文に <em>real-time analytics on streaming data</em>、<em>SQL on stream</em>、<em>sliding window</em>、<em>anomaly detection in real time</em> → Managed Flink。古い問題では今も「Kinesis Data Analytics」と書かれています。素早く試すには Flink Studio notebook。</td></tr>
+        <tr><td><b>Kinesis Video Streams</b></td><td>カメラやデバイスから動画を受け取り、保存、暗号化、時刻によるインデックス付け、再生を行い、Rekognition Video、SageMaker に渡して分析します。</td><td>問題文に <em>video from cameras</em>、<em>computer vision on live video</em> → Video Streams。名前を知っていれば十分です。</td></tr>
+      </table></div>
+      <p style="font-size:.92rem">典型的な流れ: <b>Producer → KDS → Managed Flink（分析）→ Firehose → S3（保存）→ Athena / QuickSight</b>。保存だけでよければもっと単純に <b>Producer → Firehose → S3</b> で、KDS は不要です。KDS が必要なのは、任意の consumer が複数ある、replay が必要、または各レコードを秒単位で処理する場合だけです。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">選択表: SQS と SNS と Kinesis と EventBridge（確認ポイント 1）</span>
+      <div class="tbl"><table>
+        <tr><th>キーワード / 要件</th><th>SQS</th><th>SNS</th><th>Kinesis Data Streams</th><th>EventBridge</th></tr>
+        <tr><td>モデル</td><td>キュー、consumer が <b>pull</b>、各 message は 1 つの consumer</td><td>Pub/sub、複数の subscriber へ <b>push</b></td><td>ストリーム、複数の consumer が shard ごとに同じデータを読む</td><td>Bus + 内容でルーティングする rule</td></tr>
+        <tr><td><em>decouple</em>、<em>buffer</em>、<em>absorb spikes</em></td><td class="c"><b>選ぶ</b></td><td></td><td></td><td></td></tr>
+        <tr><td><em>fan-out</em>、<em>notify many</em>、email / SMS</td><td></td><td class="c"><b>選ぶ</b></td><td></td><td>可能（rule あたり 5 target）</td></tr>
+        <tr><td><em>real-time streaming</em>、<em>clickstream</em>、<em>IoT telemetry</em>、MB/s</td><td></td><td></td><td class="c"><b>選ぶ</b></td><td></td></tr>
+        <tr><td><em>replay</em>、過去データの読み直し</td><td>不可（処理後に削除）</td><td>不可（保存しない）</td><td class="c">retention 内なら <b>可能</b></td><td class="c">archive + replay で <b>可能</b></td></tr>
+        <tr><td><em>ordering</em></td><td>FIFO queue</td><td>FIFO topic</td><td>partition key ごとに shard 内で</td><td>保証なし</td></tr>
+        <tr><td><em>AWS service events</em>、<em>SaaS integration</em>、<em>schedule</em></td><td></td><td></td><td></td><td class="c"><b>選ぶ</b></td></tr>
+        <tr><td>データの保存</td><td>最大 14 日</td><td>なし</td><td>24 時間〜365 日</td><td>任意の archive</td></tr>
+        <tr><td>スケール</td><td>自動、無制限（Standard）</td><td>自動</td><td>shard 単位、または on-demand</td><td>自動</td></tr>
+        <tr><td>料金</td><td>リクエスト単位</td><td>message と配信方式の単位</td><td>shard 時間または GB 単位</td><td>イベント単位</td></tr>
+      </table></div>
+      <div class="note ok">短く言うと: 1 つの仕事を <b>1 つの worker がちょうど 1 回</b> 行えばよく、遅延も許容できる → <b>SQS</b>。1 つの知らせを <b>すぐに多くの宛先へ</b> 届ける → <b>SNS</b>。データが <b>絶え間ない流れ</b> で、リアルタイム分析や読み直しが必要 → <b>Kinesis</b>。AWS サービス / SaaS / アプリケーションのイベントを内容で <b>ルーティング</b> したい、またはスケジュール実行したい → <b>EventBridge</b>。</div>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>数千台のサーバーのログを S3 に集めて Athena でクエリする、運用負荷を最小に</td><td>Firehose → S3（Parquet に変換）</td><td>KDS + Lambda で S3 に自前で書く（コードが多い）</td></tr>
+        <tr><td>ページごとの 1 分あたりクリック数を数えるリアルタイムダッシュボード</td><td>KDS → Managed Flink（window）→ OpenSearch / Firehose</td><td>Firehose 単体（計算しない）、SQS</td></tr>
+        <tr><td>3 つの異なるチームがストリーム全体を低レイテンシーで読む必要がある</td><td>enhanced fan-out 付きの KDS</td><td>2 MB/s を共有で分け合う（consumer が遅くなる）、SQS（consumer は 1 つ）</td></tr>
+        <tr><td>総流量は少ないのに 1 つの shard が過負荷</td><td>partition key をより分散するものに変える</td><td>shard を追加する（キーが 1 か所に集中したままなら効果なし）</td></tr>
+        <tr><td>流量が予測できず、shard を管理したくない</td><td>KDS の on-demand mode</td><td>Provisioned + resharding スクリプトを自作</td></tr>
+        <tr><td>既存の Kafka アプリケーションを AWS に移す</td><td>Amazon MSK（マネージド Kafka）、名前を知っていれば十分</td><td>Kinesis（Kafka とは API が異なる）</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>real-time, streaming, clickstream, telemetry <b>→ Kinesis Data Streams</b></span><span>near real-time, deliver to S3 / Redshift / OpenSearch <b>→ Firehose</b></span><span>transform records before delivery <b>→ Firehose + Lambda</b></span><span>SQL on streaming data, windowed aggregation <b>→ Managed Flink</b></span><span>hot shard, ProvisionedThroughputExceeded <b>→ partition key / shard 追加</b></span><span>multiple consumers, dedicated throughput <b>→ enhanced fan-out</b></span><span>replay stream data <b>→ retention を延ばす</b></span><span>unpredictable throughput <b>→ on-demand mode</b></span><span>video from cameras <b>→ Kinesis Video Streams</b></span><span>existing Kafka application <b>→ MSK</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">16. モバイルアプリが 5 MB/s のイベントを送ります。Athena で分析するためにすべてを Parquet 形式で S3 に保存し、同時に別のチームが不正検知のために生データを 1 秒以内に読む必要があります。アーキテクチャは？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Kinesis Data Streams（5 shard 以上、または on-demand）。consumer の 1 つは Parquet に変換して S3 に書く Firehose、2 つ目の consumer は不正検知を行う Lambda / Managed Flink（必要なら enhanced fan-out を有効化）。</b> Firehose だけでは 1 秒以内に読む 2 つ目の consumer を置けません（buffer は最短でも数十秒で、読み出し API もない）。SQS では 2 つの consumer が同じデータを読めません。</p></div>
+      <div class="q"><p class="qt">17. KDS に 10 shard あり、総流量は 2 MB/s しかないのに、producer が ProvisionedThroughputExceededException を受け続けます。Partition key は国コードです。何を直しますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>partition key を分散度の高い値（user id、session id、またはランダムなサフィックスを付ける）に変えます。</b> これは hot shard です。データの 90% が同じ国で、1 MB/s の 1 つの shard に集中しています。ハッシュキーが同じ shard を指したままなので、shard を追加しても効果はありません。</p></div>
+      <div class="q"><p class="qt">18. EC2 のアプリケーションログを検索用に OpenSearch に入れたい。1 分の遅延は許容し、<em>least operational overhead</em> が条件です。何を選びますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Kinesis Agent（または CloudWatch Logs subscription）→ Data Firehose → OpenSearch。</b> Firehose は直接配信し、自動スケールし、コードも不要です。KDS + Lambda や EC2 上の Logstash は運用の手間が増えます。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. CONTAINER ============ -->
+<section id="container">
+  <span class="eyebrow">理論 7 / 7</span>
+  <h2>ECS、EKS、Fargate、ECR、App Runner、Amazon MQ、AppSync</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <p><b>コンテナ</b> はアプリケーションとライブラリを 1 つのイメージにまとめ、どこでも同じように動かします。AWS には 2 つの <b>orchestrator</b>（コンテナの調整役）があります。<b>ECS</b>（AWS 独自でシンプル）と <b>EKS</b>（マネージド Kubernetes）です。どちらも 2 種類の <b>インフラ</b> 上でコンテナを動かせます。<b>EC2</b>（インスタンスを自分で管理）か <b>Fargate</b>（serverless、AWS が管理）です。イメージは <b>ECR</b> に保存します。最上位の <b>App Runner</b> は、コンテナまたはソースコードから Web アプリをほぼ設定なしで動かします。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">ECS: 主要な概念</span>
+      <div class="tbl"><table>
+        <tr><th>概念</th><th>内容</th><th>試験のポイント</th></tr>
+        <tr><td><b>Cluster</b></td><td>task と service を入れる論理グループ。EC2 launch type では container instance（ECS agent が動く EC2）のグループ</td><td>Fargate の cluster には管理する EC2 がありません。</td></tr>
+        <tr><td><b>Task definition</b></td><td>「設計図」（JSON）: image、CPU / memory、port、env、volume、log driver、IAM role、network mode。version（revision）がある</td><td>1 つの task definition に 1〜10 個のコンテナ（sidecar）。</td></tr>
+        <tr><td><b>Task</b></td><td>task definition の 1 回の実行（1 つまたは複数のコンテナ）</td><td>バッチジョブには単発の task を実行します。EventBridge からスケジュールで <code>RunTask</code> することもできます。</td></tr>
+        <tr><td><b>Service</b></td><td><b>N 個の task を常に稼働</b> させ、落ちた task を置き換え、<b>ALB / NLB</b> に接続し、rolling update または blue/green（CodeDeploy 経由）を行う</td><td>長時間動く Web アプリ → service。ECS と ALB: target group は <b>IP</b> タイプ（awsvpc / Fargate）、または <b>dynamic port mapping</b> を使う <b>instance</b> タイプ（EC2 の bridge mode: 同じイメージの複数の task を 1 台に置き、各 task のホスト port はランダム）。</td></tr>
+        <tr><td><b>Launch type</b></td><td><b>EC2</b>: EC2 の ASG（ECS-optimized AMI）を自分で作り、EC2 の料金を払う。<b>Fargate</b>: task の CPU / memory を宣言するだけで、どこで動くかは意識不要。task の vCPU 時間と GB 時間で課金</td><td>下の比較表（確認ポイント 2）を参照。</td></tr>
+        <tr><td><b>Capacity provider</b></td><td>cluster のインフラの供給元: <code>FARGATE</code>、<code>FARGATE_SPOT</code>（最大 70% 安いが回収される可能性あり）、または <b>managed scaling</b> 付きの ASG（task の需要に応じて ECS が EC2 を増減）</td><td>問題文に <em>ECS on EC2 fails to place tasks because no capacity</em> → managed scaling 付きの capacity provider。耐障害性のあるバッチ → FARGATE_SPOT。</td></tr>
+        <tr><td><b>Service auto scaling</b></td><td>Application Auto Scaling が平均 CPU / memory、<code>ALBRequestCountPerTarget</code>、またはカスタムメトリクス（SQS の長さ）に応じて task 数を変える</td><td>EC2 launch type ではスケールが <b>2 層</b> です: task 数（service auto scaling）と EC2 数（ASG / capacity provider）。Fargate は task の層だけで済みます。</td></tr>
+        <tr><td><b>Network mode</b></td><td><b>awsvpc</b>: 各 task が独自の ENI、IP、Security Group を持つ（Fargate では必須）。<b>bridge</b>、<b>host</b>: EC2 のみ</td><td>task ごとに Security Group が必要 → awsvpc。</td></tr>
+        <tr><td><b>Storage</b></td><td>Ephemeral（Fargate は 20 GB、最大 200 GB）。永続化と task / AZ 間の共有には <b>EFS</b>。task への EBS アタッチ（新機能、名前を知っていれば十分）</td><td><em>shared persistent storage for containers across AZs</em> → EFS。</td></tr>
+        <tr><td><b>ECS Anywhere</b></td><td>オンプレミスや他クラウドのサーバーを ECS cluster に登録し、同じ API でそこのコンテナを管理する</td><td>名前を知っていれば十分。EKS Anywhere も同様です。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Task role と task execution role</span>
+        <div class="tbl"><table>
+          <tr><th></th><th>Task execution role</th><th>Task role</th></tr>
+          <tr><td>使う主体</td><td>利用者に代わって動く <b>ECS agent</b></td><td>コンテナ内の <b>アプリケーション</b></td></tr>
+          <tr><td>用途</td><td><b>ECR</b> からイメージを pull、<b>CloudWatch Logs</b> にログを書く、Secrets Manager / Parameter Store から secret を読んで env に渡す</td><td>AWS サービスを呼ぶ: S3 の読み取り、DynamoDB への書き込み、SQS への送信</td></tr>
+          <tr><td>よくあるミス</td><td>task が起動せず <code>CannotPullContainerError</code> → execution role に ECR の権限がない、または task から ECR への経路（NAT / VPC endpoint / public IP）がない</td><td>コンテナは動くが S3 を呼ぶと <code>AccessDenied</code> → task role の権限不足</td></tr>
+        </table></div>
+        <p style="font-size:.92rem">task definition の中で設定し、task definition ごとに別の task role を持てる → <em>least privilege per service</em>。インスタンス上のすべての task が同じ権限を共有してしまうので、アプリケーションには EC2 の instance role を使いません。</p>
+      </div>
+      <div class="block"><span class="eyebrow">ECR、EKS、App Runner</span>
+        <ul>
+          <li><b>ECR</b>: private registry（と public gallery）。イメージは保存時に暗号化され、<b>image scanning</b>（push 時の basic、または Inspector による OS と言語の継続的な enhanced スキャン）、古いイメージを削除して節約する <b>lifecycle policy</b>、<b>cross-Region / cross-account replication</b>、<b>tag immutability</b> があります。ログイン: <code>aws ecr get-login-password | docker login</code>。Fargate / EC2 がイメージを pull するには ECR へのネットワーク経路（NAT、VPC endpoint <code>ecr.api</code>、<code>ecr.dkr</code>、<code>s3</code>、または public IP）が必要です。</li>
+          <li><b>EKS</b>: AWS が管理する Kubernetes の control plane（cluster あたり 0.10 USD/時間、AWSドキュメントで要確認）。pod は <b>managed node group</b>（EKS が ASG を作る EC2）、<b>self-managed node</b>、または <b>Fargate profile</b>（serverless の pod）で動かします。storage は EBS / EFS / FSx の CSI driver、load balancer は AWS Load Balancer Controller で対応します。EKS を選ぶのは: オンプレミスや他クラウドですでに <b>Kubernetes</b> を使っている、<b>portability / multi-cloud</b> が必要、チームに k8s のスキルがある、k8s エコシステムのツール（Helm、Istio）を使う場合です。これらの理由がなければ ECS のほうがシンプルです。</li>
+          <li><b>App Runner</b>: コンテナイメージ（ECR）またはソース（GitHub、Python / Node.js など）を渡すと、App Runner がビルド、デプロイ、HTTPS、load balancer、auto scaling を自動で行い、使っていないときは 0 までスケールしてほぼ費用がかかりません（provisioned memory には課金あり、AWSドキュメントで要確認）。Web アプリ / API で <b>最も運用負荷が小さい</b> 選択肢です。VPC には VPC connector で接続します。ECS ほど細かい制御はできません。</li>
+          <li>ほかに名前を知っておくもの: <b>AWS Batch</b> はジョブキューを使って ECS / Fargate / EC2 上でバッチジョブを実行。<b>Lightsail</b> は固定料金のシンプルな VPS / コンテナ。<b>Elastic Beanstalk</b> も Docker を動かせます（第8週）。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">ECS on EC2 と Fargate の違い（確認ポイント 2）</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>ECS on EC2</th><th>Fargate</th></tr>
+        <tr><td>ホストを管理するのは誰か</td><td><b>利用者</b>: instance type、AMI の選択、OS パッチ、ECS agent、ASG、キャパシティ</td><td><b>AWS</b>: ホストは見えず、SSH もできない</td></tr>
+        <tr><td>課金</td><td>task が使い切っているかに関係なく、稼働中の <b>EC2 インスタンス</b> で課金。EC2 の Reserved / Savings Plans / Spot が使える</td><td><b>task ごとの vCPU と memory</b> で秒単位（最低 1 分）。Fargate Spot と Compute Savings Plans</td></tr>
+        <tr><td>安くなる場面</td><td>負荷が安定し <b>高密度</b>（多数の task でインスタンスを埋める）、RI がすでにある</td><td>負荷がまばら、変動が大きい、小さな service が多い、空き容量に払いたくない</td></tr>
+        <tr><td>片方にしかない機能</td><td><b>GPU</b>、完全な Windows コンテナ、instance store、ホスト / docker daemon への直接アクセス、bridge / host の network mode、dynamic port mapping、特殊なコンプライアンス（dedicated host）</td><td>各 task が独自の ENI を持つ（awsvpc 必須）、分離性が高い、ephemeral は最大 200 GB</td></tr>
+        <tr><td>スケール</td><td>2 層: task と EC2（capacity provider の managed scaling）</td><td>1 層: task 数のみ</td></tr>
+        <tr><td>運用のオーバーヘッド</td><td>高め: AMI のパッチ、インスタンスの入れ替え、cluster の監視</td><td>低い: <em>serverless containers</em>、<em>no infrastructure to manage</em></td></tr>
+      </table></div>
+      <div class="note ok">短い答え: 問題文に <em>serverless</em>、<em>no server management</em>、<em>least operational overhead</em>、変動する負荷 → <b>Fargate</b>。<em>GPU</em>、<em>cost-optimize steady high-utilization workload</em>、<em>existing Reserved Instances</em>、ホストへのアクセスが必要、または最安の Spot instance → <b>ECS on EC2</b>。</div>
+    </div>
+
+    <div class="block"><span class="eyebrow">コンテナ / コードのアプリケーション向け compute 選択表</span>
+      <div class="tbl"><table>
+        <tr><th>選択肢</th><th>利用者が管理するもの</th><th>選ぶ場面</th><th>選ばない場面</th></tr>
+        <tr><td><b>Lambda</b></td><td>コードのみ（または最大 10 GB のイメージ）</td><td>Event-driven、15 分未満の実行、散発的な負荷、ミリ秒単位の課金</td><td>長時間の実行、接続を保持する WebSocket、GPU、大きすぎる package、cold start が許容できない</td></tr>
+        <tr><td><b>App Runner</b></td><td>イメージまたはソース</td><td>シンプルな Web アプリ / HTTP API、最速でデプロイしたい、インフラの制御は不要</td><td>HTTP 以外の worker、sidecar、細かいネットワーク制御が必要</td></tr>
+        <tr><td><b>ECS Fargate</b></td><td>Task definition、service</td><td>コンテナのマイクロサービス、EC2 を管理したくない、変動する負荷</td><td>GPU が必要、節約のため高密度にしたい、ホスト上の daemon が必要</td></tr>
+        <tr><td><b>ECS on EC2</b></td><td>EC2 + task definition</td><td>GPU、安定した高密度の負荷、既存の RI、ホストのカスタマイズが必要</td><td>OS のパッチを当てたくない小規模チーム</td></tr>
+        <tr><td><b>EKS</b>（EC2 または Fargate）</td><td>Kubernetes の manifest、node group</td><td>すでに Kubernetes を使っている、portable にしたい、k8s エコシステムを使う、multi-cloud / hybrid</td><td>チームが k8s を知らず、特別な理由もない（ECS のほうがシンプルで control plane の費用もかからない）</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Amazon MQ と AppSync（名前を知っていれば十分）</span>
+      <div class="grid2">
+        <div>
+          <ul>
+            <li><b>Amazon MQ</b>: <b>Apache ActiveMQ</b> または <b>RabbitMQ</b> を動かすマネージドな message broker です。<b>MQTT、AMQP、STOMP、OpenWire、JMS</b> といった標準プロトコルで通信する <b>既存アプリケーションを、コードを変えずに移行</b> するときに使います。VPC 内のインスタンス上で動き、HA は active/standby（ActiveMQ は共有 EFS を使用）または cluster（RabbitMQ）。SQS / SNS のように <b>無限にはスケールせず</b>、インスタンスに応じた throughput の上限があります。</li>
+            <li>ルール: <b>新規</b> アプリケーション → SQS / SNS。<b>JMS / AMQP を使う既存アプリを素早く移行したい</b> → Amazon MQ。</li>
+          </ul>
+        </div>
+        <div>
+          <ul>
+            <li><b>AppSync</b>: マネージドな <b>GraphQL</b> サービス（と Pub/Sub API）です。クライアントは 1 回のリクエストで必要なフィールドだけを取得し、<b>resolver</b> が DynamoDB、Lambda、Aurora、OpenSearch、HTTP につなぎます。強みは WebSocket による <b>real-time subscription</b>（チャット、ライブのスコアボード、共同編集アプリ）と、モバイル向けの <b>offline sync</b>（Amplify DataStore）です。認証: API key、IAM、Cognito User Pool、OIDC、Lambda。</li>
+            <li>問題文に <em>GraphQL</em>、<em>real-time updates to many mobile clients</em>、<em>offline data synchronization</em> → AppSync。純粋な REST / WebSocket → API Gateway。</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>private subnet の task で、ECR からのイメージ pull が失敗する</td><td>NAT Gateway、または VPC endpoint ecr.api + ecr.dkr + s3 を追加し、execution role を確認</td><td>task role を直す（アプリケーションの role で、pull とは無関係）</td></tr>
+        <tr><td>ALB の背後で、同じイメージの複数コンテナを 1 台の EC2 に置く</td><td>Bridge mode + dynamic port mapping、instance タイプの target group</td><td>port 80 に固定（衝突する）</td></tr>
+        <tr><td>GPU が必要な ML のトレーニングをコンテナで実行する</td><td>EC2 の GPU インスタンス（p、g ファミリー）上の ECS / EKS</td><td>Fargate（GPU なし）</td></tr>
+        <tr><td>オンプレミスの Kubernetes アプリを manifest のまま AWS に移す</td><td>EKS</td><td>ECS（task definition を書き直す必要がある）</td></tr>
+        <tr><td>コンテナの Web アプリを最速かつ最小限の設定でデプロイする</td><td>App Runner</td><td>ECS + ALB の自前構築、EKS</td></tr>
+        <tr><td>JMS / ActiveMQ を使う Java アプリをコードを変えずに AWS へ移行する</td><td>Amazon MQ</td><td>SQS（API が異なり、コードの変更が必要）</td></tr>
+        <tr><td>モバイルアプリでリアルタイム更新とオフライン動作が必要</td><td>AppSync</td><td>API Gateway REST + polling</td></tr>
+        <tr><td>ECR の古いイメージのコストを節約する</td><td>Lifecycle policy</td><td>定期的に手作業で削除</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>serverless containers, no EC2 to manage <b>→ Fargate</b></span><span>GPU containers, high-density, existing RIs <b>→ ECS on EC2</b></span><span>Kubernetes, portable, multi-cloud <b>→ EKS</b></span><span>deploy web app from container with least effort <b>→ App Runner</b></span><span>container image registry, vulnerability scan <b>→ ECR</b></span><span>pull image / write logs permissions <b>→ task execution role</b></span><span>application calls S3 / DynamoDB <b>→ task role</b></span><span>scale tasks by request count <b>→ service auto scaling</b></span><span>not enough EC2 capacity for tasks <b>→ capacity provider managed scaling</b></span><span>persistent shared storage for containers <b>→ EFS</b></span><span>JMS, AMQP, MQTT, ActiveMQ, RabbitMQ <b>→ Amazon MQ</b></span><span>GraphQL, real-time subscription, offline sync <b>→ AppSync</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">19. ECS Fargate 上の service は動いていますが、DynamoDB への書き込みはすべて AccessDenied になります。コンテナのイメージ pull とログ出力は正常です。どこを直しますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>task definition の task role に DynamoDB の権限を追加します。</b> イメージの pull とログは task execution role の役割で、こちらは正常です。ひっかけ: execution role や instance role を直す選択肢（Fargate にはインスタンスがない）。</p></div>
+      <div class="q"><p class="qt">20. ある会社では 40 個のマイクロサービスが 24 時間 365 日、CPU 70% で安定して動いており、Compute Savings Plans も購入済みです。コンテナのコストを下げたい場合、ECS on EC2 と Fargate のどちらですか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>ECS on EC2</b>（大きなインスタンスに多数の task を詰めて高密度を活かし、EC2 の Reserved があればさらに安い）。Fargate は変動する負荷や、ホストを管理したくないチームに向いています。安定して密な負荷では通常 EC2 のほうが安くなります。（Compute Savings Plans は両方に適用されるので、決め手にはなりません。）</p></div>
+      <div class="q"><p class="qt">21. Kubernetes の経験がないチームが、load balancer の背後でコンテナの Web API を動かし、リクエスト量に応じて自動スケールさせたいと考えています。<em>least operational overhead</em> で選ぶなら？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>AWS App Runner</b>（選択肢に App Runner がなければ ECS Fargate + ALB）。App Runner はビルド、HTTPS、LB、スケールを自動で行います。EKS は不要な Kubernetes の複雑さを持ち込みます。</p></div>
+      <div class="q"><p class="qt">22. オンプレミスの Java アプリケーションが JMS プロトコルで ActiveMQ を使っており、2 週間以内にコードを変えずに AWS へ移す必要があります。何を選びますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Amazon MQ（ActiveMQ エンジン）。</b> SQS / SNS ではコードを AWS の API に変更する必要があります。問題文が <em>new application</em> の場合に SQS / SNS を選びます。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HANDS-ON ============ -->
+<section id="handson">
+  <span class="eyebrow">ハンズオン</span>
+  <h2>ハンズオン: 5 ラボ</h2>
+  <p>順番どおりに進めてください。コマンドはすべて Windows の PowerShell で、AWS CLI v2、profile <code>saa</code>、Region <code>ap-northeast-1</code> を使って実行します。事前に <code>$env:AWS_PROFILE = "saa"</code> と <code>$env:AWS_DEFAULT_REGION = "ap-northeast-1"</code> を設定しておきます。Lab 1、2、4 はほぼ無料です。Lab 3 は <b>ALB と Fargate が時間課金</b> なので、終わったらその日のうちに削除してください（Lab 5）。</p>
+
+  <div class="card">
+    <h3>Lab 1. CRUD API: API Gateway HTTP API + Lambda（Python）+ DynamoDB</h3>
+    <ol class="steps">
+      <li><div><p>partition key <code>id</code> の on-demand の DynamoDB テーブルを作成します:</p>
+<pre><code>aws dynamodb create-table --table-name saa-items `
+  --attribute-definitions AttributeName=id,AttributeType=S `
+  --key-schema AttributeName=id,KeyType=HASH `
+  --billing-mode PAY_PER_REQUEST
+aws dynamodb wait table-exists --table-name saa-items</code></pre></div></li>
+      <li><div><p>Lambda の execution role を作成します。ファイル <code>trust.json</code>:</p>
+<pre><code>{ "Version": "2012-10-17", "Statement": [{ "Effect": "Allow",
+  "Principal": { "Service": "lambda.amazonaws.com" }, "Action": "sts:AssumeRole" }] }</code></pre>
+<p>ファイル <code>ddb-policy.json</code>（このテーブルのみ。Lambda 版の task role にあたります）:</p>
+<pre><code>{ "Version": "2012-10-17", "Statement": [{ "Effect": "Allow",
+  "Action": ["dynamodb:GetItem","dynamodb:PutItem","dynamodb:DeleteItem","dynamodb:Scan"],
+  "Resource": "arn:aws:dynamodb:ap-northeast-1:&lt;account-id&gt;:table/saa-items" }] }</code></pre>
+<pre><code>aws iam create-role --role-name saa-items-lambda-role --assume-role-policy-document file://trust.json
+aws iam attach-role-policy --role-name saa-items-lambda-role `
+  --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+aws iam put-role-policy --role-name saa-items-lambda-role --policy-name ddb --policy-document file://ddb-policy.json</code></pre>
+<p><code>AWSLambdaBasicExecutionRole</code> は CloudWatch Logs への書き込みだけを許可します。DynamoDB の権限は別の inline policy で、1 つのテーブルだけに限定しています。</p></div></li>
+      <li><div><p><code>lambda_function.py</code> を書きます。関数は HTTP API の event（payload v2）を受け取り、method と path で分岐し、<code>statusCode</code> と <code>body</code> を持つオブジェクトを返します（Lambda proxy integration）:</p>
+<pre><code>import json, os, boto3
+table = boto3.resource("dynamodb").Table(os.environ["TABLE"])
+
+def lambda_handler(event, context):
+    method = event["requestContext"]["http"]["method"]
+    path = event.get("rawPath", "/")
+    parts = [p for p in path.split("/") if p]      # ["items"] または ["items","1"]
+    item_id = parts[1] if len(parts) &gt; 1 else None
+    try:
+        if method == "GET" and item_id:
+            r = table.get_item(Key={"id": item_id})
+            body, code = r.get("Item", {}), 200 if "Item" in r else 404
+        elif method == "GET":
+            body, code = table.scan(Limit=50).get("Items", []), 200
+        elif method == "PUT":
+            data = json.loads(event.get("body") or "{}")
+            table.put_item(Item=data)
+            body, code = {"ok": True, "id": data.get("id")}, 200
+        elif method == "DELETE" and item_id:
+            table.delete_item(Key={"id": item_id})
+            body, code = {"deleted": item_id}, 200
+        else:
+            body, code = {"error": "unsupported route"}, 400
+    except Exception as e:
+        body, code = {"error": str(e)}, 500
+    return {"statusCode": code, "headers": {"content-type": "application/json"},
+            "body": json.dumps(body, default=str)}</code></pre>
+<p>注意: DynamoDB の数値は <code>Decimal</code> 型で返るため、<code>json.dumps</code> がエラーにならないよう <code>default=str</code> を指定しています。</p></div></li>
+      <li><div><p>パッケージして function を作成します（Python 3.12、memory 256 MB、timeout 10 秒）。「role cannot be assumed」エラーが出たら、IAM role の反映を数秒待ちます:</p>
+<pre><code>Compress-Archive -Path .\lambda_function.py -DestinationPath .\function.zip -Force
+aws lambda create-function --function-name saa-items-api --runtime python3.12 `
+  --handler lambda_function.lambda_handler --zip-file fileb://function.zip `
+  --role arn:aws:iam::&lt;account-id&gt;:role/saa-items-lambda-role `
+  --memory-size 256 --timeout 10 --environment "Variables={TABLE=saa-items}"</code></pre>
+<p>API を通さず直接テストします（synchronous の <code>RequestResponse</code> 呼び出し）:</p>
+<pre><code>'{"requestContext":{"http":{"method":"GET"}},"rawPath":"/items"}' | Set-Content -Encoding ascii evt.json
+aws lambda invoke --function-name saa-items-api --payload fileb://evt.json out.json
+Get-Content out.json      # 期待値: statusCode 200, body "[]"</code></pre></div></li>
+      <li><div><p>quick create で HTTP API を作成し（Lambda proxy の integration、route <code>$default</code>、auto deploy の stage <code>$default</code> が自動生成されます）、API Gateway が Lambda を呼べるよう権限を付与します（function の resource-based policy）:</p>
+<pre><code>aws apigatewayv2 create-api --name saa-items-http --protocol-type HTTP `
+  --target arn:aws:lambda:ap-northeast-1:&lt;account-id&gt;:function:saa-items-api
+# 結果の ApiId と ApiEndpoint を控えておく
+aws lambda add-permission --function-name saa-items-api --statement-id apigw `
+  --action lambda:InvokeFunction --principal apigateway.amazonaws.com `
+  --source-arn "arn:aws:execute-api:ap-northeast-1:&lt;account-id&gt;:&lt;ApiId&gt;/*"</code></pre>
+<p>Console → API Gateway → 作成した API → <b>Routes</b> を開きます。すべての path を受ける <code>$default</code> しかないので、コード側で <code>rawPath</code> を読む必要があります。同じ integration を指す明示的な route <code>GET /items/{id}</code> を追加し、<code>event["routeKey"]</code> と <code>pathParameters</code> がどう変わるか確認してみましょう。</p></div></li>
+      <li><div><p>curl で CRUD をテストします。PowerShell では <code>curl</code> が Invoke-WebRequest の alias なので <code>curl.exe</code> を使います:</p>
+<pre><code>$API = "https://&lt;ApiId&gt;.execute-api.ap-northeast-1.amazonaws.com"
+curl.exe -s -X PUT "$API/items" -H "content-type: application/json" -d '{\"id\":\"1\",\"name\":\"pen\",\"price\":3}'
+curl.exe -s -X PUT "$API/items" -H "content-type: application/json" -d '{\"id\":\"2\",\"name\":\"book\",\"price\":12}'
+curl.exe -s "$API/items"
+curl.exe -s "$API/items/1"
+curl.exe -s -X DELETE "$API/items/1"
+curl.exe -s -i "$API/items/1"     # 期待値: HTTP 404</code></pre></div></li>
+      <li><div><p>観察: Console → Lambda → Monitor → <b>View CloudWatch logs</b> で <code>REPORT</code> 行を見ると、<code>Duration</code>、<code>Billed Duration</code>、<code>Max Memory Used</code>、初回呼び出し（cold start）では <code>Init Duration</code> があります。すぐにもう一度呼ぶと Init Duration は出ません。<b>Configuration → Concurrency</b> タブで reserved と provisioned concurrency を確認します。API Gateway → stage の <b>Throttling</b> でデフォルトの上限を確認します。</p></div></li>
+      <li><div><p>小さな実験: function の reserved concurrency を <code>0</code> にして API を呼ぶと、すぐに 500 / 429 が返ります。これが関数を緊急「停止」する方法です。試したら reserved concurrency を削除してください。</p></div></li>
+    </ol>
+    <div class="note ok">このラボは always free の範囲内です（Lambda 100万リクエスト、DynamoDB 25 GB、古いアカウントでは最初の 12 か月間 HTTP API 100万リクエスト、AWSドキュメントで要確認）。Lab 4 で比較するため API、Lambda、テーブルは残しておき、Lab 5 で削除します。</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 2. SNS から 2 つの SQS キューへの fan-out、DLQ、filter policy</h3>
+    <ol class="steps">
+      <li><div><p>topic と 3 つのキュー（受信用 2 つ、DLQ 1 つ）を作成します:</p>
+<pre><code>aws sns create-topic --name saa-orders
+aws sqs create-queue --queue-name saa-orders-email
+aws sqs create-queue --queue-name saa-orders-analytics
+aws sqs create-queue --queue-name saa-orders-dlq
+# URL と ARN を取得して控えておく
+aws sqs get-queue-attributes --queue-url &lt;url-analytics&gt; --attribute-names QueueArn</code></pre></div></li>
+      <li><div><p>analytics キューに <code>maxReceiveCount</code> = 3 の DLQ を設定し、実験を速くするため visibility timeout を 5 秒に下げます。ファイル <code>redrive.json</code>（RedrivePolicy の値はネストした JSON 文字列なのでエスケープが必要）:</p>
+<pre><code>{
+  "VisibilityTimeout": "5",
+  "RedrivePolicy": "{\"deadLetterTargetArn\":\"arn:aws:sqs:ap-northeast-1:&lt;account-id&gt;:saa-orders-dlq\",\"maxReceiveCount\":\"3\"}"
+}</code></pre>
+<pre><code>aws sqs set-queue-attributes --queue-url &lt;url-analytics&gt; --attributes file://redrive.json</code></pre></div></li>
+      <li><div><p>SNS が 2 つのキューに送れるよう許可します（キューの access policy。最も忘れやすい手順）。ファイル <code>qpolicy-email.json</code>、analytics も同様に作ります:</p>
+<pre><code>{
+  "Policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"sns.amazonaws.com\"},\"Action\":\"sqs:SendMessage\",\"Resource\":\"arn:aws:sqs:ap-northeast-1:&lt;account-id&gt;:saa-orders-email\",\"Condition\":{\"ArnEquals\":{\"aws:SourceArn\":\"arn:aws:sns:ap-northeast-1:&lt;account-id&gt;:saa-orders\"}}}]}"
+}</code></pre>
+<pre><code>aws sqs set-queue-attributes --queue-url &lt;url-email&gt; --attributes file://qpolicy-email.json
+aws sqs set-queue-attributes --queue-url &lt;url-analytics&gt; --attributes file://qpolicy-analytics.json</code></pre></div></li>
+      <li><div><p>2 つのキューを topic に subscribe し、キュー内の message が元の body になるよう raw message delivery を有効にします:</p>
+<pre><code>aws sns subscribe --topic-arn arn:aws:sns:ap-northeast-1:&lt;account-id&gt;:saa-orders `
+  --protocol sqs --notification-endpoint arn:aws:sqs:ap-northeast-1:&lt;account-id&gt;:saa-orders-email `
+  --attributes RawMessageDelivery=true --return-subscription-arn
+aws sns subscribe --topic-arn arn:aws:sns:ap-northeast-1:&lt;account-id&gt;:saa-orders `
+  --protocol sqs --notification-endpoint arn:aws:sqs:ap-northeast-1:&lt;account-id&gt;:saa-orders-analytics `
+  --attributes RawMessageDelivery=true --return-subscription-arn</code></pre></div></li>
+      <li><div><p>attribute <code>type=normal</code> の message を publish し、10 秒の long polling で両方のキューから受信します:</p>
+<pre><code>aws sns publish --topic-arn arn:aws:sns:ap-northeast-1:&lt;account-id&gt;:saa-orders `
+  --message '{\"orderId\":101,\"total\":40}' `
+  --message-attributes '{\"type\":{\"DataType\":\"String\",\"StringValue\":\"normal\"}}'
+aws sqs receive-message --queue-url &lt;url-email&gt; --wait-time-seconds 10
+aws sqs receive-message --queue-url &lt;url-analytics&gt; --wait-time-seconds 10</code></pre>
+<p>両方のキューに message があれば、それが fan-out です。キューが空なら、手順 3 の access policy を見直します（Console → SNS → Subscriptions → Status 列が Confirmed になっている必要があります）。</p></div></li>
+      <li><div><p>email の subscription に、<code>type=vip</code> だけを受け取る filter policy を追加します:</p>
+<pre><code>aws sns set-subscription-attributes --subscription-arn &lt;arn-sub-email&gt; `
+  --attribute-name FilterPolicy --attribute-value '{\"type\":[\"vip\"]}'</code></pre>
+<p>さらに 2 件の message を publish します。<code>type=vip</code>（orderId 102）と <code>type=normal</code>（orderId 103）です。受信し直すと、email キューには 102 だけ、analytics キューには 102 と 103 の両方があります。読んだ message は <code>aws sqs delete-message --receipt-handle</code> か Console → Purge で削除します。</p></div></li>
+      <li><div><p>DLQ の実験: 新しい message を publish し、analytics キューで <code>receive-message</code> を <b>delete せずに、5 秒以上の間隔をあけて 4 回続けて</b> 実行します。1〜3 回目は message が見え、4 回目は空です。DLQ を確認します:</p>
+<pre><code>aws sqs get-queue-attributes --queue-url &lt;url-dlq&gt; --attribute-names ApproximateNumberOfMessages</code></pre>
+<p><code>maxReceiveCount</code> = 3 を超えて受信されたため、message は DLQ に移っています。Console → SQS → saa-orders-dlq → <b>Start DLQ redrive</b> で元のキューに戻せます。これが試験でいう「redrive」です。</p></div></li>
+      <li><div><p>Console で振り返ります: SNS topic → Subscriptions タブで filter policy を確認。SQS キュー → Monitoring で <code>NumberOfMessagesSent</code>、<code>ApproximateAgeOfOldestMessage</code>（consumer の停止を警告するのによく使うメトリクス）を確認します。</p></div></li>
+    </ol>
+    <div class="note ok">SQS と SNS は毎月 100万リクエストが無料なので、このラボは 0 USD です。キューと topic は放置しても費用はかかりませんが、アカウントをきれいに保つため Lab 5 で削除します。</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 3. コンテナをビルドして ECR へ push し、ALB の背後で ECS Fargate service を動かす</h3>
+    <ol class="steps">
+      <li><div><p>Windows に <b>Docker Desktop</b>（または Rancher Desktop）をインストールし、WSL 2 backend を有効にします。<code>docker version</code> で確認します。フォルダー <code>saa-web</code> を作り、2 つのファイルを置きます:</p>
+<pre><code># index.html
+&lt;h1&gt;SAA week 7: hello from Fargate&lt;/h1&gt;
+
+# Dockerfile
+FROM nginx:alpine
+COPY index.html /usr/share/nginx/html/index.html
+EXPOSE 80</code></pre>
+<pre><code>docker build --platform linux/amd64 -t saa-web:1 .
+docker run -d -p 8080:80 saa-web:1
+curl.exe http://localhost:8080      # h1 の行が表示される
+docker ps; docker stop &lt;container-id&gt;</code></pre>
+<p><code>--platform linux/amd64</code> は、ARM マシンでビルドしても x86 の Fargate でイメージが動くようにするための指定です。</p></div></li>
+      <li><div><p>scan on push を有効にした ECR repository を作り、ログインして tag を付け、push します:</p>
+<pre><code>aws ecr create-repository --repository-name saa-web --image-scanning-configuration scanOnPush=true
+aws ecr get-login-password | docker login --username AWS --password-stdin &lt;account-id&gt;.dkr.ecr.ap-northeast-1.amazonaws.com
+docker tag saa-web:1 &lt;account-id&gt;.dkr.ecr.ap-northeast-1.amazonaws.com/saa-web:1
+docker push &lt;account-id&gt;.dkr.ecr.ap-northeast-1.amazonaws.com/saa-web:1
+aws ecr describe-image-scan-findings --repository-name saa-web --image-id imageTag=1</code></pre>
+<p>完全な <b>image URI</b> を控えておきます。スキャン結果は Console → ECR → saa-web → Images → Vulnerabilities で確認します。</p></div></li>
+      <li><div><p>Console → <b>ECS → Clusters → Create cluster</b>: 名前は <code>saa-cluster</code>、Infrastructure は <b>AWS Fargate (serverless)</b> だけにチェックします。EC2 は 1 台も作成されません。</p></div></li>
+      <li><div><p><b>Task definitions → Create new task definition</b>: family <code>saa-web-task</code>、Launch type <b>Fargate</b>、OS Linux/X86_64、CPU <b>.25 vCPU</b>、Memory <b>.5 GB</b>。<b>Task role</b>: 空のまま（nginx は AWS を呼ばない）。<b>Task execution role</b>: <code>ecsTaskExecutionRole</code> を選択（なければ Console が自動作成。この role が ECR からの pull とログ出力を行います）。Container: name <code>web</code>、push した Image URI、port mapping 80/TCP、CloudWatch のログ（awslogs）を有効化。Create。</p></div></li>
+      <li><div><p>cluster 内で <b>Services → Create</b>: Compute options は <b>Launch type Fargate</b>、Application type は Service、task definition は <code>saa-web-task</code>、service name は <code>saa-web-svc</code>、Desired tasks は <b>1</b>。Networking: default VPC（または第4週のラボの VPC）、<b>public subnet</b> を 2 つ選び、0.0.0.0/0 から TCP 80 を許可する新しい Security Group <code>saa-task-sg</code>（後で絞ります）、<b>Public IP: Turned on</b>（NAT なしで task が ECR からイメージを pull できるように）。Load balancing: <b>Application Load Balancer</b> → Create new、名前 <code>saa-alb</code>、listener 80、新しい target group <code>saa-web-tg</code>（type IP は自動選択）、health check path <code>/</code>。Create service。</p></div></li>
+      <li><div><p>Tasks タブで 1 つの task が <b>Running</b> になり、target group が <b>healthy</b> になるまで 2〜3 分待ちます。ALB の DNS を取得します: Console → EC2 → Load Balancers → saa-alb、または:</p>
+<pre><code>aws elbv2 describe-load-balancers --names saa-alb --query "LoadBalancers[0].DNSName" --output text
+curl.exe http://&lt;dns-cua-alb&gt;</code></pre>
+<p>ブラウザで開くと h1 の行が表示されます。task が <code>CannotPullContainerError</code> で失敗する場合: task に public IP がないか、execution role が間違っています（7 章の task role と execution role の表のとおりです）。</p></div></li>
+      <li><div><p>観察: task をクリック → Networking タブで、task 固有の <b>ENI</b> と private IP（awsvpc）を確認します。Service → <b>Update</b> → Desired tasks を 2 → target group に 2 つの target ができ、ALB が負荷を分散します。1 に戻します。Service → <b>Auto scaling</b> タブで、<code>ALBRequestCountPerTarget</code> による target tracking の設定方法を確認します。セキュリティの強化: <code>saa-task-sg</code> を ALB の Security Group からの 80 だけを許可するよう修正します。</p></div></li>
+    </ol>
+    <div class="note bad">ALB は約 0.02〜0.03 USD/時間 + LCU、Fargate 0.25 vCPU / 0.5 GB は約 0.015 USD/時間です（東京の料金、AWSドキュメントで要確認）。一晩放置すると約 0.5 USD、1 か月忘れると約 30 USD になります。Lab 3 が終わったらすぐ Lab 5 で ALB と service を削除するか、少なくとも desired tasks = 0 にして ALB を削除してください。</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 4. CRUD API を CDK（TypeScript）で作り直し、Console での作業と比較する</h3>
+    <ol class="steps">
+      <li><div><p>Node.js LTS（winget）と CDK CLI をインストールし、アカウントを一度だけ bootstrap します（CDK のデプロイ用に S3 bucket と role を作成）:</p>
+<pre><code>winget install OpenJS.NodeJS.LTS
+npm install -g aws-cdk
+cdk --version
+aws sts get-caller-identity --query Account --output text
+cdk bootstrap aws://&lt;account-id&gt;/ap-northeast-1</code></pre></div></li>
+      <li><div><p>project を作成し、Lab 1 の Lambda のコードを <code>lambda/</code> フォルダーにコピーします:</p>
+<pre><code>mkdir saa-cdk-api; cd saa-cdk-api
+cdk init app --language typescript
+mkdir lambda; copy ..\lambda_function.py lambda\</code></pre></div></li>
+      <li><div><p><code>lib/saa-cdk-api-stack.ts</code> の内容を次の短いコードに置き換えます（Table + Function + HttpApi）:</p>
+<pre><code>import * as cdk from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as apigwv2 from 'aws-cdk-lib/aws-apigatewayv2';
+import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
+
+export class SaaCdkApiStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    const table = new dynamodb.Table(this, 'Items', {
+      partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,   // cdk destroy でテーブルも削除する
+    });
+
+    const fn = new lambda.Function(this, 'ItemsFn', {
+      runtime: lambda.Runtime.PYTHON_3_12,
+      handler: 'lambda_function.lambda_handler',
+      code: lambda.Code.fromAsset('lambda'),
+      memorySize: 256,
+      timeout: cdk.Duration.seconds(10),
+      environment: { TABLE: table.tableName },
+    });
+    table.grantReadWriteData(fn);                  // このテーブル用の IAM policy を自動生成
+
+    const api = new apigwv2.HttpApi(this, 'ItemsApi', {
+      defaultIntegration: new HttpLambdaIntegration('ItemsInt', fn),
+    });
+    new cdk.CfnOutput(this, 'ApiUrl', { value: api.apiEndpoint });
+  }
+}</code></pre>
+<p><code>aws-apigatewayv2-integrations</code> の import でエラーが出たら、<code>package.json</code> の <code>aws-cdk-lib</code> を新しい 2.x に上げてから <code>npm install</code> します（このモジュールは安定版として aws-cdk-lib に取り込まれています。必要な最小バージョンは AWSドキュメントで要確認）。</p></div></li>
+      <li><div><p>生成された CloudFormation テンプレートを見て Lab 1 の手作業の手順数と比べ、デプロイします:</p>
+<pre><code>npm run build
+cdk synth | Select-String -Pattern "Type: AWS::" </code></pre>
+<p>次がすべて揃っています: <code>AWS::DynamoDB::Table</code>、<code>AWS::IAM::Role</code>、<code>AWS::IAM::Policy</code>、<code>AWS::Lambda::Function</code>、<code>AWS::Lambda::Permission</code>、<code>AWS::ApiGatewayV2::Api</code>、<code>Integration</code>、<code>Route</code>、<code>Stage</code>。Lab 1 ではこれらを一つずつ手作業で作りました。</p>
+<pre><code>cdk deploy      # IAM changes について聞かれたら y を入力
+# Output: SaaCdkApiStack.ApiUrl = https://xxxx.execute-api.ap-northeast-1.amazonaws.com</code></pre></div></li>
+      <li><div><p>新しい URL で Lab 1 と同じテストをします（<code>curl.exe</code> で PUT、GET、DELETE）。Console → CloudFormation → stack <code>SaaCdkApiStack</code> → Resources タブで、すべての resource に stack のタグが付いていることを確認します。<code>memorySize</code> を 512 に変えて <code>cdk diff</code> で差分を見てから、もう一度 <code>cdk deploy</code> します。</p></div></li>
+      <li><div><p>比較: CDK では role、policy、API Gateway が Lambda を呼ぶ permission、log group がすべて正しく一貫して生成され、コマンド 1 つできれいに削除できます。試験で <em>repeatable deployments across accounts / Regions</em> に <em>infrastructure as code</em> がよく選ばれるのはこのためです。すぐに片付けます:</p>
+<pre><code>cdk destroy     # y を入力</code></pre></div></li>
+    </ol>
+    <div class="note">CDK の bootstrap は S3 bucket <code>cdk-hnb659fds-assets-...</code> といくつかの IAM role を残します。ほとんど費用はかからないので、第8週（CloudFormation、Elastic Beanstalk、CDK）のために残しておきます。</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 5. 片付けと Billing の確認</h3>
+    <ol class="steps">
+      <li><div><p>ECS と ALB（時間課金なので最初に削除）:</p>
+<pre><code>aws ecs update-service --cluster saa-cluster --service saa-web-svc --desired-count 0
+aws ecs delete-service --cluster saa-cluster --service saa-web-svc --force
+aws elbv2 delete-load-balancer --load-balancer-arn &lt;alb-arn&gt;
+aws elbv2 delete-target-group --target-group-arn &lt;tg-arn&gt;
+aws ecs delete-cluster --cluster saa-cluster
+aws ecs deregister-task-definition --task-definition saa-web-task:1
+aws ecr delete-repository --repository-name saa-web --force
+aws ec2 delete-security-group --group-id &lt;sg-task&gt;; aws ec2 delete-security-group --group-id &lt;sg-alb&gt;</code></pre>
+<p>Console → EC2 → Load Balancers と Target Groups が空であること、ECS → Clusters が空であることを確認します。手元のマシンでは必要に応じて <code>docker image prune -a</code>。</p></div></li>
+      <li><div><p>Lab 1 と CDK の API、Lambda、DynamoDB:</p>
+<pre><code>aws apigatewayv2 delete-api --api-id &lt;ApiId&gt;
+aws lambda delete-function --function-name saa-items-api
+aws dynamodb delete-table --table-name saa-items
+aws iam delete-role-policy --role-name saa-items-lambda-role --policy-name ddb
+aws iam detach-role-policy --role-name saa-items-lambda-role --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+aws iam delete-role --role-name saa-items-lambda-role
+aws logs delete-log-group --log-group-name /aws/lambda/saa-items-api
+cdk destroy    # Lab 4 でまだ destroy していなければ。CloudFormation → Stacks に SaaCdkApiStack が残っていないか確認</code></pre></div></li>
+      <li><div><p>Lab 2 の SNS と SQS:</p>
+<pre><code>aws sns delete-topic --topic-arn arn:aws:sns:ap-northeast-1:&lt;account-id&gt;:saa-orders
+aws sqs delete-queue --queue-url &lt;url-email&gt;
+aws sqs delete-queue --queue-url &lt;url-analytics&gt;
+aws sqs delete-queue --queue-url &lt;url-dlq&gt;</code></pre></div></li>
+      <li><div><p>全体の確認: <code>aws resourcegroupstaggingapi get-resources --region ap-northeast-1 --query "ResourceTagMappingList[].ResourceARN"</code> で Region に残っている resource を一覧表示します（すべての種類は出ませんが、ALB、ECS、Lambda、SQS を拾うには十分です）。<b>Billing and Cost Management → Bills</b> を開き、Elastic Load Balancing と ECS（Fargate）の行が数セントであることを確認します。<b>Cost Explorer</b> を開き、直近 7 日をサービス別に絞り込みます。</p></div></li>
+    </ol>
+    <div class="note ok">今週は ALB と Fargate を当日中に削除すれば、請求は 2 USD 未満です。第8週は KMS key（key あたり 1 USD/月）といくつかの有料セキュリティサービスがあるので、ラボの前に費用の項目を読んでおいてください。</div>
+  </div>
+</section>
+
+<!-- ============ 確認ポイント ============ -->
+<section id="moc">
+  <span class="eyebrow">確認ポイント</span>
+  <h2>資料を見ずに自分で説明できるようにする 2 つの問い</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>1. SQS、SNS、EventBridge、Kinesis はそれぞれいつ使うか？</h3>
+      <p style="font-size:.94rem">回答の骨組みのヒント（隠してから自分で言ってみる）:</p>
+      <ul style="font-size:.94rem">
+        <li><b>SQS</b>: キュー、consumer が <b>pull</b>、各 message は <b>1 つ</b> の consumer が処理して削除。<b>decouple</b> と <b>バッファ</b>（Web 層 → キュー → worker）に使う。Standard: 無制限、at-least-once。FIFO: 順序 + exactly-once、300/3,000 msg/s。visibility timeout、DLQ、long polling を覚えておく。</li>
+        <li><b>SNS</b>: pub/sub、<b>複数</b> の subscriber へ即座に <b>push</b>、保存しない。<b>fan-out</b>（SNS → 複数の SQS）と <b>人</b> への送信（email、SMS、push）に使う。絞り込みは filter policy。</li>
+        <li><b>EventBridge</b>: event bus、rule が <b>内容でルーティング</b>。ソースは AWS サービス、SaaS partner、自社アプリ。<b>スケジュール</b>、<b>archive / replay</b>、schema registry がある。複数サービス間の event-driven な統合とスケジュール実行に使う。</li>
+        <li><b>Kinesis</b>: MB/s 規模の <b>リアルタイムストリーミング</b>、データは shard に 24 時間〜365 日保持、<b>複数の consumer が同じデータを読む</b>、<b>replay</b>、partition key ごとの順序。S3 / Redshift / OpenSearch にほぼリアルタイムで流し込むだけなら Firehose。</li>
+        <li>それぞれ例を 1 つ挙げられること: 注文を SQS に入れて worker が処理。注文の通知を SNS で在庫 + 請求 + email に送る。EC2 の terminate で EventBridge がチケットを作る。clickstream を Kinesis で 1 分単位に分析。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>2. ECS on EC2 と Fargate の違いは？</h3>
+      <p style="font-size:.94rem">回答の骨組みのヒント:</p>
+      <ul style="font-size:.94rem">
+        <li>どちらも同じ ECS（cluster、task definition、service）で、違いは <b>ホストを誰が管理するか</b>。EC2 は利用者（instance type、AMI、OS パッチ、ECS agent、ASG）。Fargate は AWS で、利用者は task の vCPU / memory を宣言するだけ。</li>
+        <li><b>課金</b>: EC2 は稼働中のインスタンス単位（空き容量にも払う、RI / Spot が使える）。Fargate は task ごとの vCPU と memory で秒単位。</li>
+        <li><b>EC2 を選ぶ場面</b>: GPU、安定した負荷を高密度にして安くする、ホスト / docker daemon へのアクセスが必要、bridge / host の network mode、既存の RI。<b>Fargate を選ぶ場面</b>: <em>serverless</em>、<em>least operational overhead</em>、変動する負荷、小さな service が多い、task ごとに独自 ENI で分離（awsvpc 必須）。</li>
+        <li><b>スケール</b>: EC2 は 2 層（task とインスタンス、capacity provider の managed scaling が必要）。Fargate は task の 1 層のみ。</li>
+        <li>説明できること: どちらの launch type でも、task role（アプリケーション）と task execution role（ECR からの pull、ログ出力）は別物。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 試験キーワード ============ -->
+<section id="tukhoa">
+  <span class="eyebrow">クイックレビュー</span>
+  <h2>第7週のキーワード表</h2>
+  <div class="tbl"><table>
+    <tr><th>問題文にある語句</th><th>すぐに思い浮かべるもの</th></tr>
+    <tr><td><em>event-driven</em>、<em>pay only for compute used</em>、15 分未満の実行</td><td>Lambda</td></tr>
+    <tr><td><em>cold start</em>、<em>consistent low latency</em></td><td>Provisioned concurrency（Java なら SnapStart）</td></tr>
+    <tr><td><em>limit concurrency</em>、downstream の保護、関数の緊急停止</td><td>Reserved concurrency</td></tr>
+    <tr><td>Lambda から private な RDS に接続 / VPC から Internet に出る</td><td>VPC 内の Lambda / private subnet + NAT Gateway</td></tr>
+    <tr><td>失敗した async イベントを失ってはいけない</td><td>Lambda の DLQ または on-failure destination</td></tr>
+    <tr><td><em>customize content at the edge</em></td><td>Lambda@Edge。軽い処理 → CloudFront Functions</td></tr>
+    <tr><td>Lambda への <em>lowest cost</em> な API プロキシ、JWT</td><td>HTTP API</td></tr>
+    <tr><td><em>API keys</em>、<em>usage plans</em>、<em>caching</em>、<em>WAF</em>、private API</td><td>REST API</td></tr>
+    <tr><td>API Gateway からの 429</td><td>Throttling: 上限の引き上げ、usage plan、または SQS バッファ</td></tr>
+    <tr><td>バックエンドが 29 秒超、504</td><td>非同期化（SQS、Step Functions）</td></tr>
+    <tr><td>ログインしたアプリのユーザーが API を呼ぶ</td><td>Cognito User Pool authorizer / JWT authorizer</td></tr>
+    <tr><td><em>two-way real-time</em>、チャット</td><td>WebSocket API（または AppSync subscription）</td></tr>
+    <tr><td><em>orchestrate</em>、<em>visual workflow</em>、<em>human approval</em>、コード不要の retry</td><td>Step Functions（Standard。高頻度で短い処理は Express）</td></tr>
+    <tr><td><em>decouple</em>、<em>buffer</em>、<em>absorb traffic spikes</em></td><td>SQS</td></tr>
+    <tr><td><em>exactly once</em>、<em>preserve order</em></td><td>SQS FIFO（MessageGroupId）/ SNS FIFO</td></tr>
+    <tr><td><em>processed twice</em>、duplicate processing</td><td>Visibility timeout が短すぎる</td></tr>
+    <tr><td><em>poison message</em>、エラーを繰り返す message</td><td>DLQ + maxReceiveCount、redrive</td></tr>
+    <tr><td><em>reduce cost of polling</em>、empty responses</td><td>Long polling（WaitTimeSeconds 20）</td></tr>
+    <tr><td>256 KB を超える message</td><td>SQS Extended Client Library（S3）</td></tr>
+    <tr><td><em>scale workers based on queue length</em></td><td>ASG + ApproximateNumberOfMessagesVisible / backlog per instance</td></tr>
+    <tr><td><em>fan-out</em>、<em>notify multiple systems</em>、email / SMS / push</td><td>SNS（→ 複数の SQS）</td></tr>
+    <tr><td><em>subscribers receive only certain messages</em></td><td>SNS filter policy</td></tr>
+    <tr><td><em>react to AWS events</em>、<em>SaaS events</em>、<em>route by content</em></td><td>EventBridge rule / partner bus</td></tr>
+    <tr><td><em>cron</em>、<em>schedule</em>、<em>time zone</em>、<em>one-time</em></td><td>EventBridge Scheduler</td></tr>
+    <tr><td><em>replay events</em>、過去のイベントの再処理</td><td>EventBridge archive + replay（または Kinesis の retention）</td></tr>
+    <tr><td><em>real-time streaming</em>、clickstream、IoT、MB/s、複数の consumer</td><td>Kinesis Data Streams（shard、enhanced fan-out）</td></tr>
+    <tr><td>S3 / Redshift / OpenSearch に <em>near real-time</em> で流し込む、<em>least effort</em></td><td>Data Firehose（+ Lambda transform、Parquet）</td></tr>
+    <tr><td><em>SQL on streaming data</em>、windowed analytics</td><td>Managed Service for Apache Flink</td></tr>
+    <tr><td><em>hot shard</em>、ProvisionedThroughputExceeded</td><td>より分散する partition key、shard の追加、on-demand</td></tr>
+    <tr><td><em>serverless containers</em>、<em>no infrastructure to manage</em></td><td>Fargate</td></tr>
+    <tr><td>GPU、高密度、既存の RI、ホストへのアクセスが必要</td><td>ECS on EC2</td></tr>
+    <tr><td><em>Kubernetes</em>、<em>portable</em>、hybrid / multi-cloud</td><td>EKS</td></tr>
+    <tr><td>コンテナの Web アプリを <em>fastest</em>、<em>least overhead</em> でデプロイ</td><td>App Runner</td></tr>
+    <tr><td>コンテナのイメージ pull / ログ出力のエラー vs アプリの AccessDenied</td><td>Task execution role vs task role</td></tr>
+    <tr><td><em>JMS</em>、<em>AMQP</em>、<em>MQTT</em>、ActiveMQ、RabbitMQ、コードを変えずに移行</td><td>Amazon MQ</td></tr>
+    <tr><td><em>GraphQL</em>、<em>real-time subscription</em>、<em>offline sync</em></td><td>AppSync</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ CHECKLIST ============ -->
+<section id="checklist">
+  <span class="eyebrow">進捗</span>
+  <h2>第7週チェックリスト</h2>
+  <p style="font-size:.94rem;color:var(--muted)">ここでのチェックはこの端末で自分の進捗を追うためのものです。項目が終わったら、セッションで Claude に伝えて <code>AWS-SAA-checklist.md</code> にチェックを入れてもらいます。</p>
+  <div class="card">
+    <h4>理論</h4>
+    <label class="check"><input type="checkbox" id="c1" data-ck><span>Lambda: 制限、concurrency、layer、VPC 内での実行、event source</span></label>
+    <label class="check"><input type="checkbox" id="c2" data-ck><span>API Gateway: REST と HTTP API、throttling、キャッシュ、authorizer</span></label>
+    <label class="check"><input type="checkbox" id="c3" data-ck><span>Step Functions</span></label>
+    <label class="check"><input type="checkbox" id="c4" data-ck><span>SQS: standard と FIFO、DLQ、visibility timeout、long polling</span></label>
+    <label class="check"><input type="checkbox" id="c5" data-ck><span>SNS: topic、fan-out、filter policy</span></label>
+    <label class="check"><input type="checkbox" id="c6" data-ck><span>EventBridge</span></label>
+    <label class="check"><input type="checkbox" id="c7" data-ck><span>Kinesis: Data Streams、Firehose、Data Analytics（Managed Flink）、Video Streams</span></label>
+    <label class="check"><input type="checkbox" id="c8" data-ck><span>ECS、EKS、Fargate、ECR、App Runner</span></label>
+    <label class="check"><input type="checkbox" id="c9" data-ck><span>Amazon MQ、AppSync（名前を知っていれば十分）</span></label>
+    <h4>ハンズオン</h4>
+    <label class="check"><input type="checkbox" id="c10" data-ck><span>API Gateway + Lambda + DynamoDB で CRUD API を作り、curl でテスト</span></label>
+    <label class="check"><input type="checkbox" id="c11" data-ck><span>SNS から 2 つの SQS キューへ fan-out し、1 つのキューに DLQ を設定、filter policy を試す</span></label>
+    <label class="check"><input type="checkbox" id="c12" data-ck><span>コンテナをビルドして ECR へ push し、ALB の背後で Fargate で動かす</span></label>
+    <label class="check"><input type="checkbox" id="c13" data-ck><span>CRUD API を CDK で作り直し、console での作業と比較</span></label>
+    <h4>確認ポイント</h4>
+    <label class="check"><input type="checkbox" id="c14" data-ck><span>SQS、SNS、EventBridge、Kinesis をいつ使うか説明できる</span></label>
+    <label class="check"><input type="checkbox" id="c15" data-ck><span>ECS on EC2 と Fargate の違いを説明できる</span></label>
+    <h4>その他</h4>
+    <label class="check"><input type="checkbox" id="c16" data-ck><span>ALB、ECS service / cluster、ECR、API、Lambda、DynamoDB を削除し cdk destroy 済み。今週の Billing は 2 USD 未満</span></label>
+    <label class="check"><input type="checkbox" id="c17" data-ck><span>第7週の quiz で 80% 以上</span></label>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  // Xem đáp án
+  document.querySelectorAll('[data-reveal]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var a=b.parentElement.querySelector('.ans');
+      a.hidden=!a.hidden; b.textContent=a.hidden?'答えを見る':'答えを隠す';
+    });
+  });
+  // Checklist lưu trên máy này
+  var boxes=document.querySelectorAll('[data-ck]'), KEY='saa-tuan-07';
+  var saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  function update(){
+    var n=0; boxes.forEach(function(c){ c.closest('.check').classList.toggle('done',c.checked); if(c.checked)n++; });
+    document.getElementById('bar').style.width=(n/boxes.length*100)+'%';
+    document.getElementById('pct').textContent=n+'/'+boxes.length;
+  }
+  boxes.forEach(function(c){
+    if(saved[c.id])c.checked=true;
+    c.addEventListener('change',function(){ saved[c.id]=c.checked; try{ localStorage.setItem(KEY,JSON.stringify(saved)); }catch(e){} update(); });
+  });
+  update();
+  // Đánh dấu mục đang đọc
+  var links=document.querySelectorAll('.toc a'), secs=[];
+  links.forEach(function(l){ var s=document.querySelector(l.getAttribute('href')); if(s)secs.push([s,l]); });
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ links.forEach(function(l){l.classList.remove('active')}); secs.forEach(function(p){ if(p[0]===e.target)p[1].classList.add('active'); }); } }); },{rootMargin:'-20% 0px -70% 0px'});
+    secs.forEach(function(p){ io.observe(p[0]); });
+  }
+})();
+</script>

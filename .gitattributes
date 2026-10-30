@@ -1,0 +1,4 @@
+# Giữ LF cho mọi file văn bản để diff trên GitHub gọn, kể cả khi sửa trên Windows.
+* text=auto eol=lf
+*.png binary
+*.jpg binary

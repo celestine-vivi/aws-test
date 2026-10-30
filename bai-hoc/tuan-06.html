@@ -1,0 +1,1008 @@
+<title>SAA Tuần 6 Database</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky mục lục bên trái (desktop), cột nội dung 760px bên phải; xếp một cột ở màn hẹp. */
+:root{
+  --bg:#f2f4f7; --surface:#ffffff; --surface-2:#e9edf2; --line:#d3dae3;
+  --fg:#172030; --muted:#5a6676; --accent:#1c6e8c; --accent-soft:#dcecf3;
+  --warm:#b35a00; --warm-soft:#fbe9d6; --ok:#2a7d4f; --ok-soft:#dcf0e4; --bad:#b3362b; --bad-soft:#f8dedb;
+  --display:"Manrope","IBM Plex Sans",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+a{color:var(--accent)}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:800}
+h2{font-size:1.5rem;font-weight:800;padding-top:8px}
+h3{font-size:1.12rem;font-weight:700}
+h4{font-size:.95rem;font-weight:700}
+p{margin:0}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+pre{font-family:var(--mono);font-size:.84rem;line-height:1.5;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:0}
+pre code{background:none;padding:0;font-size:inherit}
+em{color:var(--warm);font-style:italic}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* Header */
+.hero{max-width:1120px;margin:0 auto;padding-block:36px 20px;display:flex;flex-direction:column;gap:12px}
+.hero .lead{max-width:62ch;color:var(--muted);font-size:1.02rem}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.88rem;color:var(--muted)}
+.meta b{color:var(--fg);font-weight:600}
+.progress{display:flex;align-items:center;gap:12px;font-size:.88rem;color:var(--muted)}
+.bar{flex:1;max-width:320px;height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+
+/* Two columns */
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;align-items:start}
+.toc{position:sticky;top:max(12px,env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:2px;font-size:.9rem}
+.toc a{color:var(--muted);text-decoration:none;padding:6px 10px;border-left:2px solid var(--line);display:block}
+.toc a:hover,.toc a.active{color:var(--fg);border-left-color:var(--accent)}
+.toc .grp{margin-top:10px}
+main{display:flex;flex-direction:column;gap:56px;min-width:0;max-width:780px}
+section{display:flex;flex-direction:column;gap:18px;scroll-margin-top:16px}
+@media (max-width:860px){ .wrap{grid-template-columns:1fr;gap:24px} .toc{position:static;flex-direction:row;flex-wrap:wrap;gap:6px} .toc a{border:1px solid var(--line);border-radius:99px;padding:4px 10px} .toc .grp{margin:0} .toc a.active{border-color:var(--accent)} }
+
+/* Blocks */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.block{display:flex;flex-direction:column;gap:8px}
+.block > .eyebrow{color:var(--accent)}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:5px}
+li::marker{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.kw{display:flex;flex-wrap:wrap;gap:8px}
+.kw span{background:var(--warm-soft);color:var(--warm);border-radius:4px;padding:3px 9px;font-size:.86rem;font-style:italic}
+.kw span b{font-style:normal;font-weight:600;color:var(--fg)}
+.note{border-left:3px solid var(--warm);background:var(--warm-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.94rem}
+.note.ok{border-color:var(--ok);background:var(--ok-soft)}
+.note.bad{border-color:var(--bad);background:var(--bad-soft)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;font-size:.84rem}
+tr:last-child td{border-bottom:0}
+td.c{text-align:center}
+
+/* Checklist */
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:6px;cursor:pointer}
+.check:hover{background:var(--surface-2)}
+.check input{margin-top:5px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.check.done{color:var(--muted);text-decoration:line-through}
+
+/* Quiz reveal */
+.q{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.q .qt{font-weight:500}
+.q button{align-self:flex-start;font:inherit;font-size:.86rem;padding:5px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer}
+.q button:hover{background:var(--accent);color:var(--surface)}
+.q button:focus-visible,.check input:focus-visible,.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.q .ans{font-size:.94rem;border-top:1px dashed var(--line);padding-top:8px}
+.q .ans b{color:var(--ok)}
+
+/* Steps */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:12px;padding:0;list-style:none}
+.steps li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:start}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--mono);font-size:.8rem;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:500;margin-top:2px}
+.steps li > div{display:flex;flex-direction:column;gap:6px;min-width:0}
+
+/* Flow diagram */
+.flow{display:flex;flex-direction:column;gap:0;align-items:stretch;max-width:520px}
+.flow .n{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:.94rem}
+.flow .n .tag{font-family:var(--mono);font-size:.74rem;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.tag.deny{background:var(--bad-soft);color:var(--bad)} .tag.allow{background:var(--ok-soft);color:var(--ok)} .tag.next{background:var(--surface-2);color:var(--muted)}
+.flow .arrow{height:22px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--mono);font-size:.78rem}
+.flow .arrow::before{content:"";width:1px;height:100%;background:var(--line);position:absolute}
+.flow .arrow{position:relative} .flow .arrow span{background:var(--bg);padding:0 6px;position:relative}
+
+svg text{font-family:var(--body)}
+.diag{overflow-x:auto}
+.diag svg{width:100%;max-width:700px;height:auto;display:block}
+.sv-region{fill:var(--surface);stroke:var(--accent)} .sv-az{fill:var(--accent-soft);stroke:var(--accent)} .sv-edge{fill:var(--warm-soft);stroke:var(--warm)}
+.sv-t{fill:var(--fg);font-size:13px} .sv-m{fill:var(--muted);font-size:11px} .sv-line{stroke:var(--line)}
+.sv-ok{fill:var(--ok-soft);stroke:var(--ok)} .sv-accent{stroke:var(--accent)} .sv-warm{stroke:var(--warm)}
+@media (prefers-reduced-motion: reduce){ .bar i{transition:none} }
+</style>
+
+<header class="hero">
+  <span class="eyebrow">AWS SAA-C03 · Lộ trình 12 tuần · Tuần 6</span>
+  <h1>Database: RDS, Aurora, DynamoDB, ElastiCache và các DB chuyên dụng</h1>
+  <p class="lead">Tuần này học cách chọn đúng database cho từng bài toán: quan hệ (RDS, Aurora), key-value (DynamoDB), cache (ElastiCache, DAX), kho dữ liệu phân tích (Redshift), di chuyển dữ liệu (DMS, SCT) và nhận diện nhóm DB chuyên dụng. Hai điểm bắt buộc nắm chắc: Multi-AZ là cho <em>high availability</em>, Read Replica là cho <em>scale read</em>; và nhìn đề bài là biết chọn RDS, Aurora, DynamoDB hay ElastiCache.</p>
+  <div class="meta"><span>Nhịp học: <b>1,5 đến 2 giờ/ngày</b></span><span>Domain liên quan: <b>RES 26%</b>, <b>PERF 24%</b></span><span>Chi phí lab tuần này: <b>1 đến 3 USD</b> nếu xóa RDS trong ngày</span></div>
+  <div class="progress"><span>Tiến độ checklist</span><div class="bar"><i id="bar"></i></div><span id="pct">0/15</span></div>
+</header>
+
+<div class="wrap">
+<nav class="toc" aria-label="Mục lục">
+  <a href="#ke-hoach">Kế hoạch 7 ngày</a>
+  <span class="grp eyebrow">Lý thuyết</span>
+  <a href="#rds">1. RDS</a>
+  <a href="#aurora">2. Aurora</a>
+  <a href="#dynamodb">3. DynamoDB</a>
+  <a href="#elasticache">4. ElastiCache</a>
+  <a href="#redshift">5. Redshift</a>
+  <a href="#dms">6. DMS và SCT</a>
+  <a href="#nhandien">7. DB chuyên dụng (nhận diện)</a>
+  <span class="grp eyebrow">Thực hành</span>
+  <a href="#handson">Hands-on 5 lab</a>
+  <a href="#moc">Mốc kiểm tra</a>
+  <a href="#tukhoa">Bảng từ khóa đề thi</a>
+  <a href="#checklist">Checklist tuần</a>
+</nav>
+
+<main>
+
+<section id="ke-hoach">
+  <h2>Kế hoạch 7 ngày</h2>
+  <p>RDS Multi-AZ tính tiền theo giờ nên lab 1 và 2 dồn vào một ngày rồi xóa ngay. DynamoDB và Lambda nằm trong Free Tier always free nên để thong thả hơn.</p>
+  <div class="tbl"><table>
+    <tr><th>Ngày</th><th>Lý thuyết</th><th>Hands-on</th></tr>
+    <tr><td>1</td><td>RDS: Multi-AZ, Read Replica, backup, encryption, RDS Proxy</td><td>Đọc kỹ lab 1 và 2, chưa tạo gì. Kiểm tra Budget còn hoạt động</td></tr>
+    <tr><td>2</td><td>Aurora: endpoint, Global Database, Serverless v2</td><td>Lab 1 tạo RDS Multi-AZ, ép failover; Lab 2 read replica; xóa cả hai trong ngày</td></tr>
+    <tr><td>3</td><td>DynamoDB: capacity, GSI/LSI, DAX, Streams, TTL, Global Table</td><td>Lab 3 bảng DynamoDB + Lambda ghi đọc</td></tr>
+    <tr><td>4</td><td>ElastiCache: Redis với Memcached, chiến lược cache</td><td>Lab 4 bật TTL và Streams, xem item hết hạn bị xóa</td></tr>
+    <tr><td>5</td><td>Redshift, DMS và SCT, nhận diện Neptune, DocumentDB, Keyspaces, Timestream, QLDB, MemoryDB</td><td>Lab 5 dọn dẹp toàn bộ, kiểm tra Billing</td></tr>
+    <tr><td>6 đến 7</td><td>Ôn hai mốc kiểm tra, đọc lại bảng từ khóa và bảng "đề nói gì → chọn gì"</td><td>Nói "cho quiz" trong session để nhận <code>quiz/tuan-06.md</code> (30 câu), cần đạt 80%</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ 1. RDS ============ -->
+<section id="rds">
+  <span class="eyebrow">Lý thuyết 1 / 7</span>
+  <h2>Amazon RDS: Multi-AZ, Read Replica, backup, encryption, RDS Proxy</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <ul>
+        <li><b>RDS</b> là database quan hệ managed: AWS lo cài đặt, vá OS và engine, backup, Multi-AZ, monitoring. Bạn không SSH vào được máy, chỉ kết nối qua endpoint DNS. Engine: <b>MySQL, PostgreSQL, MariaDB, Oracle, SQL Server, Db2</b>, cộng Aurora (học mục 2).</li>
+        <li>Mỗi DB instance chạy trên một instance class (<code>db.t3.micro</code>, <code>db.m6g.large</code>…), có EBS storage gp3 hoặc io1/io2, nằm trong một subnet group của VPC, mở cổng qua Security Group (MySQL 3306, PostgreSQL 5432, SQL Server 1433).</li>
+        <li><b>Storage autoscaling</b>: đặt "maximum storage threshold", khi dung lượng còn dưới 10% RDS tự tăng, không downtime. Chỉ tăng được, không tự giảm.</li>
+        <li><b>RDS Custom</b> (Oracle, SQL Server): bạn được quyền vào OS và DB để cài agent hoặc chỉnh sâu, đổi lại tự chịu một phần vận hành. Đề nói <em>need OS access</em> hoặc <em>customize the database environment</em> trên RDS → RDS Custom.</li>
+      </ul>
+    </div>
+
+    <div class="block diag"><span class="eyebrow">Hình dung: Multi-AZ với Read Replica</span>
+      <svg viewBox="0 0 700 330" role="img" aria-label="Sơ đồ RDS Multi-AZ với standby đồng bộ trong Region, và Read Replica bất đồng bộ cùng Region và khác Region">
+        <rect x="20" y="40" width="430" height="270" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="36" y="64" class="sv-t" font-weight="600">Region ap-northeast-1</text>
+        <rect x="40" y="90" width="180" height="200" rx="8" class="sv-az" stroke-width="1.5"/>
+        <rect x="250" y="90" width="180" height="200" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="130" y="112" text-anchor="middle" class="sv-t" font-weight="600">AZ 1a</text>
+        <text x="340" y="112" text-anchor="middle" class="sv-t" font-weight="600">AZ 1c</text>
+        <rect x="60" y="130" width="140" height="56" rx="6" class="sv-ok" stroke-width="1.5"/>
+        <text x="130" y="152" text-anchor="middle" class="sv-t" font-weight="600">Primary</text>
+        <text x="130" y="170" text-anchor="middle" class="sv-m">đọc + ghi</text>
+        <rect x="270" y="130" width="140" height="56" rx="6" class="sv-region" stroke-width="1.5" stroke-dasharray="5 3"/>
+        <text x="340" y="152" text-anchor="middle" class="sv-t" font-weight="600">Standby</text>
+        <text x="340" y="170" text-anchor="middle" class="sv-m">không đọc được</text>
+        <line x1="200" y1="158" x2="270" y2="158" class="sv-accent" stroke-width="2"/>
+        <text x="235" y="150" text-anchor="middle" class="sv-m">sync</text>
+        <rect x="270" y="220" width="140" height="56" rx="6" class="sv-region" stroke-width="1.5"/>
+        <text x="340" y="242" text-anchor="middle" class="sv-t" font-weight="600">Read Replica</text>
+        <text x="340" y="260" text-anchor="middle" class="sv-m">chỉ đọc, endpoint riêng</text>
+        <line x1="130" y1="186" x2="130" y2="248" class="sv-warm" stroke-width="2" stroke-dasharray="4 4"/>
+        <line x1="130" y1="248" x2="270" y2="248" class="sv-warm" stroke-width="2" stroke-dasharray="4 4"/>
+        <text x="200" y="240" text-anchor="middle" class="sv-m">async</text>
+        <rect x="490" y="90" width="190" height="200" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="585" y="112" text-anchor="middle" class="sv-t" font-weight="600">Region us-east-1</text>
+        <rect x="510" y="150" width="150" height="56" rx="6" class="sv-region" stroke-width="1.5"/>
+        <text x="585" y="172" text-anchor="middle" class="sv-t" font-weight="600">Cross-Region RR</text>
+        <text x="585" y="190" text-anchor="middle" class="sv-m">promote được khi DR</text>
+        <line x1="450" y1="248" x2="470" y2="248" class="sv-warm" stroke-width="2" stroke-dasharray="4 4"/>
+        <line x1="470" y1="248" x2="470" y2="178" class="sv-warm" stroke-width="2" stroke-dasharray="4 4"/>
+        <line x1="470" y1="178" x2="510" y2="178" class="sv-warm" stroke-width="2" stroke-dasharray="4 4"/>
+        <text x="585" y="240" text-anchor="middle" class="sv-m">async, lag vài giây</text>
+        <text x="130" y="210" text-anchor="middle" class="sv-m">app trỏ vào một</text>
+        <text x="130" y="226" text-anchor="middle" class="sv-m">endpoint DNS duy nhất</text>
+        <text x="235" y="304" text-anchor="middle" class="sv-m">Failover: DNS của endpoint đổi sang standby, app chỉ cần reconnect</text>
+      </svg>
+    </div>
+
+    <div class="block"><span class="eyebrow">Multi-AZ (HA) với Read Replica (scale read): mốc kiểm tra 2</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>Multi-AZ instance</th><th>Read Replica</th></tr>
+        <tr><td>Mục đích</td><td><em>High availability</em>, chịu lỗi AZ, giảm downtime khi bảo trì</td><td><em>Scale read</em>, tách báo cáo/analytics khỏi primary, DR cross-Region</td></tr>
+        <tr><td>Sao chép</td><td><b>Synchronous</b>: ghi phải được standby xác nhận mới trả về app → không mất dữ liệu khi failover</td><td><b>Asynchronous</b>: có replication lag, đọc có thể thấy dữ liệu cũ vài giây</td></tr>
+        <tr><td>Đọc được không</td><td>Standby <b>không</b> phục vụ đọc (với Multi-AZ instance)</td><td>Có, mỗi replica có endpoint riêng, app tự chia truy vấn đọc</td></tr>
+        <tr><td>Vị trí</td><td>AZ khác, cùng Region</td><td>Cùng AZ, khác AZ, hoặc <b>khác Region</b></td></tr>
+        <tr><td>Số lượng</td><td>1 standby</td><td>Tối đa 15 cho MySQL, MariaDB, PostgreSQL, Oracle, SQL Server (cần kiểm tra lại theo engine)</td></tr>
+        <tr><td>Failover</td><td>Tự động, thường 60 đến 120 giây, <b>endpoint DNS không đổi</b> (CNAME trỏ sang standby)</td><td>Không tự động. Phải <b>promote</b> thủ công thành DB độc lập, sau đó replication bị cắt</td></tr>
+        <tr><td>Ví dụ đề</td><td><em>minimize downtime</em>, <em>survive AZ failure</em>, <em>maintenance without downtime</em></td><td><em>read-heavy</em>, <em>reporting queries slow down production</em>, <em>users in another Region read</em></td></tr>
+      </table></div>
+      <div class="note ok">Hai cái không loại trừ nhau: thực tế production thường bật Multi-AZ <b>và</b> có 1 đến 2 read replica. Read replica cũng có thể tự bật Multi-AZ cho chính nó. Bật Multi-AZ trên DB đang chạy không cần downtime (RDS chụp snapshot, dựng standby, rồi đồng bộ).</div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Multi-AZ DB cluster (loại mới, MySQL và PostgreSQL)</span>
+      <ul>
+        <li>1 writer + <b>2 reader standby</b> ở 2 AZ khác, replication <b>semi-synchronous</b> (ghi được xác nhận khi ít nhất 1 standby nhận). Khác Multi-AZ instance ở chỗ standby <b>đọc được</b>, có reader endpoint riêng.</li>
+        <li>Failover nhanh hơn Multi-AZ instance (AWS nói thường dưới 35 giây, cần kiểm tra lại), độ trễ ghi thấp hơn vì chỉ chờ 1 standby.</li>
+        <li>Đề nói <em>Multi-AZ with readable standbys</em>, <em>two readable standby instances</em> → Multi-AZ DB cluster. Đừng nhầm với Aurora cluster.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Backup và snapshot</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>Automated backup</th><th>Manual snapshot</th></tr>
+        <tr><td>Ai tạo</td><td>RDS tự chụp hằng ngày trong backup window + lưu transaction log mỗi 5 phút</td><td>Bạn bấm hoặc gọi API</td></tr>
+        <tr><td>Giữ bao lâu</td><td><b>Retention 0 đến 35 ngày</b> (0 = tắt). Xóa DB instance là mất (trừ khi chọn giữ automated backup)</td><td>Giữ <b>đến khi bạn xóa</b>, kể cả sau khi xóa DB instance</td></tr>
+        <tr><td>Point-in-time recovery</td><td><b>Có</b>: khôi phục về bất kỳ giây nào trong retention nhờ transaction log</td><td>Không, chỉ về đúng thời điểm chụp</td></tr>
+        <tr><td>Restore ra gì</td><td colspan="2">Luôn tạo <b>DB instance mới</b> với endpoint mới. Không "ghi đè" instance cũ. App phải đổi endpoint hoặc bạn đổi tên instance.</td></tr>
+        <tr><td>Chia sẻ, copy</td><td>Không chia sẻ trực tiếp</td><td>Copy sang Region khác, chia sẻ cho account khác (snapshot mã hóa cần chia sẻ KMS key luôn)</td></tr>
+      </table></div>
+      <ul>
+        <li>Automated backup chạy trên standby nếu có Multi-AZ, nên Single-AZ có thể bị khựng I/O vài giây trong backup window.</li>
+        <li>Đề nói <em>retain backups for 90 days</em> hoặc <em>retain beyond 35 days</em> → manual snapshot (hoặc AWS Backup), vì automated tối đa 35 ngày.</li>
+        <li>Đề nói <em>restore to 5 minutes before the accidental DELETE</em> → PITR từ automated backup. Với Aurora còn có Backtrack (mục 2) không cần tạo instance mới.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Encryption và authentication</span>
+      <ul>
+        <li><b>At rest</b> bằng KMS: chỉ bật được <b>lúc tạo</b> instance. Đã tạo không mã hóa thì làm theo đường: chụp snapshot → <b>copy snapshot và chọn mã hóa</b> → restore từ snapshot đã mã hóa → trỏ app sang instance mới. Ngược lại, snapshot của DB mã hóa không copy thành bản không mã hóa được.</li>
+        <li>Read replica của DB mã hóa thì cũng mã hóa; không tạo replica mã hóa từ primary không mã hóa.</li>
+        <li><b>In transit</b>: SSL/TLS, tải CA bundle của RDS; với MySQL/PostgreSQL có thể ép bằng parameter <code>require_secure_transport</code> hoặc <code>rds.force_ssl</code>.</li>
+        <li><b>IAM database authentication</b> (MySQL, PostgreSQL, MariaDB): thay password bằng token do IAM cấp, sống 15 phút. EC2/Lambda dùng role, không giữ password. Đề nói <em>avoid storing database passwords</em>, <em>use IAM to connect</em> → IAM DB auth. Còn nếu đề nói <em>rotate password automatically</em> → Secrets Manager.</li>
+        <li><b>Transparent Data Encryption (TDE)</b>: cách mã hóa riêng của Oracle và SQL Server, có thể dùng cùng KMS encryption.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">RDS Proxy và Performance Insights</span>
+      <ul>
+        <li><b>RDS Proxy</b>: lớp <b>connection pooling</b> managed đứng giữa app và DB. Giải quyết bài toán <b>Lambda mở hàng nghìn connection</b> làm DB hết connection ("too many connections"). Khi failover, proxy giữ connection phía app và chuyển sang instance mới nên downtime cảm nhận giảm tới 66% (số AWS công bố, cần kiểm tra lại). Dùng được với IAM auth và Secrets Manager. Chỉ truy cập được từ trong VPC, không public.</li>
+        <li><b>Performance Insights</b>: dashboard xem DB load theo wait event, theo SQL, theo user, để biết câu lệnh nào gây tải. 7 ngày dữ liệu miễn phí. Đề nói <em>identify the SQL statements causing high load</em> → Performance Insights. <b>Enhanced Monitoring</b> là thứ khác: metric OS (CPU theo process, memory) mỗi 1 giây, lấy từ agent trên host.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Khi nào dùng RDS</span>
+      <ul>
+        <li>Dữ liệu quan hệ, cần SQL, join, transaction, app sẵn có viết cho MySQL/PostgreSQL/Oracle/SQL Server và muốn <em>lift and shift</em> mà không muốn vận hành OS.</li>
+        <li>Không chọn RDS khi: cần quyền vào OS (EC2 tự cài hoặc RDS Custom), dữ liệu không quan hệ với lượng request cực lớn (DynamoDB), kho phân tích hàng TB (Redshift), hoặc cần scale ghi theo chiều ngang gần như vô hạn (RDS scale ghi chỉ bằng tăng instance class, có downtime ngắn).</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>DB vẫn chạy khi AZ hỏng, app không đổi config</td><td>Multi-AZ</td><td>Read Replica (phải promote thủ công, endpoint khác)</td></tr>
+        <tr><td>Báo cáo nặng làm chậm app</td><td>Read Replica, trỏ báo cáo vào replica</td><td>Multi-AZ (standby không đọc được)</td></tr>
+        <tr><td>Người dùng ở Region khác đọc nhanh</td><td>Cross-Region Read Replica</td><td>Multi-AZ (chỉ trong Region)</td></tr>
+        <tr><td>Mã hóa DB đang chạy không mã hóa</td><td>Snapshot → copy có mã hóa → restore</td><td>Bật encryption trên instance (không có nút này)</td></tr>
+        <tr><td>Lambda làm cạn connection của RDS</td><td>RDS Proxy</td><td>Tăng instance class (tốn tiền, không giải quyết gốc)</td></tr>
+        <tr><td>Giữ backup 1 năm</td><td>Manual snapshot hoặc AWS Backup</td><td>Automated backup retention (tối đa 35 ngày)</td></tr>
+        <tr><td>Không lưu password DB trong code</td><td>IAM DB authentication hoặc Secrets Manager</td><td>Đặt password vào biến môi trường</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>synchronous replication, automatic failover <b>→ Multi-AZ</b></span><span>asynchronous, offload read traffic <b>→ Read Replica</b></span><span>readable standby <b>→ Multi-AZ DB cluster</b></span><span>point-in-time recovery <b>→ automated backup</b></span><span>retain beyond 35 days <b>→ manual snapshot</b></span><span>encrypt existing unencrypted DB <b>→ snapshot copy encrypted</b></span><span>connection pooling, Lambda <b>→ RDS Proxy</b></span><span>OS-level access on RDS <b>→ RDS Custom</b></span><span>which SQL causes load <b>→ Performance Insights</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">1. Ứng dụng dùng RDS MySQL Single-AZ. Mỗi lần AWS bảo trì OS, app bị gián đoạn vài phút. Cách giảm gián đoạn với <em>least operational overhead</em>?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Bật Multi-AZ.</b> RDS sẽ vá standby trước, failover, rồi vá primary cũ, app chỉ mất vài chục giây reconnect với cùng endpoint. Read Replica không giúp vì bảo trì primary vẫn gián đoạn ghi, và replica không tự nhận traffic.</p></div>
+      <div class="q"><p class="qt">2. RDS PostgreSQL được tạo không mã hóa, giờ compliance yêu cầu mã hóa at rest. Làm thế nào?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Chụp snapshot, copy snapshot với tùy chọn mã hóa KMS, restore thành instance mới, trỏ app sang.</b> Không có cách bật encryption trên instance đang chạy. Tạo read replica mã hóa từ primary không mã hóa cũng không được.</p></div>
+      <div class="q"><p class="qt">3. Hàng trăm Lambda function gọi RDS MySQL, lỗi "Too many connections" xuất hiện lúc cao điểm. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>RDS Proxy.</b> Proxy gom connection, chia sẻ lại cho Lambda, đồng thời giảm thời gian failover. Tăng <code>max_connections</code> hay instance class chỉ đẩy giới hạn, còn Lambda scale vẫn vượt. Read Replica không giúp vì vấn đề là số connection chứ không phải tải đọc.</p></div>
+      <div class="q"><p class="qt">4. Chọn 2 phát biểu đúng: (A) Standby của Multi-AZ instance phục vụ đọc, (B) Read Replica dùng async replication, (C) Automated backup giữ tối đa 35 ngày, (D) Restore từ snapshot ghi đè instance hiện tại.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>B và C.</b> A sai với Multi-AZ instance (chỉ Multi-AZ DB cluster mới có standby đọc được). D sai: restore luôn tạo instance mới với endpoint mới.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. AURORA ============ -->
+<section id="aurora">
+  <span class="eyebrow">Lý thuyết 2 / 7</span>
+  <h2>Amazon Aurora: cluster volume, endpoint, Global Database, Serverless</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <ul>
+        <li><b>Aurora</b> là engine quan hệ do AWS tự xây, tương thích <b>MySQL</b> và <b>PostgreSQL</b> (app kết nối như bình thường, driver không đổi). AWS công bố nhanh tới 5 lần MySQL và 3 lần PostgreSQL trên RDS, giá cao hơn RDS cùng cỡ khoảng 20% (cần kiểm tra lại).</li>
+        <li>Khác biệt gốc: <b>storage tách khỏi compute</b>. Dữ liệu nằm trong <b>cluster volume</b> chung, tự sao <b>6 bản trên 3 AZ</b> (2 bản mỗi AZ). Ghi cần 4/6 bản xác nhận, đọc cần 3/6, nên mất cả một AZ vẫn đọc ghi được. Volume tự lớn theo bước 10 GB tới <b>128 TiB</b> (cần kiểm tra lại), chỉ trả tiền dung lượng thực dùng.</li>
+        <li>Một cluster có <b>1 writer</b> (primary) và tối đa <b>15 Aurora Replica</b> đọc chung volume, nên replica lag thường dưới 100 ms (không phải copy dữ liệu như RDS Read Replica). Replica cũng chính là standby: failover sang replica mất khoảng 30 giây, thứ tự chọn theo <b>priority tier 0 đến 15</b> (số nhỏ ưu tiên hơn, cùng tier thì chọn instance to hơn).</li>
+        <li>Backup liên tục lên S3, PITR tới giây, retention 1 đến 35 ngày, không ảnh hưởng hiệu năng. Mã hóa KMS cũng chỉ chọn lúc tạo.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Bốn loại endpoint</span>
+      <div class="tbl"><table>
+        <tr><th>Endpoint</th><th>Trỏ tới</th><th>Dùng cho</th></tr>
+        <tr><td><b>Cluster (writer) endpoint</b></td><td>Instance writer hiện tại. Khi failover, DNS tự chuyển sang writer mới</td><td>Mọi lệnh ghi và đọc cần dữ liệu mới nhất. App chỉ cần một endpoint này là đủ cho HA</td></tr>
+        <tr><td><b>Reader endpoint</b></td><td>Load balance (DNS round robin) giữa tất cả replica</td><td>Truy vấn đọc, báo cáo. Khác RDS: RDS mỗi replica một endpoint, app tự chia; Aurora có sẵn một endpoint gom</td></tr>
+        <tr><td><b>Custom endpoint</b></td><td>Nhóm instance do bạn chọn (ví dụ 2 replica cỡ lớn cho analytics)</td><td>Tách workload: BI nặng dùng instance to, app web dùng instance nhỏ</td></tr>
+        <tr><td><b>Instance endpoint</b></td><td>Một instance cụ thể</td><td>Debug, ít dùng trong đề</td></tr>
+      </table></div>
+      <div class="note">Bẫy đề: app ghi vào <b>reader endpoint</b> sẽ lỗi read-only. App đọc qua writer endpoint thì chạy được nhưng không scale. Đề nói <em>distribute read traffic without changing application logic</em> → reader endpoint.</div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Replica auto scaling, Global Database, Serverless v2</span>
+      <ul>
+        <li><b>Aurora Replica auto scaling</b>: đặt policy theo CPU trung bình hoặc số connection của replica, Aurora tự thêm bớt replica (trong giới hạn 15). Reader endpoint tự gồm replica mới. Đề nói <em>read traffic varies throughout the day</em> → replica auto scaling.</li>
+        <li><b>Aurora Global Database</b>: 1 Region primary + tối đa 5 Region secondary (cần kiểm tra lại), replication ở <b>tầng storage</b>, lag thường dưới 1 giây. Mỗi secondary có tới 16 replica đọc. Khi Region primary sập: <b>RPO khoảng 1 giây, RTO dưới 1 phút</b> bằng cách promote secondary (managed failover hoặc detach). Dùng cho <em>disaster recovery across Regions</em> và <em>low-latency global reads</em>. Có <b>write forwarding</b>: app ở Region secondary gửi lệnh ghi, Aurora chuyển về primary.</li>
+        <li><b>Aurora Serverless v2</b>: compute đo bằng <b>ACU</b> (Aurora Capacity Unit, 1 ACU khoảng 2 GiB RAM), scale tức thì từ 0,5 ACU lên tối đa theo bạn đặt, không ngắt kết nối khi scale. Trộn được instance thường và serverless trong cùng cluster, dùng được Global Database, Multi-AZ. Chọn khi <em>unpredictable</em>, <em>intermittent</em>, <em>spiky workload</em>, môi trường dev/test, <em>pay only for capacity used</em>. v1 cũ scale chậm và hay bị đề đưa ra làm mồi, nhớ tên "v2".</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Backtrack, cloning, Multi-Master</span>
+      <div class="tbl"><table>
+        <tr><th>Tính năng</th><th>Làm gì</th><th>Khác với</th></tr>
+        <tr><td><b>Backtrack</b> (Aurora MySQL)</td><td>"Tua lại" cluster về một thời điểm trong tối đa 72 giờ, <b>tại chỗ</b>, không tạo cluster mới, mất vài phút</td><td>PITR restore: tạo cluster mới, đổi endpoint, lâu hơn. Đề nói <em>quickly undo a bad change</em>, <em>rewind without restoring</em> → Backtrack</td></tr>
+        <tr><td><b>Database cloning</b></td><td>Tạo cluster mới từ cluster đang chạy bằng <b>copy-on-write</b>, gần như tức thì, ban đầu không tốn thêm storage</td><td>Restore từ snapshot: copy đủ dữ liệu, chậm. Đề nói <em>test environment from production data quickly</em> → clone</td></tr>
+        <tr><td><b>Multi-Master</b> (nhận diện)</td><td>Nhiều writer trong một cluster, chịu lỗi writer liên tục</td><td>Chỉ Aurora MySQL phiên bản cũ, ít gặp, AWS không khuyến khích. Gặp trong đề thì hiểu là "nhiều node ghi được"</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Khi nào chọn Aurora thay RDS</span>
+      <ul>
+        <li>Đề nhấn <em>highest performance</em>, <em>highly available</em>, <em>minimal downtime</em>, <em>self-healing storage</em>, <em>automatic storage scaling</em>, hơn 5 read replica, lag replica rất thấp, cần reader endpoint sẵn, hoặc Global Database RPO 1 giây.</li>
+        <li>Chọn RDS khi: engine không phải MySQL/PostgreSQL (Oracle, SQL Server), ngân sách thấp cho workload nhỏ (RDS db.t3.micro rẻ hơn), hoặc đề chỉ cần "managed relational" đơn giản.</li>
+        <li>Không chọn Aurora khi dữ liệu không quan hệ hoặc cần scale ghi không giới hạn (DynamoDB).</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Cặp</th><th>Khác nhau ở chỗ</th></tr>
+        <tr><td>Aurora Replica với RDS Read Replica</td><td>Aurora replica đọc chung volume (lag ms, tối đa 15, kiêm standby failover). RDS replica là bản copy riêng (lag giây, tối đa 15 tùy engine, không tự failover).</td></tr>
+        <tr><td>Aurora Global Database với RDS cross-Region Read Replica</td><td>Global Database replicate ở tầng storage, RPO giây, RTO phút, managed failover. Cross-Region RR replicate logic, lag lớn hơn, promote thủ công.</td></tr>
+        <tr><td>Backtrack với PITR</td><td>Backtrack tại chỗ, tối đa 72 giờ, chỉ Aurora MySQL. PITR ra cluster mới, tới 35 ngày, mọi engine.</td></tr>
+        <tr><td>Clone với Snapshot restore</td><td>Clone copy-on-write, nhanh, cùng Region. Snapshot copy đủ, chậm, copy được sang Region khác.</td></tr>
+        <tr><td>Serverless v2 với provisioned</td><td>Serverless scale ACU theo tải, trả theo dùng; provisioned cố định instance class, rẻ hơn khi tải đều.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>6 copies across 3 AZs <b>→ Aurora</b></span><span>reader endpoint, up to 15 replicas <b>→ Aurora</b></span><span>cross-Region DR, RPO 1 second <b>→ Aurora Global Database</b></span><span>unpredictable workload, pay per use <b>→ Aurora Serverless v2</b></span><span>rewind database in place <b>→ Backtrack</b></span><span>copy of production for testing quickly <b>→ Aurora cloning</b></span><span>MySQL or PostgreSQL compatible, 5x faster <b>→ Aurora</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">5. Aurora MySQL có 1 writer và 3 replica. App báo cáo đang trỏ vào instance endpoint của một replica, khi replica đó bị failover thành writer thì báo cáo làm chậm ghi. Sửa thế nào với ít thay đổi nhất?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Trỏ app báo cáo vào reader endpoint</b> (hoặc custom endpoint chỉ gồm replica). Reader endpoint luôn loại writer ra, tự cân bằng giữa các replica. Instance endpoint gắn cứng vào một máy nên vai trò đổi là hỏng.</p></div>
+      <div class="q"><p class="qt">6. Công ty cần DB PostgreSQL phục vụ người dùng ở Tokyo và Frankfurt, đọc nhanh ở cả hai, và nếu Tokyo sập thì chuyển sang Frankfurt trong vài phút với <em>RPO</em> dưới 1 phút. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Aurora PostgreSQL Global Database</b>, primary Tokyo, secondary Frankfurt. RDS cross-Region Read Replica cũng đọc được ở Frankfurt nhưng lag lớn hơn và promote thủ công, không đạt RPO/RTO chặt. Multi-AZ chỉ trong một Region.</p></div>
+      <div class="q"><p class="qt">7. Developer chạy nhầm UPDATE không WHERE trên Aurora MySQL production 20 phút trước. Cách khôi phục <em>fastest</em>?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Backtrack cluster về trước thời điểm chạy lệnh.</b> Vài phút, tại chỗ, không đổi endpoint. PITR cũng được nhưng tạo cluster mới rồi phải chuyển app, chậm hơn. Backtrack phải được bật từ trước (lúc tạo hoặc sửa cluster) và chỉ có trên Aurora MySQL.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. DYNAMODB ============ -->
+<section id="dynamodb">
+  <span class="eyebrow">Lý thuyết 3 / 7</span>
+  <h2>DynamoDB: capacity, index, DAX, Streams, TTL, Global Table</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <ul>
+        <li><b>DynamoDB</b>: key-value và document NoSQL, serverless hoàn toàn (không instance, không patch), độ trễ một chữ số ms ở mọi quy mô, tự replicate 3 AZ, scale ghi và đọc gần như vô hạn. Luôn mã hóa at rest.</li>
+        <li><b>Primary key</b>: hoặc chỉ <b>partition key</b> (hash, phải duy nhất), hoặc <b>partition key + sort key</b> (cặp phải duy nhất, cùng partition key có nhiều item sắp xếp theo sort key). Partition key quyết định item nằm ở partition vật lý nào, nên phải chọn khóa <b>phân tán đều</b> (user ID tốt, "status = active" xấu).</li>
+        <li><b>Item tối đa 400 KB</b>. Object lớn (ảnh, file) để trên <b>S3</b>, DynamoDB lưu key S3 và metadata. Không có join, không có schema cố định ngoài key.</li>
+        <li>Truy vấn: <b>Query</b> (theo partition key, lọc sort key, rẻ) và <b>Scan</b> (đọc cả bảng, đắt, tránh). <b>GetItem/PutItem</b> theo khóa.</li>
+        <li><b>Consistency</b>: đọc mặc định <b>eventually consistent</b> (có thể trễ dưới 1 giây, tốn nửa RCU). <b>Strongly consistent</b> trả về dữ liệu mới nhất, tốn gấp đôi, không dùng được trên GSI. <b>Transactions</b> (TransactWriteItems, TransactGetItems) cho ACID trên tối đa 100 item, tốn gấp đôi capacity.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Capacity mode</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>On-demand</th><th>Provisioned</th></tr>
+        <tr><td>Cách tính</td><td>Trả theo số request thực tế (read/write request unit)</td><td>Đặt trước <b>RCU</b> và <b>WCU</b> mỗi giây, trả theo giờ dù dùng hay không</td></tr>
+        <tr><td>1 WCU</td><td colspan="2">1 ghi/giây cho item tới 1 KB (item 3 KB = 3 WCU). Transaction ghi gấp đôi.</td></tr>
+        <tr><td>1 RCU</td><td colspan="2">1 strongly consistent read/giây cho item tới 4 KB, hoặc <b>2</b> eventually consistent read. Transaction đọc gấp đôi. Ví dụ: 10 item 8 KB/giây eventual = 10 × 2 × 0,5 = 10 RCU.</td></tr>
+        <tr><td>Khi dùng</td><td><em>unpredictable</em>, <em>spiky</em>, bảng mới chưa biết tải, muốn <em>no capacity planning</em></td><td>Tải đều, dự đoán được, muốn rẻ hơn (có thể mua Reserved capacity). Thêm <b>auto scaling</b> để tự chỉnh RCU/WCU theo target utilization</td></tr>
+        <tr><td>Vượt capacity</td><td>Hiếm, có thể bị throttle khi tăng đột ngột gấp đôi peak trước</td><td><code>ProvisionedThroughputExceededException</code>, SDK tự retry với exponential backoff. Có <b>burst capacity</b> dùng tạm 300 giây capacity chưa dùng</td></tr>
+        <tr><td>Đổi mode</td><td colspan="2">Đổi được, mỗi 24 giờ một lần (cần kiểm tra lại).</td></tr>
+      </table></div>
+      <div class="note">Đề nói bị throttle dù tổng capacity còn dư → <b>hot partition</b>: một partition key nhận quá nhiều request. Sửa bằng chọn partition key phân tán hơn, thêm hậu tố ngẫu nhiên (write sharding), hoặc đặt DAX trước bảng nếu là đọc. Tăng RCU/WCU cả bảng thường không giải quyết vì giới hạn mỗi partition là 3.000 RCU và 1.000 WCU (cần kiểm tra lại).</div>
+    </div>
+
+    <div class="block"><span class="eyebrow">GSI với LSI</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>Global Secondary Index (GSI)</th><th>Local Secondary Index (LSI)</th></tr>
+        <tr><td>Key</td><td>Partition key <b>khác</b> (và sort key tùy chọn) so với bảng</td><td><b>Cùng</b> partition key với bảng, <b>sort key khác</b></td></tr>
+        <tr><td>Tạo khi nào</td><td>Bất kỳ lúc nào, cả sau khi bảng có dữ liệu</td><td><b>Chỉ lúc tạo bảng</b>, không thêm sau</td></tr>
+        <tr><td>Số lượng</td><td>Tối đa 20 mỗi bảng (mặc định, có thể xin tăng)</td><td>Tối đa 5 mỗi bảng</td></tr>
+        <tr><td>Capacity</td><td><b>RCU/WCU riêng</b>. GSI bị throttle thì bảng gốc cũng bị throttle khi ghi</td><td>Dùng chung capacity với bảng</td></tr>
+        <tr><td>Consistency</td><td>Chỉ eventually consistent</td><td>Có strongly consistent</td></tr>
+        <tr><td>Giới hạn kích thước</td><td>Không</td><td>10 GB mỗi giá trị partition key (gồm bảng + LSI)</td></tr>
+        <tr><td>Ví dụ</td><td>Bảng Orders key OrderID, muốn tìm theo CustomerEmail → GSI</td><td>Bảng Orders key CustomerID + OrderDate, muốn sắp theo Amount trong cùng customer → LSI</td></tr>
+      </table></div>
+      <p style="font-size:.92rem">Đề nói <em>query by a different attribute</em>, <em>existing table</em> → GSI (vì LSI không thêm sau được). Đề nói <em>same partition key, different sort order</em>, <em>strongly consistent read on index</em> → LSI.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">DAX, Streams, TTL</span>
+      <ul>
+        <li><b>DAX (DynamoDB Accelerator)</b>: cache in-memory <b>chuyên cho DynamoDB</b>, tương thích API nên app chỉ đổi endpoint, không viết logic cache. Giảm đọc từ ms xuống <b>microsecond</b>, cache cả GetItem lẫn Query/Scan. Multi-AZ cluster tới 10 node. Chọn khi <em>read-heavy</em>, <em>microsecond latency</em>, <em>reduce read cost</em>, <em>minimal code changes</em>. Không cache ghi, không cache strongly consistent read. Nếu đề cần cache dùng chung cho nhiều nguồn hoặc cấu trúc như sorted set → ElastiCache (mục 4).</li>
+        <li><b>DynamoDB Streams</b>: log thay đổi của bảng (insert, update, delete) theo thứ tự, giữ <b>24 giờ</b>. Chọn view: KEYS_ONLY, NEW_IMAGE, OLD_IMAGE, NEW_AND_OLD_IMAGES. Thường nối <b>Lambda trigger</b> để làm: gửi thông báo khi có record mới, sao chép sang OpenSearch, tổng hợp số liệu, audit. <b>Kinesis Data Streams for DynamoDB</b> là lựa chọn thay thế: giữ tới 1 năm, nhiều consumer, nối Firehose; nhưng thứ tự không đảm bảo chặt và có thể trùng record.</li>
+        <li><b>TTL (Time to Live)</b>: chọn một attribute kiểu number chứa <b>epoch giây</b>; item quá hạn bị xóa trong vài ngày (thường trong 48 giờ, cần kiểm tra lại), <b>không tốn WCU</b>. Item quá hạn chưa xóa vẫn đọc thấy nếu không lọc. Record xóa bởi TTL xuất hiện trong Streams với <code>userIdentity.principalId = dynamodb.amazonaws.com</code>, nên phân biệt được với xóa thủ công. Dùng cho session, OTP, log tạm, dữ liệu phải xóa sau N ngày để giảm dung lượng.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Global Table, PITR, backup</span>
+      <ul>
+        <li><b>Global Table</b>: bảng replicate <b>active-active</b> nhiều Region, app đọc ghi ở Region gần nhất, lag thường dưới 1 giây. <b>Bắt buộc bật Streams</b> (NEW_AND_OLD_IMAGES). Xung đột ghi cùng item ở 2 Region giải quyết bằng <b>last writer wins</b>. Dùng cho <em>multi-Region active-active</em>, <em>low latency for global users</em>, <em>Region failover for DynamoDB</em>. Khác Aurora Global Database (một Region ghi).</li>
+        <li><b>Point-in-time recovery</b>: bật là có backup liên tục 35 ngày, restore về bất kỳ giây nào ra <b>bảng mới</b>. <b>On-demand backup</b>: giữ vô thời hạn, không ảnh hưởng hiệu năng. Cả hai tích hợp AWS Backup, copy cross-Region và cross-account được.</li>
+        <li>Export to S3 (không tốn RCU) để phân tích bằng Athena. Import from S3 để nạp dữ liệu lớn.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Khi nào chọn DynamoDB</span>
+      <ul>
+        <li>Đề nhấn <em>serverless</em>, <em>single-digit millisecond</em>, <em>millions of requests per second</em>, <em>key-value</em>, <em>session state</em>, <em>shopping cart</em>, <em>IoT data</em>, <em>leaderboard with simple lookup</em>, <em>schema flexible</em>, <em>no database administration</em>.</li>
+        <li>Không chọn khi đề cần join phức tạp, SQL ad hoc, transaction nhiều bảng rộng, hoặc item hơn 400 KB (trừ khi kết hợp S3). Khi đó RDS/Aurora. Phân tích hàng TB thì Redshift.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>Tìm item theo attribute không phải key, bảng đã có dữ liệu</td><td>GSI</td><td>LSI (chỉ tạo lúc tạo bảng), Scan (đắt)</td></tr>
+        <tr><td>Giảm độ trễ đọc xuống microsecond, ít đổi code</td><td>DAX</td><td>ElastiCache (phải viết logic cache), tăng RCU (vẫn ms)</td></tr>
+        <tr><td>Chạy Lambda mỗi khi có item mới</td><td>DynamoDB Streams + Lambda trigger</td><td>Poll bảng theo lịch (tốn RCU, trễ)</td></tr>
+        <tr><td>Tự xóa dữ liệu sau 30 ngày không tốn tiền</td><td>TTL</td><td>Lambda scan và delete theo lịch (tốn WCU)</td></tr>
+        <tr><td>Đọc ghi ở nhiều Region, active-active</td><td>Global Table</td><td>Aurora Global Database (chỉ ghi ở primary)</td></tr>
+        <tr><td>Tải không đoán được, không muốn tính capacity</td><td>On-demand</td><td>Provisioned + auto scaling (vẫn cần đặt min/max, phản ứng chậm hơn)</td></tr>
+        <tr><td>Lưu ảnh 2 MB kèm metadata</td><td>Ảnh lên S3, DynamoDB lưu key và metadata</td><td>Nhét vào item (giới hạn 400 KB)</td></tr>
+        <tr><td>Throttle dù capacity còn dư</td><td>Sửa partition key (hot partition)</td><td>Tăng capacity cả bảng</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>single-digit millisecond, serverless key-value <b>→ DynamoDB</b></span><span>microsecond read latency <b>→ DAX</b></span><span>react to item changes <b>→ Streams + Lambda</b></span><span>expire items automatically <b>→ TTL</b></span><span>multi-Region active-active <b>→ Global Table</b></span><span>query by non-key attribute later <b>→ GSI</b></span><span>unpredictable traffic <b>→ on-demand</b></span><span>hot partition, throttling <b>→ better partition key</b></span><span>items over 400 KB <b>→ S3 + DynamoDB</b></span><span>ACID across items <b>→ transactions</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">8. Bảng DynamoDB Orders có partition key OrderID. Nhóm CSKH muốn tra cứu đơn theo email khách hàng. Bảng đã có 50 triệu item. Làm gì với <em>least operational overhead</em>?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Tạo GSI với partition key là CustomerEmail.</b> GSI thêm được trên bảng đang có dữ liệu. LSI không thêm sau khi tạo bảng và phải cùng partition key. Scan có filter đọc toàn bảng, tốn RCU và chậm.</p></div>
+      <div class="q"><p class="qt">9. Game mobile lưu điểm trong DynamoDB, 95% là đọc bảng xếp hạng, độ trễ hiện 5 ms, muốn xuống dưới 1 ms mà <em>minimal code changes</em>. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>DAX.</b> Tương thích API DynamoDB, chỉ đổi endpoint trong SDK, đọc từ cache microsecond. ElastiCache Redis cũng đạt độ trễ nhưng phải viết logic cache-aside, trái với "minimal code changes". Tăng RCU không giảm độ trễ.</p></div>
+      <div class="q"><p class="qt">10. Bảng session có TTL. Audit hỏi: làm sao phân biệt session bị xóa do hết hạn với session bị app xóa chủ động?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Bật DynamoDB Streams, record xóa do TTL có <code>userIdentity</code> là <code>dynamodb.amazonaws.com</code>.</b> Xóa thủ công không có trường này (hoặc là principal của app). Có thể nối Lambda ghi vào log audit.</p></div>
+      <div class="q"><p class="qt">11. Chọn 2 phát biểu đúng về Global Table: (A) cần bật DynamoDB Streams, (B) chỉ một Region được ghi, (C) xung đột giải quyết theo last writer wins, (D) replication đồng bộ nên không có lag.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>A và C.</b> B sai: Global Table là active-active, mọi Region đều ghi được. D sai: replication bất đồng bộ, lag thường dưới 1 giây, nên mới cần quy tắc last writer wins khi xung đột.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. ELASTICACHE ============ -->
+<section id="elasticache">
+  <span class="eyebrow">Lý thuyết 4 / 7</span>
+  <h2>ElastiCache: Redis với Memcached, cache-aside và write-through</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <ul>
+        <li><b>ElastiCache</b> là cache in-memory managed, đặt trước database để giảm tải đọc và độ trễ xuống dưới 1 ms. Hai engine: <b>Redis</b> (và bản mở Valkey, tương thích Redis) và <b>Memcached</b>. Nằm trong VPC, truy cập qua Security Group, không public.</li>
+        <li>Cache là <b>dữ liệu có thể mất</b>: nếu cache sập thì app đọc lại từ DB. Nếu đề cần dữ liệu <b>không được mất</b> và bền như database thì cache không đủ, chọn <b>MemoryDB for Redis</b> (mục 7) hoặc DB thật.</li>
+        <li>Ba việc cache hay làm trong đề: <b>giảm tải đọc cho RDS</b> (kết quả query), <b>session store</b> cho web nhiều instance sau ALB (thay sticky session), và <b>leaderboard / realtime</b> bằng cấu trúc dữ liệu của Redis.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Redis với Memcached</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>Redis</th><th>Memcached</th></tr>
+        <tr><td>Kiểu dữ liệu</td><td>String, hash, list, set, <b>sorted set</b> (leaderboard), geospatial, stream</td><td>Chỉ string / object đơn giản</td></tr>
+        <tr><td>HA</td><td><b>Replication</b> primary + tối đa 5 replica, <b>Multi-AZ với auto failover</b></td><td>Không replication, mất node là mất dữ liệu node đó</td></tr>
+        <tr><td>Bền dữ liệu</td><td>Có: <b>snapshot (RDB)</b>, <b>AOF</b>, backup và restore</td><td>Không persistence, không backup</td></tr>
+        <tr><td>Scale</td><td><b>Cluster mode</b>: shard dữ liệu lên tối đa 500 node, scale ghi; cluster mode disabled: 1 shard, scale đọc bằng replica</td><td>Scale ngang bằng thêm node, app tự hash key (multi-node, <b>multithread</b>)</td></tr>
+        <tr><td>Tính năng khác</td><td><b>Pub/Sub</b>, Lua script, transaction, Auth token, mã hóa in transit và at rest, IAM auth (Redis 7), Global Datastore cross-Region</td><td>Đơn giản, ít tính năng, hiệu năng thuần cache tốt</td></tr>
+        <tr><td>Chọn khi đề nói</td><td><em>high availability</em>, <em>persistence</em>, <em>sorted set</em>, <em>leaderboard</em>, <em>pub/sub</em>, <em>backup</em>, <em>complex data types</em></td><td><em>simplest caching</em>, <em>multithreaded</em>, <em>horizontal scaling of cache nodes</em>, <em>no persistence needed</em></td></tr>
+      </table></div>
+      <div class="note">Quy tắc nhanh: đề có bất kỳ yêu cầu gì về <b>bền, HA, cấu trúc dữ liệu, pub/sub</b> → Redis. Chỉ khi đề nhấn <b>đơn giản nhất, multithread, mất dữ liệu cũng được</b> → Memcached. Khi phân vân, Redis đúng nhiều hơn.</div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Chiến lược cache</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>Cache-aside (lazy loading)</th><th>Write-through</th></tr>
+        <tr><td>Cách chạy</td><td>App đọc cache trước; <b>miss</b> thì đọc DB rồi ghi vào cache. Ghi chỉ vào DB (cache cũ bị stale tới khi hết TTL)</td><td>Mỗi lần ghi DB thì <b>ghi luôn vào cache</b>. Đọc gần như luôn hit</td></tr>
+        <tr><td>Ưu</td><td>Chỉ cache dữ liệu được đọc, cache sập không hỏng app</td><td>Dữ liệu trong cache luôn mới, không có "miss penalty"</td></tr>
+        <tr><td>Nhược</td><td>Lần đọc đầu chậm (3 bước), dữ liệu có thể <b>stale</b></td><td>Tốn ghi gấp đôi, cache chứa cả dữ liệu không ai đọc (<em>cache churn</em>), ghi mới chưa đọc lần nào vẫn chiếm chỗ</td></tr>
+        <tr><td>Thường kết hợp</td><td colspan="2">Dùng cả hai cộng <b>TTL</b> trên mỗi key để tránh stale vĩnh viễn và tự dọn dữ liệu không dùng. TTL ngắn cho dữ liệu đổi nhanh, dài cho dữ liệu tĩnh.</td></tr>
+      </table></div>
+      <ul>
+        <li>Đề nói <em>data in cache is stale</em>, <em>users see old data</em> → thêm write-through hoặc giảm TTL. Đề nói <em>cache miss penalty</em>, <em>first request slow</em> → write-through hoặc warm cache trước.</li>
+        <li><b>Session store</b>: web chạy nhiều EC2 sau ALB, user bị đăng xuất khi chuyển instance → lưu session vào ElastiCache Redis (hoặc DynamoDB). Sticky session cũng được nhưng phân tải kém, mất session khi instance chết, nên đáp án <em>stateless</em> và <em>scalable</em> là ElastiCache.</li>
+        <li><b>Leaderboard realtime</b>: Redis sorted set (ZADD, ZRANGE) trả top N trong O(log n). DynamoDB làm được nhưng phải tự thiết kế, không phải đáp án khi đề nói <em>real-time leaderboard</em>.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Bảng chọn: ElastiCache với DAX với các thứ khác</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>Cache cho RDS/Aurora, giảm tải đọc</td><td>ElastiCache Redis, cache-aside</td><td>DAX (chỉ cho DynamoDB)</td></tr>
+        <tr><td>Cache cho DynamoDB, không đổi code</td><td>DAX</td><td>ElastiCache (phải viết logic cache)</td></tr>
+        <tr><td>Session store cho web stateless</td><td>ElastiCache Redis (hoặc DynamoDB)</td><td>Sticky session, lưu trong EBS</td></tr>
+        <tr><td>Leaderboard realtime, sorted set</td><td>Redis</td><td>Memcached (không có sorted set)</td></tr>
+        <tr><td>Cache đơn giản, multithread, không cần bền</td><td>Memcached</td><td>Redis (thừa tính năng, nhưng chọn cũng không sai hẳn)</td></tr>
+        <tr><td>Dữ liệu in-memory nhưng <em>durable</em>, dùng làm DB chính</td><td>MemoryDB for Redis</td><td>ElastiCache (là cache, có thể mất)</td></tr>
+        <tr><td>Cache nội dung tĩnh cho người dùng toàn cầu</td><td>CloudFront</td><td>ElastiCache (ở tầng ứng dụng, trong VPC)</td></tr>
+        <tr><td>Cache response API</td><td>API Gateway cache (tuần 7)</td><td>ElastiCache (phải tự code)</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>sub-millisecond, in-memory cache <b>→ ElastiCache</b></span><span>sorted set, leaderboard, pub/sub <b>→ Redis</b></span><span>multithreaded, simplest cache <b>→ Memcached</b></span><span>session state across instances <b>→ ElastiCache Redis</b></span><span>lazy loading <b>→ cache-aside</b></span><span>cache always up to date <b>→ write-through</b></span><span>stale data <b>→ TTL ngắn / write-through</b></span><span>Redis with durability <b>→ MemoryDB</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">12. Web app chạy trên Auto Scaling group sau ALB. Khi scale in, người dùng bị đăng xuất. Cách sửa để app <em>stateless</em> và <em>highly available</em>?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Lưu session vào ElastiCache Redis (Multi-AZ) hoặc DynamoDB.</b> Sticky session giữ user ở một instance nên instance chết là mất session, và không stateless. Memcached cũng lưu được nhưng không HA, mất node là mất session.</p></div>
+      <div class="q"><p class="qt">13. Trang sản phẩm đọc từ RDS, mỗi query mất 200 ms, 90% request lặp lại cùng sản phẩm. Người dùng chấp nhận thấy giá cũ tối đa 5 phút. Thiết kế?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>ElastiCache Redis với cache-aside, TTL 300 giây trên mỗi key.</b> Cache-aside chỉ cache sản phẩm được xem, TTL đảm bảo stale tối đa 5 phút. Read Replica giảm tải nhưng vẫn 200 ms mỗi query. DAX không dùng cho RDS.</p></div>
+      <div class="q"><p class="qt">14. Chọn 2 lý do chọn Redis thay vì Memcached: (A) cần multithread, (B) cần sao lưu và khôi phục cache, (C) cần Multi-AZ auto failover, (D) cần cách cài đặt đơn giản nhất.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>B và C.</b> A và D là điểm mạnh của Memcached. Redis đơn luồng (cho lệnh) nhưng bù bằng replication, persistence, cluster mode.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. REDSHIFT ============ -->
+<section id="redshift">
+  <span class="eyebrow">Lý thuyết 5 / 7</span>
+  <h2>Redshift và Redshift Spectrum</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <ul>
+        <li><b>Redshift</b> là <b>data warehouse</b> (OLAP) managed, dựa trên PostgreSQL, lưu <b>columnar</b> (theo cột) và nén tốt nên quét hàng tỷ dòng cho truy vấn tổng hợp (SUM, GROUP BY) nhanh hơn RDS nhiều lần. Quy mô petabyte. Dùng cho báo cáo, BI (QuickSight, Tableau), không dùng cho OLTP (ghi từng dòng liên tục, transaction ngắn).</li>
+        <li>Kiến trúc cluster: <b>1 leader node</b> nhận SQL, lập kế hoạch, gom kết quả; <b>nhiều compute node</b> chia dữ liệu thành slice và chạy song song (MPP, massively parallel processing). Node type <b>RA3</b> tách compute và storage (dữ liệu trên S3 managed), <b>DC2</b> SSD cục bộ cho dữ liệu nhỏ.</li>
+        <li>Nạp dữ liệu: lệnh <b>COPY</b> từ S3 (song song, nhanh nhất), từ DynamoDB, EMR, hoặc qua Kinesis Data Firehose. Không nên INSERT từng dòng.</li>
+        <li><b>Nằm trong một AZ</b> (Multi-AZ mới có cho RA3, cần kiểm tra lại). HA kiểu Redshift: tự thay node hỏng, <b>snapshot tự động</b> lên S3 và có thể <b>copy snapshot sang Region khác</b> để DR. Đề nói <em>disaster recovery for Redshift</em> → cross-Region snapshot copy.</li>
+        <li><b>Enhanced VPC Routing</b>: ép traffic COPY/UNLOAD đi trong VPC (qua endpoint) thay vì internet. <b>Concurrency Scaling</b>: tự thêm cluster tạm khi nhiều truy vấn đồng thời.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Redshift Spectrum và Redshift Serverless</span>
+      <ul>
+        <li><b>Redshift Spectrum</b>: chạy SQL trực tiếp trên file trong <b>S3</b> (Parquet, ORC, CSV, JSON) <b>mà không cần load vào cluster</b>, join được với bảng bên trong Redshift. Cần có cluster Redshift đang chạy; bảng S3 định nghĩa qua external schema (Glue Data Catalog). Chọn khi đề nói <em>query exabytes in S3 from Redshift</em>, <em>join historical data in S3 with warehouse data</em>, <em>without loading</em>.</li>
+        <li><b>Redshift Serverless</b>: không quản lý cluster, đo bằng RPU, tự scale, trả theo giây truy vấn chạy. Chọn khi <em>ad hoc</em>, <em>intermittent analytics</em>, <em>no cluster management</em>. Vẫn là Redshift (columnar, SQL, Spectrum dùng được).</li>
+        <li><b>Data sharing</b>: chia sẻ dữ liệu live giữa các cluster/account không copy. <b>Zero-ETL</b> từ Aurora sang Redshift: replicate tự động để phân tích gần realtime, không viết pipeline.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Redshift với Athena với EMR với RDS</span>
+      <div class="tbl"><table>
+        <tr><th>Dịch vụ</th><th>Là gì</th><th>Chọn khi đề nói</th></tr>
+        <tr><td><b>Redshift</b></td><td>Data warehouse, dữ liệu load vào, truy vấn lặp lại nhanh, BI</td><td><em>data warehouse</em>, <em>complex joins on petabytes</em>, <em>BI dashboards</em>, <em>OLAP</em>, truy vấn thường xuyên</td></tr>
+        <tr><td><b>Athena</b></td><td>Serverless SQL trực tiếp trên S3, trả theo TB quét, không hạ tầng</td><td><em>ad hoc query on S3</em>, <em>log analysis</em>, <em>serverless</em>, <em>infrequent</em>, <em>pay per query</em>. Giảm tiền bằng Parquet + partition</td></tr>
+        <tr><td><b>EMR</b></td><td>Cluster Hadoop/Spark/Hive managed, xử lý dữ liệu lớn bằng code</td><td><em>Spark</em>, <em>Hadoop</em>, <em>machine learning on big data</em>, <em>ETL at scale</em>, <em>existing Hadoop jobs</em></td></tr>
+        <tr><td><b>RDS / Aurora</b></td><td>OLTP, giao dịch ngắn, nhiều ghi đọc từng dòng</td><td><em>transactional</em>, <em>application database</em>, <em>row-level</em>. Báo cáo nặng trên RDS → chuyển sang Redshift hoặc Read Replica</td></tr>
+        <tr><td><b>Redshift Spectrum</b></td><td>Redshift truy vấn thêm dữ liệu trong S3</td><td>Đã có Redshift, muốn join với dữ liệu lạnh trong S3 không load</td></tr>
+      </table></div>
+      <p style="font-size:.92rem">Mẹo: Athena và Spectrum đều query S3. Khác nhau: Athena không cần cluster, cho người chưa có Redshift; Spectrum cho người đã có Redshift và muốn join với bảng trong warehouse.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Cặp</th><th>Khác nhau ở chỗ</th></tr>
+        <tr><td>Redshift với RDS</td><td>Redshift columnar cho OLAP (quét nhiều dòng, ít cột). RDS row-based cho OLTP (nhiều transaction nhỏ). Đề nói "chạy báo cáo cuối tháng làm chậm app" → đưa dữ liệu sang Redshift.</td></tr>
+        <tr><td>Redshift với Athena</td><td>Redshift giữ dữ liệu trong cluster, nhanh và ổn định cho BI hằng ngày, trả tiền cluster. Athena serverless trên S3, rẻ khi thỉnh thoảng truy vấn.</td></tr>
+        <tr><td>Spectrum với Athena</td><td>Cả hai query S3. Spectrum cần cluster Redshift, join được với bảng Redshift. Athena độc lập.</td></tr>
+        <tr><td>Redshift với EMR</td><td>Redshift là SQL warehouse. EMR là framework xử lý (Spark, Hadoop), linh hoạt hơn nhưng tự quản lý job.</td></tr>
+        <tr><td>Redshift với OpenSearch</td><td>OpenSearch cho tìm kiếm full-text, log analytics, dashboard Kibana. Redshift cho SQL phân tích có cấu trúc.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>data warehouse, OLAP, columnar <b>→ Redshift</b></span><span>query S3 without loading, join with warehouse <b>→ Redshift Spectrum</b></span><span>no cluster to manage, ad hoc analytics <b>→ Redshift Serverless</b></span><span>DR for Redshift <b>→ cross-Region snapshot copy</b></span><span>serverless SQL on S3, pay per query <b>→ Athena</b></span><span>Spark, Hadoop <b>→ EMR</b></span><span>fastest way to load data <b>→ COPY from S3</b></span><span>Aurora to Redshift without ETL <b>→ zero-ETL integration</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">15. Công ty có 50 TB dữ liệu bán hàng, nhóm BI chạy dashboard mỗi giờ với join phức tạp trên nhiều bảng. Hiện chạy trên RDS PostgreSQL và rất chậm. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Redshift.</b> Columnar, MPP, cho truy vấn tổng hợp lặp lại trên hàng chục TB. Athena hợp với truy vấn thỉnh thoảng, chạy mỗi giờ trên 50 TB sẽ đắt và chậm hơn. Read Replica vẫn là row-based, không giải quyết gốc.</p></div>
+      <div class="q"><p class="qt">16. Đã có cluster Redshift 2 năm dữ liệu. Dữ liệu 8 năm trước nằm trong S3 dạng Parquet. Thỉnh thoảng cần join cả hai. <em>Most cost-effective</em>?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Redshift Spectrum</b>: tạo external table trỏ vào S3, join với bảng trong cluster. Load 8 năm dữ liệu vào cluster tốn storage và node. Athena query S3 được nhưng không join trực tiếp với bảng trong Redshift.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. DMS VÀ SCT ============ -->
+<section id="dms">
+  <span class="eyebrow">Lý thuyết 6 / 7</span>
+  <h2>DMS và Schema Conversion Tool</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <ul>
+        <li><b>Database Migration Service (DMS)</b>: di chuyển dữ liệu từ DB nguồn sang DB đích <b>khi nguồn vẫn đang chạy</b>. Chạy trên một <b>replication instance</b> (EC2 do DMS quản lý, bạn chọn cỡ, có Multi-AZ) với <b>source endpoint</b>, <b>target endpoint</b> và <b>migration task</b>. Nguồn có thể on-premises, EC2, RDS, S3; đích là RDS, Aurora, DynamoDB, Redshift, S3, OpenSearch, Kinesis, DocumentDB…</li>
+        <li>Ba kiểu task: <b>Full load</b> (copy một lần), <b>Full load + CDC</b> (copy rồi tiếp tục đồng bộ thay đổi), <b>CDC only</b>. <b>CDC (change data capture)</b> đọc transaction log của nguồn để replicate liên tục với downtime gần bằng 0: app chuyển sang đích chỉ khi hai bên đã đồng bộ. Đề nói <em>minimal downtime migration</em>, <em>continuous replication</em>, <em>keep source running</em> → DMS với CDC.</li>
+        <li><b>Homogeneous</b> (cùng engine, Oracle → Oracle, MySQL → Aurora MySQL): DMS làm trực tiếp. <b>Heterogeneous</b> (đổi engine, Oracle → Aurora PostgreSQL, SQL Server → MySQL): phải dùng <b>SCT</b> chuyển schema trước, rồi DMS chuyển dữ liệu.</li>
+        <li><b>Schema Conversion Tool (SCT)</b>: phần mềm cài trên máy, phân tích schema, stored procedure, view của nguồn và chuyển sang cú pháp engine đích, kèm báo cáo đánh giá phần nào phải sửa tay. SCT còn có extractor chuyển data warehouse (Oracle, Teradata, Netezza) sang Redshift. Nay có thể chạy SCT ngay trong console DMS (DMS Schema Conversion).</li>
+        <li><b>Dữ liệu lớn hoặc mạng yếu</b>: DMS kết hợp <b>Snowball Edge</b>: SCT trích dữ liệu lên Snowball, ship về AWS, DMS load vào đích từ S3, rồi CDC đồng bộ phần thay đổi trong lúc vận chuyển. Đề nói <em>terabytes</em>, <em>limited bandwidth</em>, <em>migrate database</em> → DMS + Snowball.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Luồng heterogeneous migration</span>
+      <div class="flow">
+        <div class="n"><span>SCT phân tích schema Oracle on-premises, tạo báo cáo đánh giá</span><span class="tag next">bước 1</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span>SCT chuyển schema, sinh DDL cho Aurora PostgreSQL, sửa tay phần SCT không tự chuyển</span><span class="tag next">bước 2</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span>DMS replication instance: task Full load + CDC từ Oracle sang Aurora</span><span class="tag next">bước 3</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span>Kiểm tra dữ liệu (DMS data validation), chạy app thử trên Aurora</span><span class="tag next">bước 4</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span>Cutover: dừng ghi vào Oracle, chờ CDC hết lag, trỏ app sang Aurora</span><span class="tag allow">downtime vài phút</span></div>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Khi nào dùng, khi nào không</span>
+      <ul>
+        <li>Dùng DMS: di chuyển DB lên AWS (on-premises → RDS/Aurora), đổi engine (kèm SCT), replicate liên tục để làm phân tích (RDS → Redshift, RDS → S3 data lake, RDS → Kinesis), gộp nhiều DB vào một, tách một DB thành nhiều.</li>
+        <li>Không dùng DMS khi chỉ cần copy một lần cùng engine và chấp nhận downtime: dùng dump/restore hoặc snapshot. Cũng không dùng DMS để sync RDS cùng Region liên tục cho HA (đó là Multi-AZ / Read Replica).</li>
+        <li>DMS <b>không chuyển schema</b> cho heterogeneous; nó chỉ tạo bảng cơ bản (primary key), không tạo index phụ, FK, procedure. Đây là lý do phải có SCT.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>MySQL on-premises → Aurora MySQL, downtime tối thiểu</td><td>DMS Full load + CDC</td><td>SCT (cùng engine, không cần), mysqldump (downtime)</td></tr>
+        <tr><td>Oracle → Aurora PostgreSQL</td><td>SCT chuyển schema, rồi DMS chuyển dữ liệu</td><td>DMS một mình (không chuyển stored procedure)</td></tr>
+        <tr><td>DB 40 TB, đường truyền 100 Mbps</td><td>SCT + Snowball Edge, sau đó DMS CDC</td><td>DMS qua mạng (mất hàng tháng)</td></tr>
+        <tr><td>Replicate RDS liên tục sang Redshift để phân tích</td><td>DMS CDC (hoặc zero-ETL nếu Aurora)</td><td>Read Replica (không phải Redshift)</td></tr>
+        <tr><td>Di chuyển server ứng dụng (không phải DB)</td><td>Application Migration Service (MGN, tuần 9)</td><td>DMS</td></tr>
+        <tr><td>Chuyển file, NFS share</td><td>DataSync (tuần 3)</td><td>DMS</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>migrate database, minimal downtime <b>→ DMS + CDC</b></span><span>different database engine <b>→ SCT rồi DMS</b></span><span>continuous replication <b>→ DMS CDC</b></span><span>large database, limited bandwidth <b>→ SCT + Snowball + DMS</b></span><span>Oracle to Redshift data warehouse <b>→ SCT extractor</b></span><span>replication instance <b>→ DMS</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">17. Công ty muốn chuyển Oracle 5 TB on-premises sang Aurora PostgreSQL với downtime dưới 1 giờ. Chọn 2 bước cần thiết: (A) dùng SCT chuyển schema, (B) dùng DMS với CDC, (C) dùng DataSync, (D) dùng AWS Backup.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>A và B.</b> Đổi engine nên cần SCT; CDC giữ hai bên đồng bộ để cutover ngắn. DataSync chuyển file, AWS Backup không migrate giữa engine.</p></div>
+      <div class="q"><p class="qt">18. MySQL 8 on-premises cần lên RDS MySQL, bandwidth tốt, chấp nhận downtime cuối tuần. Cách <em>simplest</em>?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>DMS full load (hoặc mysqldump và restore) không cần SCT.</b> Cùng engine nên SCT thừa. Nếu đề đổi yêu cầu thành "không được downtime" thì thêm CDC.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. NHẬN DIỆN ============ -->
+<section id="nhandien">
+  <span class="eyebrow">Lý thuyết 7 / 7</span>
+  <h2>DB chuyên dụng: Neptune, DocumentDB, Keyspaces, Timestream, QLDB, MemoryDB</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <p>Nhóm này đề thi chỉ cần <b>nhận diện</b>: nhìn mô hình dữ liệu hoặc engine mà đề nhắc là chọn được ngay, không cần biết sâu cách vận hành. Tất cả đều managed, nằm trong VPC, mã hóa KMS, có backup.</p>
+      <div class="tbl"><table>
+        <tr><th>Dịch vụ</th><th>Mô hình dữ liệu</th><th>Tương thích / giao thức</th><th>Ví dụ bài toán</th></tr>
+        <tr><td><b>Neptune</b></td><td><b>Graph</b>: node và edge, duyệt quan hệ nhiều bậc</td><td>Gremlin, openCypher, SPARQL (RDF)</td><td>Mạng xã hội (bạn của bạn), gợi ý sản phẩm, phát hiện gian lận qua quan hệ, knowledge graph. Có Neptune ML và Neptune Analytics</td></tr>
+        <tr><td><b>DocumentDB</b></td><td><b>Document</b> JSON</td><td>Tương thích <b>MongoDB</b> API</td><td>App đang viết cho MongoDB muốn lên managed. Kiến trúc giống Aurora (storage 6 bản 3 AZ, 15 replica)</td></tr>
+        <tr><td><b>Keyspaces</b></td><td><b>Wide-column</b></td><td>Tương thích <b>Apache Cassandra</b> (CQL)</td><td>App Cassandra sẵn có, serverless, on-demand hoặc provisioned như DynamoDB</td></tr>
+        <tr><td><b>Timestream</b></td><td><b>Time series</b>: timestamp + measure</td><td>SQL riêng, tích hợp IoT Core, Kinesis, Grafana</td><td>Cảm biến IoT, metric, log theo thời gian; tự chuyển dữ liệu cũ từ memory sang magnetic store, truy vấn theo khoảng thời gian nhanh</td></tr>
+        <tr><td><b>QLDB</b></td><td><b>Ledger</b>: nhật ký <b>immutable</b>, có thể xác minh bằng mã băm (cryptographically verifiable)</td><td>PartiQL, tập trung, do một chủ sở hữu</td><td>Lịch sử giao dịch tài chính, hồ sơ đăng ký xe, chuỗi cung ứng cần chứng minh dữ liệu không bị sửa. Khác blockchain (Managed Blockchain: phi tập trung, nhiều bên)</td></tr>
+        <tr><td><b>MemoryDB for Redis</b></td><td>In-memory key-value, <b>durable</b></td><td>Tương thích Redis</td><td>Dùng Redis làm <b>database chính</b> (không chỉ cache): transaction log Multi-AZ, không mất dữ liệu khi node chết, độ trễ microsecond đọc</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Bảng "đề nói gì → chọn gì" cho toàn tuần</span>
+      <div class="tbl"><table>
+        <tr><th>Đề nói gì</th><th>Chọn gì</th></tr>
+        <tr><td>Quan hệ, SQL, Oracle hoặc SQL Server, lift and shift</td><td>RDS</td></tr>
+        <tr><td>Quan hệ MySQL/PostgreSQL, hiệu năng và HA cao nhất, 15 replica, Global Database</td><td>Aurora</td></tr>
+        <tr><td>Quan hệ, tải không đoán được, trả theo dùng</td><td>Aurora Serverless v2</td></tr>
+        <tr><td>Key-value, serverless, ms, scale vô hạn, session, cart, IoT</td><td>DynamoDB</td></tr>
+        <tr><td>Cache cho DynamoDB, microsecond, không đổi code</td><td>DAX</td></tr>
+        <tr><td>Cache cho RDS, session store, leaderboard, pub/sub</td><td>ElastiCache Redis</td></tr>
+        <tr><td>Cache đơn giản nhất, multithread</td><td>ElastiCache Memcached</td></tr>
+        <tr><td>Redis nhưng dữ liệu phải bền, làm DB chính</td><td>MemoryDB for Redis</td></tr>
+        <tr><td>Data warehouse, OLAP, BI, petabyte</td><td>Redshift</td></tr>
+        <tr><td>Query S3 không load, join với warehouse</td><td>Redshift Spectrum</td></tr>
+        <tr><td>Query S3 serverless, ad hoc, trả theo query</td><td>Athena</td></tr>
+        <tr><td>Graph, quan hệ nhiều bậc, mạng xã hội, gợi ý</td><td>Neptune</td></tr>
+        <tr><td>MongoDB</td><td>DocumentDB</td></tr>
+        <tr><td>Cassandra</td><td>Keyspaces</td></tr>
+        <tr><td>Time series, IoT sensor, metric theo thời gian</td><td>Timestream</td></tr>
+        <tr><td>Immutable, verifiable history, ledger, một chủ sở hữu</td><td>QLDB</td></tr>
+        <tr><td>Nhiều bên không tin nhau, phi tập trung, Hyperledger/Ethereum</td><td>Managed Blockchain</td></tr>
+        <tr><td>Full-text search, log analytics, Kibana</td><td>OpenSearch Service</td></tr>
+        <tr><td>Di chuyển DB, minimal downtime, CDC</td><td>DMS (+ SCT nếu đổi engine)</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>graph, relationships, social network <b>→ Neptune</b></span><span>MongoDB-compatible <b>→ DocumentDB</b></span><span>Cassandra-compatible <b>→ Keyspaces</b></span><span>time series, IoT telemetry <b>→ Timestream</b></span><span>immutable, cryptographically verifiable <b>→ QLDB</b></span><span>Redis-compatible durable database <b>→ MemoryDB</b></span><span>decentralized, multiple parties <b>→ Managed Blockchain</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">19. Ứng dụng gợi ý bạn bè cần truy vấn "bạn của bạn của bạn" với hàng trăm triệu người dùng, độ trễ thấp. Chọn DB nào?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Neptune.</b> Graph DB tối ưu duyệt quan hệ nhiều bậc. Làm trên RDS phải join đệ quy rất chậm; DynamoDB không có khái niệm quan hệ.</p></div>
+      <div class="q"><p class="qt">20. Ngân hàng cần lưu lịch sử mọi thay đổi số dư, phải chứng minh được với kiểm toán là không ai sửa được bản ghi cũ, do ngân hàng tự quản lý. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>QLDB.</b> Ledger immutable, có journal băm để xác minh. Managed Blockchain dành cho nhiều bên không tin nhau cùng vận hành; đề nói "do ngân hàng tự quản lý" nên là tập trung → QLDB. DynamoDB với Streams ghi được lịch sử nhưng không "verifiable" tự thân.</p></div>
+      <div class="q"><p class="qt">21. Nhà máy có 10.000 cảm biến gửi nhiệt độ mỗi giây, cần truy vấn "trung bình 5 phút gần nhất theo máy" và tự chuyển dữ liệu cũ sang lưu trữ rẻ. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Timestream.</b> Time series DB có hàm theo thời gian và tiering memory sang magnetic. DynamoDB lưu được nhưng không có hàm time series sẵn và tiering phải tự làm bằng TTL + export.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HANDS-ON ============ -->
+<section id="handson">
+  <span class="eyebrow">Thực hành</span>
+  <h2>Hands-on: 5 lab</h2>
+  <p>Lab 1 và 2 tạo RDS Multi-AZ tính tiền theo giờ, làm liền nhau trong một buổi rồi xóa ngay ở lab 5 (có thể làm lab 5 phần RDS ngay sau lab 2). Lab 3 và 4 dùng DynamoDB và Lambda trong Free Tier always free (25 GB, 25 RCU/WCU, 1 triệu request Lambda mỗi tháng, cần kiểm tra lại). Mọi lệnh chạy trong PowerShell với <code>$env:AWS_PROFILE = "saa"</code> và Region <code>ap-northeast-1</code>.</p>
+  <div class="note">Giá tham khảo (cần kiểm tra lại): <code>db.t3.micro</code> Single-AZ khoảng 0,02 USD/giờ, <b>Multi-AZ gấp đôi</b> khoảng 0,04 USD/giờ, cộng storage gp3 20 GB khoảng 0,003 USD/giờ, backup trong hạn mức miễn phí. Read replica thêm một instance nữa. Giữ cả hai trong 4 giờ hết khoảng 0,3 USD; <b>để quên một tháng mất khoảng 45 USD</b>. Free Tier kiểu cũ có 750 giờ db.t3.micro Single-AZ/tháng nhưng Multi-AZ thường không nằm trong đó; account Free Tier kiểu mới (credit) thì trừ vào credit.</div>
+
+  <div class="card">
+    <h3>Lab 1. Tạo RDS MySQL Multi-AZ, ép failover, xem endpoint không đổi</h3>
+    <ol class="steps">
+      <li><div><p>Chuẩn bị Security Group cho DB: Console → <b>EC2 → Security Groups → Create</b>. Name <code>saa-rds-sg</code>, VPC default. Inbound rule: MySQL/Aurora, port 3306, Source là <b>SG của EC2 lab</b> (nếu kết nối từ EC2 trong VPC) hoặc <b>My IP</b> (nếu kết nối từ máy local, cần DB public). Cách sạch nhất: kết nối từ một EC2 t3.micro trong cùng VPC (tạo như tuần 2, cài <code>mysql</code> client bằng <code>sudo dnf install mariadb105 -y</code>).</p></div></li>
+      <li><div><p>Console → <b>RDS → Databases → Create database</b>. Chọn <b>Standard create</b>, Engine <b>MySQL</b> (phiên bản mặc định), Templates chọn <b>Dev/Test</b> (template Free tier không cho chọn Multi-AZ). Availability and durability: <b>Multi-AZ DB instance</b> (không chọn "Multi-AZ DB cluster", cái đó 3 instance đắt gấp rưỡi).</p></div></li>
+      <li><div><p>Settings: DB instance identifier <code>saa-mysql</code>, Master username <code>admin</code>, chọn <b>Self managed</b> password và tự đặt (không chọn Secrets Manager để khỏi phát sinh phí). Instance configuration: <b>Burstable classes → db.t3.micro</b>. Storage: gp3, 20 GiB, <b>bỏ tick storage autoscaling</b> cho lab.</p></div></li>
+      <li><div><p>Connectivity: VPC default, Public access <b>No</b> (nếu dùng EC2) hoặc Yes (nếu dùng máy local), VPC security group chọn <code>saa-rds-sg</code>. Additional configuration: Initial database name <code>labdb</code>, Backup retention <b>1 day</b>, <b>bỏ tick</b> Enable Performance Insights và Enhanced Monitoring (Performance Insights 7 ngày miễn phí nhưng để đơn giản), bỏ tick deletion protection (để lab 5 xóa được). Create database. Chờ 10 đến 15 phút tới trạng thái <b>Available</b>.</p></div></li>
+      <li><div><p>Mở DB <code>saa-mysql</code> → tab <b>Connectivity &amp; security</b>: ghi lại <b>Endpoint</b> (dạng <code>saa-mysql.xxxx.ap-northeast-1.rds.amazonaws.com</code>) và <b>Availability Zone</b> hiện tại (ví dụ <code>ap-northeast-1a</code>), cùng <b>Secondary Zone</b>. Bằng CLI:</p>
+<pre><code>aws rds describe-db-instances --db-instance-identifier saa-mysql `
+  --query "DBInstances[0].[Endpoint.Address,AvailabilityZone,SecondaryAvailabilityZone,MultiAZ]" --output table</code></pre></div></li>
+      <li><div><p>Kết nối từ EC2 (hoặc máy local) và tạo dữ liệu:</p>
+<pre><code>mysql -h saa-mysql.xxxx.ap-northeast-1.rds.amazonaws.com -u admin -p labdb
+CREATE TABLE notes (id INT AUTO_INCREMENT PRIMARY KEY, body VARCHAR(100), created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+INSERT INTO notes (body) VALUES ('before failover');
+SELECT @@hostname, @@server_id;
+SELECT * FROM notes;</code></pre><p>Ghi lại <code>@@hostname</code> để so sánh sau failover. Nếu không kết nối được: kiểm tra SG inbound 3306 đúng nguồn, DB và EC2 cùng VPC, Public access đúng ý định.</p></div></li>
+      <li><div><p>Ép failover: Console → chọn DB → <b>Actions → Reboot</b> → tick <b>Reboot with failover?</b> → Confirm. Hoặc CLI:</p>
+<pre><code>aws rds reboot-db-instance --db-instance-identifier saa-mysql --force-failover
+aws rds describe-events --source-identifier saa-mysql --source-type db-instance --duration 30 --query "Events[].Message"</code></pre><p>Trong lúc đó giữ lệnh <code>SELECT 1;</code> trong mysql client: kết nối sẽ rớt khoảng 1 đến 2 phút rồi kết nối lại được.</p></div></li>
+      <li><div><p>Sau khi Available trở lại, chạy lại lệnh describe ở bước 5: <b>Endpoint giữ nguyên</b>, nhưng <b>AvailabilityZone và SecondaryAvailabilityZone đổi chỗ</b> cho nhau. Kết nối lại bằng cùng endpoint, chạy <code>SELECT @@hostname;</code> thấy hostname khác và <code>SELECT * FROM notes;</code> vẫn còn dòng "before failover" (sync replication không mất dữ liệu). Chạy <code>nslookup</code> endpoint trước và sau để thấy IP đổi dù tên không đổi.</p></div></li>
+    </ol>
+    <div class="note">RDS Multi-AZ đang tính tiền mỗi giờ. Làm tiếp lab 2 ngay rồi xóa ở lab 5 trong cùng ngày. Nếu phải dừng giữa chừng, xóa DB trước khi rời máy.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 2. Tạo read replica, kết nối và thử INSERT để thấy bị từ chối</h3>
+    <ol class="steps">
+      <li><div><p>Console → RDS → chọn <code>saa-mysql</code> → <b>Actions → Create read replica</b>. DB instance identifier <code>saa-mysql-rr</code>, instance class <b>db.t3.micro</b>, Multi-AZ <b>No</b> (giảm tiền), cùng VPC và SG <code>saa-rds-sg</code>, Public access như primary. Create. Hoặc CLI:</p>
+<pre><code>aws rds create-db-instance-read-replica --db-instance-identifier saa-mysql-rr `
+  --source-db-instance-identifier saa-mysql --db-instance-class db.t3.micro `
+  --vpc-security-group-ids sg-xxxxxxxx --no-publicly-accessible</code></pre><p>Chờ 5 đến 10 phút. Trong lúc chờ, mở tab <b>Configuration</b> của replica: Replication role là <b>Replica</b>, còn primary ghi <b>Source</b>.</p></div></li>
+      <li><div><p>Lấy endpoint của replica (khác endpoint primary):</p>
+<pre><code>aws rds describe-db-instances --db-instance-identifier saa-mysql-rr `
+  --query "DBInstances[0].[Endpoint.Address,ReadReplicaSourceDBInstanceIdentifier,StatusInfos]" --output json</code></pre></div></li>
+      <li><div><p>Kết nối vào replica và thử ghi:</p>
+<pre><code>mysql -h saa-mysql-rr.xxxx.ap-northeast-1.rds.amazonaws.com -u admin -p labdb
+SELECT * FROM notes;                          -- thấy dữ liệu từ primary
+INSERT INTO notes (body) VALUES ('on replica'); -- lỗi
+SHOW VARIABLES LIKE 'read_only';              -- ON</code></pre><p>Kết quả mong đợi: <code>ERROR 1290 (HY000): The MySQL server is running with the --read-only option so it cannot execute this statement</code>. Đây chính là điểm "Read Replica phục vụ đọc, không phải ghi".</p></div></li>
+      <li><div><p>Thấy replication lag: ở primary chạy <code>INSERT INTO notes (body) VALUES ('after replica');</code> rồi ngay lập tức <code>SELECT * FROM notes;</code> trên replica. Thường thấy ngay vì lag chỉ vài trăm ms, nhưng về nguyên tắc là <b>asynchronous</b>. Xem metric <b>ReplicaLag</b> trong tab Monitoring của replica.</p></div></li>
+      <li><div><p>Tùy chọn, không bắt buộc: <b>Actions → Promote</b> replica. Sau vài phút replica thành DB độc lập, <code>read_only</code> thành OFF, INSERT được, và không còn nhận dữ liệu từ primary. Nếu làm bước này, lab 5 phải xóa cả hai như hai DB thường.</p></div></li>
+    </ol>
+    <div class="note">Giờ có 2 instance tính tiền (primary Multi-AZ tính như 2, replica tính 1). Chuyển sang phần RDS của lab 5 ngay nếu không làm tiếp trong ngày.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 3. Tạo bảng DynamoDB, dùng Lambda (Python boto3) ghi và đọc</h3>
+    <ol class="steps">
+      <li><div><p>Tạo bảng on-demand với partition key và sort key:</p>
+<pre><code>aws dynamodb create-table --table-name saa-notes `
+  --attribute-definitions AttributeName=userId,AttributeType=S AttributeName=noteId,AttributeType=S `
+  --key-schema AttributeName=userId,KeyType=HASH AttributeName=noteId,KeyType=RANGE `
+  --billing-mode PAY_PER_REQUEST
+aws dynamodb wait table-exists --table-name saa-notes
+aws dynamodb describe-table --table-name saa-notes --query "Table.[TableStatus,BillingModeSummary.BillingMode]"</code></pre></div></li>
+      <li><div><p>Tạo IAM role cho Lambda, quyền tối thiểu trên đúng bảng này. File <code>trust.json</code>:</p>
+<pre><code>{ "Version": "2012-10-17", "Statement": [ { "Effect": "Allow",
+  "Principal": { "Service": "lambda.amazonaws.com" }, "Action": "sts:AssumeRole" } ] }</code></pre><p>File <code>ddb-policy.json</code> (thay account id):</p>
+<pre><code>{ "Version": "2012-10-17", "Statement": [ { "Effect": "Allow",
+  "Action": ["dynamodb:PutItem","dynamodb:GetItem","dynamodb:Query"],
+  "Resource": "arn:aws:dynamodb:ap-northeast-1:&lt;account-id&gt;:table/saa-notes" } ] }</code></pre>
+<pre><code>aws iam create-role --role-name saa-lambda-ddb-role --assume-role-policy-document file://trust.json
+aws iam attach-role-policy --role-name saa-lambda-ddb-role --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+aws iam put-role-policy --role-name saa-lambda-ddb-role --policy-name ddb-notes --policy-document file://ddb-policy.json</code></pre><p><code>AWSLambdaBasicExecutionRole</code> chỉ cho ghi CloudWatch Logs; quyền DynamoDB là inline policy giới hạn một bảng (least privilege).</p></div></li>
+      <li><div><p>Viết <code>lambda_function.py</code>:</p>
+<pre><code>import json, os, time, uuid
+import boto3
+
+table = boto3.resource("dynamodb").Table(os.environ["TABLE"])
+
+def lambda_handler(event, context):
+    action = event.get("action", "write")
+    user_id = event.get("userId", "quy")
+    if action == "write":
+        item = {"userId": user_id, "noteId": str(uuid.uuid4()),
+                "body": event.get("body", "hello"), "createdAt": int(time.time())}
+        if "ttlSeconds" in event:
+            item["expireAt"] = int(time.time()) + int(event["ttlSeconds"])
+        table.put_item(Item=item)
+        return {"written": item}
+    resp = table.query(KeyConditionExpression=boto3.dynamodb.conditions.Key("userId").eq(user_id))
+    return {"count": resp["Count"], "items": resp["Items"]}</code></pre><p>Nén và tạo function (đợi vài giây sau khi tạo role để IAM lan truyền):</p>
+<pre><code>Compress-Archive -Path lambda_function.py -DestinationPath fn.zip -Force
+aws lambda create-function --function-name saa-notes-fn --runtime python3.12 `
+  --role arn:aws:iam::&lt;account-id&gt;:role/saa-lambda-ddb-role `
+  --handler lambda_function.lambda_handler --zip-file fileb://fn.zip `
+  --environment "Variables={TABLE=saa-notes}" --timeout 10</code></pre><p>Lưu ý: giá trị số trong item trả về sẽ là kiểu <code>Decimal</code>; nếu Lambda báo lỗi serialize JSON khi trả về, đổi <code>int(...)</code> thành <code>str(...)</code> hoặc dùng <code>default=str</code> trong <code>json.dumps</code>.</p></div></li>
+      <li><div><p>Gọi ghi rồi đọc:</p>
+<pre><code>aws lambda invoke --function-name saa-notes-fn --cli-binary-format raw-in-base64-out `
+  --payload '{"action":"write","body":"first note"}' out.json; Get-Content out.json
+aws lambda invoke --function-name saa-notes-fn --cli-binary-format raw-in-base64-out `
+  --payload '{"action":"read"}' out.json; Get-Content out.json</code></pre><p>Kiểm chứng bằng CLI thẳng vào bảng và xem log Lambda:</p>
+<pre><code>aws dynamodb scan --table-name saa-notes --query "Count"
+aws logs tail /aws/lambda/saa-notes-fn --since 10m</code></pre></div></li>
+      <li><div><p>Thử least privilege: sửa payload thành <code>{"action":"write"}</code> nhưng tạm xóa <code>dynamodb:PutItem</code> khỏi inline policy rồi invoke lại, thấy <code>AccessDeniedException</code>. Thêm lại để lab 4 dùng. Mở Console DynamoDB → bảng → <b>Explore items</b> để thấy item với 2 khóa userId và noteId.</p></div></li>
+    </ol>
+    <div class="note ok">DynamoDB on-demand và Lambda ở mức này nằm trong always free, không tính giờ. Vẫn xóa ở lab 5 để giữ account gọn.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 4. Bật TTL và Streams, ghi item có TTL quá khứ, xem bị xóa và thấy record trong stream</h3>
+    <ol class="steps">
+      <li><div><p>Bật Streams với NEW_AND_OLD_IMAGES và bật TTL trên attribute <code>expireAt</code>:</p>
+<pre><code>aws dynamodb update-table --table-name saa-notes `
+  --stream-specification StreamEnabled=true,StreamViewType=NEW_AND_OLD_IMAGES
+aws dynamodb update-time-to-live --table-name saa-notes `
+  --time-to-live-specification Enabled=true,AttributeName=expireAt
+aws dynamodb describe-time-to-live --table-name saa-notes</code></pre><p>Console: tab <b>Additional settings</b> thấy TTL status Enabled, tab <b>Exports and streams</b> thấy Stream ARN.</p></div></li>
+      <li><div><p>Tạo Lambda thứ hai ghi mọi record stream ra log, file <code>stream_fn.py</code>:</p>
+<pre><code>import json
+def lambda_handler(event, context):
+    for r in event["Records"]:
+        who = r.get("userIdentity", {}).get("principalId", "user")
+        keys = r["dynamodb"]["Keys"]
+        print(json.dumps({"event": r["eventName"], "by": who, "keys": keys}))
+    return {"processed": len(event["Records"])}</code></pre>
+<pre><code>Compress-Archive -Path stream_fn.py -DestinationPath stream.zip -Force
+aws iam attach-role-policy --role-name saa-lambda-ddb-role --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaDynamoDBExecutionRole
+aws lambda create-function --function-name saa-stream-fn --runtime python3.12 `
+  --role arn:aws:iam::&lt;account-id&gt;:role/saa-lambda-ddb-role `
+  --handler stream_fn.lambda_handler --zip-file fileb://stream.zip --timeout 10
+$stream = aws dynamodb describe-table --table-name saa-notes --query "Table.LatestStreamArn" --output text
+aws lambda create-event-source-mapping --function-name saa-stream-fn `
+  --event-source-arn $stream --starting-position LATEST --batch-size 10</code></pre><p>Dùng chung role cho gọn lab; <code>AWSLambdaDynamoDBExecutionRole</code> cho quyền đọc stream.</p></div></li>
+      <li><div><p>Ghi một item thường và một item có TTL trong quá khứ (ttlSeconds âm) qua Lambda của lab 3:</p>
+<pre><code>aws lambda invoke --function-name saa-notes-fn --cli-binary-format raw-in-base64-out `
+  --payload '{"action":"write","body":"will expire","ttlSeconds":-600}' out.json; Get-Content out.json
+aws lambda invoke --function-name saa-notes-fn --cli-binary-format raw-in-base64-out `
+  --payload '{"action":"write","body":"stays"}' out.json</code></pre><p>Ngay sau đó đọc bằng <code>{"action":"read"}</code>: item "will expire" <b>vẫn còn</b>, vì TTL xóa nền, không tức thì. Đây là bẫy đề: item quá hạn có thể còn đọc được tới khi bị xóa, app phải tự lọc <code>expireAt &gt; now</code> nếu cần chính xác.</p></div></li>
+      <li><div><p>Xem stream đã nhận 2 INSERT:</p>
+<pre><code>aws logs tail /aws/lambda/saa-stream-fn --since 5m</code></pre><p>Mong đợi 2 dòng <code>"event": "INSERT", "by": "user"</code>.</p></div></li>
+      <li><div><p>Chờ TTL xóa: thường trong vài phút đến vài chục phút với bảng nhỏ, tài liệu nói tối đa vài ngày. Kiểm tra định kỳ:</p>
+<pre><code>aws dynamodb scan --table-name saa-notes --query "Items[].body"
+aws logs tail /aws/lambda/saa-stream-fn --since 1h | Select-String REMOVE</code></pre><p>Khi item biến mất khỏi scan, log stream có dòng <code>"event": "REMOVE", "by": "dynamodb.amazonaws.com"</code>. So sánh với xóa thủ công: chạy <code>aws dynamodb delete-item --table-name saa-notes --key '{"userId":{"S":"quy"},"noteId":{"S":"&lt;id của item stays&gt;"}}'</code> rồi xem log: REMOVE nhưng <code>by</code> không phải dynamodb.amazonaws.com. Đó là cách phân biệt xóa do TTL ở câu 10.</p></div></li>
+      <li><div><p>Xem metric: Console DynamoDB → bảng → Monitor → <b>TimeToLiveDeletedItemCount</b> tăng lên. Lambda stream được gọi mà không tốn RCU của bảng.</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Lab 5. Dọn dẹp và kiểm tra Billing</h3>
+    <ol class="steps">
+      <li><div><p><b>RDS, làm trước và trong ngày.</b> Phải xóa <b>read replica trước</b>, primary sau (RDS không cho xóa primary khi còn replica):</p>
+<pre><code>aws rds delete-db-instance --db-instance-identifier saa-mysql-rr --skip-final-snapshot
+aws rds wait db-instance-deleted --db-instance-identifier saa-mysql-rr
+aws rds delete-db-instance --db-instance-identifier saa-mysql --skip-final-snapshot --delete-automated-backups</code></pre><p>Trên Console: Actions → Delete → <b>bỏ tick</b> "Create final snapshot", tick "Acknowledge", gõ <code>delete me</code>. Nếu bật deletion protection thì Modify tắt trước. Nếu muốn giữ final snapshot để học restore thì tạo, nhưng nhớ xóa snapshot sau (snapshot tính tiền theo GB-tháng ngoài hạn mức).</p></div></li>
+      <li><div><p>Kiểm tra không còn instance và snapshot thủ công:</p>
+<pre><code>aws rds describe-db-instances --query "DBInstances[].DBInstanceIdentifier"
+aws rds describe-db-snapshots --snapshot-type manual --query "DBSnapshots[].DBSnapshotIdentifier"
+aws rds delete-db-snapshot --db-snapshot-identifier &lt;tên nếu có&gt;</code></pre><p>Xóa EC2 client nếu tạo cho lab 1 (terminate, kiểm tra EBS còn sót), xóa SG <code>saa-rds-sg</code>.</p></div></li>
+      <li><div><p>DynamoDB, Lambda, IAM:</p>
+<pre><code>$uuid = aws lambda list-event-source-mappings --function-name saa-stream-fn --query "EventSourceMappings[0].UUID" --output text
+aws lambda delete-event-source-mapping --uuid $uuid
+aws lambda delete-function --function-name saa-stream-fn
+aws lambda delete-function --function-name saa-notes-fn
+aws dynamodb delete-table --table-name saa-notes
+aws iam delete-role-policy --role-name saa-lambda-ddb-role --policy-name ddb-notes
+aws iam detach-role-policy --role-name saa-lambda-ddb-role --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+aws iam detach-role-policy --role-name saa-lambda-ddb-role --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaDynamoDBExecutionRole
+aws iam delete-role --role-name saa-lambda-ddb-role
+aws logs delete-log-group --log-group-name /aws/lambda/saa-notes-fn
+aws logs delete-log-group --log-group-name /aws/lambda/saa-stream-fn</code></pre></div></li>
+      <li><div><p>Console → <b>Billing and Cost Management → Bills</b>: dòng RDS phải chỉ vài giờ db.t3.micro, không có storage hay snapshot kéo dài. Mở <b>Cost Explorer</b> ngày hôm sau, lọc Service = RDS, để chắc không còn phát sinh. Kiểm tra <b>Free Tier</b> usage DynamoDB và Lambda vẫn trong hạn mức.</p></div></li>
+    </ol>
+    <div class="note bad">Resource tính theo giờ tuần này: <b>RDS primary (Multi-AZ tính như 2 instance), RDS read replica, EC2 client</b>. Xóa trong ngày. Snapshot RDS, EBS volume còn sót và Elastic IP là phí ngầm, kiểm tra lại lần nữa trước khi đóng máy.</div>
+  </div>
+</section>
+
+<!-- ============ MỐC KIỂM TRA ============ -->
+<section id="moc">
+  <span class="eyebrow">Mốc kiểm tra</span>
+  <h2>Hai câu phải tự nói được không nhìn tài liệu</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>1. Chọn RDS, Aurora, DynamoDB hay ElastiCache theo đề bài?</h3>
+      <p style="font-size:.94rem">Gợi ý khung trả lời (che lại rồi tự nói):</p>
+      <ul style="font-size:.94rem">
+        <li>Hỏi đầu tiên: dữ liệu <b>quan hệ</b> (SQL, join, transaction) hay <b>key-value</b>? Quan hệ → RDS/Aurora. Key-value, serverless, scale vô hạn, ms → DynamoDB.</li>
+        <li>Trong quan hệ: engine Oracle/SQL Server hoặc chỉ cần managed đơn giản, rẻ → <b>RDS</b>. MySQL/PostgreSQL cần hiệu năng, HA cao nhất, 15 replica, Global Database, Serverless v2 → <b>Aurora</b>.</li>
+        <li><b>ElastiCache</b> không thay DB, nó đứng trước DB: đề nói <em>sub-millisecond</em>, <em>reduce read load</em>, <em>session store</em>, <em>leaderboard</em>. Redis khi cần HA/persistence/cấu trúc dữ liệu, Memcached khi đơn giản. Cache riêng cho DynamoDB là DAX.</li>
+        <li>Kể được 1 ví dụ mỗi loại: ERP kế toán → RDS; app web MySQL lớn cần 10 replica → Aurora; giỏ hàng, session → DynamoDB; giảm tải đọc trang sản phẩm → ElastiCache.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>2. Multi-AZ phục vụ HA, Read Replica phục vụ scale read?</h3>
+      <p style="font-size:.94rem">Gợi ý khung trả lời:</p>
+      <ul style="font-size:.94rem">
+        <li><b>Multi-AZ</b>: standby ở AZ khác, replication <b>synchronous</b>, <b>failover tự động</b> 1 đến 2 phút, <b>endpoint không đổi</b>, standby <b>không đọc được</b> (trừ Multi-AZ DB cluster). Mục đích: không mất dữ liệu và ít downtime khi AZ hỏng hoặc bảo trì.</li>
+        <li><b>Read Replica</b>: bản sao <b>asynchronous</b>, có lag, <b>endpoint riêng</b>, app tự gửi truy vấn đọc sang, có thể <b>cross-Region</b>, tối đa 15. Không tự failover, muốn dùng làm primary phải <b>promote</b> thủ công.</li>
+        <li>Hai thứ bổ sung nhau, production thường bật cả hai. Aurora gộp hai vai trò: replica vừa đọc vừa là standby.</li>
+        <li>Kể được 1 ví dụ: báo cáo làm chậm app → Read Replica; đề đòi survive AZ failure → Multi-AZ.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TỪ KHÓA ============ -->
+<section id="tukhoa">
+  <span class="eyebrow">Ôn nhanh</span>
+  <h2>Bảng từ khóa tuần 6</h2>
+  <div class="tbl"><table>
+    <tr><th>Đề bài có chữ</th><th>Nghĩ ngay tới</th></tr>
+    <tr><td><em>synchronous</em>, <em>automatic failover</em>, <em>survive AZ failure</em>, DB</td><td>RDS Multi-AZ</td></tr>
+    <tr><td><em>asynchronous</em>, <em>offload reads</em>, <em>reporting</em>, <em>read-heavy</em></td><td>Read Replica</td></tr>
+    <tr><td><em>readable standby</em>, two standbys</td><td>RDS Multi-AZ DB cluster</td></tr>
+    <tr><td><em>point-in-time recovery</em>, restore to a specific second</td><td>Automated backup (RDS, Aurora, DynamoDB PITR)</td></tr>
+    <tr><td><em>retain backups longer than 35 days</em></td><td>Manual snapshot, AWS Backup</td></tr>
+    <tr><td><em>encrypt an existing unencrypted RDS</em></td><td>Snapshot → copy có mã hóa → restore</td></tr>
+    <tr><td><em>too many connections</em>, Lambda với RDS</td><td>RDS Proxy</td></tr>
+    <tr><td><em>avoid storing DB passwords</em></td><td>IAM DB authentication (hoặc Secrets Manager để rotate)</td></tr>
+    <tr><td><em>OS access</em> on managed Oracle/SQL Server</td><td>RDS Custom</td></tr>
+    <tr><td><em>6 copies, 3 AZs</em>, <em>self-healing storage</em>, 15 replicas</td><td>Aurora</td></tr>
+    <tr><td><em>reader endpoint</em>, distribute reads without app changes</td><td>Aurora reader endpoint</td></tr>
+    <tr><td><em>cross-Region DR</em>, RPO 1 giây, RTO 1 phút, relational</td><td>Aurora Global Database</td></tr>
+    <tr><td><em>unpredictable</em>, <em>intermittent</em>, relational, pay per use</td><td>Aurora Serverless v2</td></tr>
+    <tr><td><em>rewind in place</em>, undo bad change in minutes</td><td>Aurora Backtrack</td></tr>
+    <tr><td><em>test copy of production quickly</em></td><td>Aurora cloning</td></tr>
+    <tr><td><em>single-digit millisecond</em>, <em>serverless</em>, key-value, session, cart</td><td>DynamoDB</td></tr>
+    <tr><td><em>microsecond</em>, cache DynamoDB, minimal code change</td><td>DAX</td></tr>
+    <tr><td><em>query by another attribute</em> on existing table</td><td>GSI</td></tr>
+    <tr><td><em>same partition key</em>, different sort key, strongly consistent index</td><td>LSI (chỉ lúc tạo bảng)</td></tr>
+    <tr><td><em>react to changes</em>, trigger Lambda on insert</td><td>DynamoDB Streams</td></tr>
+    <tr><td><em>expire items</em>, delete after N days at no cost</td><td>DynamoDB TTL</td></tr>
+    <tr><td><em>multi-Region active-active</em>, NoSQL</td><td>DynamoDB Global Table (cần Streams)</td></tr>
+    <tr><td><em>throttled</em> although capacity available</td><td>Hot partition, đổi partition key</td></tr>
+    <tr><td><em>sub-millisecond cache</em>, session store, leaderboard, pub/sub</td><td>ElastiCache Redis</td></tr>
+    <tr><td><em>simplest cache</em>, <em>multithreaded</em>, no persistence</td><td>ElastiCache Memcached</td></tr>
+    <tr><td><em>lazy loading</em> / <em>cache always fresh</em></td><td>Cache-aside / write-through, cộng TTL</td></tr>
+    <tr><td><em>Redis-compatible</em> durable primary database</td><td>MemoryDB for Redis</td></tr>
+    <tr><td><em>data warehouse</em>, OLAP, columnar, BI, petabyte</td><td>Redshift</td></tr>
+    <tr><td><em>query S3 without loading</em>, join with warehouse tables</td><td>Redshift Spectrum</td></tr>
+    <tr><td><em>serverless SQL on S3</em>, pay per query, ad hoc</td><td>Athena</td></tr>
+    <tr><td><em>migrate database</em>, <em>minimal downtime</em>, CDC</td><td>DMS</td></tr>
+    <tr><td><em>different engine</em>, Oracle → PostgreSQL</td><td>SCT rồi DMS</td></tr>
+    <tr><td>graph / MongoDB / Cassandra / time series / ledger</td><td>Neptune / DocumentDB / Keyspaces / Timestream / QLDB</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ CHECKLIST ============ -->
+<section id="checklist">
+  <span class="eyebrow">Theo dõi</span>
+  <h2>Checklist tuần 6</h2>
+  <p style="font-size:.94rem;color:var(--muted)">Tick ở đây để tự theo dõi trên máy này. Khi xong mục nào, nói với Claude trong session để tick vào <code>AWS-SAA-checklist.md</code>.</p>
+  <div class="card">
+    <h4>Lý thuyết</h4>
+    <label class="check"><input type="checkbox" id="c1" data-ck><span>RDS: Multi-AZ khác Read Replica, backup, snapshot, encryption, RDS Proxy</span></label>
+    <label class="check"><input type="checkbox" id="c2" data-ck><span>Aurora: cluster endpoint, reader endpoint, Global Database, Serverless</span></label>
+    <label class="check"><input type="checkbox" id="c3" data-ck><span>DynamoDB: on-demand và provisioned, GSI với LSI, DAX, Streams, TTL, Global Table</span></label>
+    <label class="check"><input type="checkbox" id="c4" data-ck><span>ElastiCache: Redis với Memcached, cache-aside và write-through</span></label>
+    <label class="check"><input type="checkbox" id="c5" data-ck><span>Redshift, Redshift Spectrum</span></label>
+    <label class="check"><input type="checkbox" id="c6" data-ck><span>DMS, Schema Conversion Tool</span></label>
+    <label class="check"><input type="checkbox" id="c7" data-ck><span>Neptune, DocumentDB, Keyspaces, Timestream, QLDB (nhận diện)</span></label>
+    <h4>Hands-on</h4>
+    <label class="check"><input type="checkbox" id="c8" data-ck><span>Tạo RDS Multi-AZ, ép failover, xem endpoint không đổi</span></label>
+    <label class="check"><input type="checkbox" id="c9" data-ck><span>Tạo read replica, kết nối và thử ghi để thấy bị từ chối</span></label>
+    <label class="check"><input type="checkbox" id="c10" data-ck><span>Tạo bảng DynamoDB, dùng Lambda ghi và đọc</span></label>
+    <label class="check"><input type="checkbox" id="c11" data-ck><span>Bật DynamoDB TTL và Streams, xem item hết hạn bị xóa</span></label>
+    <label class="check"><input type="checkbox" id="c12" data-ck><span>Xóa RDS trong ngày, dọn DynamoDB và Lambda, kiểm tra Billing</span></label>
+    <h4>Mốc kiểm tra</h4>
+    <label class="check"><input type="checkbox" id="c13" data-ck><span>Chọn được RDS, Aurora, DynamoDB, ElastiCache theo yêu cầu đề bài</span></label>
+    <label class="check"><input type="checkbox" id="c14" data-ck><span>Giải thích Multi-AZ phục vụ HA còn Read Replica phục vụ scale read</span></label>
+    <h4>Khác</h4>
+    <label class="check"><input type="checkbox" id="c15" data-ck><span>Quiz tuần 6 đạt từ 80%</span></label>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  // Xem đáp án
+  document.querySelectorAll('[data-reveal]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var a=b.parentElement.querySelector('.ans');
+      a.hidden=!a.hidden; b.textContent=a.hidden?'Xem đáp án':'Ẩn đáp án';
+    });
+  });
+  // Checklist lưu trên máy này
+  var boxes=document.querySelectorAll('[data-ck]'), KEY='saa-tuan-06';
+  var saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  function update(){
+    var n=0; boxes.forEach(function(c){ c.closest('.check').classList.toggle('done',c.checked); if(c.checked)n++; });
+    document.getElementById('bar').style.width=(n/boxes.length*100)+'%';
+    document.getElementById('pct').textContent=n+'/'+boxes.length;
+  }
+  boxes.forEach(function(c){
+    if(saved[c.id])c.checked=true;
+    c.addEventListener('change',function(){ saved[c.id]=c.checked; try{ localStorage.setItem(KEY,JSON.stringify(saved)); }catch(e){} update(); });
+  });
+  update();
+  // Đánh dấu mục đang đọc
+  var links=document.querySelectorAll('.toc a'), secs=[];
+  links.forEach(function(l){ var s=document.querySelector(l.getAttribute('href')); if(s)secs.push([s,l]); });
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ links.forEach(function(l){l.classList.remove('active')}); secs.forEach(function(p){ if(p[0]===e.target)p[1].classList.add('active'); }); } }); },{rootMargin:'-20% 0px -70% 0px'});
+    secs.forEach(function(p){ io.observe(p[0]); });
+  }
+})();
+</script>

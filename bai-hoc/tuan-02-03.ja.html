@@ -1,0 +1,1223 @@
+<title>SAA 第2〜3週 Compute Storage</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky mục lục bên trái (desktop), cột nội dung 760px bên phải; xếp một cột ở màn hẹp. */
+:root{
+  --bg:#f2f4f7; --surface:#ffffff; --surface-2:#e9edf2; --line:#d3dae3;
+  --fg:#172030; --muted:#5a6676; --accent:#1c6e8c; --accent-soft:#dcecf3;
+  --warm:#b35a00; --warm-soft:#fbe9d6; --ok:#2a7d4f; --ok-soft:#dcf0e4; --bad:#b3362b; --bad-soft:#f8dedb;
+  --display:"Manrope","IBM Plex Sans",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+a{color:var(--accent)}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:800}
+h2{font-size:1.5rem;font-weight:800;padding-top:8px}
+h3{font-size:1.12rem;font-weight:700}
+h4{font-size:.95rem;font-weight:700}
+p{margin:0}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+pre{font-family:var(--mono);font-size:.84rem;line-height:1.5;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:0}
+pre code{background:none;padding:0;font-size:inherit}
+em{color:var(--warm);font-style:italic}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* Header */
+.hero{max-width:1120px;margin:0 auto;padding-block:36px 20px;display:flex;flex-direction:column;gap:12px}
+.hero .lead{max-width:62ch;color:var(--muted);font-size:1.02rem}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.88rem;color:var(--muted)}
+.meta b{color:var(--fg);font-weight:600}
+.progress{display:flex;align-items:center;gap:12px;font-size:.88rem;color:var(--muted)}
+.bar{flex:1;max-width:320px;height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+
+/* Two columns */
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;align-items:start}
+.toc{position:sticky;top:max(12px,env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:2px;font-size:.9rem}
+.toc a{color:var(--muted);text-decoration:none;padding:6px 10px;border-left:2px solid var(--line);display:block}
+.toc a:hover,.toc a.active{color:var(--fg);border-left-color:var(--accent)}
+.toc .grp{margin-top:10px}
+main{display:flex;flex-direction:column;gap:56px;min-width:0;max-width:780px}
+section{display:flex;flex-direction:column;gap:18px;scroll-margin-top:16px}
+@media (max-width:860px){ .wrap{grid-template-columns:1fr;gap:24px} .toc{position:static;flex-direction:row;flex-wrap:wrap;gap:6px} .toc a{border:1px solid var(--line);border-radius:99px;padding:4px 10px} .toc .grp{margin:0} .toc a.active{border-color:var(--accent)} }
+
+/* Blocks */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.block{display:flex;flex-direction:column;gap:8px}
+.block > .eyebrow{color:var(--accent)}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:5px}
+li::marker{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.kw{display:flex;flex-wrap:wrap;gap:8px}
+.kw span{background:var(--warm-soft);color:var(--warm);border-radius:4px;padding:3px 9px;font-size:.86rem;font-style:italic}
+.kw span b{font-style:normal;font-weight:600;color:var(--fg)}
+.note{border-left:3px solid var(--warm);background:var(--warm-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.94rem}
+.note.ok{border-color:var(--ok);background:var(--ok-soft)}
+.note.bad{border-color:var(--bad);background:var(--bad-soft)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;font-size:.84rem}
+tr:last-child td{border-bottom:0}
+td.c{text-align:center}
+
+/* Checklist */
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:6px;cursor:pointer}
+.check:hover{background:var(--surface-2)}
+.check input{margin-top:5px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.check.done{color:var(--muted);text-decoration:line-through}
+
+/* Quiz reveal */
+.q{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.q .qt{font-weight:500}
+.q button{align-self:flex-start;font:inherit;font-size:.86rem;padding:5px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer}
+.q button:hover{background:var(--accent);color:var(--surface)}
+.q button:focus-visible,.check input:focus-visible,.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.q .ans{font-size:.94rem;border-top:1px dashed var(--line);padding-top:8px}
+.q .ans b{color:var(--ok)}
+
+/* Steps */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:12px;padding:0;list-style:none}
+.steps li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:start}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--mono);font-size:.8rem;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:500;margin-top:2px}
+.steps li > div{display:flex;flex-direction:column;gap:6px;min-width:0}
+
+/* Flow diagram */
+.flow{display:flex;flex-direction:column;gap:0;align-items:stretch;max-width:520px}
+.flow .n{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:.94rem}
+.flow .n .tag{font-family:var(--mono);font-size:.74rem;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.tag.deny{background:var(--bad-soft);color:var(--bad)} .tag.allow{background:var(--ok-soft);color:var(--ok)} .tag.next{background:var(--surface-2);color:var(--muted)}
+.flow .arrow{height:22px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--mono);font-size:.78rem}
+.flow .arrow::before{content:"";width:1px;height:100%;background:var(--line);position:absolute}
+.flow .arrow{position:relative} .flow .arrow span{background:var(--bg);padding:0 6px;position:relative}
+
+svg text{font-family:var(--body)}
+.diag{overflow-x:auto}
+.diag svg{width:100%;max-width:700px;height:auto;display:block}
+.sv-region{fill:var(--surface);stroke:var(--accent)} .sv-az{fill:var(--accent-soft);stroke:var(--accent)} .sv-edge{fill:var(--warm-soft);stroke:var(--warm)}
+.sv-t{fill:var(--fg);font-size:13px} .sv-m{fill:var(--muted);font-size:11px} .sv-line{stroke:var(--line)}
+@media (prefers-reduced-motion: reduce){ .bar i{transition:none} }
+</style>
+
+<header class="hero">
+  <span class="eyebrow">AWS SAA-C03 · 12週間ロードマップ · 第2〜3週</span>
+  <h1>Compute と Storage</h1>
+  <p class="lead">2週間のブロックです。第2週は EC2 と、それに接続するディスク類（EBS、instance store、AMI、EFS、FSx）を学びます。第3週は S3 をじっくり学び、最後にハイブリッド系サービス（Storage Gateway、Snow、Backup、DataSync）でまとめます。ブロック終了時の目標は、問題文を読んだ瞬間に EBS、EFS、instance store、S3 のどれを選ぶべきか判断でき、キーワードから正しい S3 storage class を選べることです。</p>
+  <div class="meta"><span>学習ペース: <b>1日1.5〜2時間</b>、14日間</span><span>関連ドメイン: <b>PERF 24%</b>、<b>COST 20%</b>、<b>RES 26%</b></span><span>ラボ費用: 各ラボ後すぐ削除すれば <b>2 USD 未満</b></span></div>
+  <div class="progress"><span>チェックリスト進捗</span><div class="bar"><i id="bar"></i></div><span id="pct">0/22</span></div>
+</header>
+
+<div class="wrap">
+<nav class="toc" aria-label="目次">
+  <a href="#ke-hoach">14日間の計画</a>
+  <span class="grp eyebrow">第2週: Compute</span>
+  <a href="#ec2">1. EC2: family、user data、metadata</a>
+  <a href="#pricing">2. EC2 の料金モデル</a>
+  <a href="#placement">3. Placement group</a>
+  <a href="#ebs">4. EBS</a>
+  <a href="#ami">5. AMI、instance store</a>
+  <a href="#efs">6. EFS</a>
+  <a href="#fsx">7. FSx</a>
+  <span class="grp eyebrow">第3週: S3 とハイブリッド</span>
+  <a href="#s3-class">8. S3 storage class</a>
+  <a href="#s3-mgmt">9. Lifecycle、versioning、replication、Object Lock</a>
+  <a href="#s3-sec">10. Bucket policy、ACL、encryption</a>
+  <a href="#s3-feat">11. Presigned URL、Acceleration、multipart、event</a>
+  <a href="#hybrid">12. Storage Gateway、Snow、Backup、DataSync</a>
+  <span class="grp eyebrow">ハンズオン</span>
+  <a href="#handson">ハンズオン 7ラボ</a>
+  <a href="#moc">確認ポイント</a>
+  <a href="#tukhoa">試験キーワード表</a>
+  <a href="#checklist">ブロックのチェックリスト</a>
+</nav>
+
+<main>
+
+<section id="ke-hoach">
+  <h2>14日間の計画</h2>
+  <p>1日1つの理論項目を学び、対応するラボをその日のうちに行います。時間課金のリソース（EC2、EBS、EFS）はラボの最初に作成し、最後に削除します。夜をまたいで残さないでください。</p>
+  <div class="tbl"><table>
+    <tr><th>日</th><th>理論</th><th>ハンズオン</th></tr>
+    <tr><td>1</td><td>EC2: instance family、user data、metadata</td><td>Lab 1: EC2 + user data で Web サーバーをインストール</td></tr>
+    <tr><td>2</td><td>EC2 の料金モデル: On-Demand、Spot、Reserved、Savings Plans、Dedicated</td><td>Pricing Calculator で t3.micro の On-Demand と Spot の価格を比較</td></tr>
+    <tr><td>3</td><td>Placement group</td><td>spread placement group を試しに作成して削除（無料）</td></tr>
+    <tr><td>4</td><td>EBS: ボリュームタイプ、snapshot、encryption、multi-attach</td><td>Lab 2: EBS をアタッチ、フォーマット、マウント、snapshot</td></tr>
+    <tr><td>5</td><td>AMI、instance store</td><td>Lab 3: AMI を作成し、別の AZ で再起動</td></tr>
+    <tr><td>6</td><td>EFS</td><td>Lab 6: EFS を2台の EC2 にマウント</td></tr>
+    <tr><td>7</td><td>FSx for Windows、Lustre、NetApp ONTAP</td><td>第2週の復習、EBS / instance store / EFS / FSx の比較表を自分で作る</td></tr>
+    <tr><td>8</td><td>S3 storage class</td><td>Lab 4 その1: static website</td></tr>
+    <tr><td>9</td><td>S3 lifecycle、versioning、replication、Object Lock</td><td>Lab 4 その2（versioning）と Lab 5（lifecycle）</td></tr>
+    <tr><td>10</td><td>S3 bucket policy、ACL、Block Public Access、encryption</td><td>HTTPS を強制する bucket policy を書き、HTTP でのアップロードが拒否されるのを確認</td></tr>
+    <tr><td>11</td><td>S3 presigned URL、Transfer Acceleration、multipart、event notification</td><td>Lab 7: CLI で presigned URL</td></tr>
+    <tr><td>12</td><td>Storage Gateway、Snow family、AWS Backup、DataSync</td><td>AWS Backup で backup plan を1つ作成して削除（画面を見るだけ）</td></tr>
+    <tr><td>13〜14</td><td>2つの確認ポイントの復習、キーワード表の暗記</td><td>すべて片付けて Billing を確認し、「cho quiz」と伝えて <code>quiz/tuan-02-03.md</code>（40問、合格ライン80%）を受け取る</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ 1. EC2 ============ -->
+<section id="ec2">
+  <span class="eyebrow">第2週 · 理論 1 / 12</span>
+  <h2>EC2: instance family、user data、metadata</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">instance type 名の読み方</span>
+      <p>例えば <code>m6g.2xlarge</code> の場合、<b>m</b> は family（general purpose）、<b>6</b> は世代、<b>g</b> は AWS の Graviton（ARM）プロセッサー、<b>2xlarge</b> はサイズです。よく見る追加の文字: <b>a</b> AMD、<b>i</b> Intel、<b>g</b> Graviton、<b>n</b> ネットワーク強化、<b>d</b> ローカル NVMe ディスク付き（instance store）、<b>e</b> RAM やディスクが多い。</p>
+      <div class="tbl"><table>
+        <tr><th>Family</th><th>文字</th><th>用途</th><th>試験キーワード</th></tr>
+        <tr><td>General purpose</td><td>t、m（と Mac）</td><td>Web サーバー、アプリサーバー、コードリポジトリ、CPU と RAM のバランスが取れたワークロード</td><td><em>balanced</em>、特に指定がない場合</td></tr>
+        <tr><td>Compute optimized</td><td>c</td><td>バッチ、動画エンコード、ゲームサーバー、HPC、軽めの ML 推論</td><td><em>compute-intensive</em>、<em>high-performance processors</em></td></tr>
+        <tr><td>Memory optimized</td><td>r、x、z、High Memory（u）</td><td>インメモリ DB、大きなキャッシュ、SAP HANA、リアルタイム分析</td><td><em>in-memory</em>、<em>large datasets in memory</em></td></tr>
+        <tr><td>Storage optimized</td><td>i、d、h</td><td>分散 NoSQL、データウェアハウス、ログ、非常に高いローカル IOPS が必要な処理</td><td><em>high sequential read/write</em>、<em>local storage</em>、<em>low latency IOPS</em></td></tr>
+        <tr><td>Accelerated computing</td><td>p、g、inf、trn、f</td><td>ML 学習（p、trn）、推論（inf、g）、グラフィックス（g）、FPGA（f）</td><td><em>GPU</em>、<em>machine learning training</em></td></tr>
+      </table></div>
+      <ul>
+        <li><b>T family（burstable）</b>: ベースラインの CPU は低く、アイドル時に <b>CPU credit</b> を貯めて高負荷時に使います。credit を使い切るとベースラインまで制限されます（<b>Unlimited mode</b> を有効にすれば追加料金で回避可）。最も安く、開発・テストや低負荷の Web 向きです。「t3 上のアプリが高負荷の数時間後に徐々に遅くなる」→ CPU credit 切れ。</li>
+        <li><b>Nitro System</b>: 新世代の仮想化基盤です。EBS で最大 256,000 IOPS、enhanced networking を実現し、現行のほとんどの type が Nitro です。</li>
+        <li>type は勘で選ばず <b>Compute Optimizer</b>（第8週で学習）で選びます。</li>
+      </ul>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">User data</span>
+        <ul>
+          <li><b>初回起動時に1回だけ</b>（first boot）実行されるスクリプトで、<b>root</b> で実行されるためスクリプト内に <code>sudo</code> は不要です。</li>
+          <li>上限は raw 形式で <b>16 KB</b>。Linux では <code>#!/bin/bash</code> で始め、Windows では <code>&lt;powershell&gt;</code> を使います。</li>
+          <li>用途: パッケージのインストール、コードの取得、ドメイン参加、load balancer への登録。重いインストールは AMI に焼き込んでおくと起動が速くなります（5章参照）。</li>
+          <li>スクリプトが期待通りに動かないときは <code>/var/log/cloud-init-output.log</code> のログで調べます。</li>
+          <li>user data を変更するにはインスタンスを <b>stop</b> してから編集します。毎回の起動で再実行するには cloud-init の特別な設定が必要です（試験ではほぼ出ません）。</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Instance metadata (IMDS)</span>
+        <ul>
+          <li>アドレスは <code>http://169.254.169.254/latest/meta-data/</code> で、<b>インスタンス内部からのみ</b>呼び出せます。</li>
+          <li>取得できる情報: instance-id、instance-type、AZ、プライベート/パブリック IP、security group、<code>iam/security-credentials/&lt;role&gt;</code> にある <b>IAM role の一時認証情報</b>。user data は <code>/latest/user-data</code> で確認できます。</li>
+          <li><b>IMDSv2</b>: 先に <code>PUT</code> で token を取得し、毎回のリクエストにヘッダーとして付けます。role の認証情報を盗む SSRF 脆弱性への対策です。Amazon Linux 2023 では IMDSv2 がデフォルトで有効です。「アプリが SSRF で認証情報を取られるのを防ぐ」→ IMDSv2 を強制（<code>HttpTokens=required</code>）。</li>
+          <li>EC2 上の SDK と CLI は IMDS から自動で認証情報を取得します。これが access key を埋め込まずに EC2 に role を付ける理由です（第1週の復習）。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">ライフサイクルとよく問われる点</span>
+      <div class="tbl"><table>
+        <tr><th>操作</th><th>何が起きるか</th><th>料金</th></tr>
+        <tr><td>Stop</td><td>EBS は保持、RAM は消える、再 start 時に <b>public IP が変わる</b>（Elastic IP なら維持）、stop 中に instance type を変更可能</td><td>EC2 の時間課金なし、EBS は課金継続</td></tr>
+        <tr><td>Hibernate</td><td>RAM を EBS root（暗号化必須）に書き出し、高速に再開してアプリの状態も保持。RAM は最大約 150 GB、対応 type 一覧は要確認</td><td>stop と同じ</td></tr>
+        <tr><td>Reboot</td><td>OS の再起動と同じ: IP も instance store も保持</td><td>課金は途切れない</td></tr>
+        <tr><td>Terminate</td><td>インスタンスを削除。EBS root はデフォルトで一緒に削除（<code>DeleteOnTermination=true</code>）、追加ボリュームはデフォルトで残る</td><td>課金停止</td></tr>
+      </table></div>
+      <ul>
+        <li><b>Elastic IP</b>: 自分専用の固定 IPv4 で、デフォルト上限は Region あたり5個。2024年2月からすべての public IPv4 が課金対象です（約 0.005 USD/時間、価格は要確認）。アタッチ中でも課金されます。「stop/start 後も IP が変わらない」→ Elastic IP。「Elastic IP の使用を避けたい」→ Load Balancer の背後に置くか DNS を使う。</li>
+        <li><b>Key pair</b>: SSH 用の鍵で、AWS は public key だけを保持します。private key を紛失したら AMI を作成して新しい鍵で新インスタンスを起動するか、EC2 Instance Connect / Session Manager を使います。</li>
+        <li><b>Security Group</b> は第4週で詳しく学びます。今週は「Web 用に 80 を開け、22 は自分の IP だけに許可する」ことだけ押さえれば十分です。</li>
+        <li><b>EC2 Instance Connect</b>: ブラウザから SSH でき、一時的な鍵を60秒だけ送り込みます。ただしサービスの IP 範囲からの 22 番ポートを開ける必要があります。<b>Session Manager</b>（第8週）ならポートを一切開ける必要がありません。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">1. あるデータ分析アプリは、高速にクエリするため 500 GB のデータセットを RAM に保持する必要があります。どの family を選びますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Memory optimized（r または x）。</b>キーワードは <em>in-memory</em>。Storage optimized（i）はひっかけです。高速なローカルディスクを提供するもので、大容量 RAM ではありません。</p></div>
+      <div class="q"><p class="qt">2. セキュリティチームが、EC2 上の Web アプリに IAM role の認証情報を取得されうる SSRF 脆弱性を発見しました。コード変更を最小限にしてリスクを下げる方法は？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>インスタンスで IMDSv2 を必須にする。</b>token は PUT とヘッダーで取得する必要があり、GET だけの単純な SSRF では取得できません。EC2 から role を外すとアプリが権限を失うため、正解ではありません。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. PRICING ============ -->
+<section id="pricing">
+  <span class="eyebrow">第2週 · 理論 2 / 12</span>
+  <h2>EC2 の料金モデル: On-Demand、Spot、Reserved、Savings Plans、Dedicated Host</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">5つの支払い方法</span>
+      <div class="tbl"><table>
+        <tr><th>モデル</th><th>コミット</th><th>割引</th><th>選ぶ場面</th><th>落とし穴</th></tr>
+        <tr><td><b>On-Demand</b></td><td>なし、秒単位課金（Linux、最低60秒）</td><td>0%</td><td>短期・予測困難な負荷、開発/テスト、初回の実行</td><td>24時間365日の長期稼働では最も高い</td></tr>
+        <tr><td><b>Spot</b></td><td>なし、AWS が <b>2分前</b>の通知で回収することがある</td><td>最大90%</td><td>バッチ、レンダリング、CI、ビッグデータ、<em>fault-tolerant</em>、<em>interruption acceptable</em></td><td>データベース、唯一の Web 層、途中で止められない処理には使わない</td></tr>
+        <tr><td><b>Reserved Instance</b></td><td>1年または3年、特定の type（Standard）または変更可能（Convertible）</td><td>最大約72%（Standard）、66%（Convertible）</td><td>type が明確な安定ワークロード。RDS、ElastiCache、Redshift にも RI がある</td><td>Standard RI は family を変更できない。Zonal RI は AZ 内のキャパシティを予約するが、Regional RI はしない</td></tr>
+        <tr><td><b>Savings Plans</b></td><td>1年または3年、<b>1時間あたりの USD 額</b>をコミット</td><td>Compute SP 最大66%、EC2 Instance SP 最大72%</td><td>安定しているが type や Region、さらに Fargate や Lambda（Compute SP）まで柔軟にしたいワークロード</td><td>コミットを超えた分は On-Demand 料金</td></tr>
+        <tr><td><b>Dedicated Host</b></td><td>On-Demand または予約、<b>物理サーバー1台丸ごと</b>を借りる</td><td>安くない</td><td>socket/core 単位のライセンス（Windows Server、SQL Server、Oracle の BYOL）、ハードウェアの可視性が必要なコンプライアンス</td><td>Dedicated Instance と混同しやすい</td></tr>
+      </table></div>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Reserved と Savings Plans、どちらを選ぶか</span>
+        <ul>
+          <li>新しい問題では柔軟性の高い <b>Savings Plans</b> が正解になりやすく、AWS もこちらを推奨しています。</li>
+          <li><b>Compute Savings Plans</b>: すべての family、サイズ、OS、Region、さらに Fargate と Lambda にも適用。最も柔軟ですが割引は小さめです。</li>
+          <li><b>EC2 Instance Savings Plans</b>: 1つの Region の1つの family にコミット（例: 東京の m5）し、サイズ、OS、AZ は自由に変更可。割引は大きめです。</li>
+          <li>RI が正解になるのは、「1つの AZ で <em>reserve capacity</em> が必要」（Zonal RI）とある場合や、Savings Plans がないサービス（RDS、ElastiCache、OpenSearch、Redshift、DynamoDB reserved capacity）の場合です。</li>
+          <li>両方に共通の支払いオプション: <b>All Upfront</b>（最安）、Partial Upfront、No Upfront（コミット型の中で最も高い）。</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Spot の詳細</span>
+        <ul>
+          <li><b>max price</b> を設定します（デフォルトは On-Demand 価格）。Spot 価格が max を超えるか、AWS がキャパシティを必要とすると、2分前の通知（metadata または EventBridge で確認）の後にインスタンスが中断されます。</li>
+          <li>中断時の動作: terminate、stop、hibernate のいずれか。</li>
+          <li><b>Spot Fleet / EC2 Fleet</b>: 複数の type、複数の AZ をまとめ、<code>capacity-optimized</code> または <code>price-capacity-optimized</code> 戦略で中断を最小化します。「中断の確率を下げたい」→ type と AZ を分散。</li>
+          <li>Auto Scaling Group での組み合わせ: 最小台数部分はベースの On-Demand、スケールアウト分は Spot（第4週で学習）。</li>
+          <li><b>Spot block</b>（1〜6時間確保）は提供終了しており、古い問題でしか出ません。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dedicated Host、Dedicated Instance、Capacity Reservation</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>Dedicated Host</th><th>Dedicated Instance</th><th>On-Demand Capacity Reservation</th></tr>
+        <tr><td>得られるもの</td><td>物理サーバー丸ごと。socket、core、host ID が見え、インスタンスの配置を自分で決められる</td><td>自分のアカウント専用のハードウェア上で動くが、socket/core は見えない</td><td>1つの AZ のキャパシティを確保、割引なし</td></tr>
+        <tr><td>キーワード</td><td><em>BYOL per-socket / per-core</em>、<em>server-bound license</em>、<em>compliance requires dedicated hardware visibility</em></td><td><em>dedicated hardware</em> だがライセンスに触れていない</td><td>イベントや DR 向けの <em>ensure capacity</em>、<em>guarantee instances available</em></td></tr>
+        <tr><td>組み合わせ</td><td>ホスト用の予約を購入可能</td><td>Region ごとに追加料金</td><td>Savings Plans/Regional RI と組み合わせて、確保と割引を両立</td></tr>
+      </table></div>
+    </div>
+
+    <div class="note">早見まとめ: 長期安定 → Savings Plans（または RI）、柔軟・短期 → On-Demand、中断可能で最安にしたい → Spot、socket 単位のライセンス → Dedicated Host、ピーク日に確実にサーバーが必要 → Capacity Reservation。</div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">3. ある会社は毎晩バッチで画像処理クラスターを動かしており、途中で失敗してもジョブを再実行できます。<em>most cost-effective</em> が求められています。何を選びますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Spot Instances。</b>キーワード: バッチ、再実行可能。Reserved は「毎晩動くから安定している」と考える人向けのひっかけです。RI は夜の数時間しか使わなくても24時間分課金されます。</p></div>
+      <div class="q"><p class="qt">4. 3年間安定したワークロードですが、チームはその間に一部を EC2 から Fargate に移行する予定です。節約しつつ縛られないモデルは？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>3年の Compute Savings Plans。</b>EC2 と Fargate（と Lambda）の両方に適用されます。EC2 Instance Savings Plans と RI は EC2 にしか適用されず、Fargate に移ると割引が失われます。</p></div>
+      <div class="q"><p class="qt">5. 会社は物理 core 数で課金される SQL Server のライセンスを持っており、AWS に持ち込みたい（BYOL）と考えています。何を選びますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Dedicated Host。</b>この種のライセンスを遵守するために socket/core が見えるのは Dedicated Host だけです。Dedicated Instance はハードウェアの可視性がないため不十分です。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. PLACEMENT GROUP ============ -->
+<section id="placement">
+  <span class="eyebrow">第2週 · 理論 3 / 12</span>
+  <h2>Placement group: cluster、spread、partition</h2>
+
+  <div class="card">
+    <p>Placement group は、ハードウェア上で<b>インスタンス同士をどう配置するか</b>を AWS に指示する仕組みです。無料です。3つの戦略は、ネットワーク性能と障害耐性のトレードオフになっています。</p>
+    <div class="tbl"><table>
+      <tr><th></th><th>Cluster</th><th>Spread</th><th>Partition</th></tr>
+      <tr><td>配置方法</td><td>できるだけ近く、同じラック、<b>1つの AZ</b></td><td>インスタンスごとに別ラック（電源、スイッチも別）</td><td>partition に分割し、partition ごとに別のラック群</td></tr>
+      <tr><td>得られるもの</td><td>インスタンス間で最低のレイテンシー、最高の帯域幅</td><td>ラックが1つ壊れても失うのは1台だけ</td><td>ラックが1つ壊れても影響は1つの partition だけ</td></tr>
+      <tr><td>制限</td><td>複数 AZ にまたがれない。ラック障害で多数を失う。同時に同じ type で起動するのが望ましい</td><td>グループあたり <b>AZ ごとに最大7インスタンス</b>（複数 AZ にまたがれる）</td><td><b>AZ ごとに最大7 partition</b>、各 partition に数百インスタンス</td></tr>
+      <tr><td>用途</td><td>HPC、ノード間通信の多いビッグデータジョブ、分散 ML 学習</td><td>分離が必要な少数の重要インスタンス: primary/standby、小規模クラスターのノード</td><td>Hadoop、Cassandra、Kafka、HDFS: アプリがトポロジーを把握してレプリカを別 partition に置く</td></tr>
+      <tr><td>キーワード</td><td><em>lowest network latency</em>、<em>highest throughput between instances</em>、<em>tightly coupled</em></td><td><em>critical instances</em>、<em>isolated from each other</em>、<em>reduce correlated failures</em>、少数</td><td><em>large distributed and replicated workload</em>、<em>hundreds of instances</em>、<em>topology-aware</em></td></tr>
+    </table></div>
+    <ul>
+      <li>partition group 内のインスタンスは、自分がどの partition にいるかを metadata（<code>placement/partition-number</code>）で確認できます。</li>
+      <li>cluster group への起動で <b>insufficient capacity error</b> が出たら、全台を stop してから同時に start し直し、AWS に新しい場所を探させます。</li>
+      <li>cluster group の効果を出すには、<b>enhanced networking</b>（ENA）と同一 instance type を組み合わせます。</li>
+    </ul>
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">6. 60ノードの Cassandra クラスターで、ハードウェア障害の影響を抑えたい。レプリカはアプリ自身が管理します。どの placement group を選びますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Partition。</b>Spread は AZ あたり7インスタンスの上限があり60ノードには足りません。Cluster は全台が同じラックになり、目的と逆です。</p></div>
+      <div class="q"><p class="qt">7. MPI で動く気候シミュレーションのジョブで、ノード同士が最低レイテンシーで絶えずデータをやり取りする必要があります。何を選びますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Cluster placement group</b>（1つの AZ、同一 instance type、enhanced networking を有効化、HPC なら EFA）。その代わり AZ 障害には耐えられません。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. EBS ============ -->
+<section id="ebs">
+  <span class="eyebrow">第2週 · 理論 4 / 12</span>
+  <h2>EBS: gp3、io2、st1、sc1、snapshot、encryption、multi-attach</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <ul>
+        <li>EBS は EC2 に接続する<b>ネットワークディスク</b>（block storage）で、<b>1つの AZ</b> 内に存在し、stop/terminate 後もデータが残ります（delete on termination を有効にしていない場合）。1つのボリュームは1台のインスタンスに接続し（multi-attach を除く）、1台のインスタンスには複数のボリュームを接続できます。</li>
+        <li>AZ 内で自動的に複製されるため耐久性は高いですが、AZ がダウンするとアクセスできなくなります → AZ の外へ出すには snapshot が必要です。</li>
+        <li>課金は<b>プロビジョニングした GB/月</b>（使用量ではない）に、購入した追加の IOPS/スループットを加えたものです。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">ボリュームタイプ</span>
+      <div class="tbl"><table>
+        <tr><th>タイプ</th><th>技術</th><th>性能</th><th>サイズ</th><th>ブート可</th><th>用途</th></tr>
+        <tr><td><b>gp3</b></td><td>SSD</td><td>サイズに関係なくデフォルトで <b>3,000 IOPS、125 MB/s</b>。最大 16,000 IOPS、1,000 MB/s まで追加購入可</td><td>1 GiB〜16 TiB</td><td>可</td><td>あらゆる用途のデフォルト: ブート、開発/テスト、アプリ、中規模 DB。gp2 より約20%安い</td></tr>
+        <tr><td>gp2</td><td>SSD</td><td>1 GiB あたり 3 IOPS、3,000 までバースト、上限 16,000（5,334 GiB で到達）</td><td>1 GiB〜16 TiB</td><td>可</td><td>旧世代。「小さな gp2 で IOPS が足りない」→ gp3 に変更</td></tr>
+        <tr><td><b>io2 Block Express</b>（io2）</td><td>SSD</td><td>最大 <b>256,000 IOPS</b>、4,000 MB/s、1 GiB あたり 1,000 IOPS、耐久性 99.999%</td><td>4 GiB〜64 TiB</td><td>可</td><td>重要なデータベース（Oracle、SAP、SQL Server）、16,000 を超える IOPS やミリ秒未満のレイテンシーが必要な場合</td></tr>
+        <tr><td>io1</td><td>SSD</td><td>最大 64,000 IOPS（Nitro）、1 GiB あたり 50 IOPS</td><td>4 GiB〜16 TiB</td><td>可</td><td>io2 の旧世代</td></tr>
+        <tr><td><b>st1</b></td><td>HDD スループット型</td><td>最大 500 MB/s、IOPS ではなくスループットで評価</td><td>125 GiB〜16 TiB</td><td><b>不可</b></td><td>ビッグデータ、データウェアハウス、ログ、ストリーミング: 大きなブロックのシーケンシャル読み書き、安価</td></tr>
+        <tr><td><b>sc1</b></td><td>HDD コールド</td><td>最大 250 MB/s</td><td>125 GiB〜16 TiB</td><td><b>不可</b></td><td>アクセス頻度の低いデータ、EBS の中で最安が必要な場合</td></tr>
+      </table></div>
+      <ul>
+        <li>2つのグループで覚えます: <b>SSD = IOPS</b>（小さなランダム操作が多い、データベース、ブート）、<b>HDD = スループット</b>（操作は少なく、1回あたりが大きくシーケンシャル）。HDD はブートボリュームにできません。</li>
+        <li>1つのボリュームで <em>over 16,000 IOPS</em> や <em>sub-millisecond latency</em> とあれば → io2。<em>cost-effective</em> で IOPS の指定がなければ → gp3。</li>
+        <li><b>Elastic Volumes</b>: 稼働中のボリュームのサイズ拡張、タイプ変更、IOPS 変更が detach なしで可能です。サイズ拡張後は OS 内でパーティションとファイルシステムを自分で拡張します（<code>growpart</code>、<code>xfs_growfs</code>）。拡張のみで縮小はできません。</li>
+      </ul>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Snapshot</span>
+        <ul>
+          <li>ボリュームのコピーで S3 に保存され（object は見えません）、<b>incremental</b> です: 2回目以降は変更されたブロックのみ保存しますが、途中の snapshot を削除しても残りの snapshot から復元できます。</li>
+          <li><b>Region</b> レベルに存在 → データを別の AZ に移す方法（移行先 AZ で snapshot からボリュームを作成）や、別の Region に移す方法（snapshot をコピー）になります。</li>
+          <li>稼働中でも取得できますが、整合性のため I/O を止めるか detach するのが望ましく、root ボリュームならインスタンスを stop します。</li>
+          <li><b>EBS Snapshots Archive</b>: 約75%安いアーカイブ層で、復元に24〜72時間かかります。<b>Recycle Bin</b>: 削除した snapshot/AMI を1日〜1年保持し、誤削除から取り戻せます。</li>
+          <li><b>Fast Snapshot Restore (FSR)</b>: snapshot から作成したボリュームが最初の読み込みで遅くならず、すぐにフル性能を出します。時間単位で課金されます。</li>
+          <li><b>Data Lifecycle Manager (DLM)</b>: スケジュールに従って snapshot を自動作成・削除します（「EBS snapshot の自動化」→ DLM または AWS Backup）。</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Encryption</span>
+        <ul>
+          <li>KMS（AES-256）を使用します。ボリューム内の <b>at rest</b>、インスタンスとボリューム間の <b>in transit</b>、そこから作られるすべての snapshot とボリュームが暗号化されます。性能への影響はほぼありません。</li>
+          <li>EC2 の設定で Region 全体の <b>encryption by default</b> を有効にできます。</li>
+          <li>暗号化されていないボリュームは<b>その場で暗号化を有効にできません</b>。手順: snapshot → encrypt にチェックを入れて snapshot をコピー → コピーから新しいボリュームを作成 → ボリュームを差し替え。定番の問題です。</li>
+          <li>暗号化された snapshot を別アカウントに共有するには、<b>customer managed key</b> を使い、鍵も共有する必要があります。AWS managed key で暗号化した snapshot は共有できません。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Multi-attach</span>
+      <ul>
+        <li><b>io1/io2</b> のみ。1つのボリュームを<b>同じ AZ</b> の最大 <b>16台の Nitro インスタンス</b>に接続でき、全台が読み書き可能です。</li>
+        <li>通常のファイルシステム（ext4、XFS）は複数台からの同時書き込みを扱えない → <b>cluster-aware file system</b> を使うか、アプリ側で管理します（旧来の Oracle RAC など）。一般的な共有ストレージの方法ではありません。</li>
+        <li>「<b>複数 AZ</b> の複数の EC2 が1つのファイルシステムを読み書き」→ multi-attach ではなく <b>EFS</b>。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">8. データベース用に接続した 200 GiB の gp2 ボリュームで IOPS が不足しています。アプリは最低コストで安定した 10,000 IOPS を必要とします。どうしますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>gp3 に変更して 10,000 IOPS をプロビジョニングする。</b>200 GiB の gp2 はベースライン 600 IOPS しかなく、10,000 にするには 3,334 GiB まで拡張する必要があり無駄です。io2 でも達成できますが、10,000（16,000 未満）で足りるなら gp3 より高くなります。</p></div>
+      <div class="q"><p class="qt">9. 監査で、機密データを含む EBS ボリュームが暗号化されていないことが判明しました。そのデータを暗号化する方法は？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>ボリュームの snapshot を取り、encrypt オプション付きで snapshot をコピーし、暗号化された snapshot から新しいボリュームを作成して旧ボリュームと差し替える。</b>既存ボリュームに「暗号化を有効にする」ボタンはありません。</p></div>
+      <div class="q"><p class="qt">10. ログ処理システムが毎日数百 GB をシーケンシャルに書き込み、ランダムアクセスはほとんどなく、安くしたい。どの EBS タイプですか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>st1。</b>大きなブロックのシーケンシャル書き込みにはスループット型 HDD。sc1 はさらに安いですが、アクセスが少ない場合に限ります。gp3 でも可能ですが、大容量では高くなります。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. AMI, INSTANCE STORE ============ -->
+<section id="ami">
+  <span class="eyebrow">第2週 · 理論 5 / 12</span>
+  <h2>AMI と instance store</h2>
+
+  <div class="card">
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">AMI (Amazon Machine Image)</span>
+        <ul>
+          <li>EC2 を起動するためのテンプレートです。root ボリューム（と他のボリューム）の snapshot、<b>block device mapping</b>、launch permission、アーキテクチャー（x86/ARM）、仮想化タイプを含みます。</li>
+          <li>入手元: AWS 提供（Amazon Linux 2023、Ubuntu、Windows）、<b>AWS Marketplace</b>（ソフトウェア料金が追加）、<b>自分の AMI</b>（golden AMI）、他アカウントから共有された AMI。</li>
+          <li>AMI は<b>1つの Region</b> に存在します。別の Region で起動するにはその Region へ <b>AMI をコピー</b>します。同じ Region 内ならどの AZ でも起動できます（EBS とは異なる）。</li>
+          <li><b>Golden AMI</b>: パッチ済み OS、エージェント、アプリを AMI に焼き込み、インスタンスを速く同一構成で起動させます。「user data でインストールする代わりに Auto Scaling のインスタンス起動時間を短縮」→ golden AMI。焼き込みの自動化は <b>EC2 Image Builder</b>。</li>
+          <li>AMI の共有: 特定アカウント、Organization、または public。暗号化された AMI は KMS key も一緒に共有する必要があります。</li>
+          <li>AMI の削除は <b>deregister</b> です。付随する EBS snapshot は自動削除されないので、課金を止めるには手動で削除します。</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Instance store</span>
+        <ul>
+          <li>インスタンスが動く<b>ホストに物理的に接続された</b>ディスク（NVMe/SSD）で、<b>d</b> の付く type や i、d、h family にあります。サイズは type ごとに固定で、追加購入はできません。</li>
+          <li>ネットワークを経由しないため非常に高性能です（i3en/i4i では数百万 IOPS）。</li>
+          <li><b>Ephemeral</b>: <b>stop、hibernate、terminate</b> やハードウェア障害でデータが消えます。<b>reboot</b> では残ります。EBS のように snapshot は取れません。</li>
+          <li>用途: キャッシュ、バッファ、スクラッチ、一時データ、他の場所にレプリカがあるデータ（NoSQL クラスターのノード）。</li>
+          <li><em>highest possible IOPS</em>、<em>temporary</em>、<em>can be lost</em> とあれば → instance store。<em>must persist after stop</em> とあれば → EBS。</li>
+          <li>料金はインスタンス料金に含まれ、別途課金はありません。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block diag"><span class="eyebrow">EC2 を取り巻く4種類のストレージのイメージ</span>
+      <svg viewBox="0 0 700 330" role="img" aria-label="図: instance store はホスト内、EBS は同じ AZ 内でネットワーク経由で接続、EFS は複数 AZ の複数 EC2 で共有、S3 は Region レベルで HTTP によりアクセス">
+        <rect x="20" y="20" width="660" height="290" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="36" y="44" class="sv-t" font-weight="600">Region</text>
+        <rect x="40" y="60" width="300" height="180" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="56" y="82" class="sv-t" font-weight="600">AZ 1a</text>
+        <rect x="56" y="96" width="150" height="120" rx="6" class="sv-region" stroke-width="1.5"/>
+        <text x="131" y="116" text-anchor="middle" class="sv-t" font-weight="600">物理ホスト</text>
+        <rect x="68" y="128" width="126" height="34" rx="4" class="sv-edge" stroke-width="1"/>
+        <text x="131" y="150" text-anchor="middle" class="sv-t">EC2 instance</text>
+        <rect x="68" y="172" width="126" height="34" rx="4" class="sv-edge" stroke-width="1" stroke-dasharray="4 3"/>
+        <text x="131" y="186" text-anchor="middle" class="sv-m">Instance store</text>
+        <text x="131" y="200" text-anchor="middle" class="sv-m">stop で消える</text>
+        <rect x="236" y="128" width="90" height="48" rx="4" class="sv-region" stroke-width="1.5"/>
+        <text x="281" y="148" text-anchor="middle" class="sv-t" font-weight="600">EBS</text>
+        <text x="281" y="164" text-anchor="middle" class="sv-m">block、1 AZ</text>
+        <line x1="194" y1="145" x2="236" y2="152" class="sv-line" stroke-width="2"/>
+        <text x="281" y="200" text-anchor="middle" class="sv-m">snapshot → S3</text>
+        <text x="281" y="214" text-anchor="middle" class="sv-m">（Region レベル）</text>
+        <rect x="360" y="60" width="150" height="180" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="376" y="82" class="sv-t" font-weight="600">AZ 1c</text>
+        <rect x="376" y="128" width="118" height="34" rx="4" class="sv-edge" stroke-width="1"/>
+        <text x="435" y="150" text-anchor="middle" class="sv-t">EC2 instance</text>
+        <rect x="200" y="258" width="180" height="40" rx="6" class="sv-region" stroke-width="1.5"/>
+        <text x="290" y="275" text-anchor="middle" class="sv-t" font-weight="600">EFS (NFS)</text>
+        <text x="290" y="290" text-anchor="middle" class="sv-m">file、複数 AZ、複数 EC2</text>
+        <line x1="131" y1="162" x2="131" y2="172" class="sv-line" stroke-width="1"/>
+        <line x1="131" y1="216" x2="240" y2="258" class="sv-line" stroke-width="2" stroke-dasharray="4 4"/>
+        <line x1="435" y1="162" x2="340" y2="258" class="sv-line" stroke-width="2" stroke-dasharray="4 4"/>
+        <rect x="540" y="96" width="120" height="100" rx="6" class="sv-region" stroke-width="1.5"/>
+        <text x="600" y="120" text-anchor="middle" class="sv-t" font-weight="600">S3</text>
+        <text x="600" y="140" text-anchor="middle" class="sv-m">object、HTTP</text>
+        <text x="600" y="156" text-anchor="middle" class="sv-m">3+ AZ</text>
+        <text x="600" y="172" text-anchor="middle" class="sv-m">ディスクとして</text>
+        <text x="600" y="188" text-anchor="middle" class="sv-m">マウント不可</text>
+        <line x1="494" y1="145" x2="540" y2="145" class="sv-line" stroke-width="2" stroke-dasharray="2 3"/>
+        <text x="517" y="138" text-anchor="middle" class="sv-m">API</text>
+      </svg>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">11. Auto Scaling Group で、user data が多くのパッケージをインストールするため新しいインスタンスの準備完了まで8分かかります。この時間を短縮する方法は？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>パッケージをインストール済みの golden AMI を作成し、launch template でその AMI を使う。</b>user data は小さな作業（設定の取得）だけにします。インスタンスサイズを上げても根本解決になりません。</p></div>
+      <div class="q"><p class="qt">12. あるアプリは中間データ用に、可能な限り高い IOPS の一時ディスクを必要とし、再起動でデータが消えても問題ありません。何を選びますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Instance store</b>（i4i のようなローカル NVMe 付き、または末尾に d の付く type を選ぶ）。io2 も IOPS は高いですがネットワーク経由であり、データが一時的なら不要なコストがかかります。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. EFS ============ -->
+<section id="efs">
+  <span class="eyebrow">第2週 · 理論 6 / 12</span>
+  <h2>EFS: performance mode、throughput mode、storage class</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <ul>
+        <li>マネージドの <b>NFS v4.1</b> ファイルシステムで、Region 内の<b>複数 AZ にある数百台の EC2</b>（Regional）または1つの AZ（One Zone）から同時にマウントできます。<b>Linux</b> 専用で、Windows には FSx for Windows を使います。</li>
+        <li>ペタバイトまで自動で伸縮し、<b>実際に使った GB</b> で課金され、事前のプロビジョニングは不要です。GB 単価は EBS gp3 の数倍（価格は要確認）ですが、共有でき管理も不要です。</li>
+        <li><b>mount target</b>（AZ ごとに1つの ENI）経由で接続し、Security Group で <b>2049</b> 番ポートを開けます。Direct Connect/VPN 経由でオンプレミスからマウントすることも可能です。</li>
+        <li>at rest は KMS、in transit は TLS（mount helper の <code>-o tls</code>）で暗号化します。権限は POSIX、IAM、<b>EFS Access Point</b>（アプリごとに user/group とルートディレクトリを強制）で管理します。</li>
+        <li>Lambda や ECS/Fargate も EFS をマウントできます。「複数のコンテナで共有の永続ストレージが必要」→ EFS。</li>
+      </ul>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Performance mode（作成時に選択）</span>
+        <ul>
+          <li><b>General Purpose</b>: デフォルトで最も低レイテンシー。Web、CMS、ホームディレクトリ向け。特別な理由がなければこれを選びます。</li>
+          <li><b>Max I/O</b>: より多くのクライアントの並列アクセスに耐えられる代わりに、レイテンシーがやや高くなります。ビッグデータ、メディア処理向け。Bursting/Provisioned の Regional でのみ利用でき、One Zone と Elastic では使えません。</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Throughput mode（後から変更可）</span>
+        <ul>
+          <li><b>Elastic</b>（現在のデフォルト）: 負荷に応じて自動で伸縮し、読み書きした量で課金されます。<em>spiky</em> で予測困難な負荷のときに選びます。</li>
+          <li><b>Provisioned</b>: 容量に関係なく MB/s を固定で設定します。データは小さいが常に高いスループットが必要なときに選びます。</li>
+          <li><b>Bursting</b>: スループットが容量に比例（GB あたり 50 KB/s）し、burst credit が加わります。小さなファイルシステムは詰まりやすい → Elastic または Provisioned に変更します。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Storage class と lifecycle</span>
+      <div class="tbl"><table>
+        <tr><th>Class</th><th>特徴</th><th>使いどころ</th></tr>
+        <tr><td><b>EFS Standard</b></td><td>頻繁なアクセス向け、最も高い</td><td>毎日使うファイル</td></tr>
+        <tr><td><b>EFS Infrequent Access (IA)</b></td><td>GB 単価はかなり安いが、読み書きのたびに料金がかかる</td><td>数週間に一度しか触らないファイル</td></tr>
+        <tr><td><b>EFS Archive</b></td><td>最安。数か月に一度読むファイル向け</td><td>コンプライアンスのために保持するデータ</td></tr>
+        <tr><td>One Zone（と One Zone-IA）</td><td>1つの AZ のみ、Regional より約47%安い</td><td>開発/テスト、再作成可能なデータ、AZ 障害への耐性が不要な場合</td></tr>
+      </table></div>
+      <ul>
+        <li><b>Lifecycle management</b>: アクセスがない状態が N 日続いたファイルを IA へ（例: 30日）、別の N 日後に Archive へ自動で移します。再度読まれたときに Standard へ戻す <b>transition back</b> オプションもあります。「アプリを変えずに EFS のコストを下げたい」→ IA への lifecycle を有効化。</li>
+        <li>EFS のバックアップは <b>AWS Backup</b>（12章）で行います。DR 用に別 Region への replication（EFS Replication）も用意されています。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>複数 AZ の複数の Linux EC2 が同じディレクトリに書き込む</td><td>EFS</td><td>EBS multi-attach（1つの AZ、io1/io2、cluster FS が必要）</td></tr>
+        <tr><td>Windows、Active Directory 向けの共有ストレージ</td><td>FSx for Windows</td><td>EFS（SMB/Windows 非対応）</td></tr>
+        <tr><td>あまり読まれないファイルの EFS コスト削減</td><td>EFS IA への lifecycle</td><td>S3 への移行（アプリの改修が必要）</td></tr>
+        <tr><td>マウント不要、API でアクセス、最安でファイルを保存</td><td>S3</td><td>EFS</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">13. ALB の背後で2つの AZ にまたがる4台の EC2 で WordPress を動かしていますが、各インスタンスが画像をローカルに保存するため、ユーザーの画像アップロードで不具合が出ます。<em>least operational overhead</em> の解決策は？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>1つの EFS を4台すべてにマウントし、アップロード先ディレクトリをそこに向ける。</b>EBS は AZ をまたいで共有できません。rsync での同期は「自作」の答えで、運用負荷が大きくなります。</p></div>
+      <div class="q"><p class="qt">14. EFS に 20 TB あり、月内に読まれるのは10%だけで請求額が高い。アプリを変えずにコストを下げるには？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>EFS lifecycle management を有効にし、一定日数アクセスのないファイルを IA（と Archive）に移す。</b>アプリからは同じパスに見えます。One Zone への変更は新しいファイルシステムの作成が必要で、AZ 障害への耐性も失います。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. FSx ============ -->
+<section id="fsx">
+  <span class="eyebrow">第2週 · 理論 7 / 12</span>
+  <h2>FSx for Windows、FSx for Lustre、FSx for NetApp ONTAP</h2>
+
+  <div class="card">
+    <p>FSx は、AWS の外の世界で使われている「ブランド付き」ファイルシステムのマネージド版のグループです。試験での FSx は主に識別レベルの出題で、どのキーワードならどのタイプを選ぶかが問われます。</p>
+    <div class="tbl"><table>
+      <tr><th></th><th>FSx for Windows File Server</th><th>FSx for Lustre</th><th>FSx for NetApp ONTAP</th><th>FSx for OpenZFS</th></tr>
+      <tr><td>プロトコル</td><td><b>SMB</b>、NTFS</td><td>Lustre（専用クライアント、POSIX）</td><td><b>NFS、SMB、iSCSI</b> を同時に</td><td>NFS</td></tr>
+      <tr><td>クライアント</td><td>Windows、SMB 経由で Linux と macOS も</td><td>Linux（EC2、コンテナ、オンプレミス）</td><td>Linux、Windows、macOS</td><td>Linux、Windows、macOS</td></tr>
+      <tr><td>強み</td><td><b>Active Directory</b> 連携、Windows ACL、DFS Namespaces、shadow copies、Multi-AZ、SSD または HDD</td><td><b>HPC、ML、動画処理</b>: 数百 GB/s、数百万 IOPS、ミリ秒未満のレイテンシー。<b>S3 と連携</b>（S3 から lazy に読み込み、書き戻し）</td><td>snapshot、即時 clone、オンプレミス NetApp からの <b>SnapMirror</b> 複製、重複排除、圧縮、自動階層化</td><td>ZFS の snapshot と clone、非常に低いレイテンシー、オンプレミス ZFS からの移行</td></tr>
+      <tr><td>キーワード</td><td><em>Windows</em>、<em>SMB</em>、<em>Active Directory</em>、<em>Windows file share</em></td><td><em>HPC</em>、<em>machine learning</em>、<em>high-throughput</em>、<em>process data in S3 at high speed</em></td><td><em>NetApp</em>、<em>ONTAP</em>、<em>multi-protocol</em>、<em>iSCSI</em>、<em>SnapMirror</em></td><td><em>ZFS</em></td></tr>
+    </table></div>
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">FSx for Lustre: scratch と persistent</span>
+        <ul>
+          <li><b>Scratch</b>: 一時データ、複製なし、安価。短期の処理ジョブ向けで、高いバーストスループット。</li>
+          <li><b>Persistent</b>: AZ 内で複製。ハードウェア障害時もデータを残す必要がある長期ワークロード向け。</li>
+          <li>定番の流れ: データは S3 → FSx for Lustre をバケットにリンク → HPC クラスターが Lustre 上で処理 → 結果を S3 に書き戻し。「S3 内のデータを高性能ファイルシステムで処理」→ Lustre。</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">FSx for Windows の詳細</span>
+        <ul>
+          <li>AWS Managed Microsoft AD または自己管理の AD に参加します。</li>
+          <li>本番向けに自動フェイルオーバー付きの Multi-AZ。毎日の自動バックアップ。</li>
+          <li>VPN/Direct Connect 経由でオンプレミスからアクセスできます。現地でキャッシュしたい場合は <b>FSx File Gateway</b> を使います。</li>
+          <li>「Windows ファイルサーバーを NTFS 権限のまま lift and shift」→ EFS や S3 ではなく FSx for Windows。</li>
+        </ul>
+      </div>
+    </div>
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">15. ある研究所は S3 に 200 TB の衛星画像を持ち、数百 GB/s のスループットで EC2 上の処理クラスターを動かし、結果を S3 に書き戻したいと考えています。何を選びますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>S3 バケットにリンクした FSx for Lustre。</b>EFS はこの規模のスループットに届かず、lazy load 型の S3 連携もありません。EBS にすべてコピーするのは遅く高価です。</p></div>
+      <div class="q"><p class="qt">16. 会社がファイルサーバーを AWS に移行します。Windows ユーザーはドメインにログインし、Windows ACL を維持する必要があります。何を選びますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Active Directory に参加させた FSx for Windows File Server。</b>EFS は Linux 向けの NFS で、Windows 形式の ACL がありません。ONTAP も可能ですが、問題文に NetApp や multi-protocol がある場合に限ります。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8. S3 STORAGE CLASS ============ -->
+<section id="s3-class">
+  <span class="eyebrow">第3週 · 理論 8 / 12</span>
+  <h2>S3 storage class</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">S3 とは: 30秒でおさらい</span>
+      <ul>
+        <li><b>Object storage</b>: bucket に object（ファイル + metadata）を保存し、HTTP API でアクセスします。ディスクのようにはマウントしません（マウントしたい場合は Mountpoint for S3 か Storage Gateway）。object は最大 <b>5 TB</b>、1回の PUT は最大 5 GB で、それ以上は multipart が必要です。</li>
+        <li>bucket は1つの Region に存在し、名前は<b>グローバルで一意</b>。容量は無制限です。<b>Strong read-after-write consistency</b>: 書き込み直後に読み取れます。</li>
+        <li>key は <code>logs/2026/10/app.log</code> のようなパス形式ですが、S3 に本物のフォルダーはなく、「prefix」は key の先頭部分にすぎません。性能: prefix ごとに毎秒約 3,500 PUT/COPY/POST/DELETE と 5,500 GET。それ以上必要なら複数の prefix に分散します。</li>
+        <li>耐久性は全 class で <b>イレブンナイン</b>（99.999999999%）。違いは <b>availability</b>、AZ 数、取り出し料金、最低保存期間です。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Storage class 一覧（暗記）</span>
+      <div class="tbl"><table>
+        <tr><th>Class</th><th>AZ</th><th>Availability</th><th>最低保存期間</th><th>取り出し料金</th><th>取り出し時間</th><th>用途</th></tr>
+        <tr><td><b>Standard</b></td><td>≥3</td><td>99.99%</td><td>なし</td><td>なし</td><td>ms</td><td>頻繁に使うデータ、デフォルト</td></tr>
+        <tr><td><b>Intelligent-Tiering</b></td><td>≥3</td><td>99.9%</td><td>なし</td><td>なし、object ごとの監視料金のみ</td><td>ms（Archive Access 層は時間単位）</td><td>アクセスパターンが <em>unknown</em> または <em>changing</em>。30/90日読まれないと自動で層を移動</td></tr>
+        <tr><td><b>Standard-IA</b></td><td>≥3</td><td>99.9%</td><td>30日</td><td>あり、GB 単位</td><td>ms</td><td>あまり読まないがすぐ必要: バックアップ、DR、古いファイル</td></tr>
+        <tr><td><b>One Zone-IA</b></td><td>1</td><td>99.5%</td><td>30日</td><td>あり</td><td>ms</td><td>再作成可能なデータ（サムネイル、2つ目のコピー）、IA より20%安い</td></tr>
+        <tr><td><b>Glacier Instant Retrieval</b></td><td>≥3</td><td>99.9%</td><td>90日</td><td>あり、IA より高い</td><td>ms</td><td><em>四半期に一度読む</em>がすぐ必要なアーカイブ（医療画像、古いニュース）</td></tr>
+        <tr><td><b>Glacier Flexible Retrieval</b></td><td>≥3</td><td>restore 後 99.99%</td><td>90日</td><td>あり</td><td>Expedited 1〜5分、Standard 3〜5時間、Bulk 5〜12時間</td><td>アーカイブ、年に一度触るバックアップ、数時間待てる場合</td></tr>
+        <tr><td><b>Glacier Deep Archive</b></td><td>≥3</td><td>restore 後 99.99%</td><td>180日</td><td>あり</td><td>Standard 12時間、Bulk 48時間</td><td>最安、7〜10年のコンプライアンス、<em>retrieval within 12 hours acceptable</em></td></tr>
+      </table></div>
+      <ul>
+        <li>IA と Glacier Instant は object あたり最低 <b>128 KB</b> として課金されます: 細かい小さなファイルは IA にしても安くなりません。Intelligent-Tiering は 128 KB 未満の object を監視しません（Frequent 層に置かれます）。</li>
+        <li>最低保存期間より前に object を削除しても、その日数分は課金されます。</li>
+        <li>Glacier Flexible/Deep Archive からのデータ取得は <b>restore</b> で、Standard に N 日間の一時コピーを作ります。大量の restore には <b>S3 Batch Operations</b> を使います。</li>
+        <li>識別用に追加: <b>S3 Express One Zone</b>（directory bucket、1桁 ms のレイテンシー、最速が必要な ML/分析向け、1つの AZ）、<b>S3 on Outposts</b>。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">問題文から class を選ぶ読み方</span>
+      <div class="flow">
+        <div class="n"><span>アクセスパターンが不明または変化する？</span><span class="tag allow">Intelligent-Tiering</span></div>
+        <div class="arrow"><span>いいえ</span></div>
+        <div class="n"><span>頻繁に読む、ms のレイテンシー？</span><span class="tag allow">Standard</span></div>
+        <div class="arrow"><span>いいえ</span></div>
+        <div class="n"><span>あまり読まない、すぐ必要、再作成可能？</span><span class="tag allow">One Zone-IA、そうでなければ Standard-IA</span></div>
+        <div class="arrow"><span>いいえ</span></div>
+        <div class="n"><span>アーカイブ、四半期に一度読む、でも ms が必要？</span><span class="tag allow">Glacier Instant</span></div>
+        <div class="arrow"><span>いいえ</span></div>
+        <div class="n"><span>数時間待てる？</span><span class="tag allow">Glacier Flexible</span></div>
+        <div class="arrow"><span>いいえ</span></div>
+        <div class="n"><span>12時間以上待てる、最安？</span><span class="tag allow">Glacier Deep Archive</span></div>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">17. 財務報告書を法律で7年間保存する必要があり、ほとんど誰も読みません。監査で要求されたら24時間以内に提出します。<em>most cost-effective</em> な class は？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Glacier Deep Archive。</b>Standard の restore は12時間で、許容される24時間以内に収まります。Glacier Flexible はより高く、そこまでの速さは不要です。</p></div>
+      <div class="q"><p class="qt">18. アプリがユーザーデータを保存しますが、アクセスパターンは予測できません。毎日読まれるファイルもあれば、何か月も開かれないファイルもあります。自分で分析せずにコストを最適化したい。何を選びますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>S3 Intelligent-Tiering。</b>キーワードは <em>unknown / unpredictable access pattern</em>。IA への lifecycle はひっかけです。よく読まれるファイルが IA に移ると retrieval 料金がかかります。</p></div>
+      <div class="q"><p class="qt">19. 元画像（元は Standard）から生成したサムネイルは、めったに見られず、最安にしたいが必要なときはすぐ取り出したい。何を選びますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>One Zone-IA。</b>サムネイルは元画像から再作成できるので、AZ を失っても問題ありません。Standard-IA は3つの AZ のために20%高くなりますが、ここでは不要です。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9. LIFECYCLE, VERSIONING, REPLICATION, OBJECT LOCK ============ -->
+<section id="s3-mgmt">
+  <span class="eyebrow">第3週 · 理論 9 / 12</span>
+  <h2>S3: lifecycle、versioning、replication（CRR、SRR）、Object Lock</h2>
+
+  <div class="card">
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Lifecycle rule</span>
+        <ul>
+          <li>アクションは2種類: <b>Transition</b>（N 日後に class を変更）と <b>Expiration</b>（N 日後に削除）。prefix、tag、object サイズで絞り込めます。</li>
+          <li><b>noncurrent version</b>（versioning 有効時の旧バージョン）にも適用できます。例: 旧バージョンを30日後に Glacier へ移し、365日後に削除。</li>
+          <li>よく問われる2つの後片付けアクション: N 日後の <b>abort incomplete multipart upload</b>（途中のアップロードも課金される）と、<b>expired delete marker の削除</b>。</li>
+          <li>制約: Standard-IA / One Zone-IA へ移すには、object が Standard に最低 <b>30日</b>あることが必要です。Glacier へは0日目でも移せます。移行は下方向のみ（Standard → IA → Glacier）で、自動で上には戻りません。</li>
+          <li>何日にすべきか分からない場合 → まず <b>S3 Storage Class Analysis</b> や <b>Storage Lens</b> を有効にしてパターンを確認します。</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Versioning</span>
+        <ul>
+          <li><b>bucket 単位</b>で有効にします。有効化前からある object の version ID は <code>null</code>。一度有効にすると <b>suspend</b> しかできず、完全に無効にはできません。</li>
+          <li>上書きアップロードで新しい version が作られ、旧版も残ります（課金も続きます）。通常の削除は <b>delete marker</b> を置くだけで、delete marker を削除すると「復元」になります。完全に削除するには version ID を指定して削除します。</li>
+          <li><b>MFA Delete</b>: version の完全削除や versioning 状態の変更時に MFA を必須にします。有効化できるのは root のみで、CLI/API から行います。</li>
+          <li>Versioning は replication と Object Lock の<b>必須条件</b>です。</li>
+          <li>「誤削除や誤上書きから保護」→ versioning（さらに強い保護に触れていれば + MFA Delete）。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Replication: CRR と SRR</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>Cross-Region Replication (CRR)</th><th>Same-Region Replication (SRR)</th></tr>
+        <tr><td>目的</td><td>コンプライアンス上の別リージョンへのコピー保存、他リージョンのユーザー向けのレイテンシー削減、DR、別アカウントへのコピー</td><td>複数 bucket のログ集約、本番からテストへの同期、同一 Region 内で別アカウントにコピーを保持</td></tr>
+        <tr><td>条件</td><td colspan="2">両方の bucket で versioning を有効化、S3 用の IAM role、宛先 bucket は別アカウントでも可</td></tr>
+        <tr><td>動作</td><td colspan="2">有効化後の<b>新しい object</b> のみコピー。既存の object は <b>S3 Batch Replication</b> を実行する必要があります。<b>chain</b> しません（A→B→C でも A から C へは自動コピーされない）。version ID を指定した削除はコピーされず（連鎖削除の防止）、delete marker はオプションを有効にすればコピーされます。宛先で storage class を変更できます</td></tr>
+        <tr><td>SLA</td><td colspan="2"><b>Replication Time Control (RTC)</b>: object の99.99%を <b>15分</b>以内にコピーすると保証、追加料金、監視用メトリクスあり</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Object Lock (WORM)</span>
+      <ul>
+        <li>一定期間または無期限に version の削除や上書きを防ぎます。bucket 作成時に有効化する（またはサポートに連絡する）必要があり、versioning が必要です。</li>
+        <li><b>Retention period</b> には2つのモードがあります: <b>Governance</b>（特別な権限 <code>s3:BypassGovernanceRetention</code> を持つユーザーは削除可能）と <b>Compliance</b>（root を含め<b>誰も</b>削除できず、期間の短縮もできない）。</li>
+        <li><b>Legal hold</b>: 期限のないロックで、<code>s3:PutObjectLegalHold</code> 権限で付け外しし、retention とは独立しています。</li>
+        <li>「規制により5年間は管理者を含め誰も削除できない」→ Object Lock Compliance mode。「必要なら管理者は削除できるようにしたい」→ Governance。Glacier には同様の概念として <b>Vault Lock</b>（旧来の Glacier vault 用）があります。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">20. 既に1000万個の object がある bucket で CRR を有効にしましたが、1週間後も宛先 bucket の大部分が空のままです。なぜで、どうすべきですか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Replication は有効化後の新しい object にしか適用されない。既存の object をコピーするには S3 Batch Replication を実行する。</b>CLI で手作業コピーする必要はありません。</p></div>
+      <div class="q"><p class="qt">21. ログを規定により3年間そのまま保持し、上級管理者でも削除できないようにする必要があります。何を設定しますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Object Lock、Compliance mode、retention 3年。</b>Governance mode は、bypass 権限を持つ管理者が削除できるためひっかけです。Versioning 単体では version の削除を防げません。</p></div>
+      <div class="q"><p class="qt">22. 開発者が versioning 有効の bucket で重要なファイルを誤って削除しました。どう復元しますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>delete marker を削除する</b>（delete marker の version ID を指定して削除）と、直近の版が current に戻ります。バックアップからの restore は不要です。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10. SECURITY ============ -->
+<section id="s3-sec">
+  <span class="eyebrow">第3週 · 理論 10 / 12</span>
+  <h2>S3: bucket policy、ACL、Block Public Access、encryption SSE-S3 / SSE-KMS / SSE-C</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">誰がアクセスできるか: 3つの層</span>
+      <div class="tbl"><table>
+        <tr><th>仕組み</th><th>付与先</th><th>使う場面</th><th>備考</th></tr>
+        <tr><td><b>IAM policy</b>（identity-based）</td><td>User、group、role</td><td>自分のアカウント内の人/role の権限管理</td><td>第1週の復習: bucket と object で resource ARN が異なる（<code>arn:aws:s3:::bucket</code> と <code>.../*</code>）</td></tr>
+        <tr><td><b>Bucket policy</b>（resource-based）</td><td>Bucket</td><td><b>他アカウント</b>へのアクセス許可、<b>public</b> 読み取り（static website）、bucket の全利用者に対する<b>条件の強制</b></td><td>JSON に <code>Principal</code> フィールドが加わる。よく使う条件: <code>aws:SecureTransport</code>（HTTPS 強制）、<code>aws:SourceVpce</code>（VPC endpoint からのみ）、<code>s3:x-amz-server-side-encryption</code>（暗号化強制）、<code>aws:SourceIp</code></td></tr>
+        <tr><td><b>ACL</b></td><td>Bucket または個々の object</td><td>現在はほぼ使わない</td><td>Object Ownership = Bucket owner enforced によりデフォルトで<b>無効</b>。新しい問題では、選択肢が ACL ならたいてい誤り</td></tr>
+      </table></div>
+      <ul>
+        <li>評価ルールは第1週と同じです。IAM policy と bucket policy を合わせて評価し、<b>explicit deny が優先</b>、同一アカウントならどちらかに allow があれば許可されます。別アカウントの場合は<b>両側</b>で allow が必要です。</li>
+        <li><b>Block Public Access</b>: アカウントと bucket のレベルにある4つのスイッチで、誰かが誤って公開 policy を書いても、public な ACL/policy をすべてブロックします。static website 用の bucket 以外は有効にしておきます。「アカウント全体でどの bucket も public にならないことを保証」→ アカウントレベルで Block Public Access を有効化（+ SCP）。</li>
+        <li><b>S3 Access Points</b>: 巨大な bucket policy 1つの代わりに、アプリごとに独自の policy を持つ endpoint を用意します。<b>IAM Access Analyzer for S3</b>: 外部に共有されている bucket を一覧表示します。</li>
+        <li><b>Pre-signed URL</b>（11章）は、IAM を持たない人に public にせず一時的に object をダウンロードさせる方法です。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">HTTPS を強制する bucket policy の例</span>
+<pre><code>{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Sid": "DenyInsecureTransport",
+    "Effect": "Deny",
+    "Principal": "*",
+    "Action": "s3:*",
+    "Resource": ["arn:aws:s3:::my-bucket", "arn:aws:s3:::my-bucket/*"],
+    "Condition": { "Bool": { "aws:SecureTransport": "false" } }
+  }]
+}</code></pre>
+      <p>この「条件を満たさなければ Deny」というパターンは多くの問題に登場します。Condition を <code>"StringNotEquals": {"s3:x-amz-server-side-encryption": "aws:kms"}</code> に変えれば、アップロード時に KMS 暗号化を強制できます。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Encryption: サーバー側4種類とクライアント側1種類</span>
+      <div class="tbl"><table>
+        <tr><th>種類</th><th>鍵を持つのは誰か</th><th>アップロード時のヘッダー</th><th>問題文にこうあれば選ぶ</th><th>注意点</th></tr>
+        <tr><td><b>SSE-S3</b></td><td>S3 が自動管理（AES-256）</td><td><code>x-amz-server-side-encryption: AES256</code></td><td>「encrypted at rest」だけが必要、<em>minimal effort</em></td><td>2023年以降、すべての新規 bucket の<b>デフォルト</b>。鍵ごとの個別監査はない</td></tr>
+        <tr><td><b>SSE-KMS</b></td><td>KMS key: AWS managed <code>aws/s3</code> または <b>customer managed</b></td><td><code>x-amz-server-side-encryption: aws:kms</code></td><td><em>audit key usage</em>（CloudTrail）、key policy による <em>control who can decrypt</em>、<em>rotate</em>、object の読み取り権限と鍵の使用権限の分離</td><td>GET/PUT のたびに KMS を呼ぶ → <b>KMS request quota</b> に達することがある。<b>S3 Bucket Keys</b> を有効にすると呼び出し回数とコストを99%削減。読み手には S3 の権限と <code>kms:Decrypt</code> の両方が必要</td></tr>
+        <tr><td>DSSE-KMS</td><td>KMS、2層の暗号化</td><td><code>aws:kms:dsse</code></td><td>2層暗号化を求めるコンプライアンス要件</td><td>識別できれば十分</td></tr>
+        <tr><td><b>SSE-C</b></td><td><b>自分</b>がリクエストごとに鍵を送り、S3 は鍵を保存しない</td><td>ヘッダー <code>x-amz-server-side-encryption-customer-*</code></td><td><em>customer must manage keys outside AWS</em>、それでも暗号化処理は S3 に任せたい</td><td><b>HTTPS</b> 必須。鍵を失うとデータも失う。Console からは使えない</td></tr>
+        <tr><td>Client-side</td><td>自分、送信前に暗号化</td><td>なし</td><td><em>data must be encrypted before leaving on-premises</em>、S3 は平文を一切見ない</td><td>SDK（S3 Encryption Client）またはクライアント側の KMS を使用</td></tr>
+      </table></div>
+      <ul>
+        <li><b>In transit</b>: HTTPS（TLS）。上記のように bucket policy の <code>aws:SecureTransport</code> で強制します。</li>
+        <li>既存 object の暗号化を変更するには、新しいヘッダーを付けて object を自分自身に上書きコピーするか、大量なら S3 Batch Operations を使います。</li>
+        <li>「数百万リクエストのある bucket で KMS のコストを下げたい」→ S3 Bucket Keys。「誰が object を読んだか、どの鍵を使ったかを CloudTrail で確認したい」→ customer managed key による SSE-KMS。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">23. コンプライアンスチームは、すべての object を会社の KMS key で暗号化し、暗号化されていないアップロードはすべて拒否するよう求めています。何を設定しますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>bucket の default encryption を customer managed key による SSE-KMS にし、さらに <code>s3:x-amz-server-side-encryption</code> が <code>aws:kms</code> 以外のときに PutObject を Deny する bucket policy を設定する。</b>default encryption だけだと、ヘッダーなしのアップロードも default で暗号化されて受け付けられますが、問題は<em>拒否</em>を求めている → Deny が必要です。</p></div>
+      <div class="q"><p class="qt">24. 社内データを含む bucket に、インターネット経由ではなく、gateway endpoint を通じて VPC 内の EC2 からのみアクセスさせたい。どう制限しますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b><code>aws:SourceVpce</code> が endpoint の ID と異なるすべてのリクエストを Deny する bucket policy</b>（または <code>aws:SourceVpc</code> を使用）。Security Group は S3 には適用されないので正解ではありません。</p></div>
+      <div class="q"><p class="qt">25. あるアプリは S3 での暗号化が必要ですが、会社の規定で鍵を AWS に保存できません。何を選びますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>SSE-C</b>（問題文にデータはオンプレミスを出る前に暗号化が必要とあれば client-side encryption）。customer managed key による SSE-KMS でも鍵は AWS に保存されるため要件を満たしません。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11. FEATURES ============ -->
+<section id="s3-feat">
+  <span class="eyebrow">第3週 · 理論 11 / 12</span>
+  <h2>S3: presigned URL、Transfer Acceleration、multipart upload、event notification</h2>
+
+  <div class="card">
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Presigned URL</span>
+        <ul>
+          <li>署名付きの URL で、特定の object に対する <b>GET</b>（ダウンロード）または <b>PUT</b>（アップロード）を期限付きで許可し、<b>URL を作成した人の権限を引き継ぎます</b>。</li>
+          <li>CLI の <code>aws s3 presign</code>（デフォルト3600秒）または SDK で作成します。IAM user の認証情報では最大 <b>7日</b>、一時認証情報（role）ではセッションの期限で失効します。</li>
+          <li>用途: public にせず顧客に非公開ファイルをダウンロードさせる、サーバーを経由せずユーザーに S3 へ直接アップロードさせる（バックエンドの負荷軽減）、期限付きリンクを送る。</li>
+          <li><b>CloudFront signed URL/cookie</b>（第4週）との比較: 広く配信し、キャッシュが必要で多数のファイルなら CloudFront、1つの object を直接なら S3 presigned。</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Transfer Acceleration</span>
+        <ul>
+          <li>アップロード/ダウンロードは最寄りの <b>edge location</b> に入り、AWS のバックボーンネットワークを通って bucket に届きます。endpoint は <code>bucket.s3-accelerate.amazonaws.com</code>。</li>
+          <li><b>距離が遠い</b>場合（世界中のユーザーが1つの Region にアップロード）や大きなファイルで効果があります。<b>GB あたりの追加料金</b>があり、有効化前に速度を比較するツールが AWS にあります。</li>
+          <li>問題文: <em>users worldwide upload large files to a single bucket, speed up</em> → Transfer Acceleration（multipart と組み合わせ）。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Multipart upload</span>
+        <ul>
+          <li>ファイルを複数の part（1 part あたり 5 MB〜5 GB、最大 10,000 part）に分けて<b>並列</b>にアップロードし、失敗した part だけを再送します。</li>
+          <li><b>100 MB 以上で推奨</b>、<b>5 GB 超で必須</b>。CLI の <code>aws s3 cp</code> は自動で multipart を行います。</li>
+          <li>途中までアップロードされた part は、完了または abort するまで<b>課金され続けます</b> → lifecycle rule「abort incomplete multipart uploads after 7 days」。</li>
+          <li>ダウンロード側の対応機能は <b>byte-range fetch</b>: 範囲ごとに並列ダウンロードしたり、ファイルの先頭部分だけを取得したりできます。</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Event notification</span>
+        <ul>
+          <li>イベント（<code>s3:ObjectCreated:*</code>、<code>ObjectRemoved</code>、<code>ObjectRestore</code>、<code>Replication</code> など）が発生すると、<b>SNS</b>、<b>SQS</b>（standard queue のみ、FIFO は不可）、<b>Lambda</b> に送信します。prefix/suffix（例: <code>images/</code>、<code>.jpg</code>）で絞り込めます。</li>
+          <li>送信先には S3 からの送信を許可する <b>resource policy</b> が必要です（SNS topic policy、SQS queue policy、Lambda resource policy）。</li>
+          <li><b>EventBridge</b>（bucket で有効化）: より多くのイベント種別、JSON の内容によるフィルタリング、複数の送信先への同時配信、アーカイブとリプレイ。「複数の送信先、複雑なフィルター」→ EventBridge。</li>
+          <li>定番: 画像アップロード → event → Lambda がサムネイルを作成（第7週でこのラボを実施）。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">識別用に追加</span>
+      <ul>
+        <li><b>S3 Select / Glacier Select</b>: S3 内で SQL によりフィルタリングし、必要な部分だけを返して帯域を節約します。<b>Athena</b>（第9週）は複数の object を SQL でクエリするものです。</li>
+        <li><b>S3 Object Lambda</b>: コピーを保存せずに、読み取り時に object を変換します（PII のマスク、リサイズ）。</li>
+        <li><b>Requester Pays</b>: ダウンロードする側がデータ転送料を払い、bucket 所有者はストレージ料金だけを払います。大規模な公開データセット向けです。</li>
+        <li><b>CORS</b>: 別ドメインの Web から bucket を呼び出せるようにします。ブラウザで CORS エラー → bucket に CORS ルールを追加。</li>
+        <li><b>Static website hosting</b>: <code>bucket.s3-website-region.amazonaws.com</code> 形式の HTTP endpoint。bucket を public にするか、public にしないなら OAC 付きの CloudFront の背後に置きます（第4週）。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">26. モバイルアプリで、ユーザーが 2 GB の動画を会社のサーバーを経由せず S3 に直接アップロードし、bucket は private のままにしたい。方法は？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>バックエンドが PUT 用の presigned URL を作成し、アプリが multipart で直接アップロードする。</b>public write を開放するのは誤りです。EC2 経由のアップロードは帯域を消費し、<em>scale</em> しません。</p></div>
+      <div class="q"><p class="qt">27. Console で見える object の容量は小さいのに、S3 の請求額が異常に高い。最もよくある原因は？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>未完了の multipart upload（または noncurrent version）が課金されている。</b>abort incomplete multipart uploads と expire noncurrent versions の lifecycle rule を追加します。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12. HYBRID ============ -->
+<section id="hybrid">
+  <span class="eyebrow">第3週 · 理論 12 / 12</span>
+  <h2>Storage Gateway、Snow family、AWS Backup、DataSync</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Storage Gateway: オンプレミスから AWS のストレージを手元のように使う</span>
+      <p>オンプレミスに置く仮想マシン（VMware、Hyper-V、KVM、EC2）またはハードウェアアプライアンスで、データは AWS 上に置きつつ、既存のアプリが慣れたプロトコルを使い続けられるようにします。</p>
+      <div class="tbl"><table>
+        <tr><th>タイプ</th><th>オンプレミス側のプロトコル</th><th>データの保存先</th><th>用途</th><th>キーワード</th></tr>
+        <tr><td><b>S3 File Gateway</b></td><td>NFS、SMB</td><td>S3（1ファイル = 1 object）、よく読むファイルはローカルキャッシュ</td><td>ファイルサーバーを S3 に拡張、安価な保存、その後 object に lifecycle や AWS サービスを適用</td><td><em>NFS/SMB to S3</em>、<em>local cache</em>、SMB なら <em>Active Directory</em></td></tr>
+        <tr><td><b>FSx File Gateway</b></td><td>SMB</td><td>FSx for Windows</td><td>支店から現地キャッシュ付きで FSx for Windows にアクセス</td><td><em>FSx</em>、<em>branch office</em></td></tr>
+        <tr><td><b>Volume Gateway: Cached</b></td><td>iSCSI（block）</td><td>S3 が主、よく使う部分をローカルキャッシュ</td><td>SAN の拡張、データがローカルディスクより大きい場合</td><td><em>iSCSI</em>、<em>primary data in AWS</em>、<em>low-latency access to frequently used data</em></td></tr>
+        <tr><td><b>Volume Gateway: Stored</b></td><td>iSCSI（block）</td><td>すべてオンプレミス、EBS snapshot 形式で S3 へ非同期バックアップ</td><td>全データに低レイテンシーが必要で、クラウドにはバックアップだけしたい場合</td><td><em>entire dataset on-premises</em>、<em>asynchronous backup</em>、<em>EBS snapshots</em></td></tr>
+        <tr><td><b>Tape Gateway</b></td><td>iSCSI VTL（仮想テープライブラリ）</td><td>S3、その後 Glacier / Deep Archive</td><td>物理テープの置き換え、既存のバックアップソフト（Veeam、NetBackup）を維持</td><td><em>tape</em>、<em>backup software</em>、<em>VTL</em></td></tr>
+      </table></div>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Snow family: オフラインのデータ移行</span>
+        <ul>
+          <li>AWS から送られてくる物理デバイスにデータをコピーして返送すると、AWS が S3 に取り込みます。ネットワークが足りないときに使います。目安として、ネットワーク転送に<b>1週間以上</b>かかるなら Snow を検討します。</li>
+          <li><b>Snowcone</b>: 小型（8 TB HDD または 14 TB SSD）、バッテリー駆動可、DataSync agent を内蔵、エッジ/過酷環境向け。</li>
+          <li><b>Snowball Edge Storage Optimized</b>: 約 80 TB（新モデルは最大 210 TB、要確認）、軽いコンピュート付き。<b>Compute Optimized</b>: 多くの vCPU、GPU オプション、インターネットのないエッジで EC2/Lambda を実行。</li>
+          <li><b>Snowmobile</b>: 100 PB のコンテナトラック。AWS は2024年に提供を終了しましたが、古い問題ではまだ出てきます。</li>
+          <li>Glacier への直接取り込みはできません: Snowball → S3 → lifecycle rule で Glacier へ。</li>
+          <li>管理は <b>AWS OpsHub</b>（GUI）。デバイス上のデータは 256-bit で暗号化され、鍵は KMS にあります。</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">DataSync: スケジュール可能なオンライン移行</span>
+        <ul>
+          <li>オンプレミス（NFS、SMB、HDFS、オブジェクトストレージ）と AWS（<b>S3、EFS、すべての FSx</b>）の間、または <b>AWS サービス同士</b>（S3 ↔ EFS、別 Region の EFS ↔ EFS）で<b>ファイル/object</b> を転送するサービスです。</li>
+          <li>オンプレミスには <b>agent</b>（VM）のインストールが必要で、AWS 同士なら agent は不要です。agent あたり約 10 Gbps（数値は要確認）。</li>
+          <li><b>metadata、permission、timestamp</b> を保持し、スケジュール（時間、日、週）で実行でき、整合性チェックや帯域制限も可能です。</li>
+          <li>キーワード: <em>migrate</em>、<em>scheduled transfer</em>、<em>preserve metadata</em>、<em>one-time or periodic</em>、<em>accelerate online transfer</em>。</li>
+          <li>常時アクセス用ではありません: オンプレミスで<b>日常的に使う</b>なら Storage Gateway。取引先から <b>SFTP/FTPS</b> でファイルを受け取るなら <b>AWS Transfer Family</b>。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">AWS Backup: バックアップを一元管理</span>
+      <ul>
+        <li>集中管理型のサービスです。<b>backup plan</b>（スケジュール、保持期間、コールドストレージへの移行）を作成し、<b>tag</b> でリソースを割り当て、<b>backup vault</b> に保存します。</li>
+        <li>対応: EC2、EBS、RDS、Aurora、DynamoDB、EFS、FSx、Storage Gateway、S3、DocumentDB、Neptune、Redshift、オンプレミスの VMware。</li>
+        <li>DR 用の <b>Cross-Region</b> および <b>cross-account</b> バックアップ。<b>Vault Lock</b>: バックアップの WORM で、管理者でも期限前に削除できません。</li>
+        <li>「複数サービス、複数アカウントのバックアップを <em>centrally manage</em> し、N 日保持のポリシーを持たせる」→ AWS Backup。EBS だけなら DLM でも可能ですが、選択肢に AWS Backup があればそちらが正解のことが多いです。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">「AWS にデータを移す」系の早見表</span>
+      <div class="tbl"><table>
+        <tr><th>状況</th><th>選ぶ</th></tr>
+        <tr><td>数百 TB、回線が弱い、1回限り</td><td>Snowball Edge</td></tr>
+        <tr><td>数十 TB、回線は安定、スケジュールで自動化したい、metadata を保持</td><td>DataSync</td></tr>
+        <tr><td>オンプレミスでファイル共有を使い続け、データは S3 に置く</td><td>S3 File Gateway</td></tr>
+        <tr><td>オンプレミスのアプリが block storage を必要とし、主データはクラウド</td><td>Volume Gateway cached</td></tr>
+        <tr><td>バックアップソフト用のテープライブラリを置き換える</td><td>Tape Gateway</td></tr>
+        <tr><td>取引先が SFTP で S3 にファイルを送る</td><td>Transfer Family</td></tr>
+        <tr><td>オンプレミスのデータベースを RDS へ</td><td>DMS（第6週）</td></tr>
+        <tr><td>仮想マシンをそのまま EC2 へ</td><td>Application Migration Service（第9週）</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">28. 会社は 500 TB のデータを2週間以内に S3 に移す必要があり、インターネット回線は 100 Mbps です。何を選びますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>複数台の Snowball Edge Storage Optimized。</b>500 TB を 100 Mbps で送ると1年以上かかります。DataSync も Transfer Acceleration もその回線に依存します。</p></div>
+      <div class="q"><p class="qt">29. オンプレミスのバックアップソフトがテープに書き込んでいます。ソフトを変えずに物理テープをやめ、安く長期保存したい。何を選びますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Tape Gateway</b>。仮想テープを S3 に保存し、その後 Glacier Deep Archive に移します。File Gateway はひっかけです。バックアップソフトは NFS ではなくテープのプロトコル（VTL）で通信します。</p></div>
+      <div class="q"><p class="qt">30. 支店から SMB で S3 上のファイルに、よく使うファイルは低レイテンシーでアクセスしたい。すべてのファイルは S3 に置く必要があります。何を選びますか？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>S3 File Gateway</b>（ローカルキャッシュあり、SMB と AD に対応）。DataSync は定期的にデータを転送するだけで、マウントはできません。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HANDS-ON ============ -->
+<section id="handson">
+  <span class="eyebrow">ハンズオン</span>
+  <h2>ハンズオン: 7ラボ</h2>
+  <p>第1週で設定したプロファイル <code>saa</code> を使い、Region <b>ap-northeast-1（東京）</b>で行います。Lab 1〜3 と 6 は第2週、Lab 4、5、7 は第3週です。各ラボの最後に片付けの手順があります。EC2、EBS、EFS は時間単位または GB 単位で課金されるため、夜をまたいで残さないでください。</p>
+  <div class="note">始める前に: アカウントが新しい Free Tier（クレジット制）の場合は、Billing → Free Tier で残りのクレジットを確認します。東京の t3.micro は約 0.0136 USD/時間で、時間どおりに削除すればこのブロックのラボ全体で 2 USD 未満です。</div>
+
+  <div class="card">
+    <h3>Lab 1. user data で Web サーバーをインストールした EC2 を起動し、public IP でアクセス</h3>
+    <ol class="steps">
+      <li><div><p>Console → <b>EC2 → Instances → Launch instances</b>。Name は <code>saa-web-1</code>。AMI: <b>Amazon Linux 2023</b>（x86_64）。Instance type は <b>t3.micro</b>。</p></div></li>
+      <li><div><p>Key pair: <b>Create new key pair</b> で名前 <code>saa-key</code>、タイプ RSA、形式 <code>.pem</code>。ダウンロードしたファイルは <code>C:\Users\&lt;ユーザー名&gt;\.ssh\</code> に保存します。</p></div></li>
+      <li><div><p>Network settings → Edit: デフォルト VPC、任意の subnet（AZ を控えておく。例: <code>ap-northeast-1a</code>）、<b>Auto-assign public IP: Enable</b>。Security group: 新規作成で名前 <code>saa-web-sg</code>、ルールは2つ: <b>SSH</b> の source は <b>My IP</b>、<b>HTTP</b> の source は <b>Anywhere (0.0.0.0/0)</b>。</p></div></li>
+      <li><div><p>Storage: 8 GiB <b>gp3</b> のまま。<b>Advanced details</b> を開き、<b>User data</b> までスクロールして貼り付けます:</p>
+<pre><code>#!/bin/bash
+dnf update -y
+dnf install -y httpd
+systemctl enable --now httpd
+TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 300")
+ID=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
+AZ=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/placement/availability-zone)
+echo "&lt;h1&gt;Hello from $ID in $AZ&lt;/h1&gt;" &gt; /var/www/html/index.html</code></pre><p>このスクリプトは Web サーバーをインストールすると同時に、IMDSv2 の呼び出し方も示しています。<b>Launch instance</b> をクリックします。</p></div></li>
+      <li><div><p>Status check が 2/2 になるまで待ちます（1〜2分）。<b>Public IPv4 address</b> をコピーし、ブラウザで <code>http://&lt;ip&gt;</code> を開きます（https ではなく http に注意）。「Hello from i-xxxx in ap-northeast-1a」と表示されれば完了です。</p></div></li>
+      <li><div><p>SSH で入って中を確認します（PowerShell には ssh が標準で入っています）:</p>
+<pre><code>ssh -i $HOME\.ssh\saa-key.pem ec2-user@&lt;ip&gt;
+sudo cat /var/log/cloud-init-output.log | tail -20
+curl -s http://169.254.169.254/latest/meta-data/        # token なし → IMDSv2 のため 401 エラー</code></pre><p>PowerShell でファイルの権限が広すぎると言われたら、<code>icacls $HOME\.ssh\saa-key.pem /inheritance:r /grant:r "$env:USERNAME:R"</code> を実行します。</p></div></li>
+      <li><div><p>インスタンスを <b>Stop</b> してから <b>Start</b> してみます: public IP は変わり、Web は動き続けます（httpd は enable 済み）が、user data は初回しか実行されないため index.html の内容は変わりません。<b>まだ terminate しないでください</b>。Lab 2 と 3 でこのインスタンスを引き続き使います。</p></div></li>
+    </ol>
+    <div class="note bad">ページが開かない場合の確認: (1) SG に HTTP 0.0.0.0/0 があるか、(2) https ではなく http と入力したか、(3) user data の完了を待ったか（ログを確認）。最も多い原因は、ブラウザが自動で https に切り替えることです。</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 2. EBS を追加でアタッチし、フォーマット、マウント、snapshot を取得</h3>
+    <ol class="steps">
+      <li><div><p><b>EC2 → Volumes → Create volume</b>: type は <b>gp3</b>、size は <b>10</b> GiB、<b>AZ はインスタンスの AZ と同じにすること</b>（例: ap-northeast-1a）、デフォルトの鍵 <code>aws/ebs</code> で Encrypt にチェック。Tag Name は <code>saa-data</code>。Create。</p></div></li>
+      <li><div><p>ボリュームを選択 → <b>Actions → Attach volume</b> → インスタンス <code>saa-web-1</code> を選び、device name は <code>/dev/sdf</code> のまま。手順1で AZ を 1c に変えてみると、アタッチ先の一覧にインスタンスが表示されないことが確認できます。これが「EBS は AZ に紐づく」という教訓です。</p></div></li>
+      <li><div><p>インスタンスに SSH で入り、新しいディスクを確認します:</p>
+<pre><code>lsblk
+# nvme0n1 は 8G の root、nvme1n1 は新しい 10G のボリューム（Nitro では /dev/sdf が nvme1n1 に名前変更される）
+sudo file -s /dev/nvme1n1        # "data" はファイルシステムがまだないという意味
+sudo mkfs -t xfs /dev/nvme1n1
+sudo mkdir /data
+sudo mount /dev/nvme1n1 /data
+df -h /data
+echo "ghi tu lab 2" | sudo tee /data/test.txt</code></pre></div></li>
+      <li><div><p>reboot 後に自動でマウントされるよう、UUID を使います（device 名は変わることがあるため）:</p>
+<pre><code>sudo blkid /dev/nvme1n1
+echo "UUID=&lt;uuid-vua-thay&gt;  /data  xfs  defaults,nofail  0  2" | sudo tee -a /etc/fstab
+sudo umount /data &amp;&amp; sudo mount -a &amp;&amp; df -h /data</code></pre><p><code>nofail</code> は、ボリュームが detach されてもインスタンスが起動できるようにするためです。</p></div></li>
+      <li><div><p><b>Elastic Volumes</b> を試します: Console → ボリューム <code>saa-data</code> → Modify → size 20 GiB。数分後、インスタンス内で <code>sudo xfs_growfs /data</code> を実行し、<code>df -h /data</code> で 20G になっていることを確認します。（パーティションのないボリュームなので growpart は不要です。）</p></div></li>
+      <li><div><p>snapshot を取得: ボリューム → <b>Actions → Create snapshot</b>、description は <code>saa-data-snap1</code>。<b>Snapshots</b> で Completed になるまで待ちます。snapshot から<b>別の AZ</b> にボリュームを作成: snapshot → Actions → Create volume from snapshot → AZ <code>ap-northeast-1c</code>。これが EBS のデータを別の AZ に移す唯一の方法です。</p></div></li>
+      <li><div><p>片付け: 1c に作ったボリューム（どこにもアタッチしていない）を削除します。<code>saa-data</code> と snapshot は Lab 3 まで残します。<code>aws ec2 describe-volumes --query "Volumes[].{id:VolumeId,state:State,az:AvailabilityZone,size:Size}" --output table</code> を実行し、CLI での確認方法に慣れておきます。</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Lab 3. EC2 から AMI を作成し、別の AZ で起動</h3>
+    <ol class="steps">
+      <li><div><p>インスタンス <code>saa-web-1</code> → <b>Actions → Image and templates → Create image</b>。Name は <code>saa-web-ami-v1</code>。<b>Reboot instance</b> のチェックはそのまま（ファイルシステムの整合性のため）。Instance volumes に root とボリューム <code>saa-data</code> の両方が表示されるので、data ボリュームを AMI から外し（Remove）、AMI には root だけを含めます。Create image。</p></div></li>
+      <li><div><p><b>AMIs</b> で Available になるまで待ちます（2〜5分）。<b>Snapshots</b> を開くと、AMI と一緒に新しい snapshot が作られています。AMI の実体は snapshot + metadata です。</p></div></li>
+      <li><div><p>AMI → <b>Launch instance from AMI</b>。Name は <code>saa-web-2</code>、t3.micro、key は <code>saa-key</code>、Network: <b>別の AZ</b> の subnet（例: ap-northeast-1c）を選び、public IP を有効化、既存の SG <code>saa-web-sg</code>。<b>user data は入力しません</b>。Launch。</p></div></li>
+      <li><div><p><code>http://&lt;ip-moi&gt;</code> を開くと、httpd が AMI に含まれているため Web はすぐに動きますが、ページには<b>古い</b>インスタンス ID と古い AZ が表示されます。index.html が焼き込まれていて user data が実行されないためです。これが golden AMI と user data の違いです: インスタンスごとに異なるものは user data に、固定のものは AMI に焼き込みます。</p></div></li>
+      <li><div><p>AMI を別の Region にコピーしてみます: AMI → Actions → <b>Copy AMI</b> → 宛先は大阪（ap-northeast-3）。確認したら、すぐに大阪で <b>deregister</b> し、そこの snapshot も削除します。</p></div></li>
+      <li><div><p>第2週の EC2 部分の片付け（残すものがあれば明記）:</p>
+<pre><code>aws ec2 terminate-instances --instance-ids &lt;id-saa-web-1&gt; &lt;id-saa-web-2&gt;
+aws ec2 delete-volume --volume-id &lt;id-saa-data&gt;            # インスタンスが terminated になった後
+aws ec2 deregister-image --image-id &lt;ami-id&gt;
+aws ec2 delete-snapshot --snapshot-id &lt;snap-cua-ami&gt;
+aws ec2 delete-snapshot --snapshot-id &lt;snap-saa-data-snap1&gt;
+aws ec2 describe-addresses                                   # 空であること。アタッチしていない Elastic IP も課金される</code></pre><p>Key pair と security group は残しておいても料金はかかりません。Lab 6 では新しい EC2 を作成します。</p></div></li>
+    </ol>
+    <div class="note ok">再確認: EC2 → Instances に running がない、Volumes が空、Snapshots が空、AMIs が東京と大阪の両方で空。</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 6. 1つの EFS を2台の EC2 にマウントし、共有ファイルを確認</h3>
+    <p style="font-size:.94rem;color:var(--muted)">第2週のうちに、Lab 3 の直後に行います。番号6はチェックリストの順番に合わせています。</p>
+    <ol class="steps">
+      <li><div><p>EFS 用の security group を作成: <b>EC2 → Security Groups → Create</b>、名前は <code>saa-efs-sg</code>、inbound rule は <b>NFS (2049)</b> で source を security group <code>saa-web-sg</code> にします。これが標準的な方法で、1つの IP ではなく「Web 用 SG を持つすべてのインスタンス」を許可します。</p></div></li>
+      <li><div><p><b>EFS → Create file system → Customize</b>。Name は <code>saa-efs</code>、Regional、Automatic backups のチェックを外す（料金がかからないように）、Lifecycle: 30日後に IA へ transition。Performance: General Purpose、Throughput: Elastic。Next → Network: デフォルト VPC、AZ ごとに mount target を1つ、すべての mount target の SG を <code>saa-efs-sg</code> に変更。Create。</p></div></li>
+      <li><div><p>Amazon Linux 2023 の t3.micro を2台起動します。名前は AZ 1a の <code>saa-efs-a</code> と AZ 1c の <code>saa-efs-c</code>、同じ key、同じ SG <code>saa-web-sg</code>、public IP を有効化。両方の user data に貼り付けます:</p>
+<pre><code>#!/bin/bash
+dnf install -y amazon-efs-utils</code></pre><p>（起動時に Storage → File systems から EFS をアタッチするボタンも Console にありますが、理解のため手作業で行います。）</p></div></li>
+      <li><div><p>EFS のページで File system ID（<code>fs-0123abcd</code> の形式）を確認 → <b>Attach</b> をクリックしてサンプルコマンドを見ます。<code>saa-efs-a</code> に SSH で入ります:</p>
+<pre><code>sudo mkdir /mnt/efs
+sudo mount -t efs -o tls fs-0123abcd:/ /mnt/efs
+df -h /mnt/efs                      # Size は 8.0E と表示される。「ほぼ無限」という意味
+echo "tu instance A o AZ 1a" | sudo tee /mnt/efs/hello.txt</code></pre></div></li>
+      <li><div><p><code>saa-efs-c</code> に SSH で入り、同じようにマウントして <code>cat /mnt/efs/hello.txt</code> を実行すると、2台が別の AZ にあっても A からの内容が見えます。C から1行追記し、A に戻って読んでみます。これは EBS にはできないことです。</p></div></li>
+      <li><div><p>マウントが固まる場合: 99%は SG が原因です。その AZ の mount target に SG <code>saa-efs-sg</code> が付いているか、ルール 2049 の source が正しく <code>saa-web-sg</code> になっているかを確認します。</p></div></li>
+      <li><div><p>片付け: 2台のインスタンスを terminate してから、EFS → <code>saa-efs</code> → Delete（確認のため ID の入力が必要）。EFS は GB 単位の課金なので消し忘れても安いですが、削除する習慣をつけましょう。</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Lab 4. S3 static website を作成し、versioning を有効にして上書きアップロードし、旧版を復元</h3>
+    <ol class="steps">
+      <li><div><p>bucket を作成します（名前はグローバルで一意なので、末尾を変えてください）:</p>
+<pre><code>aws s3 mb s3://saa-web-quy-2026 --region ap-northeast-1</code></pre></div></li>
+      <li><div><p>Console → bucket → <b>Permissions</b> タブ → <b>Block public access</b> → Edit → <b>Block all public access</b> のチェックを外す → Save（confirm と入力）。これはこのテスト用 website bucket だけで行います。</p></div></li>
+      <li><div><p>同じタブで <b>Bucket policy</b> → Edit、貼り付けます（bucket 名を変更）:</p>
+<pre><code>{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Sid": "PublicRead",
+    "Effect": "Allow",
+    "Principal": "*",
+    "Action": "s3:GetObject",
+    "Resource": "arn:aws:s3:::saa-web-quy-2026/*"
+  }]
+}</code></pre><p>object に対する <code>GetObject</code> だけを許可し、ListBucket も書き込みも許可しません。</p></div></li>
+      <li><div><p><b>Properties</b> タブ → ページ下部の <b>Static website hosting</b> → Edit → Enable、Index document は <code>index.html</code>、Error document は <code>error.html</code> → Save。<b>Bucket website endpoint</b> を控えておきます。</p></div></li>
+      <li><div><p>バージョン1を作成してアップロード:</p>
+<pre><code>Set-Content -Path index.html -Value "&lt;h1&gt;Phien ban 1&lt;/h1&gt;" -Encoding utf8
+Set-Content -Path error.html -Value "&lt;h1&gt;Khong tim thay&lt;/h1&gt;" -Encoding utf8
+aws s3 cp index.html s3://saa-web-quy-2026/ --content-type text/html
+aws s3 cp error.html s3://saa-web-quy-2026/ --content-type text/html</code></pre><p>ブラウザで website endpoint を開くと「Phien ban 1」が表示されます。<code>/abc</code> を試すとエラーページが表示されます。</p></div></li>
+      <li><div><p>versioning を有効にしてから上書きアップロード:</p>
+<pre><code>aws s3api put-bucket-versioning --bucket saa-web-quy-2026 --versioning-configuration Status=Enabled
+Set-Content -Path index.html -Value "&lt;h1&gt;Phien ban 2&lt;/h1&gt;" -Encoding utf8
+aws s3 cp index.html s3://saa-web-quy-2026/ --content-type text/html
+aws s3api list-object-versions --bucket saa-web-quy-2026 --prefix index.html --query "Versions[].{id:VersionId,latest:IsLatest,date:LastModified}" --output table</code></pre><p>2つの version が見えます: バージョン2は <code>IsLatest=True</code>、バージョン1は VersionId が <code>null</code>（versioning 有効化前にアップロードしたため）。website を再読み込みするとバージョン2が表示されます。</p></div></li>
+      <li><div><p>旧版の復元、方法1（安全、履歴を保持）: 旧 version を上書きコピーして新しい version にします:</p>
+<pre><code>aws s3api copy-object --bucket saa-web-quy-2026 --key index.html --copy-source "saa-web-quy-2026/index.html?versionId=null" --content-type text/html --metadata-directive REPLACE</code></pre><p>website を再読み込みすると「Phien ban 1」に戻ります。方法2: <code>delete-object --version-id &lt;id-ban-2&gt;</code> で最新 version を完全に削除します。</p></div></li>
+      <li><div><p>delete marker の実験: <code>aws s3 rm s3://saa-web-quy-2026/index.html</code> → website が 404 になります。<code>list-object-versions</code> を再実行すると <code>DeleteMarkers</code> の項目が増えています。<code>aws s3api delete-object --bucket saa-web-quy-2026 --key index.html --version-id &lt;id-delete-marker&gt;</code> で delete marker を削除 → website が復活します。これがまさに「誤って削除したファイルの復元」の問題です。</p></div></li>
+    </ol>
+    <div class="note">この bucket は Lab 5 と 7 で使うので残しておきます。static website は HTTP です。HTTPS にして public にしないには OAC 付きの CloudFront の背後に置く必要があり、第4週で行います。</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 5. 30日後に Glacier へ移す lifecycle rule</h3>
+    <ol class="steps">
+      <li><div><p>Console → bucket <code>saa-web-quy-2026</code> → <b>Management</b> タブ → <b>Create lifecycle rule</b>。Name は <code>archive-logs</code>。Scope: <b>Limit the scope using filters</b>、prefix は <code>logs/</code>。</p></div></li>
+      <li><div><p>Rule actions で4つにチェック: (1) <b>Transition current versions</b>: <b>30</b>日後に Glacier Flexible Retrieval、(2) <b>Transition noncurrent versions</b>: 30日後に Glacier Deep Archive、(3) <b>Expire noncurrent versions</b>: 365日後、(4) <b>Delete expired object delete markers or incomplete multipart uploads</b>: incomplete multipart を7日でチェック。Create rule。</p></div></li>
+      <li><div><p>2つ目のルールとして<b>10日後に Standard-IA</b> へ移すものを作ってみると、Console が最低30日だと警告します。これが9章の制約です。このルールはキャンセルします。</p></div></li>
+      <li><div><p>Lifecycle は1日1回実行され、効果が見えるまで最大30日かかるため、このラボは設定の確認までにとどめます。CLI で確認します:</p>
+<pre><code>aws s3api get-bucket-lifecycle-configuration --bucket saa-web-quy-2026</code></pre></div></li>
+      <li><div><p>Glacier をすぐに「見る」には、ファイルを直接 Glacier class にアップロードしてダウンロードを試します:</p>
+<pre><code>aws s3 cp error.html s3://saa-web-quy-2026/logs/old.html --storage-class GLACIER
+aws s3 cp s3://saa-web-quy-2026/logs/old.html .       # InvalidObjectState エラー: 先に restore が必要
+aws s3api restore-object --bucket saa-web-quy-2026 --key logs/old.html --restore-request "Days=1,GlacierJobParameters={Tier=Expedited}"
+aws s3api head-object --bucket saa-web-quy-2026 --key logs/old.html   # Restore フィールドを確認</code></pre><p>Expedited は1〜5分かかり、その後 <code>cp</code> でダウンロードできます。この object は Glacier で最低90日分課金されますが、数 KB なので無視できる額です。Lab 7 で削除します。</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Lab 7. CLI で presigned URL を作成し、ブラウザで開く</h3>
+    <ol class="steps">
+      <li><div><p><b>private</b> な bucket（Block Public Access はデフォルトで有効）を作成し、ファイルを1つアップロードします:</p>
+<pre><code>aws s3 mb s3://saa-private-quy-2026
+Set-Content -Path secret.txt -Value "chi nguoi co link moi doc duoc"
+aws s3 cp secret.txt s3://saa-private-quy-2026/</code></pre><p>ブラウザで <code>https://saa-private-quy-2026.s3.ap-northeast-1.amazonaws.com/secret.txt</code> を開くと、XML の <code>AccessDenied</code> が返ります。想定どおりです。</p></div></li>
+      <li><div><p>有効期間2分の presigned URL を作成します:</p>
+<pre><code>aws s3 presign s3://saa-private-quy-2026/secret.txt --expires-in 120</code></pre><p>URL をブラウザに貼り付けると、ファイルをダウンロードできます。URL には <code>X-Amz-Credential</code>（<code>quy-admin</code> のもの）、<code>X-Amz-Expires=120</code>、<code>X-Amz-Signature</code> が含まれています。</p></div></li>
+      <li><div><p>2分以上待ってから再読み込みすると <code>Request has expired</code>。Signature の1文字を変えてみると <code>SignatureDoesNotMatch</code>。</p></div></li>
+      <li><div><p>「URL は作成者の権限を引き継ぐ」の実験: 第1週と同様に user <code>saa-reader</code> を作り直しますが、<b>policy は何も付けず</b>、プロファイル <code>reader</code> を設定してから <code>aws s3 presign ... --profile reader</code> を実行します。URL は作成できますが、開くと <code>AccessDenied</code> になります。署名者に GetObject の権限がないためです。presigned URL は権限を追加で付与するものではなく、委任するだけです。</p></div></li>
+      <li><div><p>アップロード用の presigned は SDK が必要です（CLI は GET のみ）。覚えておけば十分で、第7週の Lambda で実際に作ります。</p></div></li>
+      <li><div><p>第3週の全体の片付け:</p>
+<pre><code>aws s3 rb s3://saa-private-quy-2026 --force
+aws s3api delete-objects --bucket saa-web-quy-2026 --delete "$(aws s3api list-object-versions --bucket saa-web-quy-2026 --query '{Objects: Versions[].{Key:Key,VersionId:VersionId}}' --output json)"
+aws s3api delete-objects --bucket saa-web-quy-2026 --delete "$(aws s3api list-object-versions --bucket saa-web-quy-2026 --query '{Objects: DeleteMarkers[].{Key:Key,VersionId:VersionId}}' --output json)"
+aws s3 rb s3://saa-web-quy-2026
+aws iam delete-user --user-name saa-reader    # この user の access key を削除した後</code></pre><p>versioning 付きの bucket は、すべての version と delete marker を削除しないと <code>rb</code> できません。上のコマンドが PowerShell で JSON エラーになる場合は、Console で削除します: bucket → Empty → 確認文字を入力 → Delete。<code>DeleteMarkers</code> が空なら2つ目のコマンドはエラーになるので無視してください。</p></div></li>
+    </ol>
+    <div class="note ok">ブロックの締めくくり: Billing → Bills に EC2/EBS の数セントだけが表示されていること。Cost Explorer でサービス別に絞り込み、EFS や EBS が裏で動き続けていないか確認します。</div>
+  </div>
+</section>
+
+<!-- ============ 確認ポイント ============ -->
+<section id="moc">
+  <span class="eyebrow">確認ポイント</span>
+  <h2>資料を見ずに自分でできるようにすべき2つのこと</h2>
+  <div class="card">
+    <h3>1. EBS、EFS、instance store、S3 をどの状況で使うか区別できる</h3>
+    <p style="font-size:.94rem">まずこの表を紙に自分で書き出し、それから開いて照らし合わせます:</p>
+    <div class="tbl"><table>
+      <tr><th></th><th>EBS</th><th>Instance store</th><th>EFS</th><th>S3</th></tr>
+      <tr><td>種類</td><td>Block（ディスク）</td><td>Block（ローカルディスク）</td><td>File（NFS）</td><td>Object（HTTP API）</td></tr>
+      <tr><td>範囲</td><td>1つの AZ</td><td>1台の物理ホスト</td><td>Region（複数 AZ）または One Zone</td><td>Region、3+ AZ</td></tr>
+      <tr><td>接続できる台数</td><td>1台（multi-attach: 16台、io1/io2、同じ AZ）</td><td>1台</td><td>数百台、複数 AZ、Lambda/コンテナも</td><td>接続しない。権限があれば誰でも API を呼べる</td></tr>
+      <tr><td>stop 後も残る？</td><td>残る</td><td><b>残らない</b></td><td>残る</td><td>残る</td></tr>
+      <tr><td>OS</td><td>Linux、Windows</td><td>Linux、Windows</td><td>Linux（Windows は FSx）</td><td>任意</td></tr>
+      <tr><td>課金</td><td>プロビジョニングした GB</td><td>インスタンス料金に含まれる</td><td>使用した GB</td><td>使用した GB + リクエスト + 転送</td></tr>
+      <tr><td>性能</td><td>最大 256,000 IOPS（io2）</td><td>最高、数百万 IOPS</td><td>伸縮する、EBS よりレイテンシーが高い</td><td>大きなスループット、ms のレイテンシー、block ではない</td></tr>
+      <tr><td>問題文にこうあれば選ぶ</td><td>ブート、データベース、<em>persistent</em>、<em>single instance</em></td><td><em>temporary</em>、<em>highest IOPS</em>、<em>can be lost</em></td><td><em>shared</em>、<em>multiple instances / AZs</em>、<em>POSIX</em>、Linux</td><td><em>static content</em>、<em>backup</em>、<em>data lake</em>、<em>unlimited</em>、最安</td></tr>
+    </table></div>
+  </div>
+  <div class="card">
+    <h3>2. 問題文のキーワードから S3 storage class を選べる</h3>
+    <p style="font-size:.94rem">左側の各フレーズを読み、右の列を見る前に class を答えます:</p>
+    <div class="tbl"><table>
+      <tr><th>問題文の表現</th><th>Class</th></tr>
+      <tr><td><em>frequently accessed</em>、他に条件なし</td><td>Standard</td></tr>
+      <tr><td><em>unknown</em> / <em>unpredictable</em> / <em>changing access patterns</em>、<em>without operational overhead</em></td><td>Intelligent-Tiering</td></tr>
+      <tr><td><em>infrequently accessed</em> but <em>immediate access</em>、<em>rapid access when needed</em></td><td>Standard-IA</td></tr>
+      <tr><td>上記 + <em>easily recreated</em>、<em>non-critical</em>、<em>lowest cost</em></td><td>One Zone-IA</td></tr>
+      <tr><td><em>archive</em>、<em>accessed once a quarter</em>、<em>millisecond retrieval</em></td><td>Glacier Instant Retrieval</td></tr>
+      <tr><td><em>archive</em>、<em>retrieval within a few hours</em>、<em>minutes acceptable with expedited</em></td><td>Glacier Flexible Retrieval</td></tr>
+      <tr><td><em>retain for 7+ years</em>、<em>retrieval within 12 to 48 hours</em>、<em>lowest storage cost</em></td><td>Glacier Deep Archive</td></tr>
+      <tr><td><em>objects smaller than 128 KB</em>、あまり読まない小さなファイルが多数</td><td>Standard（IA/Glacier IR は最低 128 KB で課金されるため安くならない）</td></tr>
+      <tr><td><em>must be retained</em>、<em>minimum 30 days</em> 経ってから移行</td><td>Lifecycle で Standard → IA をちょうど30日目から</td></tr>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============ キーワード ============ -->
+<section id="tukhoa">
+  <span class="eyebrow">クイックレビュー</span>
+  <h2>第2〜3週のキーワード表</h2>
+  <div class="tbl"><table>
+    <tr><th>問題文の表現</th><th>すぐに思い浮かべるもの</th></tr>
+    <tr><td><em>in-memory</em>、大きなデータセットを RAM に</td><td>Memory optimized（r、x）</td></tr>
+    <tr><td><em>compute-intensive</em>、バッチ、エンコード</td><td>Compute optimized（c）</td></tr>
+    <tr><td><em>GPU</em>、ML 学習</td><td>Accelerated（p、g、trn）</td></tr>
+    <tr><td>t3 上のアプリが高負荷の後に徐々に遅くなる</td><td>CPU credit 切れ。Unlimited を有効化するか m に変更</td></tr>
+    <tr><td>初回起動時にスクリプトを実行</td><td>User data</td></tr>
+    <tr><td>内部からインスタンス ID、IP、role の認証情報を取得</td><td>Instance metadata 169.254.169.254、SSRF 対策に IMDSv2 を強制</td></tr>
+    <tr><td>高速起動、事前インストール、同一構成</td><td>Golden AMI、EC2 Image Builder</td></tr>
+    <tr><td>別の Region で起動</td><td>その Region へ AMI をコピー</td></tr>
+    <tr><td><em>interruption acceptable</em>、バッチ、<em>lowest cost</em></td><td>Spot（+ fleet で type/AZ を分散）</td></tr>
+    <tr><td><em>steady state</em> 1〜3年、family/Region/Fargate の柔軟性が必要</td><td>Compute Savings Plans</td></tr>
+    <tr><td>安定、EC2 のみ、1つの family と1つの Region、最大の割引</td><td>EC2 Instance Savings Plans または Standard RI</td></tr>
+    <tr><td>AZ 内での <em>reserve capacity</em></td><td>Zonal RI または On-Demand Capacity Reservation</td></tr>
+    <tr><td><em>per-socket / per-core license</em>、BYOL</td><td>Dedicated Host</td></tr>
+    <tr><td><em>dedicated hardware</em>、ライセンスへの言及なし</td><td>Dedicated Instance</td></tr>
+    <tr><td><em>lowest latency between instances</em>、HPC</td><td>Cluster placement group（1つの AZ）</td></tr>
+    <tr><td>少数の <em>critical</em> なインスタンスをハードウェア的に分離</td><td>Spread placement group（AZ あたり7台）</td></tr>
+    <tr><td>数百ノードの Hadoop/Kafka/Cassandra</td><td>Partition placement group</td></tr>
+    <tr><td>stop/start 後も IP が変わらない</td><td>Elastic IP</td></tr>
+    <tr><td>ブートボリューム、データベース、<em>cost-effective</em> な SSD</td><td>gp3</td></tr>
+    <tr><td><em>over 16,000 IOPS</em>、<em>sub-millisecond</em>、重要な DB</td><td>io2 Block Express</td></tr>
+    <tr><td>ビッグデータ、ログ、<em>sequential</em>、<em>throughput</em>、安価</td><td>st1（あまり読まないなら sc1）</td></tr>
+    <tr><td>小さな gp2 ボリュームで IOPS 不足</td><td>gp3 に変更し IOPS をプロビジョニング</td></tr>
+    <tr><td>EBS を別の AZ/Region に移す</td><td>Snapshot → ボリューム作成 / snapshot をコピー</td></tr>
+    <tr><td>暗号化されていないボリュームを暗号化</td><td>Snapshot → encrypt 付きでコピー → 新しいボリューム</td></tr>
+    <tr><td>snapshot の自動作成と削除</td><td>Data Lifecycle Manager または AWS Backup</td></tr>
+    <tr><td>より安い snapshot、24〜72時間の restore を許容</td><td>EBS Snapshots Archive</td></tr>
+    <tr><td>snapshot/AMI を誤って削除</td><td>Recycle Bin</td></tr>
+    <tr><td>同じ AZ の複数の EC2 が1つのボリュームに書き込む、cluster FS</td><td>EBS multi-attach（io1/io2）</td></tr>
+    <tr><td><em>temporary</em>、<em>highest IOPS</em>、stop で消える</td><td>Instance store</td></tr>
+    <tr><td><em>shared file system</em>、Linux、複数 AZ、Lambda/コンテナ</td><td>EFS</td></tr>
+    <tr><td>アプリを変えずに EFS のコストを下げる</td><td>EFS lifecycle で IA / Archive へ</td></tr>
+    <tr><td>小さな EFS だが常に高いスループットが必要</td><td>Provisioned throughput（spiky なら Elastic）</td></tr>
+    <tr><td><em>Windows</em>、<em>SMB</em>、<em>Active Directory</em>、NTFS ACL</td><td>FSx for Windows File Server</td></tr>
+    <tr><td><em>HPC</em>、<em>ML</em>、S3 のデータを高速処理</td><td>FSx for Lustre（一時なら scratch、長期なら persistent）</td></tr>
+    <tr><td><em>NetApp</em>、<em>multi-protocol NFS/SMB/iSCSI</em>、SnapMirror</td><td>FSx for NetApp ONTAP</td></tr>
+    <tr><td>耐久性イレブンナイン、<em>unlimited</em>、object</td><td>S3</td></tr>
+    <tr><td><em>unknown access pattern</em></td><td>S3 Intelligent-Tiering</td></tr>
+    <tr><td><em>infrequent</em> + <em>immediate</em></td><td>Standard-IA（再作成可能なら One Zone-IA）</td></tr>
+    <tr><td>四半期に一度読むアーカイブ、ms が必要</td><td>Glacier Instant Retrieval</td></tr>
+    <tr><td>アーカイブ、数時間待てる</td><td>Glacier Flexible（Expedited 1〜5分、Standard 3〜5時間、Bulk 5〜12時間）</td></tr>
+    <tr><td>最安、12〜48時間待てる、何年も保存</td><td>Glacier Deep Archive</td></tr>
+    <tr><td>N 日後に class を自動変更・削除</td><td>Lifecycle rule（IA へは最低30日後）</td></tr>
+    <tr><td>誤削除/誤上書きの防止</td><td>Versioning（+ MFA Delete）</td></tr>
+    <tr><td>versioning 有効の bucket で削除されたファイルを復元</td><td>delete marker を削除</td></tr>
+    <tr><td>別 Region へのコピー、コンプライアンス、DR</td><td>CRR（両側で versioning、新しい object のみ、既存分は Batch Replication）</td></tr>
+    <tr><td>複数 bucket のログ集約、同じ Region で本番からテストへ</td><td>SRR</td></tr>
+    <tr><td>SLA 付きで15分以内に replicate</td><td>S3 Replication Time Control</td></tr>
+    <tr><td><em>WORM</em>、root を含め誰も削除できない</td><td>Object Lock Compliance mode（管理者の bypass が必要なら Governance）</td></tr>
+    <tr><td>他アカウントや public に bucket の読み取りを許可</td><td>Bucket policy（ACL は使わない）</td></tr>
+    <tr><td>アカウント内で public になる可能性をすべてブロック</td><td>アカウントレベルの Block Public Access</td></tr>
+    <tr><td>HTTPS を強制</td><td>Bucket policy で aws:SecureTransport=false を Deny</td></tr>
+    <tr><td>VPC endpoint からのみアクセス</td><td>Bucket policy の条件 aws:SourceVpce</td></tr>
+    <tr><td>最も簡単な暗号化</td><td>SSE-S3（デフォルト）</td></tr>
+    <tr><td><em>audit key usage</em>、<em>control access to keys</em>、rotate</td><td>customer managed key による SSE-KMS</td></tr>
+    <tr><td>リクエストの多い bucket で KMS が throttle される / コストが高い</td><td>S3 Bucket Keys</td></tr>
+    <tr><td>鍵を AWS に保存できない</td><td>SSE-C（または client-side）</td></tr>
+    <tr><td>暗号化されていないアップロードを拒否</td><td>x-amz-server-side-encryption ヘッダーがない場合に Deny する bucket policy</td></tr>
+    <tr><td>public にせず IAM なしで一時的にダウンロード/アップロード</td><td>Presigned URL</td></tr>
+    <tr><td>遠方のユーザーが1つの bucket に大きなファイルをアップロード</td><td>Transfer Acceleration + multipart</td></tr>
+    <tr><td>100 MB 超、5 GB 超のファイル</td><td>Multipart upload（5 GB 超は必須）</td></tr>
+    <tr><td>S3 の請求額が異常に高い</td><td>Lifecycle で abort incomplete multipart、expire noncurrent</td></tr>
+    <tr><td>アップロード後に Lambda/SQS/SNS を呼び出す</td><td>S3 Event Notification（複雑なフィルターや複数の送信先なら EventBridge）</td></tr>
+    <tr><td>object 内のデータを SQL で絞り込む</td><td>S3 Select</td></tr>
+    <tr><td>オンプレミスで NFS/SMB を使い、データは S3、キャッシュあり</td><td>S3 File Gateway</td></tr>
+    <tr><td>オンプレミスで iSCSI、主データはクラウド</td><td>Volume Gateway cached</td></tr>
+    <tr><td>オンプレミスで iSCSI、全データは手元、クラウドにバックアップ</td><td>Volume Gateway stored</td></tr>
+    <tr><td>テープを置き換え、バックアップソフトは維持</td><td>Tape Gateway</td></tr>
+    <tr><td>数百 TB、回線が弱い、オフライン</td><td>Snowball Edge（小規模・エッジなら Snowcone）</td></tr>
+    <tr><td>スケジュールでオンライン移行、metadata を保持、NFS/SMB/HDFS から S3/EFS/FSx へ</td><td>DataSync</td></tr>
+    <tr><td>SFTP/FTPS でファイルを受け取り S3 へ</td><td>Transfer Family</td></tr>
+    <tr><td>複数サービスのバックアップを <em>centrally manage</em>、cross-account/Region、WORM</td><td>AWS Backup（+ Vault Lock）</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ CHECKLIST ============ -->
+<section id="checklist">
+  <span class="eyebrow">進捗</span>
+  <h2>第2〜3週チェックリスト</h2>
+  <p style="font-size:.94rem;color:var(--muted)">ここでチェックすると、この端末上で進捗を管理できます。項目が終わったら、セッション内で Claude に伝えて <code>AWS-SAA-checklist.md</code> にチェックを入れてもらいます。</p>
+  <div class="card">
+    <h4>第2週の理論</h4>
+    <label class="check"><input type="checkbox" id="c1" data-ck><span>EC2: instance family、user data、metadata</span></label>
+    <label class="check"><input type="checkbox" id="c2" data-ck><span>EC2 の料金モデル: On-Demand、Spot、Reserved、Savings Plans、Dedicated Host</span></label>
+    <label class="check"><input type="checkbox" id="c3" data-ck><span>EC2: placement group（cluster、spread、partition）</span></label>
+    <label class="check"><input type="checkbox" id="c4" data-ck><span>EBS: gp3、io2、st1、sc1、snapshot、encryption、multi-attach</span></label>
+    <label class="check"><input type="checkbox" id="c5" data-ck><span>AMI、instance store</span></label>
+    <label class="check"><input type="checkbox" id="c6" data-ck><span>EFS: performance mode、throughput mode、storage class</span></label>
+    <label class="check"><input type="checkbox" id="c7" data-ck><span>FSx for Windows、FSx for Lustre、FSx for NetApp ONTAP</span></label>
+    <h4>第3週の理論</h4>
+    <label class="check"><input type="checkbox" id="c8" data-ck><span>S3: storage class</span></label>
+    <label class="check"><input type="checkbox" id="c9" data-ck><span>S3: lifecycle、versioning、replication（CRR、SRR）、Object Lock</span></label>
+    <label class="check"><input type="checkbox" id="c10" data-ck><span>S3: bucket policy、ACL、Block Public Access、encryption SSE-S3 / SSE-KMS / SSE-C</span></label>
+    <label class="check"><input type="checkbox" id="c11" data-ck><span>S3: presigned URL、Transfer Acceleration、multipart upload、event notification</span></label>
+    <label class="check"><input type="checkbox" id="c12" data-ck><span>Storage Gateway（File、Volume、Tape）、Snow family、AWS Backup、DataSync</span></label>
+    <h4>ハンズオン</h4>
+    <label class="check"><input type="checkbox" id="c13" data-ck><span>Lab 1: user data で Web サーバーをインストールした EC2、public IP でアクセス</span></label>
+    <label class="check"><input type="checkbox" id="c14" data-ck><span>Lab 2: EBS を追加でアタッチ、フォーマット、マウント、snapshot を取得</span></label>
+    <label class="check"><input type="checkbox" id="c15" data-ck><span>Lab 3: EC2 から AMI を作成し、別の AZ で起動</span></label>
+    <label class="check"><input type="checkbox" id="c16" data-ck><span>Lab 4: S3 static website、versioning、上書きアップロードと復元</span></label>
+    <label class="check"><input type="checkbox" id="c17" data-ck><span>Lab 5: 30日後に Glacier へ移す lifecycle rule</span></label>
+    <label class="check"><input type="checkbox" id="c18" data-ck><span>Lab 6: 1つの EFS を2台の EC2 にマウントし、共有ファイルを確認</span></label>
+    <label class="check"><input type="checkbox" id="c19" data-ck><span>Lab 7: CLI で presigned URL、ブラウザで開く</span></label>
+    <h4>確認ポイント</h4>
+    <label class="check"><input type="checkbox" id="c20" data-ck><span>EBS、EFS、instance store、S3 をどの状況で使うか区別できる</span></label>
+    <label class="check"><input type="checkbox" id="c21" data-ck><span>問題文のキーワードから S3 storage class を選べる</span></label>
+    <label class="check"><input type="checkbox" id="c22" data-ck><span>第2〜3週のクイズ（40問）で80%以上</span></label>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  // Xem đáp án
+  document.querySelectorAll('[data-reveal]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var a=b.parentElement.querySelector('.ans');
+      a.hidden=!a.hidden; b.textContent=a.hidden?'答えを見る':'答えを隠す';
+    });
+  });
+  // Checklist lưu trên máy này
+  var boxes=document.querySelectorAll('[data-ck]'), KEY='saa-tuan-02-03';
+  var saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  function update(){
+    var n=0; boxes.forEach(function(c){ c.closest('.check').classList.toggle('done',c.checked); if(c.checked)n++; });
+    document.getElementById('bar').style.width=(n/boxes.length*100)+'%';
+    document.getElementById('pct').textContent=n+'/'+boxes.length;
+  }
+  boxes.forEach(function(c){
+    if(saved[c.id])c.checked=true;
+    c.addEventListener('change',function(){ saved[c.id]=c.checked; try{ localStorage.setItem(KEY,JSON.stringify(saved)); }catch(e){} update(); });
+  });
+  update();
+  // Đánh dấu mục đang đọc
+  var links=document.querySelectorAll('.toc a'), secs=[];
+  links.forEach(function(l){ var s=document.querySelector(l.getAttribute('href')); if(s)secs.push([s,l]); });
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ links.forEach(function(l){l.classList.remove('active')}); secs.forEach(function(p){ if(p[0]===e.target)p[1].classList.add('active'); }); } }); },{rootMargin:'-20% 0px -70% 0px'});
+    secs.forEach(function(p){ io.observe(p[0]); });
+  }
+})();
+</script>

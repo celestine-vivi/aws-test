@@ -1,0 +1,941 @@
+<title>SAA 第9週 Well-Architected</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky mục lục bên trái (desktop), cột nội dung 760px bên phải; xếp một cột ở màn hẹp. */
+:root{
+  --bg:#f2f4f7; --surface:#ffffff; --surface-2:#e9edf2; --line:#d3dae3;
+  --fg:#172030; --muted:#5a6676; --accent:#1c6e8c; --accent-soft:#dcecf3;
+  --warm:#b35a00; --warm-soft:#fbe9d6; --ok:#2a7d4f; --ok-soft:#dcf0e4; --bad:#b3362b; --bad-soft:#f8dedb;
+  --display:"Manrope","IBM Plex Sans",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+a{color:var(--accent)}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:800}
+h2{font-size:1.5rem;font-weight:800;padding-top:8px}
+h3{font-size:1.12rem;font-weight:700}
+h4{font-size:.95rem;font-weight:700}
+p{margin:0}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+pre{font-family:var(--mono);font-size:.84rem;line-height:1.5;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:0}
+pre code{background:none;padding:0;font-size:inherit}
+em{color:var(--warm);font-style:italic}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* Header */
+.hero{max-width:1120px;margin:0 auto;padding-block:36px 20px;display:flex;flex-direction:column;gap:12px}
+.hero .lead{max-width:62ch;color:var(--muted);font-size:1.02rem}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.88rem;color:var(--muted)}
+.meta b{color:var(--fg);font-weight:600}
+.progress{display:flex;align-items:center;gap:12px;font-size:.88rem;color:var(--muted)}
+.bar{flex:1;max-width:320px;height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+
+/* Two columns */
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;align-items:start}
+.toc{position:sticky;top:max(12px,env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:2px;font-size:.9rem}
+.toc a{color:var(--muted);text-decoration:none;padding:6px 10px;border-left:2px solid var(--line);display:block}
+.toc a:hover,.toc a.active{color:var(--fg);border-left-color:var(--accent)}
+.toc .grp{margin-top:10px}
+main{display:flex;flex-direction:column;gap:56px;min-width:0;max-width:780px}
+section{display:flex;flex-direction:column;gap:18px;scroll-margin-top:16px}
+@media (max-width:860px){ .wrap{grid-template-columns:1fr;gap:24px} .toc{position:static;flex-direction:row;flex-wrap:wrap;gap:6px} .toc a{border:1px solid var(--line);border-radius:99px;padding:4px 10px} .toc .grp{margin:0} .toc a.active{border-color:var(--accent)} }
+
+/* Blocks */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.block{display:flex;flex-direction:column;gap:8px}
+.block > .eyebrow{color:var(--accent)}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:5px}
+li::marker{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.kw{display:flex;flex-wrap:wrap;gap:8px}
+.kw span{background:var(--warm-soft);color:var(--warm);border-radius:4px;padding:3px 9px;font-size:.86rem;font-style:italic}
+.kw span b{font-style:normal;font-weight:600;color:var(--fg)}
+.note{border-left:3px solid var(--warm);background:var(--warm-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.94rem}
+.note.ok{border-color:var(--ok);background:var(--ok-soft)}
+.note.bad{border-color:var(--bad);background:var(--bad-soft)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;font-size:.84rem}
+tr:last-child td{border-bottom:0}
+td.c{text-align:center}
+
+/* Checklist */
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:6px;cursor:pointer}
+.check:hover{background:var(--surface-2)}
+.check input{margin-top:5px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.check.done{color:var(--muted);text-decoration:line-through}
+
+/* Quiz reveal */
+.q{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.q .qt{font-weight:500}
+.q button{align-self:flex-start;font:inherit;font-size:.86rem;padding:5px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer}
+.q button:hover{background:var(--accent);color:var(--surface)}
+.q button:focus-visible,.check input:focus-visible,.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.q .ans{font-size:.94rem;border-top:1px dashed var(--line);padding-top:8px}
+.q .ans b{color:var(--ok)}
+
+/* Steps */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:12px;padding:0;list-style:none}
+.steps li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:start}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--mono);font-size:.8rem;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:500;margin-top:2px}
+.steps li > div{display:flex;flex-direction:column;gap:6px;min-width:0}
+
+/* Flow diagram */
+.flow{display:flex;flex-direction:column;gap:0;align-items:stretch;max-width:520px}
+.flow .n{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:.94rem}
+.flow .n .tag{font-family:var(--mono);font-size:.74rem;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.tag.deny{background:var(--bad-soft);color:var(--bad)} .tag.allow{background:var(--ok-soft);color:var(--ok)} .tag.next{background:var(--surface-2);color:var(--muted)}
+.flow .arrow{height:22px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--mono);font-size:.78rem}
+.flow .arrow::before{content:"";width:1px;height:100%;background:var(--line);position:absolute}
+.flow .arrow{position:relative} .flow .arrow span{background:var(--bg);padding:0 6px;position:relative}
+
+svg text{font-family:var(--body)}
+.diag{overflow-x:auto}
+.diag svg{width:100%;max-width:700px;height:auto;display:block}
+.sv-region{fill:var(--surface);stroke:var(--accent)} .sv-az{fill:var(--accent-soft);stroke:var(--accent)} .sv-edge{fill:var(--warm-soft);stroke:var(--warm)}
+.sv-t{fill:var(--fg);font-size:13px} .sv-m{fill:var(--muted);font-size:11px} .sv-line{stroke:var(--line)}
+.sv-bad{fill:var(--bad-soft);stroke:var(--bad)} .sv-ok{fill:var(--ok-soft);stroke:var(--ok)}
+@media (prefers-reduced-motion: reduce){ .bar i{transition:none} }
+</style>
+
+<header class="hero">
+  <span class="eyebrow">AWS SAA-C03 · 12週間ロードマップ · 第9週</span>
+  <h1>総合アーキテクチャと Well-Architected</h1>
+  <p class="lead">知識学習パートの最終週です。これまで学んだすべてのサービスを Well-Architected の6本の柱に当てはめ、RPO と RTO に基づく4つの disaster recovery 戦略を学び、migration、analytics、ML のツール群を見分けられるようにしたうえで、CDK で 3-tier アーキテクチャを同じ日のうちに自分で構築して削除します。週末の目標は、4つの DR 戦略をコストとあわせて説明できること、そして構成図を見た瞬間に single point of failure を指摘できることです。この週が終わると、第10〜12週の問題演習フェーズに入ります。</p>
+  <div class="meta"><span>学習ペース: <b>1日1.5〜2時間</b></span><span>関連ドメイン: <b>RES 26%</b>、<b>COST 20%</b>、SEC と PERF の復習あり</span><span>今週のラボ費用: スタックを当日中に削除すれば <b>2〜5 USD</b></span></div>
+  <div class="progress"><span>チェックリスト進捗</span><div class="bar"><i id="bar"></i></div><span id="pct">0/14</span></div>
+</header>
+
+<div class="wrap">
+<nav class="toc" aria-label="目次">
+  <a href="#ke-hoach">7日間の計画</a>
+  <span class="grp eyebrow">理論</span>
+  <a href="#war">1. Well-Architected 6本の柱</a>
+  <a href="#dr">2. Disaster recovery、RPO、RTO</a>
+  <a href="#migration">3. Migration 7R、MGN</a>
+  <a href="#analytics">4. Analytics の見分け方</a>
+  <a href="#ml">5. ML services の見分け方</a>
+  <a href="#kientruc">6. 3-tier アーキテクチャと設問の読み方</a>
+  <span class="grp eyebrow">ハンズオン</span>
+  <a href="#handson">Hands-on 5つのラボ</a>
+  <a href="#moc">確認ポイント</a>
+  <a href="#tukhoa">試験キーワード表</a>
+  <a href="#checklist">週のチェックリスト</a>
+</nav>
+
+<main>
+
+<section id="ke-hoach">
+  <h2>7日間の計画</h2>
+  <p>今週の理論は「見分け方」の項目が多いので手早く済ませ、CDK のラボに力を注ぎます。RDS Multi-AZ、ALB、NAT Gateway は時間課金のため、Lab 1、2、5 は必ず同じ日に行ってください。</p>
+  <div class="tbl"><table>
+    <tr><th>日</th><th>理論</th><th>Hands-on</th></tr>
+    <tr><td>1</td><td>Well-Architected Framework の6本の柱、6つの共通原則</td><td>Node.js と CDK のインストール、<code>cdk bootstrap</code>、Lab 1 のコード骨格を読んで理解する（まだ deploy しない）</td></tr>
+    <tr><td>2</td><td>Disaster recovery: RPO、RTO、4つの戦略</td><td>Lab 1 で 3-tier スタックを deploy、Lab 2 で構成図を描いて Console と照合、Lab 5 の <code>cdk destroy</code> を当日中に実行</td></tr>
+    <tr><td>3</td><td>Migration 7R、Migration Hub、MGN、Discovery、DMS、Snow、DataSync</td><td>Lab 3 で構築したアーキテクチャのコスト最適化案を3つ書く</td></tr>
+    <tr><td>4</td><td>Analytics: Athena、Glue、QuickSight、EMR、OpenSearch、Lake Formation</td><td>Lab 4 で耐障害性を高めるための修正点を3つ書く</td></tr>
+    <tr><td>5</td><td>ML services の見分け方、3-tier アーキテクチャと設問の読み方</td><td>Billing と Cost Explorer を確認し、消し忘れのリソースがないことを確かめる</td></tr>
+    <tr><td>6〜7</td><td>2つの確認ポイントを復習、キーワードを読み直し、第1〜8週の間違いノートを見直す</td><td>セッションで「cho quiz」と言って <code>quiz/tuan-09.md</code>（30問）を受け取る。80% 以上が合格ライン</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ 1. WELL-ARCHITECTED ============ -->
+<section id="war">
+  <span class="eyebrow">理論 1 / 6</span>
+  <h2>Well-Architected Framework: 6本の柱</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <p><b>AWS Well-Architected Framework</b> は、AWS がワークロードを評価するために使う質問集とベストプラクティスの集合で、<b>6本の柱（pillars）</b>に分かれています。当初は5本で、<b>Sustainability</b> の柱は2021年末に追加されました。SAA の試験では無味乾燥な定義ではなくシナリオが問われますが、試験の4つのドメインは6本のうち4本の柱に対応して作られているので、この枠組みを身につけておけば設問を読むための「地図」が手に入ります。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">6本の柱と主な設計原則</span>
+      <div class="tbl"><table>
+        <tr><th>柱</th><th>核心となる問い</th><th>試験でよく出る設計原則</th><th>代表的なサービス</th></tr>
+        <tr><td><b>Operational Excellence</b></td><td>運用、監視、プロセス改善をどう行うか</td><td>Operations as code（IaC）、小さく頻繁で元に戻せる変更、障害を予測する（game day）、あらゆる障害から学ぶ</td><td>CloudFormation、CDK、Systems Manager、CloudWatch、CloudTrail、Config</td></tr>
+        <tr><td><b>Security</b></td><td>データ、システム、アイデンティティをどう守るか</td><td>強固なアイデンティティ基盤（least privilege、root を使わない）、トレーサビリティ（traceability）、すべての層でセキュリティを確保、自動化、in transit と at rest の暗号化、人をデータから遠ざける、セキュリティインシデントに備える</td><td>IAM、Organizations、KMS、GuardDuty、Security Hub、WAF、Shield</td></tr>
+        <tr><td><b>Reliability</b></td><td>ワークロードは自動復旧し、正しくスケールするか</td><td>障害からの自動復旧、<b>復旧手順のテスト</b>、水平スケールで全体の可用性を高める、<b>stop guessing capacity</b>、自動化による変更管理</td><td>Multi-AZ、Auto Scaling、Route 53、RDS Multi-AZ、SQS、Backup</td></tr>
+        <tr><td><b>Performance Efficiency</b></td><td>適切な種類と適切なサイズのリソースを使っているか</td><td>先進技術の民主化（managed を使う）、<b>go global in minutes</b>、serverless の活用、より多くの実験、mechanical sympathy（課題に合った技術を選ぶ）</td><td>Lambda、CloudFront、ElastiCache、DynamoDB、Aurora、適切な instance type</td></tr>
+        <tr><td><b>Cost Optimization</b></td><td>使っていないものにお金を払っていないか</td><td>Cloud financial management、<b>consumption model</b>（使った分だけ支払う）、全体の効率を測る、「undifferentiated heavy lifting」をやめる、コストを分析して配賦する（tag）</td><td>Cost Explorer、Budgets、Savings Plans、Spot、S3 lifecycle、Compute Optimizer</td></tr>
+        <tr><td><b>Sustainability</b></td><td>環境への影響をどう減らすか</td><td>影響を理解する、目標を設定する、<b>utilization を最大化する</b>、より効率のよい新しい hardware/software を採用する（Graviton）、managed service を使う、downstream への影響を減らす</td><td>Graviton、Spot、S3 lifecycle、serverless、Auto Scaling、クリーンな Region</td></tr>
+      </table></div>
+      <p style="font-size:.9rem;color:var(--muted)">原則の一覧は AWS Well-Architected Framework のホワイトペーパーから抜粋したものです。AWS は文言を随時更新しているため、試験では少し違う表現で出ることがありますが、意図を読み取れれば十分です。</p>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">SAA の試験はどの柱に対応するか</span>
+        <div class="tbl"><table>
+          <tr><th>SAA-C03 のドメイン</th><th>配点比率</th><th>柱</th></tr>
+          <tr><td>1. Design Secure Architectures (SEC)</td><td class="c">30%</td><td>Security</td></tr>
+          <tr><td>2. Design Resilient Architectures (RES)</td><td class="c">26%</td><td>Reliability</td></tr>
+          <tr><td>3. Design High-Performing Architectures (PERF)</td><td class="c">24%</td><td>Performance Efficiency</td></tr>
+          <tr><td>4. Design Cost-Optimized Architectures (COST)</td><td class="c">20%</td><td>Cost Optimization</td></tr>
+        </table></div>
+        <p style="font-size:.9rem">Operational Excellence と Sustainability は4つのドメイン全体に散らばっています（IaC、<em>least operational overhead</em>、Graviton、Spot）。</p>
+      </div>
+      <div class="block"><span class="eyebrow">AWS Well-Architected Tool</span>
+        <ul>
+          <li>Console 上の<b>無料</b>サービスです。ワークロードを登録し、柱ごとの質問に答えると、<b>High Risk Issues (HRI)</b> と Medium Risk の一覧が improvement plan つきで得られます。</li>
+          <li>修正前後を比較する <b>milestone</b>、分野別の <b>lens</b>（Serverless Lens、SaaS Lens、Machine Learning Lens）、自作の custom lens があります。</li>
+          <li>設問が <em>review architecture against AWS best practices</em>、<em>identify high risk issues</em> と言っていれば → Well-Architected Tool です。Trusted Advisor ではありません（Trusted Advisor は稼働中のリソースをスキャンするもので、設計について質問はしません）。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">あらゆる試験問題に通底する6つの共通原則</span>
+      <div class="tbl"><table>
+        <tr><th>原則</th><th>意味</th><th>試験でどう現れるか</th></tr>
+        <tr><td><b>Design for failure</b></td><td>instance、AZ、Region まで、すべては壊れうると想定する。唯一無二のコンポーネントを作らない。</td><td>Multi-AZ、ALB の背後に複数 instance、RDS standby、Route 53 health check。「single」を含む選択肢はたいてい誤り。</td></tr>
+        <tr><td><b>Loose coupling</b></td><td>コンポーネント同士はキューや load balancer を介して通信し、互いの IP を直接呼ばない。</td><td><em>decouple</em> → SQS、SNS、EventBridge。tier 間に ALB。stream には Kinesis。</td></tr>
+        <tr><td><b>Elasticity</b></td><td>負荷が増えたら scale out、減ったら scale in し、使った分だけ支払う。</td><td>Auto Scaling、DynamoDB on-demand、Aurora Serverless、Lambda。<em>unpredictable traffic</em> → serverless。</td></tr>
+        <tr><td><b>Stateless</b></td><td>instance は session やユーザーのファイルを保持しない。どの instance がリクエストを受けても処理できる。</td><td>Session → ElastiCache または DynamoDB。ファイル → S3 または EFS。scale を問う設問では <em>sticky session</em> はたいてい誤りの選択肢。</td></tr>
+        <tr><td><b>Cache</b></td><td>結果をユーザーの近くに置き、backend の負荷を減らす。</td><td>static には CloudFront、読み取りの多い DB には ElastiCache、DynamoDB には DAX、API Gateway cache。</td></tr>
+        <tr><td><b>Managed service</b></td><td>patch、backup、scale は AWS に任せる。</td><td><em>least operational overhead</em>、<em>minimize administrative effort</em> → EC2 上の DB の代わりに RDS、container には EC2 の代わりに Fargate、Lambda。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>組み合わせ</th><th>違い</th></tr>
+        <tr><td>Well-Architected Tool と Trusted Advisor</td><td>WA Tool: 設計に関する質問に自分で答え、柱ごとの HRI が出る、無料。Trusted Advisor: 実際のリソースを自動スキャン（idle、開いた security group、service limit）、全チェックを使うには Business/Enterprise support が必要。</td></tr>
+        <tr><td>Reliability と Performance Efficiency</td><td>Reliability: 耐障害性、復旧、十分な capacity。Performance: 適切なリソース種別、レイテンシ、throughput。Multi-AZ は Reliability、Graviton への変更や cache の追加は Performance。</td></tr>
+        <tr><td>Operational Excellence と Cost Optimization</td><td>Operational: プロセス、IaC、可観測性。Cost: お金。繰り返し deploy するための CloudFormation は Operational、コスト配賦のための tag は Cost。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>review against best practices, high risk issues <b>→ Well-Architected Tool</b></span><span>stop guessing capacity <b>→ Auto Scaling (Reliability)</b></span><span>operations as code <b>→ CloudFormation / CDK</b></span><span>test recovery procedures <b>→ game day, DR drill</b></span><span>undifferentiated heavy lifting <b>→ managed service</b></span><span>go global in minutes <b>→ CloudFront, Global Accelerator, multi-Region IaC</b></span><span>maximize utilization, Graviton <b>→ Sustainability</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">1. ある企業が、新しいアプリケーションのアーキテクチャを production に上げる前に AWS のベストプラクティスに照らして点検し、高リスク項目を一覧化して、修正の進捗を回ごとに追跡したいと考えています。何を使いますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>AWS Well-Architected Tool</b> でワークロードを作成し、6本の柱の質問に答え、milestone で追跡します。Trusted Advisor を選びがちですが、Trusted Advisor は稼働中のリソースをスキャンするもので、設計の評価はせず、柱ごとのリスクという概念もありません。</p></div>
+      <div class="q"><p class="qt">2. 設問によると、Web アプリケーションはユーザーの session を各 EC2 のメモリに保存しており、scale in するとユーザーがログアウトされてしまいます。どの原則に違反していて、どう直しますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Stateless。</b> session を ElastiCache (Redis) または DynamoDB に出し、すべての instance が共通で読めるようにします。ALB の sticky session を有効にするのは症状を隠すだけで、terminate された instance の session は失われるため、設問が <em>scale</em> や <em>resilient</em> を求めているときは選びません。</p></div>
+      <div class="q"><p class="qt">3. Cost Optimization の柱に属する行動を2つ選んでください。(A) 電力消費を減らすために Graviton に移行する、(B) ベースロード向けに Savings Plans を購入する、(C) RDS で Multi-AZ を有効にする、(D) 部門別にコストを配賦するために tag を付ける。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>B と D。</b> A は電力の話なので Sustainability（結果的に安くもなりますが）、C は Reliability です。試験では「どちらも節約に見える」選択肢を2つ並べて、設問に書かれた理由を読んでいるかを試してきます。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. DISASTER RECOVERY ============ -->
+<section id="dr">
+  <span class="eyebrow">理論 2 / 6</span>
+  <h2>Disaster recovery: RPO、RTO と4つの戦略</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <ul>
+        <li><b>RPO (Recovery Point Objective)</b>: <b>どれだけのデータ損失を許容するか</b>を、直近の backup 時点までさかのぼる時間で表したものです。例: 毎晩午前2時に snapshot を取り、14時に障害が起きた → 12時間分のデータを失う、RPO = 12時間。RPO 1時間にしたければ毎時 backup、RPO 数秒にしたければ継続的な replicate が必要です。</li>
+        <li><b>RTO (Recovery Time Objective)</b>: 障害発生から再稼働までに<b>どれだけの停止を許容するか</b>です。例: AMI から EC2 を再構築し、snapshot から RDS を restore するのに3時間 → RTO = 3時間。RTO 数分にしたければ、DR サイトのインフラをあらかじめ稼働させておく必要があります。</li>
+        <li>この2つの数字は<b>業務側</b>が決め、アーキテクトは両方を満たす最も安い戦略を選びます。RPO と RTO が小さいほど高くなります。これが DR の設問のロジックのすべてです。</li>
+        <li><b>High Availability</b> との区別: HA（Multi-AZ）は1つの AZ の障害に対応し、自動で、1つの Region 内で完結します。DR は Region 全体の喪失に対応し、通常は別の Region を使い、人がボタンを押す必要があることもあります。</li>
+      </ul>
+    </div>
+
+    <div class="block diag"><span class="eyebrow">イメージ: 4つの戦略のコストの階段</span>
+      <svg viewBox="0 0 700 290" role="img" aria-label="4つの DR 戦略を Backup and restore から Multi-site active-active までコストの昇順に並べ、RPO と RTO は小さくなっていく">
+        <line x1="40" y1="230" x2="680" y2="230" class="sv-line" stroke-width="2"/>
+        <text x="40" y="256" class="sv-m">常時コストが増える →</text>
+        <text x="680" y="256" text-anchor="end" class="sv-m">RPO、RTO が小さくなる →</text>
+        <rect x="50" y="180" width="130" height="50" rx="6" class="sv-az" stroke-width="1.5"/>
+        <rect x="210" y="140" width="130" height="90" rx="6" class="sv-az" stroke-width="1.5"/>
+        <rect x="370" y="95" width="130" height="135" rx="6" class="sv-az" stroke-width="1.5"/>
+        <rect x="530" y="40" width="130" height="190" rx="6" class="sv-edge" stroke-width="1.5"/>
+        <text x="115" y="160" text-anchor="middle" class="sv-t" font-weight="600">Backup and restore</text>
+        <text x="115" y="176" text-anchor="middle" class="sv-m">RPO / RTO: 時間単位</text>
+        <text x="275" y="120" text-anchor="middle" class="sv-t" font-weight="600">Pilot light</text>
+        <text x="275" y="136" text-anchor="middle" class="sv-m">RPO 分、RTO 数十分</text>
+        <text x="435" y="75" text-anchor="middle" class="sv-t" font-weight="600">Warm standby</text>
+        <text x="435" y="91" text-anchor="middle" class="sv-m">RPO 秒、RTO 分</text>
+        <text x="595" y="22" text-anchor="middle" class="sv-t" font-weight="600">Multi-site active-active</text>
+        <text x="595" y="36" text-anchor="middle" class="sv-m">RPO、RTO ほぼ 0</text>
+        <text x="115" y="200" text-anchor="middle" class="sv-m">DR Region には</text>
+        <text x="115" y="216" text-anchor="middle" class="sv-m">backup だけ保存</text>
+        <text x="275" y="165" text-anchor="middle" class="sv-m">DB は replicate 済み</text>
+        <text x="275" y="181" text-anchor="middle" class="sv-m">app は停止、必要時に起動</text>
+        <text x="275" y="197" text-anchor="middle" class="sv-m">（「種火」は常時点灯）</text>
+        <text x="435" y="120" text-anchor="middle" class="sv-m">縮小版が</text>
+        <text x="435" y="136" text-anchor="middle" class="sv-m">全機能で稼働中</text>
+        <text x="435" y="152" text-anchor="middle" class="sv-m">障害時に scale out</text>
+        <text x="595" y="70" text-anchor="middle" class="sv-m">2つの Region が</text>
+        <text x="595" y="86" text-anchor="middle" class="sv-m">同時に traffic を処理</text>
+        <text x="595" y="102" text-anchor="middle" class="sv-m">データは双方向に sync</text>
+        <text x="595" y="118" text-anchor="middle" class="sv-m">(Global Table, Aurora)</text>
+      </svg>
+    </div>
+
+    <div class="block"><span class="eyebrow">ホワイトペーパー「Disaster Recovery of Workloads on AWS」の4つの戦略</span>
+      <div class="tbl"><table>
+        <tr><th>戦略</th><th>DR Region で稼働しているもの</th><th>RPO</th><th>RTO</th><th>コスト</th><th>障害時にすること</th></tr>
+        <tr><td><b>Backup and restore</b></td><td>何も稼働していない。コピー済みの backup（snapshot、S3 object）だけがある</td><td>時間単位（backup 周期と同じ）</td><td>数時間〜24時間</td><td>最も低い</td><td>データを restore し、CloudFormation でインフラを構築し、DNS を切り替える</td></tr>
+        <tr><td><b>Pilot light</b></td><td>「種火」の部分だけ（database replica、AMI、template を用意）。compute は停止または 0 instance</td><td>分</td><td>数十分</td><td>低い</td><td>replica を promote、ASG を 0 から必要数まで起動、DNS を切り替える</td></tr>
+        <tr><td><b>Warm standby</b></td><td>縮小版が<b>稼働していてリクエストを処理できる</b>（少数の instance、DB replica）</td><td>秒</td><td>分</td><td>中程度</td><td>full size まで scale out、DNS を切り替える（Route 53 failover が自動で行う）</td></tr>
+        <tr><td><b>Multi-site active-active</b></td><td>full size で、2つの Region が同時に traffic を受ける</td><td>ほぼ 0</td><td>ほぼ 0（real time）</td><td>最も高い、ほぼ2倍</td><td>ほとんど何もしない。Route 53 が障害 Region への送信をやめる</td></tr>
+      </table></div>
+      <p style="font-size:.9rem;color:var(--muted)">AWS のホワイトペーパーでは、Backup and restore の RPO/RTO は時間単位、Pilot light と Warm standby は分〜数十分、Multi-site は real time とされています。pilot light と warm standby の境界は、<b>pilot light は追加起動するまでリクエストを処理できない</b>のに対し、warm standby は低い capacity ながらすぐに処理できる点です。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">各戦略を支えるサービス</span>
+      <div class="tbl"><table>
+        <tr><th>サービス</th><th>DR での役割</th><th>合う戦略</th></tr>
+        <tr><td><b>AWS Backup</b></td><td>backup plan に従って EBS、RDS、DynamoDB、EFS、FSx、S3 を集中 backup。<b>cross-Region と cross-account のコピー</b>。Vault Lock で削除を防ぐ</td><td>Backup and restore（および全戦略の土台）</td></tr>
+        <tr><td><b>S3 Cross-Region Replication (CRR)</b></td><td>object を別 Region の bucket に replicate。Versioning の有効化が必要。有効化後の新しい object にのみ適用（既存 object は Batch Replication を使う）</td><td>ファイルデータに対してはすべての戦略</td></tr>
+        <tr><td><b>AMI copy cross-Region</b></td><td>「golden」AMI を DR Region にコピーして素早く launch。CloudFormation や CDK と組み合わせてインフラを構築</td><td>Backup and restore、Pilot light</td></tr>
+        <tr><td><b>RDS cross-Region read replica</b></td><td>別 Region の非同期 replica。障害時に standalone へ <b>promote</b>（promote は手動またはスクリプト）</td><td>Pilot light、Warm standby</td></tr>
+        <tr><td><b>Aurora Global Database</b></td><td>1つの primary Region + 最大5つの secondary Region。replication lag は通常1秒未満。promote 時の <b>RPO 約1秒、RTO 1分未満</b>。managed failover と write forwarding あり</td><td>Warm standby、Multi-site（secondary で読み取り）</td></tr>
+        <tr><td><b>DynamoDB Global Tables</b></td><td>テーブルを複数 Region に <b>active-active</b> で replicate。どこで書き込んでもよい。last writer wins</td><td>Multi-site active-active</td></tr>
+        <tr><td><b>Route 53 failover routing</b></td><td>primary を health check し、異常なら secondary の DNS record を返す。短い TTL と組み合わせて素早く切り替える</td><td>DR Region を持つすべての戦略</td></tr>
+        <tr><td><b>AWS Elastic Disaster Recovery (DRS)</b></td><td>サーバー（on-premises、他クラウド、EC2）に agent を入れ、DR Region の安価な staging area へ<b>ブロックレベルで継続的に</b> replicate。障害時は数分で本番 instance を launch。failback 対応。<b>RPO 秒、RTO 分</b></td><td>lift-and-shift 型サーバー向けに「managed 化」された Pilot light</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">よくあるひっかけ</span>
+      <div class="note"><b>「最低コストだが RTO は数分」</b>: 数字をよく読んでください。RTO <em>minutes</em> で、システムがすぐに処理できる必要がある → <b>warm standby</b>。RTO <em>tens of minutes</em>、または設問が「データだけ常に準備されていればよく、app は後から起動してもよい」と強調している → <b>pilot light</b>。RTO <em>hours</em> で <em>lowest cost</em> と言っている → backup and restore。「より慎重だから」と pilot light を選ばないこと。<em>RPO near zero and RTO near zero</em>、または <em>users in both regions</em> を要求している → 高くても multi-site active-active。</div>
+      <ul>
+        <li><b>RPO は秒だが RTO は時間</b>という組み合わせもあり得ます。継続的に replicate（RDS replica、DRS）はするが compute は事前に用意しないケースです。設問はこの2つの数字を分けてひっかけてくるので、数字ごとに判断してください。</li>
+        <li>設問の <em>Single Region</em> は HA だけ必要という意味です。Multi-AZ でよく、DR Region は不要です。</li>
+        <li>EBS と RDS の snapshot は <b>Region 内にあります</b>。別 Region で DR するなら <b>snapshot をコピー</b>する必要があります（AWS Backup なら自動で行います）。</li>
+        <li>設問が <em>on-premises servers</em> を <em>minimal RPO</em> で AWS に DR したいと言っている → Elastic Disaster Recovery。<em>migrate</em>（完全に移行する）と言っている → Application Migration Service（第3項）。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>DB を別 Region で1分以内に復旧、<em>least operational overhead</em></td><td>Aurora Global Database（managed failover）</td><td>RDS cross-Region replica（手動 promote が必要で数分かかる）</td></tr>
+        <tr><td>2つの Region で同時にデータを書き込む</td><td>DynamoDB Global Tables</td><td>Aurora Global Database（write forwarding を除き secondary は読み取り専用）</td></tr>
+        <tr><td>複数サービスを定期 backup し、別 Region にコピーし、削除を防ぐ</td><td>AWS Backup + Vault Lock</td><td>snapshot を取る Lambda を自作</td></tr>
+        <tr><td>primary 障害時に traffic を DR サイトへ切り替える</td><td>Route 53 failover + health check</td><td>Route 53 weighted（負荷分散であり、自動 failover ではない）</td></tr>
+        <tr><td>物理サーバーを AWS に DR、RPO 秒</td><td>Elastic Disaster Recovery</td><td>Storage Gateway（データのみで、サーバーを起動できない）</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>RPO <b>→ どれだけデータを失うか</b></span><span>RTO <b>→ どれだけ停止するか</b></span><span>lowest cost, RTO hours <b>→ backup and restore</b></span><span>core services running, scale when needed <b>→ pilot light</b></span><span>scaled-down fully functional copy <b>→ warm standby</b></span><span>near-zero RPO and RTO, both regions serve <b>→ multi-site active-active</b></span><span>cross-Region copy of backups <b>→ AWS Backup</b></span><span>continuous block-level replication, failback <b>→ Elastic Disaster Recovery</b></span><span>global database, sub-second lag <b>→ Aurora Global Database</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">4. 社内アプリケーションが東京の EC2 と RDS MySQL で稼働しています。Region 障害時、業務側は最大24時間の停止と最大12時間分のデータ損失を許容しており、<em>most cost-effective</em> が求められています。何を選びますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Backup and restore:</b> AWS Backup で RDS snapshot と AMI を12時間ごとに取得して大阪へコピーし、必要時に restore して CloudFormation で構築します。「より安全だから」と pilot light を選びがちですが、業務が求めていないのに replica を常時稼働させる費用がかかります。</p></div>
+      <div class="q"><p class="qt">5. EC サイトは、主 Region が落ちても数分以内に注文受付を継続でき、データ損失は数秒以内、常時コストはできる限り低くしたいと考えています。何を選びますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Warm standby:</b> DR Region で縮小版を稼働（小さい min の ASG、Aurora Global Database または RDS replica）、Route 53 failover、障害時に scale out します。pilot light は RTO が数十分（起動して instance の立ち上がりを待つ必要がある）なので誤りです。Multi-site は要件を満たしますが、設問は最低コストと言っています。</p></div>
+      <div class="q"><p class="qt">6. 自社データセンターに物理サーバーが200台ある企業が、RPO 数秒、RTO 数分で AWS に復旧できるようにしたいと考えています。200台の EC2 を常時稼働させる費用は払いたくありません。何を選びますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>AWS Elastic Disaster Recovery:</b> agent が安価な staging area（小さい EC2 + EBS）へ継続的に replicate し、drill や障害時にだけ本番 instance を launch します。Application Migration Service も同じ技術を使いますが、目的は完全移行（cutover）であり、長期の replicate や failback は想定していません。</p></div>
+      <div class="q"><p class="qt">7. 2つの Region の active-active 構成で、ユーザーが自分のいる Region に書き込めるようにするサービスを2つ選んでください。(A) DynamoDB Global Tables、(B) RDS Multi-AZ、(C) Route 53 latency routing と health check、(D) S3 One Zone-IA。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>A と C。</b> RDS Multi-AZ は1つの Region 内だけです（HA であって DR ではない）。S3 One Zone-IA は1つの AZ にあるので要件と正反対です。選択肢に Aurora Global Database があればそれでもよいのですが、書き込みは primary だけ（write forwarding を除く）なので、設問が「両方で書き込む」と強調しているときは DynamoDB Global Tables が最も確実です。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. MIGRATION ============ -->
+<section id="migration">
+  <span class="eyebrow">理論 3 / 6</span>
+  <h2>Migration: 7R、Migration Hub、Application Migration Service</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要: 7つの戦略（7R）</span>
+      <div class="tbl"><table>
+        <tr><th>R</th><th>意味</th><th>例</th><th>手間 / 利点</th></tr>
+        <tr><td><b>Rehost</b></td><td>Lift and shift: サーバーをそのまま EC2 に載せ替える。code は変えない</td><td>古い .NET app が動く Windows VM → Application Migration Service で EC2 へ</td><td>最も速く、最も手間が少ないが、cloud を活かせていない</td></tr>
+        <tr><td><b>Replatform</b></td><td>Lift, tinker and shift: 一部のコンポーネントを managed に変え、code はほぼそのまま</td><td>VM 上の MySQL → RDS MySQL。Java app → Elastic Beanstalk。container → ECS</td><td>中程度。運用が減る</td></tr>
+        <tr><td><b>Repurchase</b></td><td>古いソフトウェアを捨て、SaaS や Marketplace を購入する</td><td>自社ホストの CRM → Salesforce。メールサーバー → Microsoft 365</td><td>運用を完全に手放せるが、カスタマイズ性は失う</td></tr>
+        <tr><td><b>Refactor / Re-architect</b></td><td>cloud-native を使うようにアーキテクチャを書き直す</td><td>Monolith → Lambda、DynamoDB、SQS 上の microservices</td><td>最も高く時間がかかるが、scale と長期コストの利点が最も大きい</td></tr>
+        <tr><td><b>Retire</b></td><td>誰も使っていないので完全に停止する</td><td>代替がある古いレポートシステム</td><td>すぐに節約できる。portfolio の 10〜20% が該当することが多い</td></tr>
+        <tr><td><b>Retain</b></td><td>そのまま残し、まだ移行しない</td><td>Mainframe、工場設備との低レイテンシが必要な app、償却が終わっていないもの</td><td>何もしない。後で見直す</td></tr>
+        <tr><td><b>Relocate</b></td><td>hypervisor レベル、または account/Region 間で移す。再インストールしない</td><td>on-premises の vSphere → VMware Cloud on AWS。workload を別 account へ移す</td><td>非常に速く、app は何も変えない</td></tr>
+      </table></div>
+      <p style="font-size:.9rem">設問はよく「企業は <em>as quickly as possible with minimal changes</em> で AWS に移行したい」→ rehost、「<em>take advantage of managed database without changing application code</em>」→ replatform、「<em>modernize to serverless</em>」→ refactor という形で出ます。「relocate」という語はほぼ VMware Cloud on AWS とだけ結びつきます。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">migration ツール群</span>
+      <div class="tbl"><table>
+        <tr><th>サービス</th><th>役割</th><th>設問での見分け方</th></tr>
+        <tr><td><b>AWS Migration Hub</b></td><td>あらゆるツール（MGN、DMS、partner tool）の migration 進捗を追跡する中央ダッシュボード。どの app にどの R を当てるか提案する Strategy Recommendations あり</td><td><em>single place to track migrations</em>、<em>portfolio</em></td></tr>
+        <tr><td><b>Application Discovery Service</b></td><td>計画のために on-premises サーバーの情報を収集: <b>Agentless Collector</b>（VMware vCenter に入れる OVA。設定と utilization を取得）または <b>Discovery Agent</b>（各サーバーに入れる。process とネットワーク接続も取得。Windows と Linux 両対応）。データは Migration Hub に集まり、S3 に export して Athena で query できる</td><td><em>inventory</em>、<em>dependencies between servers</em>、<em>utilization data before migration</em></td></tr>
+        <tr><td><b>Application Migration Service (MGN)</b></td><td>公式の rehost ツール（終了した CloudEndure Migration と Server Migration Service の後継）。移行元サーバーに replication agent を入れ、移行先 Region の staging area（小さい EC2 + EBS）へ<b>ブロックレベルで継続的に</b> replicate。いつでも test launch 可能。数分の downtime で <b>cutover</b>。軽い replatform のための post-launch action あり</td><td><em>lift-and-shift</em>、<em>minimal downtime</em>、<em>physical, virtual, or cloud servers</em></td></tr>
+        <tr><td><b>Migration Evaluator</b></td><td>旧 TSO Logic。on-premises の利用データを（agentless で）収集し、<b>business case を作成、on-premises と AWS の TCO を比較</b></td><td><em>business case</em>、<em>total cost of ownership</em>、<em>projected cost savings</em></td></tr>
+        <tr><td><b>Database Migration Service (DMS)</b>（第6週の復習）</td><td>database の移行: <b>homogeneous</b>（Oracle → RDS 上の Oracle）または <b>heterogeneous</b>（Oracle → Aurora PostgreSQL。先に <b>Schema Conversion Tool</b> が必要）。replication instance が常時稼働し、<b>CDC</b>（change data capture）対応で downtime ほぼ 0。移行中も移行元を稼働させたままにできる</td><td><em>migrate database with minimal downtime</em>、<em>continuous replication</em>、<em>different database engine</em></td></tr>
+        <tr><td><b>Snow Family</b>（第3週の復習）</td><td>ネットワークが足りないときに物理デバイスで大容量データを運ぶ: <b>Snowball Edge</b> Storage Optimized は usable 約 80 TB、Compute Optimized は GPU 搭載。<b>Snowcone</b> は 8 TB（小型、バッテリー付き）。<b>Snowmobile</b> はトラックのコンテナで 100 PB。目安: ネットワーク転送に1週間以上かかるなら Snow を検討。デバイスは S3 にのみ投入でき、Glacier に入れたければ S3 lifecycle を使う。AWS は Snowmobile と一部の旧モデルを終了済み（AWSドキュメントで要確認）だが、SAA-C03 では出題されうる</td><td><em>limited bandwidth</em>、<em>petabytes</em>、<em>no internet connectivity</em>、<em>edge computing</em></td></tr>
+        <tr><td><b>DataSync</b>（第3週の復習）</td><td>agent を使うオンラインのファイル転送: NFS、SMB、HDFS、object storage ↔ S3、EFS、FSx。スケジュール実行、暗号化、整合性検証、metadata 保持。1 agent あたり約 10 Gbps（AWSドキュメントで要確認）。2つの Region の EFS 間の定期 sync にも使う</td><td><em>transfer file data</em>、<em>NFS / SMB</em>、<em>scheduled</em>、<em>preserve metadata</em></td></tr>
+        <tr><td><b>Transfer Family、Storage Gateway</b></td><td>Transfer Family: managed な SFTP/FTPS/FTP で S3 や EFS に投入。Storage Gateway: 長期的な hybrid（File、Volume、Tape Gateway）であり、一回限りの migration ツールではない</td><td><em>SFTP</em>。<em>hybrid</em>、<em>on-premises keeps using local cache</em></td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">MGN と Elastic Disaster Recovery</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>Application Migration Service (MGN)</th><th>Elastic Disaster Recovery (DRS)</th></tr>
+        <tr><td>技術</td><td colspan="2">同じ: agent、staging area へのブロックレベルの継続 replicate、instance を起動する launch template</td></tr>
+        <tr><td>目的</td><td>完全移行: test、cutover、その後 replicate を停止</td><td>replicate を長期間維持、定期 drill、障害時の failover、移行元への <b>failback</b></td></tr>
+        <tr><td>replicate の期間</td><td>短い。cutover の日まで</td><td>継続的。何か月、何年も</td></tr>
+        <tr><td>キーワード</td><td><em>migrate</em>、<em>cutover</em>、<em>lift-and-shift</em></td><td><em>disaster recovery</em>、<em>RPO seconds</em>、<em>failback</em>、<em>point-in-time recovery</em></td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">workload の種類に応じたツール選び</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>500台の VM を最小の downtime で EC2 に移行、app は変えない</td><td>Application Migration Service</td><td>DataSync（ファイルのみ）、手動の AMI import（遅く downtime が長い）</td></tr>
+        <tr><td>on-premises の Oracle を Aurora PostgreSQL に移行</td><td>SCT で schema を変換し、DMS と CDC でデータを移行</td><td>DMS 単体（異なる engine 間の schema は変換できない）</td></tr>
+        <tr><td>NAS の 500 TB のファイルを S3 へ。回線は 1 Gbps、期限は2週間</td><td>Snowball Edge（複数台）</td><td>DataSync（1 Gbps で 500 TB は45日以上かかる）</td></tr>
+        <tr><td>NFS の 20 TB のファイルを毎晩 EFS に同期、permission を保持</td><td>DataSync</td><td>Snowball（一回限りで定期実行できない）、S3 CLI（POSIX metadata を保持しない）</td></tr>
+        <tr><td>移行前にどのサーバーがどのサーバーと通信しているか知りたい</td><td>Application Discovery Service と Discovery Agent</td><td>Agentless Collector（process レベルのネットワーク接続は見えない）、Migration Evaluator（コストのみ）</td></tr>
+        <tr><td>VMware を各 VM に手を入れずに移行</td><td>VMware Cloud on AWS へ Relocate</td><td>MGN で Rehost（各 VM に agent を入れる必要がある）</td></tr>
+        <tr><td>経営層が AWS に移行した場合の節約額のレポートを求めている</td><td>Migration Evaluator</td><td>Cost Explorer（発生済みの AWS コストのみ）、Pricing Calculator（AWS の料金見積のみで TCO 比較はしない）</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>lift-and-shift, minimal changes <b>→ rehost, MGN</b></span><span>managed database, no code change <b>→ replatform, RDS</b></span><span>SaaS replaces on-premises software <b>→ repurchase</b></span><span>VMware Cloud on AWS <b>→ relocate</b></span><span>track all migrations in one place <b>→ Migration Hub</b></span><span>server dependencies, utilization <b>→ Application Discovery Service</b></span><span>business case, TCO <b>→ Migration Evaluator</b></span><span>heterogeneous database <b>→ SCT + DMS</b></span><span>petabytes, limited bandwidth <b>→ Snowball</b></span><span>NFS / SMB to S3 / EFS, scheduled <b>→ DataSync</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">8. ある企業が、データセンターの Windows と Linux のサーバー300台を3か月で EC2 に移行したいと考えています。アプリケーションは修正不可で、app ごとの downtime は15分以内です。何を使いますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>AWS Application Migration Service:</b> agent を入れ、継続的に replicate し、test launch し、短い時間枠で cutover します。DataSync を選びがちですが、DataSync はファイルを転送するだけで、稼働中のサーバーごと移行することはできません。</p></div>
+      <div class="q"><p class="qt">9. migration の前に、CIO はすべての on-premises サーバーの一覧、実際に使われている CPU と RAM、サーバー間の依存関係図を <em>minimal effort</em> で得たいと考えています。何を選びますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Application Discovery Service</b>（ネットワーク接続を得るなら Discovery Agent、すべて VMware で設定情報だけでよいなら Agentless Collector）で、Migration Hub で確認します。Migration Evaluator は business case 用で、依存関係は描きません。Config と Inspector はすでに AWS 上にあるリソースにしか使えません。</p></div>
+      <div class="q"><p class="qt">10. 設問: on-premises の 20 TB の Oracle Database を Amazon Aurora PostgreSQL に移行する必要があり、切り替えまで移行元は書き込みを受け続けなければなりません。サービスを2つ選んでください。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>AWS Schema Conversion Tool と AWS DMS（full load + CDC）。</b> SCT が schema と PL/SQL code を変換し、DMS がデータを移行してから変更を継続的に取り込みます。20 TB なら Direct Connect や VPN で問題なく、DMS の CDC にはネットワーク接続が必要なので Snowball は不要です。巨大なデータを offline で移す指定があれば DMS と Snowball Edge を組み合わせますが、その場合も SCT は必要です。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. ANALYTICS ============ -->
+<section id="analytics">
+  <span class="eyebrow">理論 4 / 6</span>
+  <h2>Analytics の見分け方: Athena、Glue、QuickSight、EMR、OpenSearch、Lake Formation</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <p>SAA の試験では query を書いたり cluster を調整したりする必要はなく、<b>どの課題にどのサービスを使うか</b>と、いくつかのコスト削減のコツを見分けられれば十分です。分析システムの一般的な流れは、<b>収集</b>（Kinesis、DMS、DataSync）→ <b>保存</b>（S3 data lake、Redshift）→ <b>変換とカタログ化</b>（Glue）→ <b>query</b>（Athena、Redshift、EMR、OpenSearch）→ <b>可視化</b>（QuickSight）です。data lake の権限は Lake Formation で管理します。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">各サービス</span>
+      <div class="tbl"><table>
+        <tr><th>サービス</th><th>何か</th><th>試験でよく問われる点</th></tr>
+        <tr><td><b>Athena</b></td><td><b>S3 上で直接 SQL</b> を実行する query サービス。serverless でデータの load は不要。<b>スキャンしたデータ量</b>に応じて課金（約 5 USD/TB、AWSドキュメントで要確認）</td><td>コスト削減と高速化: <b>Parquet または ORC</b> に変換（columnar で必要な列だけ読む）、<b>圧縮</b>、日付や Region で <b>partition</b> してスキャン量を減らす。<b>Federated Query</b> は Lambda connector を使い、RDS、DynamoDB、CloudWatch Logs も1つの SQL で query できる。S3 上のログをときどき分析する用途に向く（VPC Flow Logs、CloudTrail、ALB log）</td></tr>
+        <tr><td><b>Glue</b></td><td><b>serverless の ETL</b> サービス（Spark または Python shell を実行）。Athena、EMR、Redshift Spectrum 共通の metastore（テーブル、schema、S3 上の場所）である <b>Data Catalog</b> を持つ。<b>Crawler</b> が S3 をスキャンして schema を推定し、catalog に登録する</td><td>設問が <em>transform CSV to Parquet</em>、<em>catalog data in S3</em>、<em>discover schema automatically</em> と言っていれば → Glue。Glue DataBrew は code を書かない人向けのドラッグ＆ドロップ版。Glue Studio は job を視覚的に作る。Glue Data Quality と Glue Streaming ETL（Kinesis、Kafka を読む）もある</td></tr>
+        <tr><td><b>QuickSight</b></td><td>serverless の <b>BI</b> サービス: dashboard、グラフ、アプリケーションへの埋め込み。ユーザー単位（author、reader）で課金</td><td><b>SPICE</b> は高速化のための in-memory engine で、直接 query する代わりにデータをそこに取り込む。データソース: Athena、Redshift、RDS、S3、ファイル。Q（自然言語で質問）と ML insight あり。設問が <em>visualize</em>、<em>dashboards for business users</em> と言っていれば → QuickSight</td></tr>
+        <tr><td><b>EMR</b></td><td>managed な <b>Hadoop、Spark、Hive、Presto、HBase</b> cluster。EMR Serverless と EMR on EKS もある</td><td>cluster は <b>primary (master)</b>、<b>core</b>（HDFS を持ち task も実行）、<b>task</b>（計算のみでデータを保持しない）で構成。コスト削減: node を失ってもデータは失われないので <b>task node は Spot</b>、core は On-Demand か Reserved、データは EMRFS で S3 に置いて cluster を停止できるようにする。設問が <em>Spark job</em>、<em>Hadoop</em>、<em>big data processing framework</em> と言っていれば → EMR</td></tr>
+        <tr><td><b>OpenSearch Service</b></td><td>managed な OpenSearch（Elasticsearch からの fork）: <b>全文検索</b>、<b>log analytics</b>、OpenSearch Dashboards（旧 Kibana）による dashboard</td><td>ログ pipeline の終点によく置かれる: CloudWatch Logs または Kinesis Data Firehose → OpenSearch。Multi-AZ、dedicated master node、古いログ向けの UltraWarm と cold storage、OpenSearch Serverless あり。自由な検索、autocomplete、dashboard を使った多次元のログ分析が必要なときに使う</td></tr>
+        <tr><td><b>Lake Formation</b></td><td>S3 上に data lake を素早く構築: データ取り込みの blueprint、そして最も重要なのが、Glue Data Catalog のテーブルに対する<b>列、行、セル単位の細かいアクセス権限</b>で、Athena、Redshift Spectrum、EMR、QuickSight に共通で適用される</td><td>設問が <em>centralized fine-grained access control for data lake</em>、<em>column-level permissions</em>、<em>share data across accounts</em> と言っていれば → Lake Formation。何十もの bucket policy を書くのではない</td></tr>
+        <tr><td><b>Kinesis</b>（第7週の復習）</td><td><b>Data Streams</b>: real-time の stream、shard、24時間〜365日保持、複数の consumer が再読み込みできる。<b>Data Firehose</b>: near real-time、code 不要、S3、Redshift、OpenSearch、Splunk に直接投入、buffer と Lambda による変換あり。<b>Managed Service for Apache Flink</b>: SQL または Flink で stream を処理。<b>Video Streams</b></td><td><em>real-time, replay, multiple consumers</em> → Data Streams。<em>load streaming data into S3 with no code, near real-time</em> → Firehose。<em>windowed aggregation on stream</em> → Flink</td></tr>
+        <tr><td><b>Redshift</b>（第6週の復習）</td><td>petabyte 級の <b>data warehouse</b>。columnar、OLAP、leader + compute node の cluster。Redshift Serverless あり</td><td><b>Redshift Spectrum</b> は load せずに Redshift から S3 を直接 query する。自動 snapshot、DR 用の cross-Region コピー。設問が <em>complex analytical queries, joins across TB</em>、<em>BI on structured data</em> と言っていれば → Redshift、<em>ad hoc query on S3 without infrastructure</em> → Athena</td></tr>
+        <tr><td><b>MSK</b>（見分けのみ）</td><td>Managed Streaming for <b>Apache Kafka</b>。MSK Serverless あり</td><td>設問が <em>Kafka</em>、<em>existing Kafka producers and consumers</em> と明示しているときだけ選ぶ。stream に対する AWS のデフォルトの選択肢は Kinesis Data Streams</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">pipeline の例: S3 → Glue → Athena → QuickSight</span>
+      <div class="flow">
+        <div class="n"><span>ログや CSV、JSON ファイルを <b>S3</b> に投入（ALB log、CloudTrail、app からの export）</span><span class="tag next">raw</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span><b>Glue Crawler</b> が S3 をスキャンして schema を推定し、<b>Glue Data Catalog</b> にテーブルを作成</span><span class="tag next">catalog</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span><b>Glue ETL job</b> が <b>Parquet</b> に変換・圧縮し、<code>year=/month=/day=</code> の partition ごとに書き込む</span><span class="tag allow">query が10倍安くなる</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span><b>Athena</b> が catalog のテーブルに SQL を実行。スキャンしたデータ量で課金</span><span class="tag next">query</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span><b>QuickSight</b> が SPICE に取り込み、business user 向けの dashboard を作る</span><span class="tag allow">BI</span></div>
+      </div>
+      <p style="font-size:.9rem;color:var(--muted)">pipeline 全体が serverless で、patch を当てるサーバーは1台もありません。設問が <em>serverless analytics</em>、<em>least operational overhead</em>、<em>occasional queries on data in S3</em> と言っているときのデフォルトの答えです。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">設問がこう言ったら → これを選ぶ</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>S3 上のログに1日数回 SQL を実行したい、サーバーは管理したくない</td><td>Athena</td><td>Redshift（cluster とデータの load が必要）、EMR</td></tr>
+        <tr><td>データをスキャンしすぎている Athena のコストを下げる</td><td>Parquet に変換、圧縮、partition</td><td>cluster のサイズを上げる（Athena に cluster はない）</td></tr>
+        <tr><td>毎晩 CSV を Parquet に変換、serverless</td><td>Glue ETL job</td><td>EMR（cluster の管理が必要）、Lambda（15分とメモリの制限）</td></tr>
+        <tr><td>複数の query ツールで共通の metadata、schema</td><td>Glue Data Catalog</td><td>DynamoDB で自作</td></tr>
+        <tr><td>営業部門向けの dashboard、自然言語で質問</td><td>QuickSight (Q)</td><td>CloudWatch dashboard（運用 metric 向け）</td></tr>
+        <tr><td>大きな Spark job を低コストで実行、回収されたときに遅くなるのは許容</td><td>task node を Spot にした EMR</td><td>core node を Spot（HDFS を失う）、Glue（重いカスタム job より ETL 向き）</td></tr>
+        <tr><td>アプリケーションログの全文検索と dashboard</td><td>OpenSearch Service</td><td>CloudWatch Logs Insights（CloudWatch Logs への ad hoc query には十分だが search engine ではない）</td></tr>
+        <tr><td>CloudWatch Logs にあるログを、何も追加構築せずに素早く query</td><td>CloudWatch Logs Insights</td><td>OpenSearch（export が必要で、cluster の費用も増える）</td></tr>
+        <tr><td>財務チームにだけ data lake の一部の列を見せる</td><td>Lake Formation の column-level permission</td><td>bucket の IAM policy（列を理解しない）</td></tr>
+        <tr><td>TB 級の構造化データに対する複雑なレポート用 data warehouse</td><td>Redshift</td><td>RDS（OLTP）、Athena（大規模で繰り返しの join には最適化されていない）</td></tr>
+        <tr><td>clickstream を near real-time で S3 に流す、consumer は書かない</td><td>Kinesis Data Firehose</td><td>Kinesis Data Streams（consumer を自分で書く必要がある）</td></tr>
+        <tr><td>既存の Kafka システムがあり、運用をやめたい</td><td>MSK</td><td>Kinesis（producer、consumer を書き直す必要がある）</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>SQL on S3, serverless, pay per query <b>→ Athena</b></span><span>columnar format, partition to reduce scanned data <b>→ Parquet + partition</b></span><span>query across S3 and RDS in one SQL <b>→ Athena Federated Query</b></span><span>ETL, crawler, data catalog <b>→ Glue</b></span><span>BI dashboard, SPICE <b>→ QuickSight</b></span><span>Hadoop, Spark, task nodes <b>→ EMR (+ Spot)</b></span><span>full-text search, log analytics, Kibana <b>→ OpenSearch</b></span><span>fine-grained data lake permissions <b>→ Lake Formation</b></span><span>Kafka <b>→ MSK</b></span><span>data warehouse <b>→ Redshift</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">11. ある企業が 50 TB の JSON ログを S3 に保存し、Athena で特定の日付を指定して1日数回 query しています。Athena の請求額が大きく増えました。<em>without changing the query tool</em> でコストを下げる方法を2つ選んでください。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>JSON を Parquet（圧縮）に変換し、日付で partition する</b>（Glue job を使う）。そのうえで partition に対する <code>WHERE</code> 付きで query します。Redshift への移行を選びがちですが、設問はツールを変えないと言っています。Athena 向けの Reserved 購入というものは存在しません。</p></div>
+      <div class="q"><p class="qt">12. データチームは S3 上のデータに対して毎晩6時間の Spark job を実行する必要があり、<em>most cost-effective</em> にしつつ、instance が回収されても中間データを失いたくありません。何を選びますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>core node を On-Demand、task node を Spot にした EMR</b> で、データは S3 上で読み書き（EMRFS）し、job 後に cluster を停止します（transient cluster）。cluster 全体を Spot にするのはひっかけです。core node は HDFS を持っており、失うと job が壊れます。</p></div>
+      <div class="q"><p class="qt">13. S3 上の data lake が Athena と QuickSight を通じて5つの部門に使われています。要件: 各部門は一部の列だけ見られる、集中管理、<em>least operational overhead</em>。何を選びますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Lake Formation</b> で bucket を登録し、Glue Data Catalog のテーブルに対して列単位で権限を付与します。部門ごとに bucket と bucket policy を分けると、データが重複するうえに列単位で制限できません。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. ML SERVICES ============ -->
+<section id="ml">
+  <span class="eyebrow">理論 5 / 6</span>
+  <h2>ML services の見分け方</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <p>SAA の試験で ML の問題は数問だけで、すべて「キーワード → サービス名」のレベルです。managed な AI サービス（Rekognition、Comprehend、Transcribe、Polly、Translate、Textract、Lex、Kendra、Personalize、Forecast）は API で呼び出し、<b>ML の知識は不要</b>です。設問が <em>no machine learning expertise</em> や <em>least operational overhead</em> と言っていればこれらを選びます。<b>SageMaker</b> は設問が<b>独自の model を自分で構築、train、deploy</b> したいときです。<b>Bedrock</b> は設問が <em>generative AI</em>、<em>foundation model</em> と言っているときです。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">キーワード → サービス対応表</span>
+      <div class="tbl"><table>
+        <tr><th>サービス</th><th>役割</th><th>設問に出る語句</th></tr>
+        <tr><td><b>Rekognition</b></td><td><b>画像と動画</b>の分析: 物体検出、顔検出、顔照合、画像内のテキスト、有名人、<b>content moderation</b>（不適切なコンテンツの除外）、独自ラベルを train する Custom Labels</td><td><em>detect objects in images</em>、<em>facial analysis</em>、<em>moderate user-uploaded images</em>、<em>video analysis</em></td></tr>
+        <tr><td><b>Comprehend</b></td><td>テキストに対する <b>NLP</b>: sentiment、entity、key phrase、言語、topic、<b>PII の検出とマスキング</b>。医療テキスト向けの Comprehend Medical</td><td><em>sentiment of customer reviews</em>、<em>extract entities from text</em>、<em>detect PII in documents</em></td></tr>
+        <tr><td><b>Transcribe</b></td><td><b>Speech to text</b>: ファイルまたは stream、話者識別、custom vocabulary、書き起こし内の <b>PII redaction</b>。Transcribe Medical</td><td><em>convert call recordings to text</em>、<em>subtitles</em>、<em>redact credit card numbers from transcripts</em></td></tr>
+        <tr><td><b>Polly</b></td><td><b>Text to speech</b>。多数の音声、neural voice、区切りや発音を調整する SSML、専門用語向けの lexicon</td><td><em>read text aloud</em>、<em>generate audio from articles</em>、<em>IVR voice</em></td></tr>
+        <tr><td><b>Translate</b></td><td>言語間の機械翻訳。batch と real-time、custom terminology</td><td><em>translate content into multiple languages</em>、<em>localization</em></td></tr>
+        <tr><td><b>Textract</b></td><td><b>インテリジェントな OCR</b>: 文字だけでなく、スキャン、PDF、画像から<b>フォーム（key-value）</b>と<b>表</b>も取得。Queries、身分証明書や請求書の分析あり</td><td><em>extract text and data from scanned forms</em>、<em>invoices</em>、<em>tables in PDF</em>、<em>ID documents</em></td></tr>
+        <tr><td><b>Lex</b></td><td><b>chatbot と voice bot</b> の構築: 音声認識（ASR）と意図理解（NLU）、Alexa と同じ技術。call center 向けに Connect、ロジック処理に Lambda と連携</td><td><em>conversational interface</em>、<em>chatbot</em>、<em>voice assistant</em>、<em>call center self-service</em></td></tr>
+        <tr><td><b>Kendra</b></td><td>ML による<b>エンタープライズ検索</b>: 社内文書（connector 経由で S3、SharePoint、Confluence、Salesforce）に自然言語で質問し、該当する回答箇所を返す</td><td><em>search across internal documents</em>、<em>natural language questions</em>、<em>knowledge base search</em></td></tr>
+        <tr><td><b>Personalize</b></td><td>行動に基づく<b>パーソナライズされたレコメンド</b>（Amazon.com と同じ技術）。real-time、ML の知識は不要</td><td><em>product recommendations</em>、<em>personalized ranking</em>、<em>"customers who bought"</em></td></tr>
+        <tr><td><b>Forecast</b></td><td><b>時系列予測</b>: 需要、在庫、トラフィック。AWS は Forecast の新規顧客受付を終了済み（AWSドキュメントで要確認）だが、SAA-C03 では出題されうる</td><td><em>demand forecasting</em>、<em>time series</em>、<em>inventory planning</em></td></tr>
+        <tr><td><b>SageMaker</b></td><td>完全な ML プラットフォーム: notebook、データ準備、<b>train</b>（built-in algorithm、managed Spot training あり）、tune、real-time または batch の <b>endpoint deploy</b>、ラベル付けの Ground Truth、ドラッグ＆ドロップの Canvas。Studio は IDE</td><td><em>build and train custom model</em>、<em>data scientists</em>、<em>deploy model as endpoint</em>、<em>label training data</em></td></tr>
+        <tr><td><b>Bedrock</b>（見分けのみ）</td><td><b>foundation model</b>（Claude、Llama、Titan など多数）を API で呼び出す。インフラ管理は不要。RAG 用の Knowledge Bases、Agents、Guardrails</td><td><em>generative AI</em>、<em>foundation models</em>、<em>build chatbot on company documents with LLM</em></td></tr>
+        <tr><td><b>Augmented AI (A2I)</b>（見分けのみ）</td><td>信頼度の低い ML の結果を<b>人のレビュー</b>に回す</td><td><em>human review of low-confidence predictions</em></td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>組み合わせ</th><th>違い</th></tr>
+        <tr><td>Textract と Rekognition（text in image）</td><td>Rekognition は看板、服、日常の写真の文字を読む。Textract は<b>文書</b>を読み、フォームや表の構造を保持する。設問が <em>forms</em>、<em>invoices</em>、<em>scanned documents</em> と言っていれば → Textract。</td></tr>
+        <tr><td>Kendra と OpenSearch</td><td>Kendra: セマンティック検索、文章で質問でき、connector が揃っていて、より高価。OpenSearch: キーワード検索と log analytics、index は自分で作る。設問が <em>natural language questions over documents</em> と言っていれば → Kendra。</td></tr>
+        <tr><td>Lex と Connect と Polly</td><td>Lex は bot の頭脳。Connect はクラウドの call center。Polly は文字を音声で読み上げるだけ。音声によるセルフサービスの call center では3つすべてを使うことが多い。</td></tr>
+        <tr><td>Comprehend と Transcribe（PII）</td><td>どちらも PII をマスキングできる。Transcribe は音声からの書き起こし内で、Comprehend は既存のテキスト内でマスキングする。音声 → まず Transcribe、その後 Comprehend で sentiment を分析。</td></tr>
+        <tr><td>Managed AI と SageMaker</td><td>設問が「custom model」「data scientist」「train」と言っていなければ managed サービスを選ぶ。SageMaker は手間がかかり高価で、設問が <em>least operational overhead</em> を問うときは誤りの選択肢になる。</td></tr>
+        <tr><td>Personalize と Forecast</td><td>Personalize は<b>一人ひとり</b>へのレコメンド。Forecast は<b>時間に沿った数値</b>の予測。「顧客 A に表示すべき商品」は Personalize、「来月いくつ売れるか」は Forecast。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>image, video, face, moderation <b>→ Rekognition</b></span><span>sentiment, entities, PII in text <b>→ Comprehend</b></span><span>speech to text <b>→ Transcribe</b></span><span>text to speech <b>→ Polly</b></span><span>translate <b>→ Translate</b></span><span>OCR forms, tables, invoices <b>→ Textract</b></span><span>chatbot, voice bot <b>→ Lex</b></span><span>enterprise search, natural language <b>→ Kendra</b></span><span>recommendations <b>→ Personalize</b></span><span>demand forecast <b>→ Forecast</b></span><span>train and deploy custom model <b>→ SageMaker</b></span><span>generative AI, foundation model <b>→ Bedrock</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">14. 顧客が画像をアップロードできるアプリケーションで、表示前に不適切な内容の画像を自動でブロックしたい。<em>no ML expertise</em>。何を選びますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Rekognition の content moderation</b>（DetectModerationLabels）を、object が S3 に入ったときに Lambda から呼び出します。「ML」という語を見て SageMaker を選びがちですが、自分で train と deploy をする必要があり、要件に反します。</p></div>
+      <div class="q"><p class="qt">15. call center が通話を録音しており、それをテキストに変換し、書き起こしからクレジットカード番号を削除し、顧客が満足しているか苛立っているかを分析したいと考えています。サービスを2つ選んでください。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Transcribe（PII redaction あり）と Comprehend（sentiment）。</b> Polly は逆方向（文字から音声）です。Lex は bot を作るもので、既存の録音は分析しません。</p></div>
+      <div class="q"><p class="qt">16. 経理部門は毎月数千件のスキャンされた PDF の請求書を受け取り、請求書番号、日付、明細行の表を database に取り込む必要があります。何を選びますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Textract</b>（AnalyzeExpense、または FORMS と TABLES を指定した AnalyzeDocument）。Rekognition はばらばらの文字列を返すだけで、key-value や表の構造を保持しません。Comprehend はテキストが前提で、画像は読めません。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. KIẾN TRÚC 3-TIER ============ -->
+<section id="kientruc">
+  <span class="eyebrow">理論 6 / 6</span>
+  <h2>標準的な 3-tier アーキテクチャと設問の読み方</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <p>SAA の問題の半分以上は、同じアーキテクチャのバリエーションを描いています。<b>web tier</b>（ALB）、<b>app tier</b>（private subnet の Auto Scaling group 内の EC2）、<b>data tier</b>（RDS Multi-AZ、ElastiCache、S3）を Route 53、CloudFront、WAF で外側から包み、SQS でつなぐ構成です。この「標準」の構成図を身につけておけば、各問題は <b>どのコンポーネントが欠けているか、どこに「2」が足りないか、どこで余分なお金を払っているか</b> を探すだけになります。</p>
+    </div>
+
+    <div class="block diag"><span class="eyebrow">イメージ: 2つの AZ にまたがる標準的な 3-tier アーキテクチャ</span>
+      <svg viewBox="0 0 700 430" role="img" aria-label="Route 53、CloudFront、WAF から2つの AZ の public subnet にある ALB へ、private subnet の EC2 Auto Scaling group へ、RDS Multi-AZ へと流れ、ElastiCache、S3、SQS、CloudWatch も併用する構成">
+        <rect x="20" y="14" width="90" height="34" rx="6" class="sv-edge" stroke-width="1.5"/>
+        <text x="65" y="36" text-anchor="middle" class="sv-t" font-weight="600">Route 53</text>
+        <rect x="130" y="14" width="100" height="34" rx="6" class="sv-edge" stroke-width="1.5"/>
+        <text x="180" y="36" text-anchor="middle" class="sv-t" font-weight="600">CloudFront</text>
+        <rect x="250" y="14" width="70" height="34" rx="6" class="sv-edge" stroke-width="1.5"/>
+        <text x="285" y="36" text-anchor="middle" class="sv-t" font-weight="600">WAF</text>
+        <line x1="110" y1="31" x2="130" y2="31" class="sv-line" stroke-width="2"/>
+        <line x1="230" y1="31" x2="250" y2="31" class="sv-line" stroke-width="2"/>
+        <line x1="320" y1="31" x2="350" y2="31" class="sv-line" stroke-width="2"/>
+        <line x1="350" y1="31" x2="350" y2="76" class="sv-line" stroke-width="2" stroke-dasharray="4 4"/>
+        <text x="420" y="36" class="sv-m">Edge: DNS、static の cache、SQLi / bot を遮断</text>
+        <rect x="20" y="76" width="500" height="340" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="34" y="98" class="sv-t" font-weight="600">VPC ap-northeast-1 (2 AZ)</text>
+        <rect x="40" y="110" width="220" height="296" rx="8" class="sv-az" stroke-width="1.5"/>
+        <rect x="280" y="110" width="220" height="296" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="150" y="130" text-anchor="middle" class="sv-t" font-weight="600">AZ 1a</text>
+        <text x="390" y="130" text-anchor="middle" class="sv-t" font-weight="600">AZ 1c</text>
+        <rect x="52" y="142" width="196" height="64" rx="6" class="sv-region" stroke-width="1"/>
+        <rect x="292" y="142" width="196" height="64" rx="6" class="sv-region" stroke-width="1"/>
+        <text x="60" y="158" class="sv-m">Public subnet</text>
+        <text x="300" y="158" class="sv-m">Public subnet</text>
+        <text x="150" y="178" text-anchor="middle" class="sv-t">ALB node</text>
+        <text x="390" y="178" text-anchor="middle" class="sv-t">ALB node</text>
+        <text x="150" y="196" text-anchor="middle" class="sv-m">NAT Gateway</text>
+        <text x="390" y="196" text-anchor="middle" class="sv-m">NAT Gateway</text>
+        <line x1="248" y1="174" x2="292" y2="174" class="sv-line" stroke-width="2" stroke-dasharray="3 3"/>
+        <text x="270" y="168" text-anchor="middle" class="sv-m">1 ALB</text>
+        <rect x="52" y="222" width="196" height="74" rx="6" class="sv-region" stroke-width="1"/>
+        <rect x="292" y="222" width="196" height="74" rx="6" class="sv-region" stroke-width="1"/>
+        <text x="60" y="238" class="sv-m">Private subnet (app)</text>
+        <text x="300" y="238" class="sv-m">Private subnet (app)</text>
+        <text x="150" y="260" text-anchor="middle" class="sv-t">EC2 × n (ASG)</text>
+        <text x="390" y="260" text-anchor="middle" class="sv-t">EC2 × n (ASG)</text>
+        <text x="150" y="280" text-anchor="middle" class="sv-m">stateless、IAM role</text>
+        <text x="390" y="280" text-anchor="middle" class="sv-m">stateless、IAM role</text>
+        <line x1="150" y1="206" x2="150" y2="222" class="sv-line" stroke-width="2"/>
+        <line x1="390" y1="206" x2="390" y2="222" class="sv-line" stroke-width="2"/>
+        <rect x="52" y="312" width="196" height="84" rx="6" class="sv-region" stroke-width="1"/>
+        <rect x="292" y="312" width="196" height="84" rx="6" class="sv-region" stroke-width="1"/>
+        <text x="60" y="328" class="sv-m">Private subnet (data)</text>
+        <text x="300" y="328" class="sv-m">Private subnet (data)</text>
+        <text x="150" y="350" text-anchor="middle" class="sv-t">RDS primary</text>
+        <text x="390" y="350" text-anchor="middle" class="sv-t">RDS standby</text>
+        <text x="150" y="370" text-anchor="middle" class="sv-m">ElastiCache node</text>
+        <text x="390" y="370" text-anchor="middle" class="sv-m">ElastiCache replica</text>
+        <text x="270" y="386" text-anchor="middle" class="sv-m">sync replication</text>
+        <line x1="248" y1="346" x2="292" y2="346" class="sv-line" stroke-width="2"/>
+        <line x1="150" y1="296" x2="150" y2="312" class="sv-line" stroke-width="2"/>
+        <line x1="390" y1="296" x2="390" y2="312" class="sv-line" stroke-width="2"/>
+        <rect x="540" y="110" width="140" height="56" rx="6" class="sv-region" stroke-width="1.5"/>
+        <text x="610" y="132" text-anchor="middle" class="sv-t" font-weight="600">S3</text>
+        <text x="610" y="150" text-anchor="middle" class="sv-m">static、upload、log</text>
+        <rect x="540" y="182" width="140" height="56" rx="6" class="sv-region" stroke-width="1.5"/>
+        <text x="610" y="204" text-anchor="middle" class="sv-t" font-weight="600">SQS</text>
+        <text x="610" y="222" text-anchor="middle" class="sv-m">worker を decouple</text>
+        <rect x="540" y="254" width="140" height="56" rx="6" class="sv-region" stroke-width="1.5"/>
+        <text x="610" y="276" text-anchor="middle" class="sv-t" font-weight="600">CloudWatch</text>
+        <text x="610" y="294" text-anchor="middle" class="sv-m">alarm → ASG, SNS</text>
+        <rect x="540" y="326" width="140" height="56" rx="6" class="sv-region" stroke-width="1.5"/>
+        <text x="610" y="348" text-anchor="middle" class="sv-t" font-weight="600">Gateway endpoint</text>
+        <text x="610" y="366" text-anchor="middle" class="sv-m">S3、DynamoDB は NAT 不要</text>
+        <line x1="488" y1="260" x2="540" y2="210" class="sv-line" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="488" y1="260" x2="540" y2="138" class="sv-line" stroke-width="1.5" stroke-dasharray="3 3"/>
+      </svg>
+      <p style="font-size:.9rem;color:var(--muted)">すべての層に「2」があります。2つの AZ、種類ごとに2つの subnet、ALB は自動で2つの AZ に node を持ち、ASG は instance を2つの AZ に分散し、RDS には standby、ElastiCache には replica、NAT Gateway は2つ。CloudFront、Route 53、S3、SQS、CloudWatch だけは、それ自体で HA を備えた Regional または Global のサービスです。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">よくある single point of failure と直し方</span>
+      <div class="tbl"><table>
+        <tr><th>設問や構成図に現れる兆候</th><th>なぜ壊れるか</th><th>修正</th></tr>
+        <tr><td>VPC 全体で <b>NAT Gateway が1つ</b>（または NAT instance）</td><td>NAT のある AZ が落ちると、もう一方の AZ の instance は稼働していても Internet に出られない。NAT instance は自動復旧しない1台の EC2</td><td>AZ ごとに NAT Gateway を1つ置き、private subnet の route table は同じ AZ の NAT を指す。S3 と DynamoDB は Gateway endpoint 経由にする</td></tr>
+        <tr><td><b>AZ が1つ</b>: すべての subnet が同じ AZ にある</td><td>AZ を失えばすべてを失い、ALB や ASG でも救えない</td><td>2つ目の AZ に subnet を追加し、ASG と ALB で両方を選択、RDS Multi-AZ</td></tr>
+        <tr><td><b>instance が1台</b>（ASG がない、または ASG min = 1）</td><td>instance の障害や deploy 中がそのまま downtime になる。min 1 は障害時に「1 = 0」を意味する</td><td>ALB の背後に2つの AZ にまたがる ASG min 2、ALB と ASG の health check</td></tr>
+        <tr><td><b>RDS Single-AZ</b></td><td>メンテナンス、storage 障害、AZ 喪失のいずれでも downtime。snapshot からの restore には数十分かかり、snapshot 以降のデータを失う</td><td>Multi-AZ を有効化（同期 standby、1〜2分の自動 failover、同じ endpoint）。read replica は Multi-AZ の代わりに<b>ならない</b></td></tr>
+        <tr><td>code 内に instance や database の <b>Hard-coded IP</b></td><td>置き換えた instance は新しい IP を持ち、RDS の failover では裏で IP が変わる。app は古い IP を呼び続ける</td><td>DNS を使う: RDS endpoint、ALB の名前、Route 53 private hosted zone。どうしても IP が必要なら Elastic IP か NLB の static IP</td></tr>
+        <tr><td>session やファイルを instance に保存</td><td>scale in や instance の置き換えで失われる</td><td>session は ElastiCache か DynamoDB へ、ファイルは S3 か EFS へ</td></tr>
+        <tr><td>ElastiCache node が1つ、EFS mount target が1つ</td><td>node が壊れると大量の cache miss や mount 失敗で app がエラーになる</td><td>replica と Multi-AZ auto failover を備えた Redis cluster mode。EFS mount target を各 AZ に置く</td></tr>
+        <tr><td>worker 同士が互いの API を直接（同期）呼ぶ</td><td>1つのサービスが遅いとチェーン全体が落ちる</td><td>tier 間に SQS、retry と DLQ、queue の長さに応じて ASG を scale</td></tr>
+        <tr><td>Region が1つだけなのに、設問は survive Region failure を要求</td><td>DR がない</td><td>RPO と RTO に応じて第2項の DR 戦略を選ぶ</td></tr>
+      </table></div>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">このアーキテクチャのコスト最適化</span>
+        <ul>
+          <li><b>Compute</b>: 安定したベースロードには Savings Plans または Reserved、中断に耐えられる SQS 読み取りの worker には <b>Spot</b>（ASG の mixed instances policy）、時間外はスケジュールで scale in、Compute Optimizer による <b>right sizing</b>、Graviton（t4g、m7g）への変更。</li>
+          <li><b>Storage</b>: S3 Intelligent-Tiering、または古いログを lifecycle で IA と Glacier へ、gp2 → gp3、孤立した snapshot と volume の削除。</li>
+          <li><b>Database</b>: 負荷が不規則なら Aurora Serverless v2、dev 環境の RDS は時間外に停止、読み取りが多いなら DB を scale する前に ElastiCache で cache。</li>
+          <li><b>ネットワーク</b>: CloudFront で Region からの data transfer out を減らす、Gateway endpoint で S3 と DynamoDB が NAT を経由しないようにする（NAT は GB 単位で課金）、通信量の多いリソースは同じ AZ にまとめる。</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">構成図を60秒で読むチェックリスト</span>
+        <ol>
+          <li><b>外側から内側へ読む</b>: ユーザー → DNS → CDN/WAF → load balancer → compute → cache → database → storage → キュー。</li>
+          <li>各層で問う: <b>「2」はあるか？</b> 2つの AZ、2台の instance、2つの NAT、Multi-AZ、replica。「1」のところが RES の答えの候補。</li>
+          <li>問う: 必要ないのに <b>public に置かれているものは何か</b>（RDS、public IP を持つ app の EC2）→ SEC の問題。</li>
+          <li>問う: <b>負荷が変動するのに 24/7 稼働しているものは何か</b>、または安定した負荷に On-Demand で払っていないか → COST の問題。</li>
+          <li>問う: 負荷が10倍になったときの<b>ボトルネック</b>はどこか（DB の読み取り、data transfer、Lambda concurrency）→ PERF の問題。</li>
+          <li>設問の斜体のキーワードを読み直し、要件を満たす中で変更が<b>最も少ない</b>選択肢を選ぶ。</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>single point of failure <b>→ 「1」の箇所を探す</b></span><span>highly available web tier <b>→ ALB + ASG 2 AZ</b></span><span>database failover automatic <b>→ RDS Multi-AZ</b></span><span>instances in private subnet need internet <b>→ AZ ごとに NAT Gateway</b></span><span>application tightly coupled <b>→ SQS</b></span><span>reduce NAT data processing cost <b>→ Gateway endpoint</b></span><span>protect from SQL injection, DDoS <b>→ WAF + Shield + CloudFront</b></span><span>sticky sessions causing uneven load <b>→ stateless + ElastiCache</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">17. 構成図: 2つの AZ に ALB、2つの private subnet に ASG min 2、AZ 1a に NAT Gateway が1つ、RDS Multi-AZ。AZ 1a が落ちたとき、どんな現象が起き、どう直しますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>AZ 1c の instance は ALB から traffic を受け続けるが、唯一の NAT が 1a にあるため Internet への接続（外部 API の呼び出し、package のダウンロード）を失う。</b> 修正: 1c に NAT Gateway を追加し、1c の private subnet の route table を 1c の NAT に向ける。「ALB を追加する」を選ぶ人が多いが、ALB はすでに HA です。</p></div>
+      <div class="q"><p class="qt">18. アプリケーションは設定ファイルに書いた RDS の private IP で database に接続しています。RDS Multi-AZ の failover の後、RDS は稼働しているのに app が接続できません。なぜですか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>failover によって DNS endpoint が別の IP を持つ standby に切り替わったが、app は古い IP を使っている。</b> RDS の DNS endpoint を使い、app 内の DNS キャッシュの TTL を短くして直します。これは確認ポイント2の「hard-coded IP」のひっかけです。</p></div>
+      <div class="q"><p class="qt">19. アーキテクチャでは m5.large の On-Demand instance 20台が1年中 24/7 で安定稼働し、それに加えて SQS から画像を処理する worker instance が30台あります。信頼性を下げずに <em>most cost-effective</em> にする方法を2つ選んでください。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>ベースの20台には Compute Savings Plans（または Reserved）、SQS を読む30台の worker には Spot。</b> web 層を Spot にすると回収されて availability が下がるので誤りです。worker の負荷は変動するので、worker に Reserved を使うのは無駄です。</p></div>
+      <div class="q"><p class="qt">20. 設問の構成図は1つの AZ にある web app です。public な EC2 が1台、同じ public subnet に RDS Single-AZ。最小限の変更で <em>highly available and secure</em> にすることが求められています。必要な作業を挙げてください。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>2つ目の AZ に public と private の subnet を追加、ALB を public に置く、EC2 を private subnet の ASG min 2 に入れる、RDS を private subnet に移して Multi-AZ を有効化、RDS の Security Group は EC2 の SG からのみ受け付ける。</b> よくある誤答: 「read replica を作る」（HA ではない）や「Elastic IP を使う」（instance は1台のまま）。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HANDS-ON ============ -->
+<section id="handson">
+  <span class="eyebrow">ハンズオン</span>
+  <h2>Hands-on: 5つのラボ</h2>
+  <p>Lab 1 では 3-tier アーキテクチャ全体を CDK（TypeScript）で構築します。別の方法として CloudFormation もあります。Lab 1 の <code>cdk synth</code> コマンドはまさに CloudFormation の template を出力するので、実際に見てみたい場合はその template を Console から deploy しても構いません。<b>Lab 1、2、5 は同じ日に行ってください</b>。RDS Multi-AZ、ALB、NAT Gateway はいずれも時間課金です。2〜3時間で構築して削除すれば 1 USD 未満ですが、うっかり一晩放置すると1日あたり約 4〜5 USD かかります。</p>
+
+  <div class="card">
+    <h3>Lab 1. CDK（TypeScript）で 3-tier アーキテクチャを構築する</h3>
+    <ol class="steps">
+      <li><div><p>Node.js LTS と CDK をインストールし、account を bootstrap します（一度だけ実行。CDK 用の bucket と role を作成）:</p>
+<pre><code>winget install --id OpenJS.NodeJS.LTS -e
+npm install -g aws-cdk
+cdk --version
+$env:AWS_PROFILE = "saa"
+aws sts get-caller-identity --query Account --output text
+cdk bootstrap aws://&lt;account-id&gt;/ap-northeast-1</code></pre><p>Bootstrap は <code>CDKToolkit</code> スタック（S3 bucket、ECR repo、いくつかの IAM role）を作成します。費用はほとんどかからないので、次回以降のために残しておきます。</p></div></li>
+      <li><div><p>project を作成します:</p>
+<pre><code>mkdir saa-3tier; cd saa-3tier
+cdk init app --language typescript</code></pre><p><code>lib/saa-3tier-stack.ts</code> を開き、中身をすべて下のコード骨格に置き換えます。deploy する前に各ブロックを読み、第6項の構成図と照らし合わせてください。</p></div></li>
+      <li><div><p>コード骨格（2 AZ の VPC、節約のため NAT は1つ、ALB、private の ASG、最小構成の RDS Multi-AZ、S3、CloudWatch alarm）:</p>
+<pre><code>import * as cdk from 'aws-cdk-lib';
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
+import * as autoscaling from 'aws-cdk-lib/aws-autoscaling';
+import * as rds from 'aws-cdk-lib/aws-rds';
+import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
+
+export class Saa3TierStack extends cdk.Stack {
+  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    // 1. VPC: 2 AZ、3層の subnet。natGateways: 1 は意図的な SPOF で、Lab 4 で直す。
+    const vpc = new ec2.Vpc(this, 'Vpc', {
+      maxAzs: 2, natGateways: 1,
+      subnetConfiguration: [
+        { name: 'public', subnetType: ec2.SubnetType.PUBLIC, cidrMask: 24 },
+        { name: 'app', subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS, cidrMask: 24 },
+        { name: 'db', subnetType: ec2.SubnetType.PRIVATE_ISOLATED, cidrMask: 24 },
+      ],
+    });
+
+    // 2. App tier: private subnet の ASG、user data で web server をインストール
+    const userData = ec2.UserData.forLinux();
+    userData.addCommands(
+      'dnf install -y httpd',
+      'echo "&lt;h1&gt;SAA 3-tier: $(hostname -f)&lt;/h1&gt;" &gt; /var/www/html/index.html',
+      'systemctl enable --now httpd');
+    const asg = new autoscaling.AutoScalingGroup(this, 'Asg', {
+      vpc, vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MICRO),
+      machineImage: ec2.MachineImage.latestAmazonLinux2023(),
+      minCapacity: 2, maxCapacity: 4, userData,
+    });
+    asg.scaleOnCpuUtilization('Cpu', { targetUtilizationPercent: 60 });
+
+    // 3. Web tier: public subnet の internet-facing ALB（自動で 2 AZ に分散）
+    const alb = new elbv2.ApplicationLoadBalancer(this, 'Alb', { vpc, internetFacing: true });
+    const listener = alb.addListener('Http', { port: 80 });
+    listener.addTargets('Web', { port: 80, targets: [asg], healthCheck: { path: '/' } });
+
+    // 4. Data tier: 最小構成の RDS MySQL Multi-AZ、isolated subnet、削除時に snapshot を残さない
+    const db = new rds.DatabaseInstance(this, 'Db', {
+      engine: rds.DatabaseInstanceEngine.mysql({ version: rds.MysqlEngineVersion.VER_8_0 }),
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MICRO),
+      vpc, vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_ISOLATED },
+      multiAz: true, allocatedStorage: 20,
+      removalPolicy: cdk.RemovalPolicy.DESTROY, deleteAutomatedBackups: true,
+    });
+    db.connections.allowDefaultPortFrom(asg);   // DB の SG は ASG の SG からのみ受け付ける
+
+    // 5. S3: bucket に object が残っていても cdk destroy が止まらないよう autoDeleteObjects
+    const bucket = new s3.Bucket(this, 'Assets', {
+      removalPolicy: cdk.RemovalPolicy.DESTROY, autoDeleteObjects: true,
+    });
+    bucket.grantRead(asg);
+
+    // 6. CloudWatch alarm: ALB の 5xx が2分連続で5回を超えたら
+    new cloudwatch.Alarm(this, 'Alb5xx', {
+      metric: alb.metrics.httpCodeElb(elbv2.HttpCodeElb.ELB_5XX_COUNT,
+        { period: cdk.Duration.minutes(1) }),
+      threshold: 5, evaluationPeriods: 2,
+    });
+
+    new cdk.CfnOutput(this, 'AlbDns', { value: alb.loadBalancerDnsName });
+  }
+}</code></pre><p><code>bin/saa-3tier.ts</code> の class 名が異なる場合は <code>Saa3TierStack</code> に合わせて修正します。お使いの CDK のバージョンで <code>MysqlEngineVersion.VER_8_0</code> がエラーになる場合は、エディタが候補に出す具体的な定数（例: <code>VER_8_0_39</code>）か <code>MysqlEngineVersion.of('8.0', '8.0')</code> を使ってください。</p></div></li>
+      <li><div><p>template を確認して deploy します:</p>
+<pre><code>cdk synth &gt; template.yaml      # 生成された CloudFormation を確認し、リソース数を数える
+cdk diff
+cdk deploy --require-approval never</code></pre><p>deploy には約 <b>15〜20分</b>かかり、その大半は RDS Multi-AZ（10〜15分）です。料金計算のために開始時刻を控えておきます。完了すると Output <code>AlbDns</code> が表示されます。</p></div></li>
+      <li><div><p>確認: ブラウザで <code>http://&lt;AlbDns&gt;</code> を開き、何度か再読み込みして hostname が2台の instance の間で切り替わるのを確認します（ALB が2つの AZ に round robin）。Console では、<b>EC2 → Auto Scaling Groups</b> で2つの AZ に public IP のない instance が2台、<b>RDS</b> で Multi-AZ: Yes、<b>CloudWatch → Alarms</b> で alarm が OK または Insufficient data 状態であることを確認します。</p></div></li>
+      <li><div><p>耐障害性を試す: EC2 で ASG の instance を1台 terminate します。1〜2分後に ASG が新しい instance を自動作成し、その間も Web ページは開けたままです。RDS も試します: instance を選択 → Actions → <b>Reboot with failover</b> で、DNS endpoint は変わらず primary の AZ が変わることを確認します。</p></div></li>
+    </ol>
+    <div class="note"><b>deploy 完了時点から課金が始まっています:</b> NAT Gateway（約 0.062 USD/時間）、ALB（約 0.024 USD/時間 + LCU）、RDS db.t3.micro Multi-AZ（約 0.05 USD/時間）、EC2 t3.micro 2台（約 0.027 USD/時間）、public IPv4 アドレス3つ（0.015 USD/時間）。合計約 <b>0.18 USD/時間</b>、つまり1日あたり 4〜5 USD です（東京リージョンの料金、AWSドキュメントで要確認）。Lab 2 が終わったらすぐに Lab 5 を実行してください。</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 2. 構築したアーキテクチャの構成図を描き、Console と照合する</h3>
+    <ol class="steps">
+      <li><div><p><a href="https://app.diagrams.net/" target="_blank" rel="noopener">app.diagrams.net</a>（draw.io）を開き、<b>AWS</b> の shape ライブラリ（More Shapes → AWS 2023）を選ぶか、紙に手描きします。外側から内側への順で描きます: Internet → ALB → ASG → RDS。第6項の構成図のように AZ ごとに1列にします。</p></div></li>
+      <li><div><p>各コンポーネントを Console と照合し、図に<b>実際の値</b>を書き込みます: <b>VPC → Subnets</b>（subnet 6つ、AZ 2つ、どの CIDR か）、<b>Route tables</b>（どの private app subnet がどの NAT を指すか）、<b>NAT gateways</b>（1つ、どの AZ か）、<b>Load Balancers</b>（2 AZ）、<b>Target groups</b>（healthy な target が2つ）、<b>RDS</b>（subnet group、Multi-AZ、primary と standby の AZ）、<b>Security Groups</b>（ALB SG → ASG SG → DB SG の連鎖、port つきの矢印で描く）。</p></div></li>
+      <li><div><p>Lab 1 の <code>template.yaml</code> を開き、リソース数（<code>Type: AWS::</code>）を数えます。「シンプルな」アーキテクチャでも約 40〜50 のリソースになります。これが、試験で常に手作業より IaC が優先される理由です。</p></div></li>
+      <li><div><p>図の中の<b>1つしかない箇所すべて</b>を赤く塗ります: NAT Gateway。これが Lab 4 の入力になります。<code>saa-3tier.drawio</code> として保存するか、紙を撮影して <code>bai-hoc</code> フォルダに入れます。</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Lab 3. このアーキテクチャのコスト最適化案を3つ自分で書く</h3>
+    <ol class="steps">
+      <li><div><p>このアーキテクチャが production で稼働していると仮定します: 安定したベースの instance が4台、加えて SQS から画像を処理する worker、毎月 S3 に 2 TB のログ、夜間は低負荷。<code>bai-hoc/tuan-09-lab3.md</code> に少なくとも3つの案を書き、それぞれに <b>コンポーネント</b>、<b>変更内容</b>、<b>推定節約額</b>、<b>トレードオフ</b> を含めます。</p></div></li>
+      <li><div><p>書き終えてから自己チェックするためのヒント（先に見ないこと）: ベースの4台に Savings Plans、SQS の worker に mixed instances で Spot、Graviton t4g、夜間は scheduled scaling で min を 1 に下げる（HA とのトレードオフであることに注意）、S3 lifecycle でログを30日後に IA、90日後に Glacier へ、S3 の Gateway endpoint で NAT 料金を減らす、gp3、DB の負荷が不規則なら Aurora Serverless v2。</p></div></li>
+      <li><div><p><a href="https://calculator.aws/" target="_blank" rel="noopener">AWS Pricing Calculator</a> で現在のアーキテクチャと最適化後の1か月分を見積もり、2つの数字をファイルに書きます。Console で <b>Cost Explorer → Savings Plans → Recommendations</b> を開き、AWS がどう提案するか見てみます（数日分のデータが必要なので空の場合もあります）。</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Lab 4. 耐障害性を高めるための修正点を3つ自分で書く</h3>
+    <ol class="steps">
+      <li><div><p>Lab 2 の構成図を見て、<code>bai-hoc/tuan-09-lab4.md</code> に少なくとも3点を書き、それぞれに <b>コンポーネント</b>、<b>それが壊れる状況</b>、<b>影響</b>、<b>修正方法</b>、<b>追加コスト</b> を含めます。</p></div></li>
+      <li><div><p>自己チェック用のヒント: 2つ目の NAT Gateway（<code>natGateways: 2</code>）、app に session があるなら session 用の ElastiCache、攻撃の遮断と cache のために ALB の前に CloudFront + WAF、より深い ALB の health check（DB も確認する <code>/health</code>）、CPU の代わりに request per target で ASG を scale、alarm を SNS につないでメール送信、AWS Backup の backup plan で大阪へコピー、SQS に DLQ、domain があれば Route 53 health check。</p></div></li>
+      <li><div><p>code の1行だけを修正します: <code>natGateways: 1</code> を <code>2</code> にし、<code>cdk diff</code> を実行して（deploy はしない）CDK が NAT と Elastic IP を追加し route table を変更することを確認します。diff を読んで、リソースレベルで「SPOF を直す」とはどういうことかを理解します。余計な費用がかからないよう、再 deploy はしません。</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Lab 5. スタック全体を削除して Billing を確認する</h3>
+    <ol class="steps">
+      <li><div><p>Lab 2 の直後に（Lab 1 と同じ日に）スタックを削除します:</p>
+<pre><code>cdk destroy
+# y を入力して確認。約10〜15分かかり、RDS の削除が最も長い</code></pre><p>CloudFormation Console で deploy した場合: <b>CloudFormation → Stacks → スタックを選択 → Delete</b>。</p></div></li>
+      <li><div><p>スタックが <b>DELETE_FAILED</b> 状態になったら、Events タブでどのリソースがエラーかを確認します。よくあるエラーは2つです:</p>
+        <ul>
+          <li><b>Bucket に object が残っている</b>（"The bucket you tried to delete is not empty"）: <code>autoDeleteObjects</code> を有効にしていない場合や、Versioning を中途半端に無効化した場合に起きます。中身を消してから再度削除します: <code>aws s3 rm s3://&lt;bucket&gt; --recursive</code>（Versioning が有効な bucket は Console → Empty bucket）、その後もう一度 <code>cdk destroy</code>。または Console で Delete を選び、その bucket の「retain」にチェックを入れてから bucket を手動で削除します。</li>
+          <li><b>RDS に deletion protection がある、または snapshot が残っている</b>: Modify で Deletion protection を無効にしてから再度削除します。手動 snapshot は自動では削除されないので、RDS → Snapshots で手動で削除します。</li>
+        </ul></div></li>
+      <li><div><p>時間課金のリソースが残っていないことを CLI で確認します:</p>
+<pre><code>aws ec2 describe-nat-gateways --filter Name=state,Values=available --query "NatGateways[].NatGatewayId"
+aws elbv2 describe-load-balancers --query "LoadBalancers[].LoadBalancerName"
+aws rds describe-db-instances --query "DBInstances[].DBInstanceIdentifier"
+aws ec2 describe-instances --filters Name=instance-state-name,Values=running --query "Reservations[].Instances[].InstanceId"
+aws ec2 describe-addresses --query "Addresses[?AssociationId==null].PublicIp"
+aws ec2 describe-volumes --filters Name=status,Values=available --query "Volumes[].VolumeId"
+aws rds describe-db-snapshots --snapshot-type manual --query "DBSnapshots[].DBSnapshotIdentifier"</code></pre><p>すべて <code>[]</code> を返す必要があります。何にも関連付けられていない Elastic IP と「available」状態の EBS volume が、最も消し忘れやすい2つです。</p></div></li>
+      <li><div><p><code>CDKToolkit</code> スタック（bootstrap）はほとんど費用がかからないので残しておきます。完全に片付けたい場合は、先に bucket <code>cdk-hnb659fds-assets-...</code> を空にしてからそのスタックを削除します。</p></div></li>
+      <li><div><p>翌日に <b>Billing and Cost Management → Bills</b> と <b>Cost Explorer</b>（日付で絞り込み、Service で group by）を開きます: EC2-Other（NAT、EBS）、Elastic Load Balancing、RDS、VPC が表示されます。今週の合計は 5 USD 未満のはずです。翌日も RDS や NAT の料金が発生している場合はリソースが残っているので、手順3に戻ります。</p></div></li>
+    </ol>
+    <div class="note ok">これがロードマップで費用のかかる最後のラボです。第10〜12週は問題演習だけで、何も構築する必要はありません。請求額を確認したら、Budget を 1 USD に下げて、消し忘れのリソースがあればすぐに気づけるようにしてもよいでしょう。</div>
+  </div>
+</section>
+
+<!-- ============ MỐC KIỂM TRA ============ -->
+<section id="moc">
+  <span class="eyebrow">確認ポイント</span>
+  <h2>資料を見ずに自分で説明できなければならない2つの問い</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>1. 4つの DR 戦略と対応するコストを説明する</h3>
+      <p style="font-size:.94rem">回答の骨組みのヒント（隠してから自分で話してみる）:</p>
+      <ul style="font-size:.94rem">
+        <li><b>RPO</b>（どれだけデータを失うか）と <b>RTO</b>（どれだけ停止するか）の定義から始める。2つの数字は業務側が決める。</li>
+        <li><b>Backup and restore</b>: DR Region には backup だけ。RPO と RTO は時間単位、最も安い。サービス: AWS Backup、S3 CRR、AMI copy、CloudFormation。</li>
+        <li><b>Pilot light</b>: DB は replicate 済み、compute は停止。RPO 分、RTO 数十分、コストは低い。サービス: RDS cross-Region replica、Elastic Disaster Recovery。</li>
+        <li><b>Warm standby</b>: 縮小版が稼働していて処理できる。RPO 秒、RTO 分、コストは中程度。サービス: Aurora Global Database、小さい ASG、Route 53 failover。</li>
+        <li><b>Multi-site active-active</b>: 2つの Region が同時に処理。RPO と RTO はほぼ 0、最も高い。サービス: DynamoDB Global Tables、Route 53 latency または weighted と health check。</li>
+        <li>選択ルールで締めくくる: 設問の RPO と RTO の両方を満たす中で<b>最も安い</b>戦略を選ぶ。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>2. アーキテクチャを見て single point of failure を指摘する</h3>
+      <p style="font-size:.94rem">回答の骨組みのヒント:</p>
+      <ul style="font-size:.94rem">
+        <li><b>外側から内側へ</b>読む: DNS → CDN/WAF → load balancer → compute → cache → DB → storage → queue。</li>
+        <li>各層で「<b>2はあるか</b>」と問う: 2つの AZ、2台の instance（ASG min 2）、2つの NAT Gateway、RDS Multi-AZ、replica を持つ cache、各 AZ の EFS mount target。</li>
+        <li>典型的な5つの SPOF を挙げられる: NAT が1つ、AZ が1つ、instance が1台、RDS Single-AZ、hard-coded IP。さらに instance 上の session と、サービス間の同期呼び出し。</li>
+        <li>各 SPOF について、直し方とその代償をすぐに言う: AZ ごとの NAT（時間料金が増える）、Multi-AZ（RDS が2倍）、ASG min 2（instance が1台増える）。</li>
+        <li>設問が「survive Region failure」を問うときは、HA（Multi-AZ、自動）と DR（Multi-Region、RPO/RTO に基づく）を区別する。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TỪ KHÓA ============ -->
+<section id="tukhoa">
+  <span class="eyebrow">クイックレビュー</span>
+  <h2>第9週のキーワード表</h2>
+  <div class="tbl"><table>
+    <tr><th>設問に出る語句</th><th>すぐに思い浮かべるもの</th></tr>
+    <tr><td><em>review workload against best practices</em>, <em>high risk issues</em></td><td>AWS Well-Architected Tool</td></tr>
+    <tr><td><em>RPO</em> / <em>RTO</em></td><td>許容できるデータ損失量（backup 周期、replicate）/ 許容できる停止時間（DR インフラをどこまで事前に稼働させるか）</td></tr>
+    <tr><td><em>lowest cost</em>、RPO と RTO が時間単位</td><td>Backup and restore（AWS Backup、S3 CRR、AMI copy）</td></tr>
+    <tr><td><em>minimal core running</em>、RTO 数十分</td><td>Pilot light</td></tr>
+    <tr><td><em>scaled-down but fully functional</em>、RTO 分</td><td>Warm standby</td></tr>
+    <tr><td><em>near-zero RPO/RTO</em>, <em>serve users from both regions</em></td><td>Multi-site active-active（DynamoDB Global Tables、Route 53）</td></tr>
+    <tr><td><em>cross-Region database, sub-second replication, fast failover</em></td><td>Aurora Global Database</td></tr>
+    <tr><td><em>continuous block-level replication, failback, on-premises servers</em></td><td>AWS Elastic Disaster Recovery</td></tr>
+    <tr><td><em>lift-and-shift</em>, <em>minimal downtime</em>、数百台のサーバー</td><td>Application Migration Service による Rehost</td></tr>
+    <tr><td><em>managed database without code change</em></td><td>Replatform（RDS、Elastic Beanstalk）</td></tr>
+    <tr><td><em>track migration progress centrally</em></td><td>Migration Hub</td></tr>
+    <tr><td><em>server inventory, dependencies, utilization</em></td><td>Application Discovery Service</td></tr>
+    <tr><td><em>business case, TCO</em></td><td>Migration Evaluator</td></tr>
+    <tr><td><em>heterogeneous database migration</em></td><td>SCT + DMS (CDC)</td></tr>
+    <tr><td><em>petabytes, limited bandwidth, offline</em></td><td>Snowball Edge</td></tr>
+    <tr><td><em>NFS/SMB to S3/EFS, scheduled, preserve metadata</em></td><td>DataSync</td></tr>
+    <tr><td><em>SQL on S3, serverless, pay per data scanned</em></td><td>Athena（安くするには + Parquet、partition）</td></tr>
+    <tr><td><em>ETL</em>, <em>crawler</em>, <em>data catalog</em></td><td>Glue</td></tr>
+    <tr><td><em>BI dashboards</em>, <em>SPICE</em></td><td>QuickSight</td></tr>
+    <tr><td><em>Hadoop, Spark</em>, <em>task nodes on Spot</em></td><td>EMR</td></tr>
+    <tr><td><em>full-text search, log analytics dashboards</em></td><td>OpenSearch Service</td></tr>
+    <tr><td><em>column-level permissions on data lake</em></td><td>Lake Formation</td></tr>
+    <tr><td><em>images, video, content moderation</em></td><td>Rekognition</td></tr>
+    <tr><td><em>sentiment, entities, PII in text</em></td><td>Comprehend</td></tr>
+    <tr><td><em>speech to text</em> / <em>text to speech</em></td><td>Transcribe / Polly</td></tr>
+    <tr><td><em>forms, tables, invoices from scans</em></td><td>Textract</td></tr>
+    <tr><td><em>chatbot</em> / <em>enterprise search</em> / <em>recommendations</em></td><td>Lex / Kendra / Personalize</td></tr>
+    <tr><td><em>train and deploy custom model</em> / <em>foundation models</em></td><td>SageMaker / Bedrock</td></tr>
+    <tr><td><em>single point of failure</em></td><td>「1」の箇所を探す: NAT、AZ、instance、RDS Single-AZ、hard-coded IP</td></tr>
+    <tr><td><em>reduce NAT Gateway data processing charges</em></td><td>S3、DynamoDB 向けの Gateway endpoint</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ CHECKLIST ============ -->
+<section id="checklist">
+  <span class="eyebrow">進捗</span>
+  <h2>第9週チェックリスト</h2>
+  <p style="font-size:.94rem;color:var(--muted)">ここでチェックすると、この端末上で進捗を記録できます。項目が終わったら、セッションで Claude に伝えて <code>AWS-SAA-checklist.md</code> にチェックを入れてもらいます。</p>
+  <div class="card">
+    <h4>理論</h4>
+    <label class="check"><input type="checkbox" id="c1" data-ck><span>Well-Architected Framework: 6本の柱、Well-Architected Tool、6つの共通原則</span></label>
+    <label class="check"><input type="checkbox" id="c2" data-ck><span>Disaster recovery: RPO、RTO、4つの戦略と支えるサービス</span></label>
+    <label class="check"><input type="checkbox" id="c3" data-ck><span>Migration 7R、Migration Hub、Application Migration Service、Discovery、DMS、Snow、DataSync</span></label>
+    <label class="check"><input type="checkbox" id="c4" data-ck><span>Analytics の見分け方: Athena、Glue、QuickSight、EMR、OpenSearch、Lake Formation</span></label>
+    <label class="check"><input type="checkbox" id="c5" data-ck><span>ML services の見分け方: Rekognition、Comprehend、Transcribe、Polly、Textract、SageMaker、Bedrock</span></label>
+    <label class="check"><input type="checkbox" id="c6" data-ck><span>標準的な 3-tier アーキテクチャ、よくある SPOF、構成図を読むチェックリスト</span></label>
+    <h4>Hands-on</h4>
+    <label class="check"><input type="checkbox" id="c7" data-ck><span>CDK または CloudFormation で 3-tier アーキテクチャを構築: ALB、private の ASG、RDS Multi-AZ、S3、CloudWatch alarm</span></label>
+    <label class="check"><input type="checkbox" id="c8" data-ck><span>構築したアーキテクチャの構成図を描き、Console と照合する</span></label>
+    <label class="check"><input type="checkbox" id="c9" data-ck><span>このアーキテクチャのコスト最適化案を3つ自分で書く</span></label>
+    <label class="check"><input type="checkbox" id="c10" data-ck><span>耐障害性を高めるための修正点を3つ自分で書く</span></label>
+    <label class="check"><input type="checkbox" id="c11" data-ck><span>スタック全体を削除し、CLI と Billing でリソースの消し忘れがないことを確認する</span></label>
+    <h4>確認ポイント</h4>
+    <label class="check"><input type="checkbox" id="c12" data-ck><span>4つの DR 戦略と対応するコストを説明できる</span></label>
+    <label class="check"><input type="checkbox" id="c13" data-ck><span>アーキテクチャを見て single point of failure を指摘できる</span></label>
+    <h4>その他</h4>
+    <label class="check"><input type="checkbox" id="c14" data-ck><span>第9週のクイズで 80% 以上</span></label>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  // Xem đáp án
+  document.querySelectorAll('[data-reveal]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var a=b.parentElement.querySelector('.ans');
+      a.hidden=!a.hidden; b.textContent=a.hidden?'答えを見る':'答えを隠す';
+    });
+  });
+  // Checklist lưu trên máy này
+  var boxes=document.querySelectorAll('[data-ck]'), KEY='saa-tuan-09';
+  var saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  function update(){
+    var n=0; boxes.forEach(function(c){ c.closest('.check').classList.toggle('done',c.checked); if(c.checked)n++; });
+    document.getElementById('bar').style.width=(n/boxes.length*100)+'%';
+    document.getElementById('pct').textContent=n+'/'+boxes.length;
+  }
+  boxes.forEach(function(c){
+    if(saved[c.id])c.checked=true;
+    c.addEventListener('change',function(){ saved[c.id]=c.checked; try{ localStorage.setItem(KEY,JSON.stringify(saved)); }catch(e){} update(); });
+  });
+  update();
+  // Đánh dấu mục đang đọc
+  var links=document.querySelectorAll('.toc a'), secs=[];
+  links.forEach(function(l){ var s=document.querySelector(l.getAttribute('href')); if(s)secs.push([s,l]); });
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ links.forEach(function(l){l.classList.remove('active')}); secs.forEach(function(p){ if(p[0]===e.target)p[1].classList.add('active'); }); } }); },{rootMargin:'-20% 0px -70% 0px'});
+    secs.forEach(function(p){ io.observe(p[0]); });
+  }
+})();
+</script>

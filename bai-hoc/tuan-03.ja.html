@@ -1,0 +1,876 @@
+<title>SAA 第3週 S3 Storage</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky mục lục bên trái (desktop), cột nội dung 760px bên phải; xếp một cột ở màn hẹp. */
+:root{
+  --bg:#f2f4f7; --surface:#ffffff; --surface-2:#e9edf2; --line:#d3dae3;
+  --fg:#172030; --muted:#5a6676; --accent:#1c6e8c; --accent-soft:#dcecf3;
+  --warm:#b35a00; --warm-soft:#fbe9d6; --ok:#2a7d4f; --ok-soft:#dcf0e4; --bad:#b3362b; --bad-soft:#f8dedb;
+  --display:"Manrope","IBM Plex Sans",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+a{color:var(--accent)}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:800}
+h2{font-size:1.5rem;font-weight:800;padding-top:8px}
+h3{font-size:1.12rem;font-weight:700}
+h4{font-size:.95rem;font-weight:700}
+p{margin:0}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+pre{font-family:var(--mono);font-size:.84rem;line-height:1.5;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:0}
+pre code{background:none;padding:0;font-size:inherit}
+em{color:var(--warm);font-style:italic}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* Header */
+.hero{max-width:1120px;margin:0 auto;padding-block:36px 20px;display:flex;flex-direction:column;gap:12px}
+.hero .lead{max-width:62ch;color:var(--muted);font-size:1.02rem}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.88rem;color:var(--muted)}
+.meta b{color:var(--fg);font-weight:600}
+.progress{display:flex;align-items:center;gap:12px;font-size:.88rem;color:var(--muted)}
+.bar{flex:1;max-width:320px;height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+
+/* Two columns */
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;align-items:start}
+.toc{position:sticky;top:max(12px,env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:2px;font-size:.9rem}
+.toc a{color:var(--muted);text-decoration:none;padding:6px 10px;border-left:2px solid var(--line);display:block}
+.toc a:hover,.toc a.active{color:var(--fg);border-left-color:var(--accent)}
+.toc .grp{margin-top:10px}
+main{display:flex;flex-direction:column;gap:56px;min-width:0;max-width:780px}
+section{display:flex;flex-direction:column;gap:18px;scroll-margin-top:16px}
+@media (max-width:860px){ .wrap{grid-template-columns:1fr;gap:24px} .toc{position:static;flex-direction:row;flex-wrap:wrap;gap:6px} .toc a{border:1px solid var(--line);border-radius:99px;padding:4px 10px} .toc .grp{margin:0} .toc a.active{border-color:var(--accent)} }
+
+/* Blocks */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.block{display:flex;flex-direction:column;gap:8px}
+.block > .eyebrow{color:var(--accent)}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:5px}
+li::marker{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.kw{display:flex;flex-wrap:wrap;gap:8px}
+.kw span{background:var(--warm-soft);color:var(--warm);border-radius:4px;padding:3px 9px;font-size:.86rem;font-style:italic}
+.kw span b{font-style:normal;font-weight:600;color:var(--fg)}
+.note{border-left:3px solid var(--warm);background:var(--warm-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.94rem}
+.note.ok{border-color:var(--ok);background:var(--ok-soft)}
+.note.bad{border-color:var(--bad);background:var(--bad-soft)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;font-size:.84rem}
+tr:last-child td{border-bottom:0}
+td.c{text-align:center}
+
+/* Checklist */
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:6px;cursor:pointer}
+.check:hover{background:var(--surface-2)}
+.check input{margin-top:5px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.check.done{color:var(--muted);text-decoration:line-through}
+
+/* Quiz reveal */
+.q{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.q .qt{font-weight:500}
+.q button{align-self:flex-start;font:inherit;font-size:.86rem;padding:5px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer}
+.q button:hover{background:var(--accent);color:var(--surface)}
+.q button:focus-visible,.check input:focus-visible,.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.q .ans{font-size:.94rem;border-top:1px dashed var(--line);padding-top:8px}
+.q .ans b{color:var(--ok)}
+
+/* Steps */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:12px;padding:0;list-style:none}
+.steps li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:start}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--mono);font-size:.8rem;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:500;margin-top:2px}
+.steps li > div{display:flex;flex-direction:column;gap:6px;min-width:0}
+
+/* Flow diagram */
+.flow{display:flex;flex-direction:column;gap:0;align-items:stretch;max-width:520px}
+.flow .n{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:.94rem}
+.flow .n .tag{font-family:var(--mono);font-size:.74rem;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.tag.deny{background:var(--bad-soft);color:var(--bad)} .tag.allow{background:var(--ok-soft);color:var(--ok)} .tag.next{background:var(--surface-2);color:var(--muted)}
+.flow .arrow{height:22px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--mono);font-size:.78rem}
+.flow .arrow::before{content:"";width:1px;height:100%;background:var(--line);position:absolute}
+.flow .arrow{position:relative} .flow .arrow span{background:var(--bg);padding:0 6px;position:relative}
+
+svg text{font-family:var(--body)}
+.diag{overflow-x:auto}
+.diag svg{width:100%;max-width:700px;height:auto;display:block}
+.sv-region{fill:var(--surface);stroke:var(--accent)} .sv-az{fill:var(--accent-soft);stroke:var(--accent)} .sv-edge{fill:var(--warm-soft);stroke:var(--warm)}
+.sv-t{fill:var(--fg);font-size:13px} .sv-m{fill:var(--muted);font-size:11px} .sv-line{stroke:var(--line)}
+@media (prefers-reduced-motion: reduce){ .bar i{transition:none} }
+</style>
+
+<header class="hero">
+  <span class="eyebrow">AWS SAA-C03 · 12週間ロードマップ · 第3週</span>
+  <h1>S3 とデータ移行</h1>
+  <p class="lead">第3週は Compute と Storage ブロックの後半です。第2週で EC2、EBS、AMI、instance store、EFS、FSx を終えたので、今週は S3（storage class、lifecycle、versioning、replication、セキュリティ、周辺機能）と、オンプレミスから AWS へデータを運ぶサービス群（Storage Gateway、Snow family、DataSync、AWS Backup）にまるごと使います。週末の目標は、設問を読んだ瞬間に正しいストレージ種別と storage class を選べるようになることです。</p>
+  <div class="meta"><span>学習ペース: <b>1日 1.5〜2時間</b></span><span>関連ドメイン: <b>RES 26%</b>, <b>COST 20%</b>, <b>SEC 30%</b></span><span>今週のラボ費用: <b>ほぼ 0 USD</b>（S3 に数 MB、時間課金のリソースなし）</span></div>
+  <div class="progress"><span>チェックリスト進捗</span><div class="bar"><i id="bar"></i></div><span id="pct">0/14</span></div>
+</header>
+
+<div class="wrap">
+<nav class="toc" aria-label="目次">
+  <a href="#ke-hoach">7日間の計画</a>
+  <span class="grp eyebrow">理論</span>
+  <a href="#s3-class">1. S3 の基本、storage class</a>
+  <a href="#s3-lifecycle">2. Lifecycle、versioning、replication</a>
+  <a href="#s3-security">3. S3 のセキュリティ</a>
+  <a href="#s3-features">4. S3 のその他の機能</a>
+  <a href="#hybrid">5. ハイブリッドとデータ移行</a>
+  <span class="grp eyebrow">ハンズオン</span>
+  <a href="#handson">Hands-on 5 ラボ</a>
+  <a href="#moc">確認ポイント</a>
+  <a href="#tukhoa">試験キーワード表</a>
+  <a href="#checklist">週のチェックリスト</a>
+</nav>
+
+<main>
+
+<section id="ke-hoach">
+  <h2>7日間の計画</h2>
+  <p>毎日、理論を1項目学んでから対応するラボを行います。6〜7日目は第2〜3週ブロック全体を復習し、40問の合同クイズに取り組みます。</p>
+  <div class="tbl"><table>
+    <tr><th>日</th><th>理論</th><th>Hands-on</th></tr>
+    <tr><td>1</td><td>S3 の基本、storage class、class 選択表</td><td>Lab 1: static website、versioning、上書きアップロードと旧バージョンの復元</td></tr>
+    <tr><td>2</td><td>Lifecycle、versioning、replication、Object Lock、MFA Delete</td><td>Lab 2: 30日後に Glacier へ移す lifecycle rule、noncurrent version の expire</td></tr>
+    <tr><td>3</td><td>S3 のセキュリティ: bucket policy、Block Public Access、encryption</td><td>Lab 4: SSE-KMS を強制し public を遮断する bucket policy、CLI で検証</td></tr>
+    <tr><td>4</td><td>Presigned URL、Transfer Acceleration、multipart、event notification</td><td>Lab 3: <code>aws s3 presign</code>、ブラウザで開く、期限切れ後に試す</td></tr>
+    <tr><td>5</td><td>Storage Gateway、Snow family、DataSync、AWS Backup、Transfer Family</td><td>Lab 5: version 付き bucket の片付け、残った EC2/EBS/EFS の削除、Billing の確認</td></tr>
+    <tr><td>6〜7</td><td>ブロックの確認ポイント2つを復習、第2週と第3週のキーワードを読み直す</td><td>セッションで「クイズをください」と言って <code>quiz/tuan-02-03.md</code>（40問）を受け取る、80% 以上が必要</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ 1. S3 の基本と STORAGE CLASS ============ -->
+<section id="s3-class">
+  <span class="eyebrow">理論 1 / 5</span>
+  <h2>S3 の基本と storage class</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <ul>
+        <li><b>Object storage</b>: S3 は <b>object</b>（データ + metadata）を <b>bucket</b> に保存し、<b>key</b> で識別します。Key は <code>logs/2026/10/app.log</code> のようなフラットな文字列で、<code>/</code> は名前の一部の文字にすぎません。Console は見やすさのために「フォルダ」として描画しますが、実際のディレクトリはありません。ディスクのようにマウントできず、object の一部だけを書き換えることもできません。内容を変えたいときは object 全体を再アップロードします。</li>
+        <li><b>Bucket</b>: 名前は全世界で一意、3〜63文字の小文字、1つの Region 内に存在します（データが勝手に Region の外へ出ることはありません）。デフォルトは1アカウントあたり 100 bucket で、引き上げ申請ができます（現在の上限は要確認）。Bucket は Region レベルのリソースですが、S3 Console には全 Region の bucket が表示されます。</li>
+        <li><b>Object</b>: 最大 <b>5 TB</b>。1回の PUT は通常最大 <b>5 GB</b> で、5 GB を超える場合は <b>multipart upload</b> が必須です（項目4）。Object 数と容量に上限はなく、事前の申告も不要です。</li>
+        <li><b>Durability</b> はすべての storage class で 99.999999999%（<b>11 nines</b>）: データは複数の AZ に冗長化して書き込まれます（One Zone-IA だけは1 AZ ですが、その AZ 内では同じく 11 nines）。Object が失われることはほぼありません。Class 間で違うのは <b>availability</b>（今すぐアクセスできるか）と価格です。</li>
+        <li><b>Consistency</b>: 2020年末以降、S3 はすべての PUT、DELETE、LIST で <b>strong read-after-write</b> です。書き込んだ直後に読めば新しい版が見え、list すれば新しい object が見えます。古い問題にある「overwrite は eventual consistency」はすでに時代遅れです。</li>
+        <li>アクセス手段: HTTPS 経由の REST API、SDK、CLI（<code>aws s3</code> は高レベル、<code>aws s3api</code> は低レベルのコマンド）、Console。課金は保存量の GB・月、request 数（PUT/GET）、Internet へのデータ転送量、コールド class の retrieval 料金です。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Storage class 一覧（必ず覚える）</span>
+      <div class="tbl"><table>
+        <tr><th>Class</th><th>Availability</th><th>AZ 数</th><th>Min duration</th><th>Retrieval 料金</th><th>用途</th></tr>
+        <tr><td><b>Standard</b></td><td>99.99%</td><td class="c">≥3</td><td>なし</td><td>なし</td><td>頻繁にアクセスするデータ: web、app、big data、content。デフォルト。</td></tr>
+        <tr><td><b>Standard-IA</b></td><td>99.9%</td><td class="c">≥3</td><td>30日</td><td>あり（GB 単位）</td><td>アクセスは少ないが必要時に <em>immediate access</em> が要る: backup、DR、古いファイル。保存料金は Standard より 40〜45% ほど安い。</td></tr>
+        <tr><td><b>One Zone-IA</b></td><td>99.5%</td><td class="c">1</td><td>30日</td><td>あり</td><td>アクセスが少なく <b>再生成できる</b> データ（thumbnail、2つ目のコピー）。AZ が失われると消える。Standard-IA より 20% ほど安い。</td></tr>
+        <tr><td><b>Intelligent-Tiering</b></td><td>99.9%</td><td class="c">≥3</td><td>なし</td><td>なし</td><td>Access pattern が <em>unknown</em> または <em>changing</em>。S3 が最終アクセスに応じて tier を自動で移し、object ごとに少額の monitoring 料金を月額で課金。</td></tr>
+        <tr><td><b>Glacier Instant Retrieval</b></td><td>99.9%</td><td class="c">≥3</td><td>90日</td><td>あり</td><td>四半期に1回程度アクセスするが <em>milliseconds</em> で必要な archive: 医療画像、news media。Standard-IA より安く、retrieval 料金は高い。</td></tr>
+        <tr><td><b>Glacier Flexible Retrieval</b></td><td>99.99%（restore 後）</td><td class="c">≥3</td><td>90日</td><td>あり</td><td>年 1〜2回の archive で、数分〜数時間の待ちを許容できる。3つの restore 速度あり（下記参照）。</td></tr>
+        <tr><td><b>Glacier Deep Archive</b></td><td>99.99%（restore 後）</td><td class="c">≥3</td><td>180日</td><td>あり</td><td>最安。法規制で 7〜10年保管、待ち時間は <b>12時間</b> 以上。磁気テープの代替。</td></tr>
+      </table></div>
+      <p style="font-size:.92rem;color:var(--muted)">Min duration とは、それより早く削除や class 変更をしても、その日数分の料金が課金されるという意味です。Standard-IA と One Zone-IA はさらに object ごとに最低 <b>128 KB</b> で課金されるため、小さな object を IA に置くと Standard より高くつくことがあります。価格の割合は目安で、S3 の料金ページで要確認です。</p>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Intelligent-Tiering: 各 tier</span>
+        <ul>
+          <li><b>Frequent Access</b>: アップロード時のデフォルト tier。</li>
+          <li><b>Infrequent Access</b>: <b>30日</b> アクセスがないと自動で移動。</li>
+          <li><b>Archive Instant Access</b>: <b>90日</b> アクセスがないと移動、それでも即時（ms）で読める。</li>
+          <li><b>Archive Access</b>（任意、追加で有効化）: 90〜730日後、restore に数分〜数時間。</li>
+          <li><b>Deep Archive Access</b>（任意）: 180〜730日後、restore に 12時間。</li>
+          <li>再アクセスすると自動で Frequent に戻る。Retrieval 料金なし、min duration なし、object ごとの monitoring 料金のみ。128 KB 未満の object は monitoring されず、常に Frequent にとどまる。</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Glacier Flexible Retrieval: 3つの restore 速度</span>
+        <ul>
+          <li><b>Expedited</b>: 1〜5分、最も高い。ピーク時にも確実に容量を確保したいなら <b>Provisioned Capacity</b> を購入。</li>
+          <li><b>Standard</b>: 3〜5時間、デフォルト。</li>
+          <li><b>Bulk</b>: 5〜12時間、最も安い（Flexible Retrieval では retrieval 無料）。</li>
+          <li><b>Deep Archive</b> は Standard（<b>12時間</b>）と Bulk（<b>48時間</b>）のみで、Expedited はない。</li>
+          <li>Restore は指定した日数だけ Standard に一時コピーを作るもので、元の object は Glacier に残る。「restore したのに数日後にコピーが消えた」という設問は、restore の期限切れが原因。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">設問キーワードによる class 選択表（確認ポイント2）</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td><em>frequently accessed</em>、コストへの言及なし</td><td>Standard</td><td>Intelligent-Tiering（monitoring 料金が無駄）</td></tr>
+        <tr><td><em>infrequently accessed</em> + <em>immediately available</em> + <em>highly available</em></td><td>Standard-IA</td><td>One Zone-IA（AZ 障害で消える）、Glacier（待ちが必要）</td></tr>
+        <tr><td><em>infrequently accessed</em> + <em>can be recreated</em> / <em>non-critical</em> + <em>lowest cost</em></td><td>One Zone-IA</td><td>Standard-IA（再生成できるデータには割高）</td></tr>
+        <tr><td><em>unknown</em> または <em>unpredictable access pattern</em>、<em>without operational overhead</em></td><td>Intelligent-Tiering</td><td>自作の lifecycle（overhead、pattern を知る必要あり）</td></tr>
+        <tr><td><em>archive</em> + <em>millisecond access</em> + <em>accessed once a quarter</em></td><td>Glacier Instant Retrieval</td><td>Flexible Retrieval（数分〜数時間待つ）</td></tr>
+        <tr><td><em>archive</em> + 急ぎのときに <em>retrieve within minutes</em></td><td>Glacier Flexible Retrieval + Expedited</td><td>Deep Archive（Expedited がない）</td></tr>
+        <tr><td><em>archive</em> + <em>within a few hours</em>、許容できる範囲で <em>lowest cost</em></td><td>Glacier Flexible Retrieval（Standard または Bulk）</td><td>設問が「数時間」なら Deep Archive は不可（12時間は長すぎる）</td></tr>
+        <tr><td><em>retain for 7 years</em>、<em>rarely accessed</em>、<em>retrieval time of 12 to 48 hours acceptable</em>、<em>lowest cost</em></td><td>Glacier Deep Archive</td><td>Flexible Retrieval（より高い）</td></tr>
+        <tr><td><em>under 30 days</em> で削除するデータ、数回アクセス</td><td>Standard（IA は最低 30日課金なので安くならない）</td><td>Standard-IA</td></tr>
+        <tr><td>数 KB の小さな object が大量、アクセスは少ない</td><td>Standard または Intelligent-Tiering、ファイル結合を検討</td><td>Standard-IA（object ごとに最低 128 KB 課金）</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>ペア</th><th>違い</th></tr>
+        <tr><td>S3 と EBS / EFS（第2週の復習）</td><td>S3 は HTTP API でアクセスする object storage で、マウントできず、boot volume にも database file にも使えません。EBS は block で、1つの AZ 内の1台の EC2 にアタッチします。EFS は NFS のファイルで、複数 AZ の複数 EC2 からマウントできます。4種類の詳細な比較表は確認ポイント1にあります。</td></tr>
+        <tr><td>Durability と availability</td><td>Durability は「データを失わない」ことで、すべての class が 11 nines。Availability は「呼んだときに返ってくるか」で、Standard は 99.99%、One Zone-IA は 99.5%。設問が <em>durable</em> を問うならどの class でも満たし、<em>available</em> を問うなら One Zone-IA を外します。</td></tr>
+        <tr><td>Glacier Instant と Glacier Flexible</td><td>Instant は Standard-IA と同じく即時に読めて保存料金は安く、retrieval 料金は高く、min 90日。Flexible は restore を呼んで待つ必要があります。どちらも S3 の storage class です（旧 Amazon S3 Glacier サービスの独立した「Glacier vault」ではありません）。</td></tr>
+        <tr><td>Intelligent-Tiering と lifecycle rule</td><td>Intelligent-Tiering は最終アクセスに基づいて <b>object 単位</b> で双方向に自動移動。Lifecycle は object の <b>経過日数</b> で一方向に移動し、日数は自分で決めます。設問が <em>unknown pattern</em> → Intelligent-Tiering、<em>after 30 days move to</em> → lifecycle。</td></tr>
+        <tr><td>Standard-IA と Glacier Instant Retrieval</td><td>どちらも即時に読めます。IA は月単位程度でアクセスするデータ、Glacier IR は四半期単位程度でアクセスするデータ向け。Glacier IR は保存が安い一方で retrieval が高く、min 90日。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>11 nines durability <b>→ S3 の全 class</b></span><span>unknown access pattern <b>→ Intelligent-Tiering</b></span><span>infrequent, immediate access <b>→ Standard-IA</b></span><span>recreatable, lowest cost <b>→ One Zone-IA</b></span><span>archive, milliseconds <b>→ Glacier Instant Retrieval</b></span><span>retrieve in minutes <b>→ Glacier Flexible + Expedited</b></span><span>12 hours, 7 years, cheapest <b>→ Glacier Deep Archive</b></span><span>object up to 5 TB <b>→ S3（5 GB 超は multipart）</b></span><span>strong consistency <b>→ S3 のデフォルト</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">1. ある会社が thumbnail 画像の2つ目のコピー（元画像から再生成できる）を保存し、月に数回しか閲覧しません。<em>most cost-effective</em> が必要です。どの class を選びますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>S3 One Zone-IA。</b> アクセスが少なく再生成できるデータなので、1 AZ でも許容できます。Standard-IA は「より安全」という理由で選ばれがちですが、設問はコストを強調し、データは重要ではありません。Glacier は待ちが必要で「閲覧」に合いません。</p></div>
+      <div class="q"><p class="qt">2. 医療記録を10年間保管し、ほぼ読むことはありませんが、法的要請があれば24時間以内に取り出せる必要があります。<em>lowest cost</em> には何を選びますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>S3 Glacier Deep Archive。</b> Deep Archive の Standard restore は12時間で、24時間以内に収まります。設問が「数時間以内」と言っている場合にはじめて Glacier Flexible Retrieval に上げる必要があります。罠: 念のため Flexible Retrieval を選ぶと、保存料金が約4倍高くなります。</p></div>
+      <div class="q"><p class="qt">3. あるアプリが 20 KB の log object を書き込み、20日間保持してから削除し、各 object は2〜3回読まれます。チームは安くするために Standard-IA に置くことを提案しました。どう評価しますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>誤りで、Standard に置くべきです。</b> Standard-IA は object ごとに最低30日と 128 KB で課金されます。20日目に削除しても 128 KB 分の30日が丸ごと課金され、さらに読むたびに retrieval 料金がかかります。小さく短命な object では IA は Standard より高くなります。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. LIFECYCLE, VERSIONING, REPLICATION ============ -->
+<section id="s3-lifecycle">
+  <span class="eyebrow">理論 2 / 5</span>
+  <h2>Lifecycle、versioning、replication、Object Lock</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要: lifecycle</span>
+      <ul>
+        <li><b>Lifecycle rule</b> は bucket に付け、prefix、tag、object サイズで絞り込み、current version と noncurrent version に別々に適用します。アクションは2種類: <b>Transition</b>（N日後に storage class を変更）と <b>Expiration</b>（N日後に削除）。</li>
+        <li>Transition は <b>コールド方向への一方通行</b> のみ: Standard → Standard-IA / Intelligent-Tiering / One Zone-IA → Glacier IR → Glacier Flexible → Deep Archive。Standard へ戻す rule はなく、戻すには object をコピーします（Glacier なら restore）。</li>
+        <li>よく出る制約: lifecycle で Standard-IA や One Zone-IA へ移す前に、object は Standard に <b>最低30日</b> 置く必要があります。30日目に IA、60日目に Glacier へ移す rule は有効ですが、10日目に IA へ移す rule は拒否されます。</li>
+        <li>覚えておくべき補助アクション3つ: <b>expire noncurrent versions</b>（N日後に旧版を削除、または直近 N 版だけ保持）、<b>remove expired object delete markers</b>、<b>abort incomplete multipart uploads</b>（隠れて課金され続ける途中のアップロードを掃除）。</li>
+        <li>Lifecycle は毎日バックグラウンドで動き、即時ではありません。日数は object の作成時点（または noncurrent になった時点）から数えます。「X日後に Y へ移す」を <em>least operational overhead</em> で実現するなら、答えは常に lifecycle で、Lambda の cron を書くことではありません。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">概要: versioning</span>
+      <ul>
+        <li>Bucket 単位で有効化します。同じ key への PUT のたびに新しい <b>version ID</b> が作られ、旧版は残り続け <b>課金も続きます</b>。Versioning 有効化前からあった object の version ID は <code>null</code> です。</li>
+        <li>一度有効にすると <b>無効化はできず</b>、<b>suspend</b> のみ可能: 旧版はそのまま残り、新しい書き込みは ID <code>null</code> で保存されます。</li>
+        <li>Version ID なしの DELETE は先頭に <b>delete marker</b> を置くだけで、object は list から「消えた」ように見えますが、すべての version は残っています。復元は <b>delete marker を削除</b> するだけです。Version ID 付きの DELETE ではじめてその版が本当に削除されます。</li>
+        <li>Versioning は replication、Object Lock、MFA Delete の前提条件です。設問が <em>protect against accidental deletion or overwrite</em> → versioning（さらに厳しくするなら MFA Delete を追加）。</li>
+      </ul>
+    </div>
+
+    <div class="block diag"><span class="eyebrow">イメージ: versioning と delete marker</span>
+      <svg viewBox="0 0 700 250" role="img" aria-label="key report.pdf に3つの version が積み重なり、delete marker が最上部で version を隠している。delete marker を削除すると version 3 が再び current になる">
+        <rect x="20" y="30" width="300" height="200" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="36" y="56" class="sv-t" font-weight="600">Key report.pdf（versioning 有効の bucket）</text>
+        <rect x="40" y="70" width="260" height="30" rx="6" class="sv-edge" stroke-width="1.5"/>
+        <text x="52" y="90" class="sv-t">Delete marker (current)</text>
+        <text x="296" y="90" text-anchor="end" class="sv-m">GET → 404</text>
+        <rect x="40" y="110" width="260" height="30" rx="6" class="sv-az" stroke-width="1.5"/>
+        <text x="52" y="130" class="sv-t">v3  id=9Kx...  (3回目の upload)</text>
+        <rect x="40" y="150" width="260" height="30" rx="6" class="sv-az" stroke-width="1.5"/>
+        <text x="52" y="170" class="sv-t">v2  id=4Pq...  (2回目の upload)</text>
+        <rect x="40" y="190" width="260" height="30" rx="6" class="sv-az" stroke-width="1.5"/>
+        <text x="52" y="210" class="sv-t">v1  id=null   (versioning 有効化前)</text>
+        <line x1="320" y1="85" x2="380" y2="85" class="sv-line" stroke-width="2"/>
+        <text x="390" y="78" class="sv-t" font-weight="600">Delete marker を削除</text>
+        <text x="390" y="96" class="sv-m">(marker の version-id 付きで delete-object)</text>
+        <text x="390" y="114" class="sv-m">→ v3 が再び current、GET は v3 を返す</text>
+        <line x1="320" y1="165" x2="380" y2="165" class="sv-line" stroke-width="2"/>
+        <text x="390" y="158" class="sv-t" font-weight="600">v2 に戻す</text>
+        <text x="390" y="176" class="sv-m">方法1: v2 を key にコピーして上書き（v4 = v2 の内容）</text>
+        <text x="390" y="194" class="sv-m">方法2: version-id 付きで v3 を本当に削除</text>
+        <text x="390" y="222" class="sv-m">残る version はすべて課金 → lifecycle で noncurrent を expire</text>
+      </svg>
+    </div>
+
+    <div class="block"><span class="eyebrow">概要: replication（CRR と SRR）</span>
+      <ul>
+        <li><b>Cross-Region Replication (CRR)</b>: 別 Region の bucket へ object をコピー。<em>compliance</em>（別地域にコピーを保持）、遠方ユーザー向けの <em>lower latency</em>、<em>disaster recovery</em> に使います。<b>Same-Region Replication (SRR)</b>: 同じ Region の bucket へコピー。複数 bucket の log を1つに集約、prod から test への同期、同一 Region の別アカウントにコピーを保持、などに使います。</li>
+        <li>条件: <b>両方の bucket で versioning が有効</b>、S3 がソースを読み宛先に書くための IAM role。宛先は別アカウントでもよく（cross-account）、宛先に書くときに storage class を変えることもできます（例: 安価な backup として Deep Archive に直接書く）。</li>
+        <li>Replication は <b>非同期</b> で、<b>遡及しません</b>: rule を有効にする前からあった object はコピーされません。既存分をコピーするには <b>S3 Batch Replication</b>（S3 Batch Operations の job）を使います。これは非常によく出る罠です。</li>
+        <li><b>Replication Time Control (RTC)</b>: object の 99.99% を <b>15分</b> 以内にコピー完了することを約束し、監視用の metric と event があり、追加料金がかかります。設問が <em>predictable replication time</em>、<em>SLA</em>、<em>within 15 minutes</em> → RTC。</li>
+        <li>削除: delete marker は replicate できます（オプションで有効化）が、version ID 付きの削除は <b>replicate されません</b>（誤削除がコピー側へ波及するのを防ぐため）。「chaining」はなく、A から B へ replicate された object は B の rule で C へ自動的に replicate されません。</li>
+        <li>SSE-KMS で暗号化された object も replicate できますが、role にソース key の decrypt と宛先 key の encrypt 権限が必要です。SSE-C の object は replicate できません（この機能は最近変更があったため要確認）。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Object Lock と MFA Delete</span>
+      <div class="tbl"><table>
+        <tr><th>機能</th><th>内容</th><th>試験メモ</th></tr>
+        <tr><td><b>Object Lock</b></td><td><b>object の version 単位</b> の WORM（write once read many）: retention 期間中は削除も上書きもできません。Versioning が必要。以前は bucket 作成時にしか有効化できませんでしたが、現在は既存 bucket でも有効化できます（要確認）。</td><td>設問が <em>regulatory</em>、<em>WORM</em>、<em>cannot be deleted by anyone</em>、<em>SEC Rule 17a-4</em> → Object Lock。Object Lock 付き bucket では versioning を無効化できません。</td></tr>
+        <tr><td>Retention mode <b>Governance</b></td><td>通常ユーザーは削除・上書きできませんが、特別な権限 <code>s3:BypassGovernanceRetention</code> を持つユーザー（通常は admin）は回避できます。</td><td>保護しつつ、admin が誤りを直せる余地を残したいときに使います。</td></tr>
+        <tr><td>Retention mode <b>Compliance</b></td><td>retention が切れるまで root を含め <b>誰も</b> 削除できません。Retention の短縮も mode の変更も不可。</td><td>設問が <em>no user including root</em> → Compliance。結果: 誤って10年に設定すると10年分の料金を払うことになります。</td></tr>
+        <tr><td><b>Legal hold</b></td><td><b>有効期限のない</b> ロックで、retention とは独立に <code>s3:PutObjectLegalHold</code> 権限で on/off します。</td><td>設問が <em>litigation</em>、<em>indefinite</em>、<em>until investigation ends</em> → legal hold。</td></tr>
+        <tr><td><b>MFA Delete</b></td><td>(1) version の本当の削除、(2) versioning の suspend の際に <b>root</b> の MFA コードを必須にします。root の credential で CLI/API からのみ有効化でき、Console では有効化できません。</td><td>権限を持つ人による誤削除を防ぐもので、WORM ではありません。設問が <em>additional layer of protection before permanently deleting</em> → MFA Delete。</td></tr>
+        <tr><td><b>Glacier Vault Lock</b></td><td>旧 Amazon S3 Glacier サービス（独自 API）の <b>vault</b> に対するロックポリシーで、lock 後は変更できません。</td><td>S3 の Object Lock とは別物。設問が「vault」に触れたときだけこちらです。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>以前からある object も含めて別 bucket へコピー</td><td>Replication を有効化 + S3 Batch Replication を実行（または一度だけ <code>aws s3 sync</code>）</td><td>Replication rule を有効化するだけ（遡及しない）</td></tr>
+        <tr><td>昨日誤って削除したファイルを復元</td><td>Versioning: delete marker を削除</td><td>Lifecycle、replication（delete marker の replicate を有効にしているとコピー側にも delete marker が付く）</td></tr>
+        <tr><td>Versioning で肥大化している bucket のコストを削減</td><td>Lifecycle で noncurrent version を expire、直近 N 版を保持</td><td>Versioning を無効化（suspend しかできず、旧版の課金は続く）</td></tr>
+        <tr><td>Admin を含め誰も5年間 audit log を削除できない</td><td>Object Lock Compliance mode、retention 5年</td><td>Governance mode（admin が bypass できる）、MFA Delete（root は削除できる）</td></tr>
+        <tr><td>データが15分以内に第2 Region に存在する必要がある</td><td>CRR + Replication Time Control</td><td>通常の CRR（時間保証なし）、スケジュール実行の DataSync</td></tr>
+        <tr><td>同一 Region の複数 bucket の log を分析用 bucket に集約</td><td>SRR</td><td>CRR（Region が違い、データ転送料金がかかる）</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>move to Glacier after 90 days <b>→ lifecycle transition</b></span><span>delete after 1 year <b>→ lifecycle expiration</b></span><span>accidental deletion <b>→ versioning (+ MFA Delete)</b></span><span>existing objects not replicated <b>→ Batch Replication</b></span><span>replicate within 15 minutes <b>→ RTC</b></span><span>WORM, regulatory, immutable <b>→ Object Lock</b></span><span>even root cannot delete <b>→ Compliance mode</b></span><span>indefinite hold for litigation <b>→ legal hold</b></span><span>incomplete multipart cost <b>→ lifecycle abort rule</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">4. ある会社が先週、東京の bucket から大阪へ CRR を有効にしました。監査で、昨年アップロードしたファイルが大阪にないことが分かりました。<em>least operational overhead</em> でコピーする方法は。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>既存 object に対して S3 Batch Replication を実行します。</b> Replication rule は新しい object にしか適用されません。Object を1つずつコピーする script や <code>aws s3 sync</code> でも可能ですが、手間がかかり replication の metadata も保持されません。罠: 再スキャンされると思って「replication rule を再度有効化する」を選ぶこと。</p></div>
+      <div class="q"><p class="qt">5. Versioning 有効の bucket で、developer が <code>aws s3 rm s3://b/config.json</code> を実行しました。Object の状態と、最も速い復元方法は。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Object は delete marker に隠されているだけで、すべての version は無傷です。Delete marker を削除（marker の version-id 付きで delete-object）すれば object が再び現れます。</b> Backup からの restore は不要です。コマンドに <code>--version-id</code> が付いていた場合にはじめて、その版が本当に失われます。</p></div>
+      <div class="q"><p class="qt">6. 要件: 金融取引 log を7年間保持し、その期間中は <em>no user, including the account administrator</em> が削除や変更をできないこと。必要な作業を2つ選びます。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Versioning と Object Lock を有効にし、Compliance mode で retention 7年を設定します。</b> Governance mode は admin に bypass 権限があるため不可。MFA Delete は root が MFA ありで削除できるため不可。Lifecycle と replication は削除を防ぎません。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. S3 のセキュリティ ============ -->
+<section id="s3-security">
+  <span class="eyebrow">理論 3 / 5</span>
+  <h2>S3 のセキュリティ: 誰が入れるか、データをどう暗号化するか</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要: アクセス制御</span>
+      <ul>
+        <li>S3 へのアクセスを許可または拒否できる層は4つ: <b>IAM policy</b>（identity-based、user/role に付ける、第1週の復習）、<b>bucket policy</b>（resource-based、Principal を持つ、JSON は最大 20 KB）、<b>ACL</b>（旧来の仕組み、bucket と object レベル）、<b>Block Public Access</b>（最上位の遮断スイッチ）。デフォルトではすべての bucket と object が <b>private</b> です。</li>
+        <li><b>ACL は 2023年4月からデフォルトで無効</b>（Object Ownership = <b>Bucket owner enforced</b>）: すべての object は bucket 所有者のものとなり、権限は policy でのみ付与します。設問の <em>objects uploaded by another account are not accessible to bucket owner</em> は ACL が有効なままの古い bucket の話で、現代的な解決策は Bucket owner enforced を有効にすることです。AWS は特別な場合を除き ACL を使わないよう推奨しています。</li>
+        <li><b>Bucket policy</b> でよく出る4つの用途: (1) static website 向けに public read を開く、(2) 別アカウントにアクセスを許可する（cross-account、assume role 不要）、(3) HTTPS 必須、encryption 必須、特定の VPC endpoint や IP 範囲からのみ許可といった <b>条件を強制</b> する、(4) 削除を遮断する。同一アカウントなら IAM Allow か bucket policy Allow のどちらかで十分、別アカウントなら両側で Allow が必要です（第1週の復習）。</li>
+        <li><b>Block Public Access</b>: 4つのスイッチ（BlockPublicAcls、IgnorePublicAcls、BlockPublicPolicy、RestrictPublicBuckets）があり、<b>account</b> レベルと <b>bucket</b> レベルに存在し、account レベルはすべての bucket に優先します。新しい bucket ではデフォルトで有効。有効時、Principal <code>*</code> を持つ bucket policy は保存を拒否されるか無効化されます。設問が <em>ensure no bucket in the account can ever be made public</em> → account レベルで Block Public Access を有効化。</li>
+        <li><b>S3 Access Points</b>: 同じ bucket に対してアプリケーションごとに専用の endpoint（hostname + 専用 policy）を持ち、<b>特定の VPC からのみ</b> に制限できます。「数十チームで共有する bucket の bucket policy が長すぎて管理しづらい」問題を解決します。Multi-Region Access Point は複数 bucket を指すグローバルな1つの endpoint を提供します。</li>
+        <li><b>IAM Access Analyzer for S3</b>: アカウント外や public に共有されている bucket を理由（ACL、policy、access point）付きで一覧表示します。設問が <em>identify buckets shared with external entities</em> → Access Analyzer。一方 <b>Macie</b>（第8週）は object の中の機密データを探すもので、権限を探すものではありません。</li>
+        <li><b>S3 向け VPC Gateway Endpoint</b>: private subnet の EC2 が NAT なしで AWS ネットワーク経由で S3 を呼び出せ、無料です。Bucket policy で condition <code>aws:SourceVpce</code> を使い、endpoint 以外からのアクセスをすべて遮断できます。第4週で詳しく学ぶので、今週は存在と無料であることだけ覚えれば十分です。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">概要: 暗号化</span>
+      <div class="tbl"><table>
+        <tr><th>種類</th><th>Key を持つのは</th><th>有効化の方法</th><th>試験メモ</th></tr>
+        <tr><td><b>SSE-S3</b></td><td>S3 が完全に管理、AES-256</td><td>2023年1月以降、新しい object すべてのデフォルト。Header <code>x-amz-server-side-encryption: AES256</code></td><td>Key の audit log なし、rotation の選択不可、無料。設問が <em>encrypted at rest</em>、<em>least overhead</em> とだけ言うときの答え。</td></tr>
+        <tr><td><b>SSE-KMS</b></td><td>KMS key（AWS managed <code>aws/s3</code> または customer managed）</td><td>Header <code>x-amz-server-side-encryption: aws:kms</code> + key ID</td><td>誰が key を使ったか CloudTrail に記録され、key policy で制御、rotation あり。Object を読む人には S3 の権限 <b>と</b> <code>kms:Decrypt</code> の両方が必要。Upload/download のたびに KMS を呼ぶ → <b>KMS request quota</b>（Region により 5,500、10,000、30,000 req/秒、要確認）に達することがある。</td></tr>
+        <tr><td><b>S3 Bucket Key</b></td><td>SSE-KMS のオプション</td><td>Bucket で有効化</td><td>S3 が KMS key から bucket レベルの key を1つ作り、それで object を暗号化することで KMS 呼び出しを最大 99% 削減 → KMS 料金が下がり throttling も解消。設問が <em>reduce KMS cost / KMS throttling with SSE-KMS</em> → Bucket Key。</td></tr>
+        <tr><td><b>DSSE-KMS</b></td><td>KMS、二重暗号化</td><td>Header <code>aws:kms:dsse</code></td><td>識別: 政府基準による <em>dual-layer encryption</em> の要件。</td></tr>
+        <tr><td><b>SSE-C</b></td><td><b>自分</b> が key を持ち、request ごとに key を送る</td><td>API/CLI/SDK のみ、<b>HTTPS</b> 必須、Console では不可</td><td>S3 は key で暗号化した後に捨て、hash だけ保持。Key をなくすとデータも失われる。設問が <em>customer must manage keys outside AWS but S3 performs encryption</em> → SSE-C。</td></tr>
+        <tr><td><b>Client-side</b></td><td>自分、送信前に暗号化</td><td>SDK またはライブラリ（Amazon S3 Encryption Client）</td><td>S3 は平文を一切見ない。設問が <em>data must be encrypted before leaving on-premises</em>、<em>AWS must never have access to unencrypted data</em> → client-side。</td></tr>
+      </table></div>
+      <p style="font-size:.92rem;color:var(--muted)"><b>In transit</b> の暗号化: S3 には HTTP と HTTPS の両方の endpoint があります。HTTPS の強制は condition <code>aws:SecureTransport = false</code> の bucket policy Deny で行います。At rest の暗号化は目立った遅延を生まず、SSE-C と client-side を除き API の呼び方も変わりません。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">セキュリティを強制する bucket policy のサンプル2つ（Lab 4 で使用）</span>
+<pre><code>{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DenyUnencryptedUploads",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::saa-s3-private-quy-2026/*",
+      "Condition": { "StringNotEquals": { "s3:x-amz-server-side-encryption": "aws:kms" } }
+    },
+    {
+      "Sid": "DenyInsecureTransport",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:*",
+      "Resource": ["arn:aws:s3:::saa-s3-private-quy-2026", "arn:aws:s3:::saa-s3-private-quy-2026/*"],
+      "Condition": { "Bool": { "aws:SecureTransport": "false" } }
+    }
+  ]
+}</code></pre>
+      <ul>
+        <li>Bucket policy の Deny は admin を含め IAM のあらゆる Allow に勝ちます（第1週の復習）。そのため encryption を強制する policy は「developer に注意喚起する」より確実な <em>enforce</em> の方法です。</li>
+        <li><code>StringNotEquals</code> は header が欠けている場合も不一致とみなす → Deny。したがって header を送らない upload も、bucket に default encryption があっても遮断されます。設問「bucket で default encryption SSE-KMS を有効にしている。policy は必要か」: default encryption は upload が種類を <b>指定しない</b> ときにのみ適用され、upload 側は header AES256 を送ることもできます。100% KMS にしたいなら Deny が必要です。</li>
+        <li>同じ雛形で condition を <code>"StringNotEquals": {"aws:SourceVpce": "vpce-xxx"}</code> に変えると特定の VPC endpoint からのみ許可、<code>"NotIpAddress": {"aws:SourceIp": "203.0.113.0/24"}</code> にするとオフィス IP で制限できます。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>At rest の暗号化、<em>least operational overhead</em>、key の audit 要件なし</td><td>SSE-S3（すでにデフォルト）</td><td>SSE-KMS（料金と quota が増える）、SSE-C（自分で key を保持）</td></tr>
+        <tr><td><em>who used the key and when</em> を知りたい、<em>rotate key</em>、key の権限を S3 の権限から分離</td><td>SSE-KMS + customer managed key</td><td>SSE-S3（key の log がない）</td></tr>
+        <tr><td>SSE-KMS で毎秒大量の object を upload し、KMS から <em>ThrottlingException</em></td><td>S3 Bucket Key を有効化（または KMS の quota 引き上げ申請）</td><td>設問が KMS を要求しているなら SSE-S3 への変更は不可</td></tr>
+        <tr><td>会社が key を保持し、S3 が暗号化処理を行う</td><td>SSE-C</td><td>Client-side（S3 は何も暗号化しない）</td></tr>
+        <tr><td>AWS が平文を一切見てはならない</td><td>Client-side encryption</td><td>SSE-C（処理中に S3 は平文を見る）</td></tr>
+        <tr><td>アカウント B に bucket を読ませる、B 側の人は自分の identity のまま</td><td>Bucket policy Principal = アカウント B（+ B 側の IAM）</td><td>アカウント A 側の IAM policy のみ（B には効かない）</td></tr>
+        <tr><td>数十のアプリが同じ bucket に対してそれぞれ異なる権限セットを持つ</td><td>S3 Access Points、アプリごとに access point policy</td><td>巨大な bucket policy 1つ（20 KB の上限、保守が困難）</td></tr>
+        <tr><td>組織外に共有されている bucket を見つける</td><td>IAM Access Analyzer for S3</td><td>Macie（機密データを探すもので、権限は探さない）</td></tr>
+        <tr><td>誤操作も含め、アカウント内のどの bucket も public にならないようにする</td><td>Account レベルの Block Public Access</td><td>Bucket policy を1つずつ修正</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>encrypted at rest, minimal effort <b>→ SSE-S3</b></span><span>audit key usage, key rotation <b>→ SSE-KMS</b></span><span>KMS throttling, reduce KMS cost <b>→ S3 Bucket Key</b></span><span>customer-provided key <b>→ SSE-C</b></span><span>encrypt before upload <b>→ client-side</b></span><span>enforce encryption on upload <b>→ bucket policy Deny</b></span><span>enforce HTTPS <b>→ aws:SecureTransport</b></span><span>prevent public access account-wide <b>→ Block Public Access</b></span><span>per-application access to shared bucket <b>→ Access Points</b></span><span>buckets shared externally <b>→ Access Analyzer</b></span><span>private subnet to S3 without NAT <b>→ Gateway Endpoint</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">7. あるアプリが customer managed key の SSE-KMS を使う bucket に毎秒 20,000 object を書き込み、KMS から throttling エラーが出始めました。SSE-KMS を維持したまま <em>most cost-effective</em> な解決策は。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Bucket で S3 Bucket Key を有効にします。</b> Bucket Key は KMS 呼び出し回数を最大 99% 減らすため、throttling が解消し KMS 料金も下がります。KMS の quota 引き上げ申請も可能ですが、request ごとの料金は払い続けます。SSE-S3 への変更は KMS 維持の要件に反します。</p></div>
+      <div class="q"><p class="qt">8. Bucket に default encryption SSE-KMS があります。Security team は <em>reject any upload that is not encrypted with the company KMS key</em> を求めています。何をしますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b><code>s3:x-amz-server-side-encryption</code> が <code>aws:kms</code> 以外のとき <code>s3:PutObject</code> を Deny する bucket policy を追加します（key ID が会社の key 以外のときも拒否するには condition <code>s3:x-amz-server-side-encryption-aws-kms-key-id</code> を使う）。</b> Default encryption は空欄を埋めるだけで、header AES256 を付けた upload を拒否しません。Block Public Access の有効化は encryption と無関係です。</p></div>
+      <div class="q"><p class="qt">9. アカウント A の user は、アカウント B の bucket に対する <code>s3:GetObject</code> を Allow する IAM policy を持ち、bucket B の policy もアカウント A を Allow しています。Bucket 内の object は B の customer managed key で SSE-KMS 暗号化されています。User A はダウンロード時に依然として AccessDenied になります。なぜですか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>B の key に対する <code>kms:Decrypt</code> 権限が足りません。B 側の key policy でアカウント A を許可し、user A の IAM にも kms:Decrypt が必要です。</b> SSE-KMS では object の読み取りは2つのリソース（S3 object と KMS key）に対する2つのアクションです。SSE-S3 ならこの手順は不要で、これが <em>least overhead</em> の設問で SSE-S3 がよく勝つ理由です。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. S3 のその他の機能 ============ -->
+<section id="s3-features">
+  <span class="eyebrow">理論 4 / 5</span>
+  <h2>S3 のその他の機能: presigned URL、Transfer Acceleration、multipart、event</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <div class="tbl"><table>
+        <tr><th>機能</th><th>内容</th><th>使いどころ、試験の罠</th></tr>
+        <tr><td><b>Presigned URL</b></td><td>署名付きの URL で、1つの object に対する <b>GET または PUT</b> を期間限定で許可します。受け取る人が AWS アカウントを持つ <b>必要はありません</b>。SDK または <code>aws s3 presign</code> で作成し、URL は作成者の権限を持ちます。</td><td>顧客に非公開ファイルを共有する、ユーザーに server を経由せず S3 へ直接 upload させる。IAM user で署名した場合の有効期限は最大 <b>7日</b>。一時 credential（role）で署名した場合は credential の期限までしか有効でない（instance profile は最大 6時間、要確認）。Bucket は private のままでよく、public にする必要はない。</td></tr>
+        <tr><td><b>Transfer Acceleration</b></td><td>Upload/download が最寄りの <b>Edge location</b> に入り、AWS ネットワーク上を通って bucket に届きます。Endpoint は <code>bucket.s3-accelerate.amazonaws.com</code>。</td><td>Region から遠い（世界中の）ユーザーが大きなファイルを upload し、公衆 Internet の経路が長い場合。GB 単位の追加料金で、実際に速くなったときだけ課金。Bucket 名にドットを含められない。Client が Region のすぐ近くなら効果なし。</td></tr>
+        <tr><td><b>Multipart upload</b></td><td>Object を複数の part（1 part あたり 5 MB〜5 GB、最大 10,000 part）に分割し、<b>並列</b> で upload して S3 が結合します。</td><td>Object が 5 GB 超なら <b>必須</b>、100 MB 以上なら <b>推奨</b>。利点: 速い（parallel）、失敗した part だけ再送、一時停止して再開できる。途中の part も課金される → lifecycle で abort incomplete multipart。CLI の <code>aws s3 cp</code> は大きなファイルで自動的に multipart を使う。</td></tr>
+        <tr><td><b>Byte-range fetch</b></td><td><code>Range</code> header で object の一部のバイト範囲を GET します。</td><td>大きなファイルの並列ダウンロード（multipart の逆）、object の先頭部分だけ読む（ファイル header）、download の再開。設問が <em>retrieve only part of an object</em>、<em>parallelize downloads</em>。</td></tr>
+        <tr><td><b>Event notification</b></td><td><code>s3:ObjectCreated:*</code>、<code>ObjectRemoved:*</code>、<code>ObjectRestore</code>、<code>Replication</code> などが発生すると、S3 が <b>SNS</b>、<b>SQS</b>（Standard queue のみ、FIFO 不可）、<b>Lambda</b>、または <b>EventBridge</b> に event を送ります。</td><td>Upload 時の画像処理、ファイル到着時の pipeline 実行。宛先には S3 からの送信を許可する resource policy が必要。通常は数秒以内に届く。prefix/suffix でフィルター。<b>EventBridge</b> はより多機能: metadata の内容でフィルター、複数 target、archive と replay。Bucket で有効化が必要。</td></tr>
+        <tr><td><b>Static website hosting</b></td><td>Bucket が <code>bucket.s3-website-ap-northeast-1.amazonaws.com</code> 形式の endpoint で HTML/CSS/JS を配信し、index document と error document を持ちます。</td><td><b>HTTP</b> のみ。HTTPS と独自ドメインが必要なら前段に CloudFront を置く（第4週）。Block Public Access の解除と public read の bucket policy が必要。Route 53 alias を使う場合は <b>bucket 名をドメイン名と一致させる</b> 必要がある。Server-side のコードは実行できない。</td></tr>
+        <tr><td><b>CORS</b></td><td>Bucket 上の Cross-Origin Resource Sharing 設定で、<code>Access-Control-Allow-Origin</code> header を返します。</td><td>ドメイン A の web ページが JavaScript でドメイン B の bucket からファイルを取得しようとしてブラウザに遮断される → <b>bucket B</b>（呼ばれる側）に CORS を設定し、bucket A ではない。設問に「web font」「JavaScript fetch」「different domain」→ CORS。</td></tr>
+        <tr><td><b>Requester Pays</b></td><td><b>ダウンロードする側</b> が request とデータ転送の料金を払い、bucket 所有者は保存料金だけを払います。</td><td>大規模な dataset を多数の相手に共有する。ダウンロード側は認証済みの AWS principal（anonymous 不可）で、header <code>x-amz-request-payer</code> を送る必要がある。</td></tr>
+        <tr><td><b>S3 Select / Glacier Select</b></td><td>CSV/JSON/Parquet の1つの object に対して <b>S3 上で直接</b> 簡単な SQL を実行し、必要な行と列だけを返します。</td><td>アプリへ転送するデータ量を減らす。AWS は 2024年から新規顧客への S3 Select の提供を停止した（要確認）が、SAA-C03 では出題される可能性がある。複数 object、複数テーブル、join → Athena（第7週）で、S3 Select ではない。</td></tr>
+        <tr><td><b>Storage Lens</b></td><td>容量、object 数、コスト、encryption や versioning の比率などを <b>組織全体</b>、複数アカウント、複数 Region にわたって集計するダッシュボード。</td><td>識別: <em>organization-wide visibility into storage usage</em>、<em>identify cost optimization opportunities across buckets</em>。無料の free metrics と有料の advanced metrics がある。</td></tr>
+        <tr><td><b>S3 Batch Operations</b></td><td>Manifest または S3 Inventory に基づき、<b>数十億の object</b> に1つの操作（copy、tag 変更、ACL 変更、Glacier からの restore、Lambda 呼び出し、Batch Replication）を実行します。</td><td>設問が <em>apply change to all existing objects</em>、<em>encrypt existing unencrypted objects</em> → Batch Operations（SSE 付きで object 自身に上書きコピー）。Object の一覧取得には <b>S3 Inventory</b> を使う。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block diag"><span class="eyebrow">イメージ: server を経由しない upload のための presigned URL</span>
+      <svg viewBox="0 0 700 230" role="img" aria-label="ブラウザが app server に presigned URL を要求し、app server が IAM role で署名して URL を返し、ブラウザがファイルを S3 に直接 PUT する">
+        <rect x="20" y="60" width="150" height="70" rx="8" class="sv-region" stroke-width="1.5"/>
+        <text x="95" y="88" text-anchor="middle" class="sv-t" font-weight="600">ブラウザ</text>
+        <text x="95" y="108" text-anchor="middle" class="sv-m">AWS credential なし</text>
+        <rect x="275" y="60" width="150" height="70" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="350" y="88" text-anchor="middle" class="sv-t" font-weight="600">App server (EC2)</text>
+        <text x="350" y="108" text-anchor="middle" class="sv-m">s3:PutObject を持つ IAM role</text>
+        <rect x="530" y="60" width="150" height="70" rx="8" class="sv-edge" stroke-width="1.5"/>
+        <text x="605" y="88" text-anchor="middle" class="sv-t" font-weight="600">S3 bucket</text>
+        <text x="605" y="108" text-anchor="middle" class="sv-m">private, Block Public Access</text>
+        <line x1="170" y1="80" x2="275" y2="80" class="sv-line" stroke-width="2"/>
+        <text x="222" y="72" text-anchor="middle" class="sv-m">1. upload 用リンクを要求</text>
+        <line x1="275" y1="110" x2="170" y2="110" class="sv-line" stroke-width="2"/>
+        <text x="222" y="126" text-anchor="middle" class="sv-m">2. presigned PUT URL (15分)</text>
+        <path d="M95 130 L95 185 L605 185 L605 130" fill="none" class="sv-line" stroke-width="2" stroke-dasharray="5 4"/>
+        <text x="350" y="178" text-anchor="middle" class="sv-t">3. URL でファイルを S3 に直接 PUT、server を経由しない</text>
+        <text x="350" y="212" text-anchor="middle" class="sv-m">S3 が署名と期限を検証。使われる権限は署名した role の権限。Server はファイルの負荷を受けない。</text>
+      </svg>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>顧客に非公開ファイルを24時間ダウンロードさせる、IAM user は作らない</td><td>Presigned URL (GET)</td><td>Bucket を public にする、顧客用に IAM user を作る</td></tr>
+        <tr><td>ユーザーが画像を S3 に直接 upload し、server に負荷をかけない</td><td>Presigned URL (PUT) または presigned POST</td><td>EC2 経由で upload してから EC2 が S3 に送る</td></tr>
+        <tr><td>世界中のユーザーが東京の bucket に大きなファイルを upload するのが遅い</td><td>Transfer Acceleration（+ multipart）</td><td>CloudFront（主に download/cache 向け）、Region ごとに bucket を作る（複雑）</td></tr>
+        <tr><td>50 GB のファイルの upload が途中で失敗し、最初からやり直しになる</td><td>Multipart upload</td><td>Transfer Acceleration（高速化するが再開には役立たない）</td></tr>
+        <tr><td>アプリが 1 GB の各 object の先頭 1 MB だけ読めばよい</td><td>Byte-range fetch</td><td>S3 Select（CSV/JSON の内容でフィルターするもので、バイト単位ではない）</td></tr>
+        <tr><td>Prefix <code>uploads/</code> に新しい object が入るたびに Lambda を実行</td><td>S3 event notification → Lambda（または EventBridge 経由）</td><td>Lambda がスケジュールで bucket を poll（コストと遅延）</td></tr>
+        <tr><td>複数のシステムが1つの object の event を受け取り、サイズでフィルターし、replay も必要</td><td>S3 → EventBridge</td><td>直接の event notification（rule ごとに宛先1つ、フィルターは prefix/suffix のみ）</td></tr>
+        <tr><td>Static website に HTTPS と独自ドメインが必要</td><td>S3 + CloudFront + ACM certificate</td><td>S3 website endpoint（HTTP のみ）</td></tr>
+        <tr><td>Web が bucket からフォントを取得するとブラウザが cross-origin エラーを出す</td><td>フォントを置いた bucket に CORS rule を設定</td><td>Bucket policy、Block Public Access</td></tr>
+        <tr><td>暗号化されていない既存の数百万 object を暗号化し直す</td><td>S3 Inventory + Batch Operations（SSE 付きで copy）</td><td>Default encryption を有効化（新しい object にのみ適用）</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>temporary access without AWS account <b>→ presigned URL</b></span><span>upload directly from browser <b>→ presigned URL / POST</b></span><span>global users upload large files faster <b>→ Transfer Acceleration</b></span><span>object larger than 5 GB <b>→ multipart（必須）</b></span><span>parallel download, partial object <b>→ byte-range fetch</b></span><span>trigger on new object <b>→ event notification</b></span><span>content filtering, replay events <b>→ EventBridge</b></span><span>website HTTPS <b>→ S3 の前に CloudFront</b></span><span>cross-origin JavaScript <b>→ CORS</b></span><span>downloader pays transfer <b>→ Requester Pays</b></span><span>change millions of existing objects <b>→ Batch Operations</b></span><span>org-wide storage metrics <b>→ Storage Lens</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">10. モバイルアプリでユーザーが最大 2 GB の動画を upload します。現在は動画が EC2 を経由し、EC2 が S3 に送っているため EC2 が過負荷です。<em>most scalable</em> かつ <em>most cost-effective</em> な解決策は。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>アプリが backend に presigned URL (PUT) を要求し、multipart で S3 に直接 upload します。</b> EC2 は URL に署名するだけで、データの負荷を受けません。EC2 のサイズアップや Auto Scaling の追加は問題を先送りするだけです。ユーザーが Region から遠ければ Transfer Acceleration を追加してもよいですが、EC2 の過負荷は解決しません。</p></div>
+      <div class="q"><p class="qt">11. Bucket に新しい CSV ファイルが入ると3つの異なるシステムが処理する必要があり、チームはデバッグのために先週の event を再生できることを求めています。何を選びますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>S3 event を EventBridge に送るよう有効化し、複数 target を持つ rule を作り、replay 用に archive を有効にします。</b> 通常の event notification でも SNS 経由で複数の宛先に fan-out できますが、archive/replay はありません。Lambda で bucket を poll するのは方向違いです。</p></div>
+      <div class="q"><p class="qt">12. ドメイン <code>www.example.com</code> で S3 にホストした静的サイトが、別の bucket <code>assets.example.com</code> からフォントを読み込みます。ブラウザが <em>No 'Access-Control-Allow-Origin' header</em> エラーを出します。どこを直しますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Bucket <code>assets.example.com</code> に、AllowedOrigin を <code>https://www.example.com</code> とする CORS configuration を追加します。</b> 罠: web サイト側の bucket（呼ぶ側）を直しても無意味で、CORS は <b>呼ばれる側</b> の bucket に設定します。Bucket policy は CORS header を生成しません。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. ハイブリッドとデータ移行 ============ -->
+<section id="hybrid">
+  <span class="eyebrow">理論 5 / 5</span>
+  <h2>ハイブリッドとデータ移行: Storage Gateway、Snow、DataSync、AWS Backup</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要: AWS Storage Gateway</span>
+      <p>オンプレミスに置くソフトウェア（VMware/Hyper-V/KVM 上の VM、AWS から購入する hardware appliance、または EC2 上で実行）で、既存アプリが使い慣れたプロトコル <b>NFS/SMB/iSCSI</b> で AWS のストレージを使えるようにし、ホットデータ用のローカル cache を持ちます。共通キーワード: <em>hybrid</em>、<em>on-premises applications continue to use existing protocols</em>、<em>low-latency access to frequently used data with cloud storage</em>。</p>
+      <div class="tbl"><table>
+        <tr><th>種類</th><th>プロトコル</th><th>データの保存先</th><th>設問がこう言ったら選ぶ</th></tr>
+        <tr><td><b>S3 File Gateway</b></td><td>NFS、SMB（SMB は Active Directory と統合）</td><td>S3 内の object（1ファイル = 1 object、metadata を保持）、ローカル cache。S3 の lifecycle、versioning、class を使える</td><td><em>file share</em>、<em>NFS/SMB</em>、<em>store as objects in S3</em>、<em>analytics on-premises files with Athena</em>、容量不足の NAS の拡張</td></tr>
+        <tr><td><b>FSx File Gateway</b></td><td>SMB</td><td>AWS 上の FSx for Windows File Server、ローカル cache</td><td><em>Windows file shares</em>、<em>on-premises users need low latency to FSx</em>、複数拠点で共有する share</td></tr>
+        <tr><td><b>Volume Gateway, Cached</b></td><td>iSCSI (block)</td><td>Volume 全体は S3、よく使う部分だけ現地で cache。EBS snapshot として backup</td><td><em>block storage</em>、<em>extend on-premises storage</em>、ローカルディスクより大きな容量、<em>frequently accessed data cached</em></td></tr>
+        <tr><td><b>Volume Gateway, Stored</b></td><td>iSCSI (block)</td><td>Volume 全体はオンプレミス（最も低レイテンシ）、EBS snapshot として S3 へ <b>async backup</b></td><td><em>entire dataset on-premises</em>、<em>low-latency access to all data</em>、<em>asynchronous backup to AWS</em>、DR（snapshot から EBS を作成）</td></tr>
+        <tr><td><b>Tape Gateway</b></td><td>iSCSI VTL (virtual tape library)</td><td>S3 内の virtual tape、Glacier Flexible / Deep Archive へ archive</td><td><em>existing backup software</em>（Veeam、NetBackup など）、<em>replace physical tapes</em>、<em>tape-based backup process</em></td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">概要: AWS Snow family（オフライン移行）</span>
+      <div class="tbl"><table>
+        <tr><th>デバイス</th><th>容量（要確認）</th><th>使いどころ</th></tr>
+        <tr><td><b>Snowcone</b></td><td>8 TB HDD または 14 TB SSD、2 vCPU、4 GB RAM、手で持てる 2.1 kg、バッテリー駆動可</td><td>過酷な環境や狭い場所（車両、船、基地局）、数 TB。DataSync agent を内蔵しているので <b>ネットワーク経由</b> でも <b>配送</b> でも送れる。</td></tr>
+        <tr><td><b>Snowball Edge Storage Optimized</b></td><td>約 80 TB usable（新モデルは最大 210 TB）、数 vCPU</td><td>数十〜数百 TB の移行。複数台を組み合わせて PB 規模。現地で軽い EC2/Lambda を実行可能。</td></tr>
+        <tr><td><b>Snowball Edge Compute Optimized</b></td><td>約 28 TB SSD、100 vCPU 超、GPU オプション</td><td><em>edge computing</em>、ネットワークのない現場でその場で処理/ML を行い、その後データを移行。</td></tr>
+        <tr><td><b>Snowmobile</b></td><td>トラックに積んだ 100 PB のコンテナ</td><td>Exabyte 規模、約 10 PB 以上。AWS は提供を終了した（2024年、要確認）が、古い SAA-C03 の問題には出る可能性がある。</td></tr>
+      </table></div>
+      <ul>
+        <li>目安: ネットワーク転送に約 <b>1週間</b> 以上かかるなら Snow を検討。例: 100 TB を 100 Mbps で送ると 100日以上 → Snowball。帯域が狭い、データが大きい、期限が迫っている、<em>limited or no connectivity</em> → Snow。</li>
+        <li>流れ: Console で注文 → デバイスを受け取る → 社内ネットワークに接続し、AWS OpsHub または Snowball client でロック解除 → コピー（デバイスへ NFS または S3 API）→ 返送 → AWS が bucket に取り込む。データは 256-bit で暗号化され、key は KMS で管理、デバイスには E Ink の配送ラベルが付いている。</li>
+        <li>Snowball は <b>S3 Standard</b>（または job の設定に応じた別の class）に直接取り込む。Glacier に入れたいなら lifecycle rule を設定する。設問の「Snowball で Glacier に直接移行する」はたいてい古い誤答で、正しい方法は S3 + lifecycle。</li>
+        <li>Snow は S3 からオンプレミスへの <b>逆方向</b> の移行（export job）も可能。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">概要: AWS DataSync、Transfer Family、AWS Backup</span>
+      <div class="tbl"><table>
+        <tr><th>サービス</th><th>内容</th><th>設問がこう言ったら選ぶ</th></tr>
+        <tr><td><b>AWS DataSync</b></td><td>自動化された高速な <b>オンラインのデータ移行</b> サービスで、オンプレミスに <b>agent</b>（VM）を置いて NFS、SMB、HDFS、object storage を読み取ります。宛先は <b>S3（Glacier を含む全 class）、EFS、FSx</b>。スケジュール実行、変更分のみのコピー（incremental）、metadata と permission の保持、整合性の自動検証。<b>AWS サービス間</b>（別 Region の EFS 間、S3 から FSx など）も agent なしで移行できる。帯域制限（throttle）も可能。Agent 1台あたり最大約 10 Gbps（要確認）。</td><td><em>migrate</em>、<em>one-time or scheduled transfer</em>、<em>NFS/SMB to S3/EFS/FSx</em>、<em>preserve metadata and permissions</em>、<em>incremental</em>、<em>between EFS in different Regions</em></td></tr>
+        <tr><td><b>AWS Transfer Family</b></td><td>マネージドな <b>SFTP / FTPS / FTP / AS2</b> endpoint で、S3 または EFS に直接保存します。認証は Managed users、AD、または custom identity provider（Lambda / API Gateway）。Endpoint の時間課金と GB 課金。</td><td><em>partners upload via SFTP</em>、<em>existing FTP-based workflow</em>、<em>no change to client software</em>、EC2 上で自前運用している SFTP server をやめたい</td></tr>
+        <tr><td><b>AWS Backup</b></td><td>EC2、EBS、RDS、Aurora、DynamoDB、EFS、FSx、Storage Gateway volume、S3、DocumentDB、Neptune、Redshift、VMware などを <b>一元的かつ自動で</b> backup。概念: <b>backup plan</b>（スケジュール、retention、cold storage への移行）、<b>backup vault</b>（保存先、KMS で暗号化）、<b>tag</b> によるリソース割り当て。<b>cross-Region</b> と <b>cross-account</b>（Organizations 経由）のコピー。<b>Vault Lock</b> で vault を WORM 化（retention 終了まで削除不可、Compliance mode では root も不可）。一部サービスで point-in-time recovery に対応。</td><td><em>centralized backup across multiple services</em>、<em>backup policy for all resources with tag</em>、<em>retain backups for N years in another Region/account</em>、<em>immutable backups</em>、<em>ransomware protection for backups</em></td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>ペア</th><th>違い</th></tr>
+        <tr><td>DataSync と Storage Gateway</td><td>DataSync は <b>移行</b>（migration、スケジュール同期）で、終われば完了し、その後データは AWS 内で使います。Storage Gateway はハイブリッドな <b>継続的アクセス</b> で、オンプレミスのアプリが毎日 NFS/SMB/iSCSI と cache で読み書きし続けます。AWS も、初回移行に DataSync を使い、その後のアクセスに File Gateway を使う構成を推奨しています。</td></tr>
+        <tr><td>DataSync と Transfer Family</td><td>DataSync は自分のシステムから agent でデータを引き出すもの。Transfer Family は <b>外部</b> の相手が自分の FTP client でファイルを送り込むための SFTP/FTPS の入口を開くもの。設問に <em>SFTP</em> とあればほぼ必ず Transfer Family。</td></tr>
+        <tr><td>DataSync と Snowball</td><td>DataSync はネットワーク経由（online）、Snowball はデバイスの配送（offline）。ネットワークが十分で時間的に許容できる → DataSync。ネットワークが弱い、数十 TB 以上、期限が迫っている → Snowball。Snowcone は DataSync agent を内蔵しており、両者の橋渡しになる。</td></tr>
+        <tr><td>DataSync と <code>aws s3 sync</code> / rsync</td><td>設問が <em>least operational overhead</em>、<em>automate</em>、<em>verify integrity</em>、<em>preserve permissions</em>、<em>schedule</em> と言うとき、自作の CLI は誤答。</td></tr>
+        <tr><td>S3 File Gateway と FSx File Gateway</td><td>宛先が S3（object、安価、lifecycle）か FSx for Windows（本物の SMB ファイルシステム、NTFS ACL、DFS）か。Windows ACL を完全に必要とする設問や Windows アプリ → FSx File Gateway。</td></tr>
+        <tr><td>Volume Gateway の cached と stored</td><td>Cached: 主データは S3、ローカルは cache のみ（ローカルディスクを節約）。Stored: 主データはローカル、S3 は backup のみ（全データに低レイテンシ）。名前で覚える: 「stored」は <b>現地に保存</b>。</td></tr>
+        <tr><td>Tape Gateway と Glacier の直接利用</td><td>Tape Gateway は、テープに書く backup ソフトをすでに持ち、手順を変えたくない会社向け。設問に backup software の話がなければ、S3 lifecycle → Glacier のほうが簡単。</td></tr>
+        <tr><td>AWS Backup と自前の snapshot（Data Lifecycle Manager）</td><td>DLM は EBS snapshot と AMI だけを扱う。AWS Backup は多くのサービスを1つの policy でカバーし、cross-account、Vault Lock もある。設問にリソースが2種類以上 → AWS Backup。</td></tr>
+        <tr><td>AWS Backup Vault Lock と S3 Object Lock</td><td>どちらも WORM の考え方だが、Vault Lock は vault 内の <b>backup</b> を、Object Lock は bucket 内の <b>object</b> を保護する。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>on-premises NFS/SMB, store in S3 <b>→ S3 File Gateway</b></span><span>iSCSI, all data local, async backup <b>→ Volume Gateway stored</b></span><span>iSCSI, cache hot data, bulk in S3 <b>→ Volume Gateway cached</b></span><span>replace tape backup, existing backup software <b>→ Tape Gateway</b></span><span>petabytes, limited bandwidth, weeks <b>→ Snowball Edge</b></span><span>rugged, portable, few TB <b>→ Snowcone</b></span><span>online migration NFS to S3/EFS/FSx, scheduled <b>→ DataSync</b></span><span>SFTP endpoint to S3 <b>→ Transfer Family</b></span><span>centralized backup, cross-account, immutable <b>→ AWS Backup + Vault Lock</b></span><span>EFS to EFS another Region <b>→ DataSync</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">13. ある会社は NAS 上に 500 TB のデータがあり、Internet 回線は 200 Mbps で、3週間以内に S3 へ移行する必要があります。どの方法を選びますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Snowball Edge Storage Optimized を複数台注文し、コピーして返送します。</b> 500 TB を 200 Mbps で送ると約230日かかり、DataSync や Transfer Acceleration では間に合いません。Snowmobile は 10 PB 以上向けです。Direct Connect は敷設に数週間かかり、3週間には間に合いません。</p></div>
+      <div class="q"><p class="qt">14. オンプレミスの会計アプリが SMB ファイルサーバーに書き込んでおり、使用中のファイルは低レイテンシを維持したいが NAS の容量が尽きました。古いデータは後で Athena を実行するため S3 に置く必要があります。<em>Least change to the application</em>。何を選びますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>SMB share を持つ S3 File Gateway。</b> アプリからは SMB share のまま見え、よく使うファイルはローカル cache にあり、全データは S3 に object として保存されるので Athena で読め、lifecycle で古いファイルを IA/Glacier に移せます。DataSync は移行するだけで、アプリが使い続けることはできません。Volume Gateway は block なので Athena で読めません。</p></div>
+      <div class="q"><p class="qt">15. ある会社は Organizations 内に 40 アカウントがあり、EC2、RDS、EFS、DynamoDB を使っています。要件: 毎日 backup して35日保持する1つのポリシー、backup は専用アカウントにコピーし、ランサムウェア対策として <em>admin でも削除できない</em> こと。何を選びますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>AWS Backup: tag によって Organizations 全体に適用する backup plan、隔離したアカウントの vault への cross-account コピー、Compliance mode の Vault Lock を有効化。</b> サービスごとに snapshot を取る Lambda を書いても4種類のリソースをカバーできず、WORM もありません。Object Lock は S3 にしか適用できません。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HANDS-ON ============ -->
+<section id="handson">
+  <span class="eyebrow">ハンズオン</span>
+  <h2>Hands-on: 5 ラボ</h2>
+  <p>PowerShell 上の AWS CLI v2 で、profile <code>saa</code>、Region <code>ap-northeast-1</code> を使って行います（第1週と同様に <code>$env:AWS_PROFILE = "saa"</code> を設定）。Bucket 名は全世界で一意である必要があるため、接尾辞 <code>quy-2026</code> を自分のものに置き換えてください。今週は時間課金のリソースはなく、費用は S3 の数 MB と数回の request だけです。</p>
+
+  <div class="card">
+    <h3>Lab 1. S3 static website、versioning、上書きアップロードと旧バージョンの復元</h3>
+    <ol class="steps">
+      <li><div><p>東京に bucket を作成します（<code>us-east-1</code> 以外では <code>LocationConstraint</code> が必須）:</p>
+<pre><code>aws s3api create-bucket --bucket saa-s3-web-quy-2026 --region ap-northeast-1 --create-bucket-configuration LocationConstraint=ap-northeast-1
+aws s3api get-public-access-block --bucket saa-s3-web-quy-2026   # 4つとも true: デフォルトで public を遮断</code></pre></div></li>
+      <li><div><p><b>この bucket だけ</b> Block Public Access を解除し（website には public read が必要）、static website hosting を有効にします:</p>
+<pre><code>aws s3api put-public-access-block --bucket saa-s3-web-quy-2026 --public-access-block-configuration BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false
+aws s3 website s3://saa-s3-web-quy-2026/ --index-document index.html --error-document error.html</code></pre></div></li>
+      <li><div><p>ファイル <code>public-read.json</code> を作り、誰でも GetObject できる bucket policy を付けます（object のみ、ListBucket は不可）:</p>
+<pre><code>{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Sid": "PublicReadGetObject",
+    "Effect": "Allow",
+    "Principal": "*",
+    "Action": "s3:GetObject",
+    "Resource": "arn:aws:s3:::saa-s3-web-quy-2026/*"
+  }]
+}</code></pre>
+<pre><code>aws s3api put-bucket-policy --bucket saa-s3-web-quy-2026 --policy file://public-read.json
+aws s3api get-bucket-policy-status --bucket saa-s3-web-quy-2026   # "IsPublic": true</code></pre></div></li>
+      <li><div><p>HTML ファイルを2つ作ってアップロードします。ブラウザで website endpoint を開きます（<b>http</b> であり https ではない点に注意）:</p>
+<pre><code>Set-Content -Path index.html -Value "&lt;h1&gt;Ban 1 - SAA tuan 3&lt;/h1&gt;" -Encoding utf8
+Set-Content -Path error.html -Value "&lt;h1&gt;Khong tim thay&lt;/h1&gt;" -Encoding utf8
+aws s3 cp index.html s3://saa-s3-web-quy-2026/ --content-type text/html
+aws s3 cp error.html s3://saa-s3-web-quy-2026/ --content-type text/html
+# 開く: http://saa-s3-web-quy-2026.s3-website-ap-northeast-1.amazonaws.com
+# 試す: http://saa-s3-web-quy-2026.s3-website-ap-northeast-1.amazonaws.com/khong-co.html → error.html のページ</code></pre></div></li>
+      <li><div><p>Versioning を有効にし、<code>index.html</code> の2版目で上書きアップロードして、version 一覧を見ます:</p>
+<pre><code>aws s3api put-bucket-versioning --bucket saa-s3-web-quy-2026 --versioning-configuration Status=Enabled
+Set-Content -Path index.html -Value "&lt;h1&gt;Ban 2 - da sua&lt;/h1&gt;" -Encoding utf8
+aws s3 cp index.html s3://saa-s3-web-quy-2026/ --content-type text/html
+aws s3api list-object-versions --bucket saa-s3-web-quy-2026 --prefix index.html --query "Versions[].{Id:VersionId,Latest:IsLatest,Date:LastModified}" --output table</code></pre><p>Version が2つ見えます: 1版目の <code>VersionId</code> は <code>null</code>（versioning 有効化前にアップロード）、2版目は長い ID で <code>IsLatest = True</code>。ページを再読み込みすると「Ban 2」が表示されます。</p></div></li>
+      <li><div><p>2版目を本当に削除して（version ID 付きの delete）1版目に戻します:</p>
+<pre><code>aws s3api delete-object --bucket saa-s3-web-quy-2026 --key index.html --version-id &lt;2版目の ID&gt;
+aws s3api list-object-versions --bucket saa-s3-web-quy-2026 --prefix index.html --output table   # null 版だけが残り IsLatest True</code></pre><p>ページを再読み込み: 「Ban 1」。2版目を失わない別の方法: <code>aws s3api copy-object --copy-source "saa-s3-web-quy-2026/index.html?versionId=null" --bucket saa-s3-web-quy-2026 --key index.html</code> で、1版目の内容を持つ3版目が作られます。</p></div></li>
+      <li><div><p>Delete marker の実験: version ID なしで削除して確認します:</p>
+<pre><code>aws s3 rm s3://saa-s3-web-quy-2026/error.html
+aws s3 ls s3://saa-s3-web-quy-2026/                          # error.html が消える
+aws s3api list-object-versions --bucket saa-s3-web-quy-2026 --prefix error.html   # DeleteMarkers と Versions がある
+aws s3api delete-object --bucket saa-s3-web-quy-2026 --key error.html --version-id &lt;DeleteMarker の VersionId&gt;
+aws s3 ls s3://saa-s3-web-quy-2026/                          # error.html が再び現れる</code></pre></div></li>
+    </ol>
+    <div class="note">この bucket は Lab 2 と Lab 5 まで残しておきます。Public な bucket にはテスト用の HTML だけを置き、それ以外は何もアップロードしないでください。</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 2. Lifecycle rule: 30日後に Glacier へ移行、noncurrent version の expire</h3>
+    <ol class="steps">
+      <li><div><p>3つのアクションを持つ <code>lifecycle.json</code> を作ります: current version を30日後に Glacier Flexible Retrieval へ移行、noncurrent version を30日後に削除（最新3版までは保持）、途中の multipart を7日後に中止:</p>
+<pre><code>{
+  "Rules": [
+    {
+      "ID": "archive-and-clean",
+      "Status": "Enabled",
+      "Filter": { "Prefix": "" },
+      "Transitions": [ { "Days": 30, "StorageClass": "GLACIER" } ],
+      "NoncurrentVersionExpiration": { "NoncurrentDays": 30, "NewerNoncurrentVersions": 3 },
+      "AbortIncompleteMultipartUpload": { "DaysAfterInitiation": 7 }
+    }
+  ]
+}</code></pre><p>API での class 名: <code>STANDARD_IA</code>、<code>ONEZONE_IA</code>、<code>INTELLIGENT_TIERING</code>、<code>GLACIER_IR</code>、<code>GLACIER</code>（= Flexible Retrieval）、<code>DEEP_ARCHIVE</code>。</p></div></li>
+      <li><div><p>Lab 1 の bucket に付けて、読み直します:</p>
+<pre><code>aws s3api put-bucket-lifecycle-configuration --bucket saa-s3-web-quy-2026 --lifecycle-configuration file://lifecycle.json
+aws s3api get-bucket-lifecycle-configuration --bucket saa-s3-web-quy-2026</code></pre></div></li>
+      <li><div><p>誤った rule を試して30日の制約を確認します: <code>Transitions</code> を <code>{ "Days": 10, "StorageClass": "STANDARD_IA" }</code> に変えて再度 put します。期待されるエラーは <code>InvalidArgument: 'Days' in Transition action must be greater than or equal to 30 for storageClass 'STANDARD_IA'</code>。30日に戻せば通ります。Glacier にはこの制約はありません（Days 1 でも有効）。</p></div></li>
+      <li><div><p>Console で確認: S3 → bucket → <b>Management → Lifecycle rules</b> で rule を開くと timeline 図が見えます。Lifecycle はバックグラウンドで動くため、今週中に class が変わる object はありません。すぐに Glacier の object を見たいなら直接アップロードします: <code>aws s3 cp index.html s3://saa-s3-web-quy-2026/archive/test.html --storage-class GLACIER</code> の後 <code>aws s3api head-object --bucket saa-s3-web-quy-2026 --key archive/test.html</code> で <code>"StorageClass": "GLACIER"</code> が見えます。<code>aws s3 cp s3://saa-s3-web-quy-2026/archive/test.html .</code> を試すと、まだ restore していないため <code>InvalidObjectState</code> エラーになります。</p></div></li>
+      <li><div><p>コマンドを覚えるために restore を試します（Bulk、コピーを1日保持）。Glacier Flexible Retrieval の Bulk は5〜12時間かかるので、待つ必要はありません:</p>
+<pre><code>aws s3api restore-object --bucket saa-s3-web-quy-2026 --key archive/test.html --restore-request "Days=1,GlacierJobParameters={Tier=Bulk}"
+aws s3api head-object --bucket saa-s3-web-quy-2026 --key archive/test.html   # "Restore": "ongoing-request=\"true\""</code></pre></div></li>
+    </ol>
+    <div class="note">GLACIER に置いた object は最低90日分課金されます（数 KB なので気にするほどではありません）。学習用アカウントなら Lab 5 で削除して問題ありません。</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 3. CLI で presigned URL を作り、ブラウザで開き、期限切れ後に試す</h3>
+    <ol class="steps">
+      <li><div><p>2つ目の <b>private</b> bucket を作り（Block Public Access はデフォルトのまま）、秘密のファイルをアップロードします:</p>
+<pre><code>aws s3api create-bucket --bucket saa-s3-private-quy-2026 --region ap-northeast-1 --create-bucket-configuration LocationConstraint=ap-northeast-1
+Set-Content -Path secret.txt -Value "chi nguoi co link moi doc duoc" -Encoding utf8
+aws s3 cp secret.txt s3://saa-s3-private-quy-2026/secret.txt
+# 直接開いてみる: https://saa-s3-private-quy-2026.s3.ap-northeast-1.amazonaws.com/secret.txt → AccessDenied (XML)</code></pre></div></li>
+      <li><div><p>有効期間60秒の presigned URL を作り、ブラウザで開きます:</p>
+<pre><code>aws s3 presign s3://saa-s3-private-quy-2026/secret.txt --expires-in 60</code></pre><p>URL にはパラメーター <code>X-Amz-Algorithm</code>、<code>X-Amz-Credential</code>（<code>quy-admin</code> の access key）、<code>X-Amz-Date</code>、<code>X-Amz-Expires=60</code>、<code>X-Amz-Signature</code> が含まれます。URL をそのままブラウザに貼ると、bucket が private でブラウザが AWS にログインしていなくてもファイルの内容が見えます。</p></div></li>
+      <li><div><p>60秒以上待って再読み込み: <b>Request has expired</b> というメッセージの <code>AccessDenied</code> XML エラーになります。<code>X-Amz-Signature</code> を1文字変えて読み込むと <code>SignatureDoesNotMatch</code>。この2つのエラーは「なぜリンクが開けないか」という形の設問によく出ます。</p></div></li>
+      <li><div><p>7日の上限を試す: <code>--expires-in 604800</code> は通り、<code>--expires-in 604801</code> は CLI に拒否されます。一時 role（SSO）の profile を使っている場合、7日を指定しても URL は session の期限までしか有効ではありません。</p></div></li>
+      <li><div><p>任意: <b>upload</b> 用の presigned URL には SDK が必要です（CLI の <code>presign</code> は GET しか作れない）。PowerShell と Python で:</p>
+<pre><code>pip install boto3
+python -c "import boto3; s=boto3.session.Session(profile_name='saa'); print(s.client('s3').generate_presigned_url('put_object', Params={'Bucket':'saa-s3-private-quy-2026','Key':'upload.txt'}, ExpiresIn=300))"
+# URL を貼り付ける: Invoke-WebRequest -Method Put -Uri "&lt;URL&gt;" -InFile secret.txt
+aws s3 ls s3://saa-s3-private-quy-2026/   # upload.txt が見える</code></pre></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Lab 4. SSE-KMS を強制し public を遮断する bucket policy、CLI で検証</h3>
+    <ol class="steps">
+      <li><div><p>理論3のサンプル policy を <code>enforce.json</code>（bucket <code>saa-s3-private-quy-2026</code>）として保存し、bucket に付けます:</p>
+<pre><code>aws s3api put-bucket-policy --bucket saa-s3-private-quy-2026 --policy file://enforce.json
+aws s3api get-bucket-policy --bucket saa-s3-private-quy-2026 --query Policy --output text</code></pre></div></li>
+      <li><div><p>Encryption を指定しない upload と AES256 を指定した upload を試します: bucket policy の Deny が勝つため、admin であっても両方とも <b>AccessDenied</b> になるはずです:</p>
+<pre><code>aws s3 cp secret.txt s3://saa-s3-private-quy-2026/a.txt                 # AccessDenied
+aws s3 cp secret.txt s3://saa-s3-private-quy-2026/a.txt --sse AES256    # AccessDenied</code></pre></div></li>
+      <li><div><p>SSE-KMS（AWS managed key <code>aws/s3</code>）で upload すれば通ります。Metadata を確認します:</p>
+<pre><code>aws s3 cp secret.txt s3://saa-s3-private-quy-2026/a.txt --sse aws:kms
+aws s3api head-object --bucket saa-s3-private-quy-2026 --key a.txt --query "{SSE:ServerSideEncryption,Key:SSEKMSKeyId}"</code></pre><p>期待値は <code>"SSE": "aws:kms"</code> と key <code>aws/s3</code> の ARN。AWS managed key は key の保管料金がかからず、KMS の request 料金だけです（free tier は月 20,000 request、要確認）。</p></div></li>
+      <li><div><p>HTTPS の条件を試す: CLI はデフォルトで HTTPS を使うので遮断されません。HTTP を強制して Deny を確認します:</p>
+<pre><code>aws s3 ls s3://saa-s3-private-quy-2026/ --endpoint-url http://s3.ap-northeast-1.amazonaws.com   # AccessDenied
+aws s3 ls s3://saa-s3-private-quy-2026/                                                        # OK</code></pre></div></li>
+      <li><div><p>Public の遮断: Block Public Access が有効なことを確認し、Lab 1 と同じ public policy をこの bucket に付けてみて、拒否されることを確認します:</p>
+<pre><code>aws s3api get-public-access-block --bucket saa-s3-private-quy-2026        # 4つとも true
+aws s3api get-bucket-policy-status --bucket saa-s3-private-quy-2026        # "IsPublic": false
+(Get-Content public-read.json) -replace "saa-s3-web-quy-2026","saa-s3-private-quy-2026" | Set-Content public-private.json
+aws s3api put-bucket-policy --bucket saa-s3-private-quy-2026 --policy file://public-private.json   # AccessDenied: ... blocked by BlockPublicPolicy</code></pre><p>これが <code>BlockPublicPolicy</code> の意味です: public な policy の保存を許しません。試した後は <code>enforce.json</code> を付け直してください。</p></div></li>
+      <li><div><p><b>Account レベル</b> で Block Public Access を有効にします（学習用アカウントに推奨。Lab 1 の website は public でなくなりますが、もうすぐ片付けるので問題ありません）:</p>
+<pre><code>aws s3control put-public-access-block --account-id &lt;account-id&gt; --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
+# Lab 1 の website を再読み込み → 403 Forbidden</code></pre><p><b>IAM → Access Analyzer → S3</b>（または S3 Console → Access analyzer for S3）を開くと、この手順の前は web bucket が public として一覧に出て、後は空になります。</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Lab 5. 片付け: version 付き bucket を空にする、第2週のリソースを削除、Billing を確認</h3>
+    <ol class="steps">
+      <li><div><p>Versioning 付きの bucket は <code>aws s3 rb --force</code> では削除 <b>できません</b>（このコマンドは current version しか消さず、旧 version と delete marker が残る）。最も簡単な方法: Console → bucket を選択 → <b>Empty</b> → <i>permanently delete</i> と入力 → その後 <b>Delete</b>。CLI の方法: version と delete marker を1つずつ削除します:</p>
+<pre><code>$b = "saa-s3-web-quy-2026"
+aws s3api list-object-versions --bucket $b --query "Versions[].{Key:Key,VersionId:VersionId}" --output json | Out-File -Encoding ascii v.json
+aws s3api list-object-versions --bucket $b --query "DeleteMarkers[].{Key:Key,VersionId:VersionId}" --output json | Out-File -Encoding ascii dm.json
+# v.json と dm.json の各項目について:
+aws s3api delete-object --bucket $b --key &lt;Key&gt; --version-id &lt;VersionId&gt;
+aws s3 rb s3://$b</code></pre><p>まだ <code>BucketNotEmpty</code> が出る場合は、<code>list-object-versions</code> をもう一度実行して残りを探します（GLACIER の object も通常どおり削除でき、restore は不要）。</p></div></li>
+      <li><div><p>Versioning を有効にしていない private bucket はすぐ削除できます:</p>
+<pre><code>aws s3 rb s3://saa-s3-private-quy-2026 --force
+aws s3 ls   # 空なら正しい</code></pre></div></li>
+      <li><div><p>東京に残った第2週のリソース（EC2、EBS、snapshot、AMI、EFS、Elastic IP）を洗い出します:</p>
+<pre><code>aws ec2 describe-instances --query "Reservations[].Instances[].{Id:InstanceId,State:State.Name,Type:InstanceType}" --output table
+aws ec2 describe-volumes --query "Volumes[].{Id:VolumeId,State:State,Size:Size}" --output table
+aws ec2 describe-snapshots --owner-ids self --query "Snapshots[].{Id:SnapshotId,Size:VolumeSize}" --output table
+aws ec2 describe-images --owners self --query "Images[].{Id:ImageId,Name:Name}" --output table
+aws efs describe-file-systems --query "FileSystems[].{Id:FileSystemId,Size:SizeInBytes.Value}" --output table
+aws ec2 describe-addresses --query "Addresses[].{Ip:PublicIp,Instance:InstanceId}" --output table</code></pre><p>目標: すべての表が空（または instance が <code>terminated</code> 状態で、約1時間後に自動で消える）。削除の順序: instance を terminate → <code>available</code> の volume を削除 → AMI を deregister してからその snapshot を削除 → EFS を削除（先に mount target を削除）→ Elastic IP を release。</p></div></li>
+      <li><div><p>第2週の「別 AZ で起動し直す」ラボで誤って別の Region を選んでいた場合は、別の Region でも手順3を繰り返します: <code>aws ec2 describe-instances --region ap-northeast-3</code>。早い方法: Console → <b>Resource Groups &amp; Tag Editor → Tag Editor</b> → Regions: All regions、Resource types: All supported → Search で、残っているすべてのリソースが見えます。</p></div></li>
+      <li><div><p>Billing: <b>Billing and Cost Management → Bills</b> で今月の S3 と EC2 の行を確認します（1 USD 未満が目安）。<b>Cost Explorer</b> → group by Service で、第2週の EC2/EBS にいくらかかったかを見ます。<b>Free Tier</b> で残りの credit や使用量を確認します。</p></div></li>
+    </ol>
+    <div class="note ok">第3週の終わりには、アカウントを第1週末と同じ「何もない」状態に戻しておきましょう: bucket 0、instance 0、volume 0、EIP 0。第4週からは時間課金の NAT Gateway と ALB が登場するので、この片付けの習慣が実際の節約につながります。</div>
+  </div>
+</section>
+
+<!-- ============ 確認ポイント ============ -->
+<section id="moc">
+  <span class="eyebrow">確認ポイント</span>
+  <h2>資料を見ずに自力でできるべき2つのこと</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>1. EBS、EFS、instance store、S3（と FSx）をどの場面で使うか区別する</h3>
+      <p style="font-size:.94rem">回答の枠組みのヒント（隠してから自分で表を書く）:</p>
+      <ul style="font-size:.94rem">
+        <li><b>EBS</b>: block、<b>1台</b> の EC2 にアタッチ（io1/io2 の multi-attach は同一 AZ 内で最大16台）、<b>1つの AZ</b> 内、boot volume、database、AZ/Region をまたぐには snapshot が必要。キーワード <em>single instance</em>、<em>persistent block</em>、<em>IOPS</em>。</li>
+        <li><b>Instance store</b>: host 上の物理ディスク、<b>stop/terminate で消える</b>、IOPS が最も高い、instance に付属して無料。キーワード <em>temporary</em>、<em>buffer / cache / scratch</em>、<em>highest IOPS</em>、<em>ephemeral</em>。</li>
+        <li><b>EFS</b>: NFS のファイル、<b>複数 AZ の複数 EC2</b> から同時にマウント、Linux、自動で伸縮、EBS より高い。キーワード <em>shared file system</em>、<em>concurrent access from multiple instances</em>、<em>POSIX</em>、<em>Linux</em>。</li>
+        <li><b>FSx</b>: 専用ファイルシステム: <b>Windows</b>（SMB、AD、NTFS ACL）、<b>Lustre</b>（HPC、ML、S3 連携）、<b>NetApp ONTAP</b>（NFS + SMB + iSCSI、snapshot、dedup）、OpenZFS。キーワード <em>Windows file share</em>、<em>high-performance computing</em>、<em>hundreds of GB/s</em>。</li>
+        <li><b>S3</b>: HTTP 経由の object、容量無制限、11 nines、マウント不可（File Gateway/Mountpoint 経由を除く）、最安、lifecycle、static website、data lake。キーワード <em>object</em>、<em>unlimited</em>、<em>static content</em>、<em>backup / archive</em>、<em>accessed over the internet / from Lambda</em>。</li>
+        <li>各ペアについて除外の一言を言えるようにする: 「複数 EC2 から同時に書く → EBS ではない」「boot volume が必要 → S3 ではない」「stop で消えてもよい → instance store」「Windows SMB → EFS ではなく FSx」。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>2. 設問のキーワードから S3 の storage class を選ぶ</h3>
+      <p style="font-size:.94rem">回答の枠組みのヒント: 4つの質問を順に自問してから class を決める。</p>
+      <ul style="font-size:.94rem">
+        <li><b>アクセス pattern は分かっているか?</b> 分からない / 変化する → <b>Intelligent-Tiering</b>。分かっている → 次へ。</li>
+        <li><b>頻繁にアクセスするか?</b> する → <b>Standard</b>。まれ（月単位）→ <b>Standard-IA</b>。再生成できるデータでさらに安くしたい → <b>One Zone-IA</b>。</li>
+        <li><b>Archive ならどれだけ待てるか?</b> Milliseconds（四半期単位）→ <b>Glacier Instant</b>。数分〜数時間 → <b>Glacier Flexible</b>（Expedited 1〜5分、Standard 3〜5時間、Bulk 5〜12時間）。12〜48時間、長年保管、最安 → <b>Deep Archive</b>。</li>
+        <li><b>Min duration / min size の罠はないか?</b> 128 KB 未満の object や30日未満で消えるデータは IA だと安くならない。90日未満なら Glacier、180日未満なら Deep Archive も安くならない。</li>
+        <li>あわせて覚える: 全 class が 11 nines。One Zone-IA は唯一の1 AZ の class。Lifecycle はコールド方向への一方通行で、IA へ移す前に30日必要。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card">
+    <h3>完全な比較表（確認ポイント1に答えるために暗記）</h3>
+    <div class="tbl"><table>
+      <tr><th></th><th>EBS</th><th>Instance store</th><th>EFS</th><th>FSx</th><th>S3</th></tr>
+      <tr><td>種類</td><td>Block</td><td>Block（物理）</td><td>File (NFS)</td><td>File (SMB / Lustre / ONTAP / OpenZFS)</td><td>Object (HTTP)</td></tr>
+      <tr><td>範囲</td><td>1 AZ</td><td>1 host</td><td>Region（複数 AZ）</td><td>種類により Multi-AZ</td><td>Region、bucket 名はグローバル</td></tr>
+      <tr><td>同時アタッチ</td><td>EC2 1台（multi-attach は最大16台、io1/io2）</td><td>EC2 1台</td><td>数千台の EC2、Lambda、オンプレミス</td><td>複数の EC2、オンプレミス</td><td>マウント不可、どこからでも API を呼ぶ</td></tr>
+      <tr><td>Stop 時の永続性</td><td>保持</td><td><b>消える</b></td><td>保持</td><td>保持</td><td>保持、11 nines</td></tr>
+      <tr><td>容量</td><td>Volume あたり最大 64 TiB（要確認）</td><td>Instance type による</td><td>自動伸縮、petabyte</td><td>事前指定（Windows）、自動（Lustre scratch）</td><td>無制限、object は最大 5 TB</td></tr>
+      <tr><td>OS</td><td>Linux、Windows</td><td>Linux、Windows</td><td>Linux（Windows には公式の NFS client がない）</td><td>Windows (SMB)、Linux (Lustre、ONTAP)</td><td>HTTPS 経由で何でも</td></tr>
+      <tr><td>Backup</td><td>Snapshot（incremental、S3）</td><td>なし</td><td>AWS Backup</td><td>組み込み backup、AWS Backup</td><td>Versioning、replication</td></tr>
+      <tr><td>利用場面</td><td>Boot、database、単一マシンのアプリ</td><td>Cache、buffer、一時データ、超高 IOPS</td><td>共有 web content、CMS、home dir、container</td><td>Windows ファイル共有、HPC、ML training、NetApp 移行</td><td>Static web、backup、archive、data lake、log、media</td></tr>
+      <tr><td>相対価格</td><td>中程度</td><td>Instance に含まれる</td><td>GB あたり最も高い（IA と One Zone あり）</td><td>高い</td><td>最も安い</td></tr>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============ キーワード ============ -->
+<section id="tukhoa">
+  <span class="eyebrow">クイックレビュー</span>
+  <h2>第3週のキーワード表</h2>
+  <div class="tbl"><table>
+    <tr><th>設問に含まれる語</th><th>すぐに思い浮かべるもの</th></tr>
+    <tr><td><em>11 nines durability</em>, <em>unlimited storage</em>, <em>object</em></td><td>S3、どの class も 11 nines</td></tr>
+    <tr><td><em>unknown</em> または <em>changing access pattern</em></td><td>S3 Intelligent-Tiering</td></tr>
+    <tr><td><em>infrequently accessed</em>, <em>rapid access when needed</em></td><td>S3 Standard-IA</td></tr>
+    <tr><td><em>infrequently accessed</em>, <em>easily recreated</em>, <em>lowest cost</em></td><td>S3 One Zone-IA</td></tr>
+    <tr><td><em>archive</em>, <em>millisecond retrieval</em>, <em>once per quarter</em></td><td>S3 Glacier Instant Retrieval</td></tr>
+    <tr><td><em>archive</em>, <em>retrieve in minutes</em> または <em>within hours</em></td><td>S3 Glacier Flexible Retrieval (Expedited / Standard / Bulk)</td></tr>
+    <tr><td><em>retain 7 to 10 years</em>, <em>12 hours retrieval acceptable</em>, <em>lowest cost</em></td><td>S3 Glacier Deep Archive</td></tr>
+    <tr><td><em>transition after N days</em>, <em>delete after N days</em>, <em>least operational overhead</em></td><td>S3 Lifecycle rule</td></tr>
+    <tr><td><em>accidental deletion</em>, <em>recover previous version</em></td><td>Versioning (+ MFA Delete)</td></tr>
+    <tr><td><em>copy objects to another Region automatically</em></td><td>Cross-Region Replication（versioning が必要、遡及しない）</td></tr>
+    <tr><td>まだ replicate されていない <em>existing objects</em></td><td>S3 Batch Replication</td></tr>
+    <tr><td><em>replicate within 15 minutes</em>, <em>SLA</em></td><td>Replication Time Control</td></tr>
+    <tr><td><em>WORM</em>, <em>immutable</em>, <em>regulatory</em>, <em>no one can delete</em></td><td>S3 Object Lock (Compliance mode)、legal hold</td></tr>
+    <tr><td><em>encrypted at rest</em>, <em>minimal effort</em></td><td>SSE-S3（デフォルト）</td></tr>
+    <tr><td><em>audit key usage</em>, <em>control key rotation</em></td><td>SSE-KMS + customer managed key</td></tr>
+    <tr><td><em>KMS throttling</em>, <em>reduce KMS request cost</em></td><td>S3 Bucket Key</td></tr>
+    <tr><td><em>customer manages encryption keys</em>、S3 が暗号化</td><td>SSE-C</td></tr>
+    <tr><td><em>encrypt before sending to AWS</em></td><td>Client-side encryption</td></tr>
+    <tr><td><em>enforce encryption / HTTPS on uploads</em></td><td>Condition 付きの bucket policy Deny</td></tr>
+    <tr><td><em>no bucket can be public</em>、アカウント全体</td><td>Account レベルの Block Public Access</td></tr>
+    <tr><td><em>share object temporarily</em>, <em>no AWS account</em>, <em>upload directly from browser</em></td><td>Presigned URL</td></tr>
+    <tr><td><em>global users upload large files faster</em></td><td>Transfer Acceleration + multipart upload</td></tr>
+    <tr><td><em>object larger than 5 GB</em>, <em>resume failed upload</em></td><td>Multipart upload</td></tr>
+    <tr><td><em>run code when object is created</em></td><td>S3 event notification → Lambda / SQS / SNS / EventBridge</td></tr>
+    <tr><td><em>static website</em> に <em>HTTPS</em> が必要</td><td>S3 + CloudFront</td></tr>
+    <tr><td><em>cross-origin</em>、別ドメインからの JavaScript</td><td>呼ばれる側の bucket に CORS</td></tr>
+    <tr><td><em>on-premises application</em>, <em>NFS/SMB</em>, <em>objects in S3</em>、ローカル cache</td><td>S3 File Gateway</td></tr>
+    <tr><td><em>iSCSI</em>, <em>block</em>、AWS へ backup</td><td>Volume Gateway（cached: データは S3、stored: データはローカル）</td></tr>
+    <tr><td><em>existing backup software</em>, <em>tape</em></td><td>Tape Gateway</td></tr>
+    <tr><td><em>petabytes</em>, <em>limited bandwidth</em>, <em>within weeks</em></td><td>Snowball Edge（10 PB 以上は Snowmobile）</td></tr>
+    <tr><td><em>online transfer</em>, <em>scheduled</em>, <em>NFS to EFS/S3/FSx</em>, <em>preserve metadata</em></td><td>AWS DataSync</td></tr>
+    <tr><td><em>SFTP / FTPS</em> endpoint</td><td>AWS Transfer Family</td></tr>
+    <tr><td><em>centralized backup</em>、複数サービス、<em>cross-account</em>, <em>immutable backups</em></td><td>AWS Backup、Vault Lock</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ CHECKLIST ============ -->
+<section id="checklist">
+  <span class="eyebrow">進捗</span>
+  <h2>第3週チェックリスト</h2>
+  <p style="font-size:.94rem;color:var(--muted)">ここでチェックすると、この端末上で進捗を記録できます。項目が終わったら、セッションで Claude に伝えて <code>AWS-SAA-checklist.md</code>（第2〜3週の部分）にチェックを入れてもらってください。</p>
+  <div class="card">
+    <h4>理論</h4>
+    <label class="check"><input type="checkbox" id="c1" data-ck><span>S3 の基本と storage class（Standard、IA、One Zone-IA、Intelligent-Tiering、Glacier Instant / Flexible / Deep Archive）</span></label>
+    <label class="check"><input type="checkbox" id="c2" data-ck><span>S3 の lifecycle、versioning、replication（CRR、SRR）、Object Lock、MFA Delete</span></label>
+    <label class="check"><input type="checkbox" id="c3" data-ck><span>S3 のセキュリティ: bucket policy、ACL、Block Public Access、SSE-S3 / SSE-KMS / SSE-C</span></label>
+    <label class="check"><input type="checkbox" id="c4" data-ck><span>S3 のその他の機能: presigned URL、Transfer Acceleration、multipart、event notification</span></label>
+    <label class="check"><input type="checkbox" id="c5" data-ck><span>Storage Gateway、Snow family、DataSync、AWS Backup、Transfer Family</span></label>
+    <h4>Hands-on</h4>
+    <label class="check"><input type="checkbox" id="c6" data-ck><span>Lab 1: S3 static website、versioning の有効化、上書きアップロードと旧バージョンの復元</span></label>
+    <label class="check"><input type="checkbox" id="c7" data-ck><span>Lab 2: 30日後に Glacier へ移す lifecycle rule、noncurrent version の expire</span></label>
+    <label class="check"><input type="checkbox" id="c8" data-ck><span>Lab 3: <code>aws s3 presign</code> で presigned URL を作成、ブラウザで開く、期限切れ後に試す</span></label>
+    <label class="check"><input type="checkbox" id="c9" data-ck><span>Lab 4: SSE-KMS を強制し public を遮断する bucket policy、CLI で検証</span></label>
+    <label class="check"><input type="checkbox" id="c10" data-ck><span>Lab 5: version 付き bucket を空にする、残った EC2/EBS/EFS を削除、Billing を確認</span></label>
+    <h4>確認ポイント</h4>
+    <label class="check"><input type="checkbox" id="c11" data-ck><span>EBS、EFS、instance store、S3（と FSx）をどの場面で使うか区別できる</span></label>
+    <label class="check"><input type="checkbox" id="c12" data-ck><span>設問のキーワードから S3 の storage class を選べる</span></label>
+    <h4>その他</h4>
+    <label class="check"><input type="checkbox" id="c13" data-ck><span>合同クイズの前に第2週のキーワード（EC2、EBS、EFS、FSx）を復習</span></label>
+    <label class="check"><input type="checkbox" id="c14" data-ck><span>第2〜3週のクイズ（<code>quiz/tuan-02-03.md</code>、40問）で 80% 以上</span></label>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  // Xem đáp án
+  document.querySelectorAll('[data-reveal]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var a=b.parentElement.querySelector('.ans');
+      a.hidden=!a.hidden; b.textContent=a.hidden?'答えを見る':'答えを隠す';
+    });
+  });
+  // Checklist lưu trên máy này
+  var boxes=document.querySelectorAll('[data-ck]'), KEY='saa-tuan-03';
+  var saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  function update(){
+    var n=0; boxes.forEach(function(c){ c.closest('.check').classList.toggle('done',c.checked); if(c.checked)n++; });
+    document.getElementById('bar').style.width=(n/boxes.length*100)+'%';
+    document.getElementById('pct').textContent=n+'/'+boxes.length;
+  }
+  boxes.forEach(function(c){
+    if(saved[c.id])c.checked=true;
+    c.addEventListener('change',function(){ saved[c.id]=c.checked; try{ localStorage.setItem(KEY,JSON.stringify(saved)); }catch(e){} update(); });
+  });
+  update();
+  // Đánh dấu mục đang đọc
+  var links=document.querySelectorAll('.toc a'), secs=[];
+  links.forEach(function(l){ var s=document.querySelector(l.getAttribute('href')); if(s)secs.push([s,l]); });
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ links.forEach(function(l){l.classList.remove('active')}); secs.forEach(function(p){ if(p[0]===e.target)p[1].classList.add('active'); }); } }); },{rootMargin:'-20% 0px -70% 0px'});
+    secs.forEach(function(p){ io.observe(p[0]); });
+  }
+})();
+</script>

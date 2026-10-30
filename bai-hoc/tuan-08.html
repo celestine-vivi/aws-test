@@ -1,0 +1,1281 @@
+<title>SAA Tuần 8 Bảo mật Giám sát</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky mục lục bên trái (desktop), cột nội dung 760px bên phải; xếp một cột ở màn hẹp. */
+:root{
+  --bg:#f2f4f7; --surface:#ffffff; --surface-2:#e9edf2; --line:#d3dae3;
+  --fg:#172030; --muted:#5a6676; --accent:#1c6e8c; --accent-soft:#dcecf3;
+  --warm:#b35a00; --warm-soft:#fbe9d6; --ok:#2a7d4f; --ok-soft:#dcf0e4; --bad:#b3362b; --bad-soft:#f8dedb;
+  --display:"Manrope","IBM Plex Sans",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+a{color:var(--accent)}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:800}
+h2{font-size:1.5rem;font-weight:800;padding-top:8px}
+h3{font-size:1.12rem;font-weight:700}
+h4{font-size:.95rem;font-weight:700}
+p{margin:0}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+pre{font-family:var(--mono);font-size:.84rem;line-height:1.5;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:0}
+pre code{background:none;padding:0;font-size:inherit}
+em{color:var(--warm);font-style:italic}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* Header */
+.hero{max-width:1120px;margin:0 auto;padding-block:36px 20px;display:flex;flex-direction:column;gap:12px}
+.hero .lead{max-width:62ch;color:var(--muted);font-size:1.02rem}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.88rem;color:var(--muted)}
+.meta b{color:var(--fg);font-weight:600}
+.progress{display:flex;align-items:center;gap:12px;font-size:.88rem;color:var(--muted)}
+.bar{flex:1;max-width:320px;height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+
+/* Two columns */
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;align-items:start}
+.toc{position:sticky;top:max(12px,env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:2px;font-size:.9rem}
+.toc a{color:var(--muted);text-decoration:none;padding:6px 10px;border-left:2px solid var(--line);display:block}
+.toc a:hover,.toc a.active{color:var(--fg);border-left-color:var(--accent)}
+.toc .grp{margin-top:10px}
+main{display:flex;flex-direction:column;gap:56px;min-width:0;max-width:780px}
+section{display:flex;flex-direction:column;gap:18px;scroll-margin-top:16px}
+@media (max-width:860px){ .wrap{grid-template-columns:1fr;gap:24px} .toc{position:static;flex-direction:row;flex-wrap:wrap;gap:6px} .toc a{border:1px solid var(--line);border-radius:99px;padding:4px 10px} .toc .grp{margin:0} .toc a.active{border-color:var(--accent)} }
+
+/* Blocks */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.block{display:flex;flex-direction:column;gap:8px}
+.block > .eyebrow{color:var(--accent)}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:5px}
+li::marker{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.kw{display:flex;flex-wrap:wrap;gap:8px}
+.kw span{background:var(--warm-soft);color:var(--warm);border-radius:4px;padding:3px 9px;font-size:.86rem;font-style:italic}
+.kw span b{font-style:normal;font-weight:600;color:var(--fg)}
+.note{border-left:3px solid var(--warm);background:var(--warm-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.94rem}
+.note.ok{border-color:var(--ok);background:var(--ok-soft)}
+.note.bad{border-color:var(--bad);background:var(--bad-soft)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;font-size:.84rem}
+tr:last-child td{border-bottom:0}
+td.c{text-align:center}
+
+/* Checklist */
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:6px;cursor:pointer}
+.check:hover{background:var(--surface-2)}
+.check input{margin-top:5px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.check.done{color:var(--muted);text-decoration:line-through}
+
+/* Quiz reveal */
+.q{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.q .qt{font-weight:500}
+.q button{align-self:flex-start;font:inherit;font-size:.86rem;padding:5px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer}
+.q button:hover{background:var(--accent);color:var(--surface)}
+.q button:focus-visible,.check input:focus-visible,.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.q .ans{font-size:.94rem;border-top:1px dashed var(--line);padding-top:8px}
+.q .ans b{color:var(--ok)}
+
+/* Steps */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:12px;padding:0;list-style:none}
+.steps li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:start}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--mono);font-size:.8rem;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:500;margin-top:2px}
+.steps li > div{display:flex;flex-direction:column;gap:6px;min-width:0}
+
+/* Flow diagram */
+.flow{display:flex;flex-direction:column;gap:0;align-items:stretch;max-width:520px}
+.flow .n{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:.94rem}
+.flow .n .tag{font-family:var(--mono);font-size:.74rem;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.tag.deny{background:var(--bad-soft);color:var(--bad)} .tag.allow{background:var(--ok-soft);color:var(--ok)} .tag.next{background:var(--surface-2);color:var(--muted)}
+.flow .arrow{height:22px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--mono);font-size:.78rem}
+.flow .arrow::before{content:"";width:1px;height:100%;background:var(--line);position:absolute}
+.flow .arrow{position:relative} .flow .arrow span{background:var(--bg);padding:0 6px;position:relative}
+
+svg text{font-family:var(--body)}
+.diag{overflow-x:auto}
+.diag svg{width:100%;max-width:700px;height:auto;display:block}
+.sv-region{fill:var(--surface);stroke:var(--accent)} .sv-az{fill:var(--accent-soft);stroke:var(--accent)} .sv-edge{fill:var(--warm-soft);stroke:var(--warm)}
+.sv-t{fill:var(--fg);font-size:13px} .sv-m{fill:var(--muted);font-size:11px} .sv-line{stroke:var(--line)}
+@media (prefers-reduced-motion: reduce){ .bar i{transition:none} }
+</style>
+
+<header class="hero">
+  <span class="eyebrow">AWS SAA-C03 · Lộ trình 12 tuần · Tuần 8</span>
+  <h1>Bảo mật, giám sát, quản trị</h1>
+  <p class="lead">Tuần nặng nhất về số dịch vụ: mã hóa (KMS, ACM, CloudHSM), bí mật (Secrets Manager, Parameter Store), bảo vệ biên (WAF, Shield, Network Firewall), phát hiện (GuardDuty, Inspector, Macie, Security Hub, Config), danh tính (Cognito, STS, Identity Center), đa account (Organizations, SCP, Control Tower), giám sát (CloudTrail, CloudWatch, Systems Manager), IaC và chi phí. Mục tiêu cuối tuần: nhìn một câu hỏi có chữ <em>rotate credentials</em>, <em>SQL injection</em>, <em>compromised instance</em>, <em>PII in S3</em> là biết ngay dịch vụ nào, không nhầm với dịch vụ bên cạnh.</p>
+  <div class="meta"><span>Nhịp học: <b>1,5 đến 2 giờ/ngày</b></span><span>Domain liên quan: <b>SEC 30%</b> (domain lớn nhất), <b>COST 20%</b></span><span>Chi phí lab tuần này: <b>khoảng 1 đến 2 USD</b> (KMS key, Secrets Manager, RDS vài giờ; cần kiểm tra lại giá)</span></div>
+  <div class="progress"><span>Tiến độ checklist</span><div class="bar"><i id="bar"></i></div><span id="pct">0/21</span></div>
+</header>
+
+<div class="wrap">
+<nav class="toc" aria-label="Mục lục">
+  <a href="#ke-hoach">Kế hoạch 7 ngày</a>
+  <span class="grp eyebrow">Lý thuyết</span>
+  <a href="#kms">1. KMS, ACM, CloudHSM</a>
+  <a href="#secrets">2. Secrets Manager với Parameter Store</a>
+  <a href="#edge">3. WAF, Shield, Firewall</a>
+  <a href="#detect">4. GuardDuty, Inspector, Macie, Config</a>
+  <a href="#cognito">5. Cognito, STS, Identity Center</a>
+  <a href="#org">6. Organizations, SCP, Control Tower</a>
+  <a href="#monitor">7. CloudTrail, CloudWatch, SSM</a>
+  <a href="#iac">8. CloudFormation, Beanstalk, chi phí</a>
+  <span class="grp eyebrow">Thực hành</span>
+  <a href="#handson">Hands-on 7 lab</a>
+  <a href="#moc">Mốc kiểm tra</a>
+  <a href="#tukhoa">Bảng từ khóa đề thi</a>
+  <a href="#checklist">Checklist tuần</a>
+</nav>
+
+<main>
+
+<section id="ke-hoach">
+  <h2>Kế hoạch 7 ngày</h2>
+  <p>Tuần này có 12 mục lý thuyết gộp thành 8 bài, nên mỗi ngày học 1 đến 2 bài rồi làm lab đi kèm ngay. Lab 1 tạo EC2 dùng chung cho lab 2 và lab 5, nhớ chỉ tạo một lần. Ngày 6 đến 7 là ôn hai mốc kiểm tra và làm quiz.</p>
+  <div class="tbl"><table>
+    <tr><th>Ngày</th><th>Lý thuyết</th><th>Hands-on</th></tr>
+    <tr><td>1</td><td>Bài 1: KMS, envelope encryption, rotation; ACM; CloudHSM</td><td>Lab 3: tạo KMS key, mã hóa EBS và S3, thử user thiếu <code>kms:Decrypt</code></td></tr>
+    <tr><td>2</td><td>Bài 2: Secrets Manager với Parameter Store. Bài 3: WAF, Shield, Firewall Manager, Network Firewall</td><td>Lab 4: Secrets Manager lưu mật khẩu RDS, bật rotation, đọc bằng CLI</td></tr>
+    <tr><td>3</td><td>Bài 4: GuardDuty, Inspector, Macie, Security Hub, Detective, Config, Trusted Advisor. Bài 5: Cognito, STS, Identity Center</td><td>Lab 1: EC2 + CloudWatch alarm CPU gửi SNS. Lab 5: Session Manager không mở SSH</td></tr>
+    <tr><td>4</td><td>Bài 6: Organizations, SCP, consolidated billing, Control Tower, RAM. Bài 7: CloudTrail, CloudWatch, Systems Manager</td><td>Lab 2: CloudTrail ghi S3, tìm lại hành động. Lab 6: SCP chặn Region (nếu có Organizations)</td></tr>
+    <tr><td>5</td><td>Bài 8: CloudFormation, Elastic Beanstalk, CDK, Cost Explorer, Budgets, Compute Optimizer</td><td>Lab 7: dọn dẹp, schedule key deletion, kiểm tra Billing</td></tr>
+    <tr><td>6 đến 7</td><td>Ôn hai mốc kiểm tra, đọc lại bảng từ khóa, đọc lại sổ câu sai các tuần trước</td><td>Nói "cho quiz" trong session để nhận <code>quiz/tuan-08.md</code> (30 câu), cần đạt 80%</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ 1. KMS, ACM, CLOUDHSM ============ -->
+<section id="kms">
+  <span class="eyebrow">Lý thuyết 1 / 8</span>
+  <h2>KMS và mã hóa, ACM, CloudHSM</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn: KMS là gì</span>
+      <ul>
+        <li><b>AWS KMS</b> (Key Management Service) tạo, lưu và dùng khóa mã hóa trong các HSM do AWS quản lý. Khóa <b>không bao giờ rời KMS ở dạng rõ</b>: bạn gửi dữ liệu (tối đa 4 KB mỗi lần gọi <code>Encrypt</code>) vào, KMS trả về bản mã. Gần như mọi dịch vụ AWS có "encryption at rest" (EBS, S3, RDS, DynamoDB, Lambda env, SQS, CloudTrail, Secrets Manager) đều mã hóa bằng khóa KMS.</li>
+        <li>KMS là dịch vụ <b>regional</b>: khóa tạo ở Tokyo chỉ dùng được ở Tokyo. Copy snapshot EBS/RDS đã mã hóa sang Region khác thì phải chỉ định khóa ở Region đích để mã hóa lại.</li>
+        <li>Mọi lần dùng khóa đều được ghi vào <b>CloudTrail</b> (ai, khi nào, khóa nào). Đây là lý do audit thích KMS hơn tự mã hóa.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Ba loại khóa theo người quản lý</span>
+      <div class="tbl"><table>
+        <tr><th>Loại</th><th>Ai tạo, ai thấy</th><th>Key policy, rotation</th><th>Giá (cần kiểm tra lại)</th><th>Khi đề hỏi</th></tr>
+        <tr><td><b>AWS owned key</b></td><td>AWS tạo và dùng chung cho nhiều account. Bạn không thấy, không quản lý, không có trong CloudTrail của bạn.</td><td>Không can thiệp được</td><td>Miễn phí</td><td>Mặc định của SSE-S3, DynamoDB, nhiều dịch vụ. Chọn khi đề chỉ cần "encrypted at rest" không yêu cầu kiểm soát.</td></tr>
+        <tr><td><b>AWS managed key</b></td><td>Tạo tự động trong account của bạn khi dịch vụ cần, tên <code>aws/s3</code>, <code>aws/ebs</code>, <code>aws/rds</code>. Thấy trong console, thấy trong CloudTrail.</td><td>Key policy do AWS viết, không sửa được. Tự rotate mỗi 1 năm, không tắt được.</td><td>Không tính tiền lưu khóa, chỉ tính request</td><td>Cần audit được việc dùng khóa nhưng không cần tự quản lý. Không dùng được cross-account.</td></tr>
+        <tr><td><b>Customer managed key (CMK)</b></td><td>Bạn tạo, đặt alias, viết key policy, bật tắt, lên lịch xóa.</td><td>Toàn quyền. Rotation tùy chọn, bật thì 1 năm (nay cho chỉnh 90 đến 2560 ngày, cần kiểm tra lại).</td><td>Khoảng 1 USD/khóa/tháng + 0,03 USD mỗi 10.000 request</td><td>Đề có chữ <em>full control over keys</em>, <em>key policy</em>, <em>cross-account</em>, <em>disable key</em>, <em>audit key usage</em>, <em>rotation every X</em>.</td></tr>
+      </table></div>
+      <p style="font-size:.92rem">Nhớ thêm: trong S3, <b>SSE-S3</b> dùng khóa AWS owned (miễn phí, không thấy), <b>SSE-KMS</b> dùng AWS managed <code>aws/s3</code> hoặc CMK (có CloudTrail, có thể cấm user thiếu quyền KMS), <b>SSE-C</b> bạn gửi khóa lên trong mỗi request (AWS không lưu), <b>client-side</b> bạn mã hóa trước khi upload. <b>DSSE-KMS</b> là mã hóa hai lớp cho yêu cầu compliance cao (nhận diện).</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Symmetric với asymmetric</span>
+      <ul>
+        <li><b>Symmetric (AES-256)</b>: một khóa dùng cả mã hóa và giải mã. Mặc định, nhanh, rẻ, dùng cho mọi dịch vụ AWS. Khóa không tải xuống được, muốn mã hóa phải gọi API KMS (hoặc dùng data key, xem envelope bên dưới).</li>
+        <li><b>Asymmetric (RSA, ECC)</b>: cặp public/private. <b>Public key tải được</b> để mã hóa hoặc verify ở ngoài AWS, private key không bao giờ rời KMS. Dùng khi bên ngoài AWS cần mã hóa gửi cho bạn, hoặc cần ký số (sign/verify). <b>Không có automatic rotation</b>.</li>
+        <li><b>HMAC key</b>: tạo và verify mã xác thực (nhận diện). Cũng không auto rotate.</li>
+      </ul>
+    </div>
+
+    <div class="block diag"><span class="eyebrow">Hình dung: envelope encryption</span>
+      <svg viewBox="0 0 700 300" role="img" aria-label="Sơ đồ envelope encryption: app gọi GenerateDataKey nhận data key rõ và data key đã mã hóa, mã hóa dữ liệu lớn cục bộ, lưu bản mã cùng data key đã mã hóa">
+        <rect x="20" y="30" width="220" height="240" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="130" y="56" text-anchor="middle" class="sv-t" font-weight="600">AWS KMS (Region)</text>
+        <rect x="45" y="80" width="170" height="60" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="130" y="104" text-anchor="middle" class="sv-t" font-weight="600">Customer managed key</text>
+        <text x="130" y="124" text-anchor="middle" class="sv-m">không bao giờ rời HSM</text>
+        <text x="130" y="175" text-anchor="middle" class="sv-m">1. GenerateDataKey</text>
+        <text x="130" y="192" text-anchor="middle" class="sv-m">trả về 2 thứ</text>
+        <text x="130" y="230" text-anchor="middle" class="sv-m">4. Decrypt(data key mã hóa)</text>
+        <text x="130" y="247" text-anchor="middle" class="sv-m">trả lại data key rõ</text>
+        <rect x="300" y="30" width="380" height="240" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="490" y="56" text-anchor="middle" class="sv-t" font-weight="600">Ứng dụng / dịch vụ (EBS, S3)</text>
+        <rect x="320" y="75" width="160" height="50" rx="8" class="sv-edge" stroke-width="1.5"/>
+        <text x="400" y="96" text-anchor="middle" class="sv-t">Data key rõ</text>
+        <text x="400" y="113" text-anchor="middle" class="sv-m">chỉ ở RAM, xóa sau dùng</text>
+        <rect x="500" y="75" width="160" height="50" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="580" y="96" text-anchor="middle" class="sv-t">Data key đã mã hóa</text>
+        <text x="580" y="113" text-anchor="middle" class="sv-m">lưu cạnh dữ liệu</text>
+        <rect x="320" y="160" width="340" height="50" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="490" y="181" text-anchor="middle" class="sv-t">2. Mã hóa dữ liệu lớn (GB) bằng data key rõ, cục bộ</text>
+        <text x="490" y="198" text-anchor="middle" class="sv-m">3. Lưu bản mã + data key đã mã hóa, xóa data key rõ</text>
+        <line x1="240" y1="100" x2="320" y2="100" class="sv-line" stroke-width="2"/>
+        <line x1="400" y1="125" x2="400" y2="160" class="sv-line" stroke-width="2"/>
+        <text x="490" y="236" text-anchor="middle" class="sv-m">Giải mã: gửi data key đã mã hóa lên KMS (cần kms:Decrypt)</text>
+        <text x="490" y="252" text-anchor="middle" class="sv-m">nhận lại data key rõ, giải mã cục bộ</text>
+      </svg>
+      <ul style="font-size:.94rem">
+        <li>KMS chỉ mã hóa trực tiếp tối đa <b>4 KB</b>. Dữ liệu lớn hơn phải dùng <b>envelope encryption</b>: gọi <code>GenerateDataKey</code> nhận data key rõ và bản mã của nó, mã hóa dữ liệu cục bộ bằng data key, chỉ lưu bản mã của data key. Dữ liệu không bao giờ phải đi qua mạng tới KMS.</li>
+        <li>Hệ quả cho đề: user muốn <b>upload</b> lên bucket SSE-KMS cần <code>kms:GenerateDataKey</code>, muốn <b>download</b> cần <code>kms:Decrypt</code>. Thiếu một trong hai thì AccessDenied dù policy S3 đủ. Lab 3 tái hiện đúng lỗi này.</li>
+        <li><b>Encryption context</b>: cặp key-value (ví dụ bucket name) gắn vào mỗi lần mã hóa, phải khớp khi giải mã, ghi vào CloudTrail. Chống việc lấy bản mã của chỗ này đem giải mã ở chỗ khác.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Key policy, IAM policy, grant</span>
+      <ul>
+        <li><b>Key policy</b> là resource-based policy gắn vào từng khóa và <b>bắt buộc phải có</b>. Khác với S3: nếu key policy không cho phép, IAM policy ở account cũng vô dụng. Key policy mặc định có statement <code>"Principal": {"AWS": "arn:aws:iam::ACCOUNT:root"}, "Action": "kms:*"</code>, nghĩa là "ủy quyền cho IAM policy trong account này quyết định". Xóa statement đó là IAM policy mất tác dụng với khóa.</li>
+        <li><b>Cross-account</b>: key policy ở account chủ phải Allow principal của account khác, đồng thời IAM policy ở account đó phải Allow các action kms. Giống luật cross-account S3 (giao của hai phía). Chia sẻ snapshot EBS/RDS mã hóa sang account khác <b>bắt buộc dùng CMK</b> (AWS managed <code>aws/ebs</code> không chia sẻ được).</li>
+        <li><b>Grant</b>: quyền tạm, có thể thu hồi, cấp cho một principal dùng khóa cho một vài action. Các dịch vụ AWS (EBS khi attach volume, RDS, Secrets Manager) tự tạo grant để dùng khóa thay bạn. Đề hỏi <em>temporary, programmatic permission to use a key</em> → grant.</li>
+        <li>Điều kiện hay gặp: <code>kms:ViaService</code> (chỉ cho dùng khóa qua S3 hoặc EBS), <code>kms:EncryptionContext</code>, <code>aws:PrincipalOrgID</code>.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Rotation, multi-Region, import, xóa</span>
+      <div class="tbl"><table>
+        <tr><th>Việc</th><th>Chi tiết cần nhớ</th></tr>
+        <tr><td><b>Automatic rotation</b></td><td>Chỉ cho <b>symmetric CMK</b> có key material do KMS tạo. Mặc định mỗi 1 năm. Rotation sinh key material mới nhưng <b>giữ key ID, ARN, alias không đổi</b>, material cũ được giữ để giải mã dữ liệu cũ, nên app không phải mã hóa lại gì cả. AWS managed key tự rotate 1 năm, không tắt được. Asymmetric, HMAC, imported material, custom key store: <b>không auto rotate</b>.</td></tr>
+        <tr><td><b>Manual rotation</b></td><td>Tạo khóa mới rồi <b>trỏ alias</b> sang khóa mới (<code>UpdateAlias</code>). App gọi bằng alias nên không đổi code. Dữ liệu cũ phải giữ khóa cũ (không xóa) để giải mã. Dùng cho asymmetric, imported, hoặc muốn rotate thường xuyên hơn.</td></tr>
+        <tr><td><b>Multi-Region key</b></td><td>Một primary key và các replica ở Region khác có <b>cùng key ID và key material</b>, nên bản mã ở Tokyo giải mã được ở Osaka mà không gọi KMS chéo Region. Dùng cho DynamoDB global tables mã hóa phía client, DR, backup chéo Region. Mỗi replica vẫn là resource riêng, có key policy riêng, tính tiền riêng. Không phải "global key".</td></tr>
+        <tr><td><b>Imported key material</b></td><td>Bạn sinh khóa ở HSM công ty rồi import vào KMS (BYOK). Có thể đặt ngày hết hạn, có thể <b>xóa material ngay</b> không cần chờ, nhưng mất material là mất luôn dữ liệu. Không auto rotation, bạn tự import material mới.</td></tr>
+        <tr><td><b>Xóa khóa</b></td><td>Không xóa ngay, phải <b>schedule deletion</b> với waiting period <b>7 đến 30 ngày</b> (mặc định 30). Trong thời gian chờ khóa ở trạng thái Pending deletion, không dùng được, có thể hủy. Hết hạn là mất vĩnh viễn, mọi dữ liệu mã hóa bằng khóa đó không khôi phục được. Thay vì xóa, nên <b>disable</b> khóa.</td></tr>
+        <tr><td><b>Giới hạn request</b></td><td>Mỗi account có quota request KMS theo giây mỗi Region (hàng nghìn request/giây, số cụ thể cần kiểm tra lại). S3 bucket nhiều object nhỏ dùng SSE-KMS dễ bị <code>ThrottlingException</code>. Giải pháp: bật <b>S3 Bucket Key</b> (S3 tạo một bucket-level key từ CMK, giảm tới 99% request KMS), hoặc dùng data key caching trong SDK.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Mã hóa EBS và RDS: hai bẫy hay ra đề</span>
+      <ul>
+        <li><b>Volume EBS chưa mã hóa không bật mã hóa tại chỗ được.</b> Đường đi: snapshot → copy snapshot có tick Encrypt (chọn CMK) → tạo volume mới từ snapshot đã mã hóa → đổi volume. Snapshot của volume mã hóa thì luôn mã hóa. Có thể bật <b>EBS encryption by default</b> theo Region để mọi volume mới tự mã hóa.</li>
+        <li><b>RDS cũng vậy</b>: chỉ chọn mã hóa lúc tạo. DB chưa mã hóa → snapshot → copy snapshot có mã hóa → restore thành DB mới. Read replica của DB mã hóa luôn mã hóa. Snapshot mã hóa muốn chia sẻ cross-account thì phải dùng CMK và chia sẻ cả khóa.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">ACM (Certificate Manager)</span>
+      <ul>
+        <li>Cấp và quản lý <b>chứng chỉ TLS/SSL</b>. <b>Public certificate miễn phí</b>, xác thực qua DNS (thêm CNAME, Route 53 làm tự động) hoặc email. Chứng chỉ do ACM cấp <b>tự động renew</b> nếu còn CNAME xác thực; chứng chỉ import từ ngoài thì <b>không tự renew</b>, bạn phải import lại (ACM gửi event EventBridge trước khi hết hạn, Config có rule <code>acm-certificate-expiration-check</code>).</li>
+        <li>Dùng với <b>ALB, NLB (TLS listener), CloudFront, API Gateway, Elastic Beanstalk, App Runner</b>. <b>Không</b> gắn trực tiếp vào EC2 và <b>không export được public certificate</b> (private key nằm trong ACM). Muốn TLS trên EC2 thì tự mua chứng chỉ hoặc dùng ACM Private CA (chứng chỉ private thì export được).</li>
+        <li>ACM là <b>regional</b>: chứng chỉ cho ALB ở Tokyo phải tạo ở Tokyo. Riêng <b>CloudFront bắt buộc chứng chỉ ở us-east-1</b> (N. Virginia) vì CloudFront là dịch vụ global. Đây là câu hỏi kinh điển.</li>
+        <li><b>ACM Private CA</b>: dựng CA nội bộ cấp chứng chỉ cho dịch vụ nội bộ, IoT, mTLS. Tính tiền theo tháng (khoảng 400 USD/CA/tháng, cần kiểm tra lại), không dùng cho lab.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">CloudHSM</span>
+      <ul>
+        <li>HSM vật lý <b>dành riêng (single-tenant)</b> đặt trong VPC của bạn, chứng nhận <b>FIPS 140-2 Level 3</b>. AWS lo phần cứng, bạn <b>tự quản lý user, khóa, backup</b>; AWS không có quyền truy cập khóa. Cluster trải nhiều AZ để HA. Giá theo giờ mỗi HSM (khoảng 1,5 USD/giờ, cần kiểm tra lại) nên không làm lab.</li>
+        <li>Dùng khi: compliance yêu cầu <em>dedicated hardware</em>, <em>customer must control the key hardware</em>; SSL offload cho web server; Oracle TDE; thư viện PKCS#11, JCE, CNG.</li>
+        <li>Kết hợp với KMS qua <b>custom key store</b>: API vẫn là KMS (các dịch vụ AWS dùng bình thường) nhưng key material nằm trong CloudHSM của bạn. Nay còn có external key store (XKS) để khóa nằm ngoài AWS hoàn toàn (nhận diện).</li>
+        <li>So với KMS: KMS multi-tenant, managed, tích hợp mọi dịch vụ, rẻ. CloudHSM single-tenant, bạn vận hành, tích hợp qua custom key store. KMS cũng đã có HSM đạt FIPS 140-2 Level 3 (cần kiểm tra lại), nhưng đề thi vẫn dùng cụm "Level 3, single-tenant, tự quản lý" để chỉ CloudHSM.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>Mã hóa S3 rẻ nhất, không cần audit khóa</td><td>SSE-S3</td><td>SSE-KMS với CMK (tốn 1 USD/tháng + request)</td></tr>
+        <tr><td>Audit được ai dùng khóa, cấm user cụ thể giải mã</td><td>SSE-KMS với CMK + key policy</td><td>SSE-S3 (không có khóa để gắn policy)</td></tr>
+        <tr><td>Khách tự giữ khóa, AWS không được lưu</td><td>SSE-C hoặc client-side encryption</td><td>SSE-KMS (AWS vẫn giữ khóa)</td></tr>
+        <tr><td>Rotate khóa mà không mã hóa lại dữ liệu</td><td>Automatic rotation (key ID không đổi)</td><td>Tạo khóa mới rồi re-encrypt toàn bộ</td></tr>
+        <tr><td>Rotate asymmetric key hoặc imported key</td><td>Manual rotation: tạo khóa mới, trỏ alias</td><td>Automatic rotation (không hỗ trợ)</td></tr>
+        <tr><td>Giải mã ở Region khác không gọi chéo Region</td><td>Multi-Region key</td><td>Copy khóa (không copy được) hay dùng một khóa global (KMS không có)</td></tr>
+        <tr><td>Chia sẻ snapshot EBS mã hóa cho account khác</td><td>Mã hóa bằng CMK, key policy cho account kia, share snapshot</td><td>Snapshot mã hóa bằng aws/ebs (không share được)</td></tr>
+        <tr><td>Chứng chỉ TLS cho CloudFront</td><td>ACM ở us-east-1</td><td>ACM ở Region của origin</td></tr>
+        <tr><td>Chứng chỉ TLS trên chính EC2</td><td>Mua ngoài hoặc ACM Private CA (export được)</td><td>ACM public (không export)</td></tr>
+        <tr><td>FIPS 140-2 Level 3, dedicated, tự quản lý khóa</td><td>CloudHSM</td><td>KMS mặc định</td></tr>
+        <tr><td>S3 nhiều request bị throttle KMS</td><td>S3 Bucket Key</td><td>Xin tăng quota (được nhưng không phải cách rẻ)</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>full control, key policy, audit key usage <b>→ customer managed key</b></span><span>encrypt data larger than 4 KB <b>→ envelope encryption, GenerateDataKey</b></span><span>rotate automatically without re-encrypting <b>→ KMS automatic rotation</b></span><span>decrypt in another Region <b>→ multi-Region key</b></span><span>bring your own key <b>→ imported key material</b></span><span>CloudFront HTTPS custom domain <b>→ ACM us-east-1</b></span><span>free TLS cert auto renew <b>→ ACM</b></span><span>dedicated HSM, FIPS 140-2 Level 3 <b>→ CloudHSM</b></span><span>customer provides key per request <b>→ SSE-C</b></span><span>KMS throttling with S3 <b>→ S3 Bucket Key</b></span><span>schedule key deletion <b>→ 7 đến 30 ngày</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">1. Ứng dụng phải mã hóa file 200 MB bằng KMS trước khi lưu. Developer gọi <code>kms:Encrypt</code> với cả file và nhận lỗi. Cách đúng?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Envelope encryption: gọi <code>GenerateDataKey</code>, mã hóa file cục bộ bằng data key rõ, lưu file mã hóa cùng data key đã mã hóa.</b> KMS chỉ nhận tối đa 4 KB mỗi request. Chia file thành các mẩu 4 KB rồi gọi KMS nhiều lần là sai thiết kế và tốn request.</p></div>
+      <div class="q"><p class="qt">2. IAM user có policy <code>s3:*</code> trên bucket dùng SSE-KMS với customer managed key. User upload được nhưng download bị AccessDenied. Thiếu gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Thiếu <code>kms:Decrypt</code> trên khóa đó</b> (ở IAM policy của user, và key policy phải ủy quyền cho IAM). Upload cần <code>kms:GenerateDataKey</code>, download cần <code>kms:Decrypt</code>. Bẫy: nhiều người tìm lỗi ở bucket policy, trong khi quyền S3 đã đủ.</p></div>
+      <div class="q"><p class="qt">3. Công ty có volume EBS 500 GB chưa mã hóa đang gắn vào EC2 production, cần mã hóa bằng CMK với <em>minimal downtime</em>. Làm gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Tạo snapshot, copy snapshot với tùy chọn encrypt bằng CMK, tạo volume mới từ snapshot mã hóa, dừng instance ngắn để đổi volume.</b> Không có nút "bật mã hóa" cho volume đang có. Bật EBS encryption by default chỉ ảnh hưởng volume tạo sau này.</p></div>
+      <div class="q"><p class="qt">4. Chọn 2 phát biểu đúng về KMS automatic rotation: (A) áp dụng cho asymmetric key, (B) key ID và ARN không đổi sau rotation, (C) phải mã hóa lại dữ liệu cũ, (D) key material cũ được giữ để giải mã dữ liệu cũ.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>B và D.</b> Asymmetric key không có auto rotation (A sai). Dữ liệu cũ vẫn giải mã được bằng material cũ nên không cần re-encrypt (C sai). Đây là lý do automatic rotation "trong suốt" với ứng dụng.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. SECRETS MANAGER vs PARAMETER STORE ============ -->
+<section id="secrets">
+  <span class="eyebrow">Lý thuyết 2 / 8</span>
+  <h2>Secrets Manager với Parameter Store</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <ul>
+        <li><b>Secrets Manager</b>: kho chứa <b>bí mật</b> (mật khẩu DB, API key, OAuth token) với tính năng chính là <b>rotation tự động</b>. Mọi secret đều mã hóa bằng KMS, có version (<code>AWSCURRENT</code>, <code>AWSPREVIOUS</code>, <code>AWSPENDING</code>), có resource policy nên chia sẻ cross-account được, nhân bản sang Region khác được. Xóa secret có <b>recovery window 7 đến 30 ngày</b> (hoặc <code>--force-delete-without-recovery</code>).</li>
+        <li><b>Systems Manager Parameter Store</b>: kho chứa <b>cấu hình</b> (chuỗi, danh sách, và SecureString cho dữ liệu nhạy cảm) theo <b>hierarchy</b> dạng <code>/app/prod/db/host</code>. Có version, có thể lấy cả nhánh bằng <code>GetParametersByPath</code>. Standard tier <b>miễn phí</b>. Không có rotation tích hợp.</li>
+        <li>Cả hai đều tích hợp CloudFormation dynamic reference (<code>{{resolve:secretsmanager:...}}</code>, <code>{{resolve:ssm-secure:...}}</code>), Lambda, ECS (inject vào env), và đều ghi CloudTrail. Parameter Store còn đọc được secret của Secrets Manager qua đường dẫn <code>/aws/reference/secretsmanager/ten-secret</code>.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Bảng so sánh (mốc kiểm tra 1)</span>
+      <div class="tbl"><table>
+        <tr><th>Tiêu chí</th><th>Secrets Manager</th><th>Parameter Store</th></tr>
+        <tr><td>Giá (cần kiểm tra lại)</td><td>Khoảng 0,40 USD/secret/tháng + 0,05 USD mỗi 10.000 API call. 30 ngày đầu dùng thử miễn phí.</td><td>Standard: miễn phí lưu, API chuẩn miễn phí. Advanced: khoảng 0,05 USD/param/tháng + tiền API.</td></tr>
+        <tr><td>Rotation tự động</td><td><b>Có</b>, theo lịch. Với RDS, Aurora, Redshift, DocumentDB có <b>managed rotation</b> không cần viết Lambda; với secret khác dùng Lambda rotation function (AWS có template).</td><td><b>Không có</b>. Muốn rotate phải tự viết EventBridge schedule + Lambda.</td></tr>
+        <tr><td>Tích hợp DB</td><td>RDS, Aurora, Redshift, DocumentDB: tick "manage master credentials in Secrets Manager" lúc tạo DB.</td><td>Không có tích hợp rotation với DB.</td></tr>
+        <tr><td>Mã hóa</td><td>Luôn mã hóa bằng KMS (aws/secretsmanager hoặc CMK).</td><td>String, StringList không mã hóa; <b>SecureString</b> mã hóa bằng KMS (aws/ssm hoặc CMK).</td></tr>
+        <tr><td>Cross-account</td><td><b>Có</b> qua resource policy + KMS CMK key policy.</td><td>Truyền thống không chia sẻ cross-account. Gần đây advanced parameter chia sẻ được qua RAM (cần kiểm tra lại), đề thi vẫn coi Secrets Manager là lựa chọn cross-account.</td></tr>
+        <tr><td>Kích thước, số lượng</td><td>Tối đa 64 KB/secret, hàng trăm nghìn secret.</td><td>Standard: 4 KB, 10.000 param/Region. Advanced: 8 KB, 100.000 param, có parameter policy (hết hạn, nhắc hết hạn, nhắc không đổi).</td></tr>
+        <tr><td>Hierarchy, đọc theo nhánh</td><td>Tên có thể có dấu "/" nhưng không có API đọc theo nhánh.</td><td><b>Có</b>, <code>GetParametersByPath --recursive</code>, phân quyền IAM theo prefix.</td></tr>
+        <tr><td>Nhân bản Region</td><td>Có (replica secret), dùng cho DR.</td><td>Không.</td></tr>
+        <tr><td>Throughput</td><td>Hàng nghìn request/giây (cần kiểm tra lại).</td><td>Standard 40 TPS, bật high throughput (tính tiền) lên 10.000 TPS (cần kiểm tra lại).</td></tr>
+      </table></div>
+      <div class="note ok">Quy tắc chọn: đề có <em>rotate credentials automatically</em>, <em>RDS password</em>, <em>share secret with another account</em> → <b>Secrets Manager</b>. Đề có <em>configuration data</em>, <em>free</em>, <em>hierarchy</em>, <em>no rotation needed</em>, <em>lowest cost</em> → <b>Parameter Store</b> (SecureString nếu nhạy cảm). Cả hai đều tốt hơn nhiều so với hard-code trong code, trong AMI, trong env variable không mã hóa.</div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Cách rotation hoạt động (để không chọn nhầm)</span>
+      <ul>
+        <li>Secrets Manager gọi Lambda rotation theo 4 bước: <code>createSecret</code> (sinh mật khẩu mới, gắn nhãn AWSPENDING) → <code>setSecret</code> (đổi mật khẩu trong DB) → <code>testSecret</code> (thử đăng nhập) → <code>finishSecret</code> (đổi nhãn AWSPENDING thành AWSCURRENT). Lambda phải với tới DB, nên nếu DB trong private subnet thì Lambda phải ở trong VPC và có đường tới Secrets Manager (NAT hoặc VPC endpoint).</li>
+        <li><b>Single user</b> rotation: đổi mật khẩu đúng user đó, có vài giây app dùng mật khẩu cũ bị lỗi. <b>Alternating users</b>: hai user luân phiên, không gián đoạn. Đề nói <em>without application downtime during rotation</em> → alternating users.</li>
+        <li>App nên gọi <code>GetSecretValue</code> khi khởi động và khi gặp lỗi xác thực (hoặc dùng client-side caching library), không hard-code giá trị.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Khi nào dùng</span>
+      <ul>
+        <li>Mật khẩu DB, API key bên thứ ba, cần rotate định kỳ theo compliance → Secrets Manager.</li>
+        <li>Hàng trăm tham số cấu hình (feature flag, endpoint, AMI ID mới nhất) đọc theo môi trường dev/stage/prod → Parameter Store, dùng hierarchy, phân quyền theo path.</li>
+        <li>AMI ID public của AWS: <code>/aws/service/ami-amazon-linux-latest/...</code> là public parameter của Parameter Store, dùng trong lab 1.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Cặp</th><th>Khác nhau ở chỗ</th></tr>
+        <tr><td>Parameter Store SecureString với Secrets Manager</td><td>Cả hai mã hóa bằng KMS và đều "secure". Khác ở rotation (chỉ Secrets Manager có), giá (SecureString standard miễn phí), cross-account (Secrets Manager).</td></tr>
+        <tr><td>Secrets Manager với KMS</td><td>KMS giữ <b>khóa</b> mã hóa, Secrets Manager giữ <b>giá trị bí mật</b> (được mã hóa bằng khóa KMS). Đề hỏi "store database password" không bao giờ là KMS.</td></tr>
+        <tr><td>Secrets Manager với IAM role</td><td>Nếu dịch vụ hỗ trợ IAM auth (RDS IAM database authentication, DynamoDB, S3) thì dùng role, không cần mật khẩu. Secrets Manager cho trường hợp bắt buộc có mật khẩu (DB legacy, API bên ngoài).</td></tr>
+        <tr><td>Recovery window của secret với waiting period của KMS key</td><td>Secret: 7 đến 30 ngày, có thể force delete ngay. KMS key: 7 đến 30 ngày, không bỏ qua được.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>rotate database credentials automatically <b>→ Secrets Manager</b></span><span>store configuration, free, hierarchy <b>→ Parameter Store</b></span><span>encrypted parameter <b>→ SecureString + KMS</b></span><span>share secret across accounts <b>→ Secrets Manager resource policy</b></span><span>rotation without downtime <b>→ alternating users</b></span><span>Lambda cannot reach DB during rotation <b>→ Lambda in VPC + endpoint</b></span><span>hard-coded credentials in code <b>→ chuyển sang Secrets Manager / role</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">5. Ứng dụng trên ECS cần mật khẩu RDS MySQL. Compliance yêu cầu đổi mật khẩu mỗi 30 ngày với <em>least operational overhead</em>. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Secrets Manager với rotation 30 ngày (managed rotation cho RDS), ECS task inject secret từ Secrets Manager.</b> Parameter Store SecureString rẻ hơn nhưng phải tự viết Lambda + EventBridge để rotate, không phải "least overhead". Hard-code trong task definition là sai hoàn toàn.</p></div>
+      <div class="q"><p class="qt">6. Team cần lưu 300 tham số cấu hình cho 3 môi trường, một số là API key, đọc được theo từng môi trường, <em>most cost-effective</em>. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Parameter Store standard tier, đặt theo hierarchy <code>/app/prod/...</code>, API key dùng SecureString.</b> 300 secret trên Secrets Manager tốn khoảng 120 USD/tháng mà không cần rotation. DynamoDB tự dựng thì phải tự lo mã hóa và phân quyền.</p></div>
+      <div class="q"><p class="qt">7. Rotation Lambda của Secrets Manager báo lỗi timeout khi đổi mật khẩu RDS trong private subnet. Nguyên nhân hay gặp nhất?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Lambda không ở trong VPC (không với tới RDS), hoặc ở trong VPC nhưng không có đường ra Secrets Manager (thiếu NAT Gateway hoặc VPC interface endpoint cho secretsmanager).</b> Hãy nhớ Lambda rotation vừa phải nói chuyện với DB (trong VPC) vừa phải gọi API Secrets Manager (ngoài VPC).</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. WAF, SHIELD, FIREWALL ============ -->
+<section id="edge">
+  <span class="eyebrow">Lý thuyết 3 / 8</span>
+  <h2>Bảo vệ biên: WAF, Shield, Firewall Manager, Network Firewall</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <ul>
+        <li><b>AWS WAF</b>: tường lửa <b>layer 7 (HTTP/HTTPS)</b>. Bạn tạo một <b>Web ACL</b> gồm các <b>rule</b> (tự viết hoặc <b>managed rule group</b> của AWS và Marketplace), mỗi rule có action Allow, Block, Count, CAPTCHA hoặc Challenge. Web ACL gắn vào <b>CloudFront, ALB, API Gateway (REST), AppSync, Cognito User Pool, App Runner, Verified Access</b>. <b>Không gắn vào NLB, không gắn vào EC2</b> trực tiếp (vì NLB và EC2 không hiểu HTTP). Web ACL cho CloudFront phải tạo ở us-east-1 (global).</li>
+        <li>Rule hay ra đề: <b>rate-based rule</b> (chặn IP gửi quá N request trong một khoảng, chống brute force và DDoS tầng 7 nhẹ), <b>IP set</b> (allow list, block list), <b>geo match</b> (chặn theo quốc gia), <b>SQL injection và XSS</b> match, <b>size constraint</b>, <b>regex</b>, <b>Bot Control</b> managed rule (chặn bot xấu), <b>Account Takeover Prevention</b> (nhận diện). WAF log gửi tới CloudWatch Logs, S3 hoặc Kinesis Data Firehose. Giá theo Web ACL, số rule và triệu request (cần kiểm tra lại).</li>
+        <li><b>Shield Standard</b>: chống DDoS <b>layer 3/4</b> (SYN flood, UDP reflection) tự động, <b>miễn phí</b>, bật sẵn cho mọi account, bảo vệ CloudFront, Route 53, Global Accelerator, ELB. Không cần làm gì.</li>
+        <li><b>Shield Advanced</b>: khoảng 3.000 USD/tháng, cam kết 1 năm (cần kiểm tra lại). Thêm: phát hiện và giảm thiểu DDoS <b>layer 7</b>, bảo vệ EC2 Elastic IP, ELB, CloudFront, Global Accelerator, Route 53; đội <b>Shield Response Team (SRT, tên cũ DRT)</b> hỗ trợ 24/7; <b>cost protection</b> (hoàn tiền chi phí tăng do DDoS, ví dụ Auto Scaling phình to); bao gồm WAF miễn phí cho resource được bảo vệ; dashboard và báo cáo DDoS; health-based detection với Route 53 health check.</li>
+        <li><b>Firewall Manager</b>: quản lý <b>tập trung trên AWS Organizations</b> các chính sách WAF, Shield Advanced, Security Group, Network Firewall, Route 53 Resolver DNS Firewall. Tạo policy một lần, tự áp cho mọi account và <b>resource mới tạo</b> trong tương lai. Yêu cầu Organizations và Config.</li>
+        <li><b>Network Firewall</b>: tường lửa managed đặt <b>ở mức VPC</b> (tạo firewall endpoint trong subnet riêng, route traffic đi qua). Stateless và stateful rule, <b>IDS/IPS</b> với <b>rule Suricata</b>, lọc theo <b>domain</b> (allow list tên miền cho traffic ra ngoài), TLS inspection, lọc theo protocol. Dùng cho traffic VPC ra Internet, giữa VPC qua Transit Gateway (inspection VPC tập trung), hoặc vào từ on-prem. Khác WAF ở chỗ WAF chỉ hiểu HTTP và gắn vào CloudFront/ALB, còn Network Firewall nhìn mọi gói ở layer 3 đến 7 đi qua VPC.</li>
+        <li>Nhắc lại cho đủ bộ: <b>Security Group</b> (stateful, theo instance/ENI, chỉ allow), <b>NACL</b> (stateless, theo subnet, allow và deny, chặn IP cụ thể), <b>Route 53 Resolver DNS Firewall</b> (chặn truy vấn DNS tới domain xấu, rẻ hơn Network Firewall khi chỉ cần lọc DNS).</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Bảng "tấn công gì → dịch vụ gì"</span>
+      <div class="tbl"><table>
+        <tr><th>Tình huống trong đề</th><th>Dịch vụ</th><th>Ghi chú</th></tr>
+        <tr><td><em>SQL injection</em>, <em>cross-site scripting</em>, lỗ hổng OWASP Top 10</td><td>WAF, managed rule group (Core rule set, SQL database)</td><td>Gắn vào CloudFront hoặc ALB phía trước app</td></tr>
+        <tr><td>Một IP gửi hàng nghìn request/phút, <em>brute force login</em>, HTTP flood nhỏ</td><td>WAF rate-based rule</td><td>Đếm request mỗi IP trong cửa sổ thời gian, vượt ngưỡng thì block</td></tr>
+        <tr><td>Chặn truy cập từ một quốc gia</td><td>WAF geo match, hoặc CloudFront geo restriction</td><td>CloudFront geo restriction chỉ allow/block theo nước, WAF linh hoạt hơn (kết hợp điều kiện)</td></tr>
+        <tr><td>Chặn một dải IP cụ thể vào subnet</td><td>NACL deny, hoặc WAF IP set nếu là web</td><td>Security Group không có deny</td></tr>
+        <tr><td><em>DDoS layer 3/4</em> (SYN flood, UDP reflection)</td><td>Shield Standard (đã có sẵn) + CloudFront, Route 53</td><td>Đáp án "bật Shield Standard" là bẫy vì nó luôn bật</td></tr>
+        <tr><td>DDoS lớn, cần <em>24/7 support</em>, <em>cost protection</em>, <em>layer 7</em>, báo cáo</td><td>Shield Advanced</td><td>Kèm WAF miễn phí, SRT, hoàn tiền scaling</td></tr>
+        <tr><td>Bot cào dữ liệu, scraping, credential stuffing</td><td>WAF Bot Control, CAPTCHA/Challenge, ATP</td><td>Managed rule tính tiền thêm</td></tr>
+        <tr><td>Hàng chục account, muốn mọi ALB mới tự có WAF</td><td>Firewall Manager</td><td>Cần Organizations; policy auto-remediate</td></tr>
+        <tr><td>Kiểm soát traffic EC2 ra Internet theo domain, <em>IDS/IPS</em>, <em>Suricata</em></td><td>Network Firewall</td><td>Đặt ở inspection VPC với Transit Gateway cho nhiều VPC</td></tr>
+        <tr><td>Chặn EC2 phân giải DNS tới domain độc hại, rẻ</td><td>Route 53 Resolver DNS Firewall</td><td>Chỉ lọc DNS, không nhìn gói dữ liệu</td></tr>
+        <tr><td>Bảo vệ API gắn sau NLB</td><td>Không gắn WAF được; đổi sang ALB hoặc đặt CloudFront/API Gateway trước</td><td>Bẫy hay gặp: WAF + NLB</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Khi nào dùng, xếp lớp phòng thủ</span>
+      <p style="font-size:.94rem">Kiến trúc chuẩn cho web public: <b>Route 53 → CloudFront (Shield Standard, WAF) → ALB (WAF, Security Group chỉ nhận từ CloudFront prefix list) → EC2 private subnet → Network Firewall cho traffic ra ngoài</b>. Nếu ngân sách cho phép và app chịu rủi ro DDoS cao (game, tài chính) thì thêm Shield Advanced. CloudFront và Global Accelerator đứng ở edge nên tự hấp thụ phần lớn DDoS; đề hỏi <em>protect against DDoS, minimal cost</em> thường có đáp án "đặt CloudFront trước + Shield Standard".</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Cặp</th><th>Khác nhau ở chỗ</th></tr>
+        <tr><td>WAF với Shield</td><td>WAF lọc <b>nội dung HTTP</b> theo rule bạn định nghĩa (SQLi, XSS, rate, geo). Shield chống <b>lưu lượng DDoS</b>. Shield Advanced bao gồm WAF, chiều ngược lại thì không.</td></tr>
+        <tr><td>WAF với Network Firewall</td><td>WAF gắn vào CloudFront/ALB/API Gateway, chỉ HTTP. Network Firewall đặt trong VPC, mọi protocol, có IDS/IPS và lọc domain cho traffic ra ngoài.</td></tr>
+        <tr><td>Network Firewall với NACL/Security Group</td><td>NACL/SG chỉ lọc theo IP, port, protocol (layer 3/4). Network Firewall thêm deep packet inspection, domain, Suricata. Giá Network Firewall tính theo giờ endpoint và GB (không rẻ, cần kiểm tra lại).</td></tr>
+        <tr><td>Firewall Manager với Security Hub</td><td>Firewall Manager <b>triển khai và ép</b> chính sách tường lửa. Security Hub <b>gom findings</b> và chấm điểm compliance, không triển khai gì.</td></tr>
+        <tr><td>Shield Standard với Shield Advanced</td><td>Standard miễn phí, tự động, L3/L4. Advanced trả tiền, L7, SRT, cost protection, báo cáo, bảo vệ cả EIP.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>SQL injection, XSS <b>→ WAF</b></span><span>rate limit per IP <b>→ WAF rate-based rule</b></span><span>DDoS layer 3/4, no cost <b>→ Shield Standard</b></span><span>DDoS cost protection, 24/7 response team <b>→ Shield Advanced</b></span><span>centrally manage WAF rules across accounts <b>→ Firewall Manager</b></span><span>IDS/IPS, Suricata, domain filtering in VPC <b>→ Network Firewall</b></span><span>block country <b>→ WAF geo match / CloudFront geo restriction</b></span><span>protect NLB with WAF <b>→ không được</b></span><span>block specific IP at subnet <b>→ NACL</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">8. Web app chạy sau ALB bị tấn công SQL injection và một số IP gửi 10.000 request/phút. Cần chặn cả hai với <em>least operational overhead</em>. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Tạo WAF Web ACL gắn vào ALB: thêm AWS managed rule group SQL database (chặn SQLi) và một rate-based rule.</b> Shield Advanced giải quyết DDoS nhưng không có rule SQLi riêng (dù kèm WAF, vẫn phải cấu hình WAF) và đắt. Security Group không hiểu HTTP. NACL chặn IP được nhưng phải sửa tay.</p></div>
+      <div class="q"><p class="qt">9. Công ty có 40 account trong Organizations, muốn mọi CloudFront distribution và ALB hiện có và tạo sau này đều tự được gắn một bộ WAF rule chung. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>AWS Firewall Manager với WAF policy áp cho toàn Organization.</b> Tạo WAF ở từng account là thủ công và không bắt được resource mới. Security Hub chỉ báo cáo. Control Tower guardrail không gắn WAF.</p></div>
+      <div class="q"><p class="qt">10. EC2 ở private subnet phải gọi ra Internet nhưng chỉ tới một số domain được duyệt, đồng thời cần phát hiện xâm nhập theo chữ ký Suricata. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>AWS Network Firewall với stateful rule lọc domain và rule Suricata, route traffic ra NAT đi qua firewall endpoint.</b> WAF chỉ bảo vệ chiều vào HTTP. Security Group không lọc theo domain. DNS Firewall lọc được domain nhưng không có IPS.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. GUARDDUTY, INSPECTOR, MACIE, CONFIG ============ -->
+<section id="detect">
+  <span class="eyebrow">Lý thuyết 4 / 8</span>
+  <h2>Phát hiện và tuân thủ: GuardDuty, Inspector, Macie, Security Hub, Detective, Config, Trusted Advisor</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Bảng phân biệt theo mục đích (mốc kiểm tra 2)</span>
+      <div class="tbl"><table>
+        <tr><th>Dịch vụ</th><th>Câu hỏi nó trả lời</th><th>Nguồn dữ liệu</th><th>Từ khóa nhận diện</th></tr>
+        <tr><td><b>GuardDuty</b></td><td>"Có ai đang <b>tấn công hoặc đã chiếm</b> resource của tôi không?" Phát hiện mối đe dọa đang diễn ra bằng ML và threat intelligence.</td><td>CloudTrail management và S3 data event, <b>VPC Flow Logs</b>, <b>DNS logs</b> (tự lấy, không cần bạn bật), EKS audit log, RDS login, Lambda network, EBS malware scan.</td><td><em>compromised instance</em>, <em>cryptocurrency mining</em>, <em>unusual API calls</em>, <em>malicious IP</em>, <em>credential exfiltration</em>, <em>threat detection</em>, <em>malware</em></td></tr>
+        <tr><td><b>Inspector</b></td><td>"Resource của tôi <b>có lỗ hổng</b> (CVE) hoặc mở cổng không nên mở không?" Quét liên tục, chấm điểm rủi ro.</td><td>EC2 (qua SSM Agent), ECR container image, Lambda function và code, network reachability.</td><td><em>vulnerability</em>, <em>CVE</em>, <em>unintended network exposure</em>, <em>container image scan</em>, <em>software vulnerabilities</em></td></tr>
+        <tr><td><b>Macie</b></td><td>"Trong <b>S3</b> của tôi có <b>dữ liệu nhạy cảm</b> (PII, số thẻ, credential) không, bucket nào public?"</td><td>Chỉ S3. ML và pattern để phân loại.</td><td><em>PII</em>, <em>personally identifiable</em>, <em>sensitive data in S3</em>, <em>data classification</em>, <em>credit card numbers</em></td></tr>
+        <tr><td><b>Security Hub</b></td><td>"<b>Tổng hợp</b> mọi findings ở một chỗ, chấm điểm theo chuẩn." Không tự phát hiện, chỉ gom và chuẩn hóa (ASFF).</td><td>GuardDuty, Inspector, Macie, Config, IAM Access Analyzer, Firewall Manager, Systems Manager, partner. Cần bật Config.</td><td><em>single pane of glass</em>, <em>aggregate findings</em>, <em>CIS Benchmark</em>, <em>PCI DSS</em>, <em>AWS Foundational Security Best Practices</em>, <em>security score</em></td></tr>
+        <tr><td><b>Detective</b></td><td>"Finding này <b>từ đâu ra</b>, trước và sau đó xảy ra gì?" Điều tra nguyên nhân gốc bằng đồ thị hành vi.</td><td>CloudTrail, VPC Flow Logs, GuardDuty findings, EKS audit.</td><td><em>investigate</em>, <em>root cause</em>, <em>analyze security findings</em>, <em>visualize</em></td></tr>
+        <tr><td><b>Config</b></td><td>"Resource đang <b>cấu hình thế nào</b>, đã thay đổi ra sao, có <b>tuân thủ rule</b> không?"</td><td>Ghi configuration item của resource theo thời gian.</td><td><em>compliance</em>, <em>configuration history</em>, <em>drift</em>, <em>who changed the Security Group</em> (kết hợp CloudTrail), <em>remediation</em></td></tr>
+        <tr><td><b>Trusted Advisor</b></td><td>"Account có đang <b>lãng phí, kém an toàn, sắp chạm quota</b> không?" Check có sẵn, tùy support plan.</td><td>Kiểm tra account theo best practice của AWS.</td><td><em>idle resources</em>, <em>service limits</em>, <em>underutilized</em>, <em>open security groups</em>, <em>MFA on root</em></td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Giải thích thêm từng dịch vụ</span>
+      <ul>
+        <li><b>GuardDuty</b>: bật một nút, không cài agent, không ảnh hưởng hiệu năng. Findings có severity, gửi tới <b>EventBridge</b> → SNS/Lambda để tự động phản ứng (cô lập instance bằng cách đổi Security Group). Hỗ trợ multi-account qua delegated administrator trong Organizations. Có danh sách trusted IP và threat IP tùy chỉnh. Malware Protection quét EBS của instance có finding (và quét object S3 mới upload, nhận diện). Tính tiền theo lượng log phân tích.</li>
+        <li><b>Inspector</b>: phiên bản mới chạy liên tục, tự quét khi có CVE mới hoặc khi image được push lên ECR. EC2 cần SSM Agent (vì Inspector lấy danh sách package qua SSM). Có thể export findings, gửi Security Hub, EventBridge. Khác GuardDuty: Inspector tìm <b>lỗ hổng tiềm ẩn</b> (chưa bị tấn công), GuardDuty tìm <b>hành vi tấn công</b> đang xảy ra.</li>
+        <li><b>Macie</b>: tự động liệt kê bucket (public, không mã hóa, chia sẻ ra ngoài) và chạy job phân loại dữ liệu. Chỉ S3, không quét RDS, không quét EBS. Tính tiền theo GB quét và số bucket.</li>
+        <li><b>Security Hub</b>: bật security standard, mỗi control là một Config rule phía sau. Cho điểm %. Có <b>automation rule</b> và tích hợp EventBridge để tự động xử lý. Multi-account qua Organizations, cross-Region aggregation. Không thay thế GuardDuty, Inspector (nó cần họ cung cấp findings).</li>
+        <li><b>Config</b>: bật configuration recorder theo Region, lưu vào S3, có <b>timeline</b> từng resource. <b>Config rule</b> managed (ví dụ <code>restricted-ssh</code>, <code>s3-bucket-public-read-prohibited</code>, <code>encrypted-volumes</code>, <code>required-tags</code>) hoặc custom (Lambda, Guard). Rule đánh giá khi thay đổi hoặc theo lịch. <b>Remediation</b> bằng Systems Manager Automation document (ví dụ tự gỡ rule SSH 0.0.0.0/0). <b>Conformance pack</b> gom nhiều rule thành gói compliance (PCI, HIPAA). <b>Aggregator</b> xem compliance nhiều account, nhiều Region. Config <b>không ngăn</b> hành động sai (chỉ phát hiện và sửa sau), muốn ngăn thì dùng SCP hoặc IAM. Tính tiền theo configuration item và rule evaluation (lab tuần này không bật Config để tiết kiệm, nhưng Security Hub và Control Tower cần nó).</li>
+        <li><b>Trusted Advisor</b>: nhóm check gồm Cost optimization, Performance, Security, Fault tolerance, Service limits (và gần đây thêm Operational excellence, nên tài liệu mới ghi 6 nhóm, đề cũ ghi 5). Support plan <b>Basic và Developer</b> chỉ được vài check Security cơ bản và Service limits; <b>Business, Enterprise</b> được đủ bộ, có API, có gửi CloudWatch/EventBridge, có Trusted Advisor Priority (Enterprise). Check hay gặp: Security Group mở 0.0.0.0/0, bucket public, MFA root, EBS volume idle, RI hết hạn, service quota 80%.</li>
+        <li><b>Audit Manager</b>: tự động <b>thu thập bằng chứng</b> cho kiểm toán theo framework (SOC 2, PCI, GDPR), sinh báo cáo đánh giá. <b>Artifact</b>: cổng tải <b>báo cáo compliance của chính AWS</b> (SOC, ISO, PCI) và ký thỏa thuận (BAA cho HIPAA). Đề hỏi <em>need AWS's SOC report for auditor</em> → Artifact; <em>collect evidence of our own controls</em> → Audit Manager.</li>
+        <li><b>IAM Access Analyzer</b> (nhắc lại tuần 1): tìm resource chia sẻ ra ngoài account (bucket, role, KMS key), kiểm tra policy, sinh policy từ CloudTrail. Findings cũng vào Security Hub.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Config với CloudTrail (hay hỏi cặp)</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>AWS Config</th><th>CloudTrail</th></tr>
+        <tr><td>Trả lời</td><td>Resource <b>trông như thế nào</b> tại thời điểm X, có tuân thủ không</td><td><b>Ai gọi API gì</b>, lúc nào, từ IP nào</td></tr>
+        <tr><td>Đơn vị</td><td>Configuration item (snapshot cấu hình)</td><td>Event (một API call)</td></tr>
+        <tr><td>Ví dụ</td><td>Security Group sg-1 hôm qua có rule 22 từ 0.0.0.0/0, hôm nay không</td><td>User A gọi <code>AuthorizeSecurityGroupIngress</code> lúc 10:02</td></tr>
+        <tr><td>Kết hợp</td><td colspan="2">Trong timeline Config có link sang CloudTrail event gây ra thay đổi. Đề hỏi "ai đã thay đổi và resource đã đổi thế nào" → cả hai.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>Phát hiện EC2 đang đào coin, gọi tới IP độc hại</td><td>GuardDuty</td><td>Inspector (tìm CVE, không nhìn traffic)</td></tr>
+        <tr><td>Tìm CVE trong AMI, container image trước khi deploy</td><td>Inspector</td><td>GuardDuty, Macie</td></tr>
+        <tr><td>Tìm số CMND, thẻ tín dụng trong bucket</td><td>Macie</td><td>GuardDuty S3 protection (phát hiện truy cập bất thường, không đọc nội dung)</td></tr>
+        <tr><td>Một màn hình gom findings nhiều account, điểm CIS</td><td>Security Hub</td><td>Detective, Trusted Advisor</td></tr>
+        <tr><td>Điều tra sâu một finding của GuardDuty</td><td>Detective</td><td>Security Hub (chỉ gom)</td></tr>
+        <tr><td>Bảo đảm mọi EBS đều mã hóa, tự sửa khi vi phạm</td><td>Config rule + remediation (SSM Automation)</td><td>CloudTrail (chỉ ghi log), Trusted Advisor (không tự sửa)</td></tr>
+        <tr><td>Ngăn ngay từ đầu không cho tạo EBS không mã hóa</td><td>SCP hoặc IAM condition, hoặc EBS encryption by default</td><td>Config (phát hiện sau khi đã tạo)</td></tr>
+        <tr><td>Biết sắp hết quota VPC, EBS idle</td><td>Trusted Advisor (hoặc Service Quotas, Compute Optimizer)</td><td>Config</td></tr>
+        <tr><td>Lấy báo cáo SOC 2 của AWS cho kiểm toán viên</td><td>Artifact</td><td>Audit Manager (bằng chứng của bạn)</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>threat detection, compromised, crypto mining <b>→ GuardDuty</b></span><span>vulnerability, CVE, ECR image <b>→ Inspector</b></span><span>PII in S3 <b>→ Macie</b></span><span>aggregate findings, CIS benchmark <b>→ Security Hub</b></span><span>root cause investigation <b>→ Detective</b></span><span>configuration compliance, drift, auto remediate <b>→ Config</b></span><span>idle resources, service limits <b>→ Trusted Advisor</b></span><span>AWS compliance reports <b>→ Artifact</b></span><span>audit evidence collection <b>→ Audit Manager</b></span><span>who changed + what changed <b>→ CloudTrail + Config</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">11. Security team nhận cảnh báo EC2 gửi lượng lớn DNS query tới domain lạ và gọi API từ IP ở nước khác. Dịch vụ nào phát hiện việc này mà không cần cài agent?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>GuardDuty.</b> Nó phân tích DNS logs, VPC Flow Logs và CloudTrail mà bạn không phải bật các log đó. Inspector cần SSM Agent và chỉ tìm CVE. Macie chỉ nhìn S3.</p></div>
+      <div class="q"><p class="qt">12. Công ty phải chứng minh không có bucket nào chứa số thẻ tín dụng không mã hóa, và báo cáo định kỳ. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Amazon Macie</b> chạy job phân loại dữ liệu trên S3, findings gửi Security Hub/EventBridge. GuardDuty không đọc nội dung object. Inspector không quét S3.</p></div>
+      <div class="q"><p class="qt">13. Chọn 2: Công ty muốn (1) tự động gỡ rule SSH mở 0.0.0.0/0 khi ai đó thêm vào Security Group, (2) biết user nào đã thêm. (A) Config rule restricted-ssh + remediation, (B) CloudTrail, (C) GuardDuty, (D) Trusted Advisor.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>A và B.</b> Config phát hiện và sửa (qua SSM Automation), CloudTrail cho biết ai gọi API. Trusted Advisor cũng báo SG mở nhưng không tự sửa và không nói ai làm. GuardDuty phát hiện tấn công, không phải cấu hình sai.</p></div>
+      <div class="q"><p class="qt">14. Startup dùng Basic support, muốn xem đủ các check tối ưu chi phí của Trusted Advisor. Cần gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Nâng lên Business support (hoặc Enterprise).</b> Basic và Developer chỉ có vài check Security và Service limits. Cách thay thế không tốn phí support: Cost Explorer rightsizing, Compute Optimizer (miễn phí), tự viết Config rule.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. COGNITO, STS, IDENTITY CENTER ============ -->
+<section id="cognito">
+  <span class="eyebrow">Lý thuyết 5 / 8</span>
+  <h2>Cognito, STS, cross-account role, IAM Identity Center</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn: Cognito cho người dùng ứng dụng</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>Cognito User Pool</th><th>Cognito Identity Pool (Federated Identities)</th></tr>
+        <tr><td>Trả lời câu hỏi</td><td><b>Bạn là ai?</b> (authentication)</td><td><b>Bạn được dùng dịch vụ AWS nào?</b> (authorization vào AWS)</td></tr>
+        <tr><td>Là gì</td><td>Thư mục người dùng managed: đăng ký, đăng nhập, xác nhận email/SMS, quên mật khẩu, <b>MFA</b>, password policy, <b>hosted UI</b> có sẵn, chặn credential bị lộ, adaptive authentication (tier trả phí).</td><td>Bộ đổi token: nhận token từ User Pool, Google, Facebook, Apple, SAML, OIDC, hoặc developer-authenticated, rồi gọi STS lấy <b>credential AWS tạm thời</b> của một IAM role.</td></tr>
+        <tr><td>Trả về</td><td><b>JWT</b>: ID token (thông tin user), access token (quyền), refresh token.</td><td>Access key + secret + session token (của IAM role).</td></tr>
+        <tr><td>Federation</td><td>Đăng nhập bằng Google, Facebook, Apple, Amazon, <b>SAML 2.0</b>, <b>OIDC</b>; user vẫn được tạo trong pool.</td><td>Tin các IdP trên trực tiếp, hoặc tin User Pool.</td></tr>
+        <tr><td>Dùng với</td><td><b>API Gateway Cognito authorizer</b> (kiểm JWT), <b>ALB authenticate action</b> (ALB tự redirect login), AppSync, app tự verify JWT.</td><td>App gọi thẳng <b>S3, DynamoDB, Lambda</b> bằng credential tạm. Có <b>guest (unauthenticated) role</b> cho người chưa đăng nhập.</td></tr>
+        <tr><td>Phân quyền chi tiết</td><td>Group trong pool, custom attribute, Lambda trigger (pre sign-up, post confirmation, pre token generation).</td><td>Authenticated role, unauthenticated role, role mapping theo claim; policy variable <code>${cognito-identity.amazonaws.com:sub}</code> để mỗi user chỉ vào prefix S3 của mình.</td></tr>
+        <tr><td>Giá</td><td>Theo MAU, có free tier (số MAU miễn phí đã thay đổi năm 2024, cần kiểm tra lại).</td><td>Miễn phí.</td></tr>
+      </table></div>
+      <ul style="font-size:.94rem">
+        <li>Mẫu đầy đủ: app mobile → đăng nhập User Pool (hoặc Google) → nhận JWT → đưa JWT cho Identity Pool → nhận credential tạm → upload ảnh lên S3 trực tiếp. Hai pool làm hai việc khác nhau và thường dùng cùng nhau.</li>
+        <li>Nếu app chỉ gọi API riêng của bạn qua API Gateway thì <b>chỉ cần User Pool</b> (authorizer kiểm JWT), không cần Identity Pool.</li>
+        <li>Cognito là cho <b>khách hàng của ứng dụng</b> (hàng triệu người). Nhân viên công ty truy cập AWS Console thì dùng IAM Identity Center. Đề hay đặt bẫy giữa hai thứ này.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">STS: các API cần phân biệt</span>
+      <div class="tbl"><table>
+        <tr><th>API</th><th>Ai gọi, để làm gì</th><th>Thời hạn (cần kiểm tra lại)</th></tr>
+        <tr><td><b>AssumeRole</b></td><td>IAM user hoặc role (kể cả dịch vụ AWS) đổi sang một role: cùng account hoặc <b>cross-account</b>. Có thể bắt MFA, external ID, session policy, session tag.</td><td>15 phút tới <b>max session duration</b> của role (1 giờ mặc định, tối đa 12 giờ). Role chaining (role gọi AssumeRole sang role khác) tối đa 1 giờ.</td></tr>
+        <tr><td><b>AssumeRoleWithSAML</b></td><td>Người dùng từ IdP doanh nghiệp (<b>AD FS, Okta, Entra ID</b>) qua SAML 2.0 assertion, không cần IAM user. Nền của IAM Identity Center và federation cũ.</td><td>Tới max session duration, mặc định 1 giờ.</td></tr>
+        <tr><td><b>AssumeRoleWithWebIdentity</b></td><td>Người dùng từ IdP web <b>OIDC</b> (Google, Facebook, Amazon, <b>Cognito</b>, GitHub Actions, EKS IRSA). Với app mobile AWS khuyên dùng Cognito Identity Pool thay vì gọi trực tiếp.</td><td>Như trên.</td></tr>
+        <tr><td><b>GetSessionToken</b></td><td>IAM user tự xin credential tạm có <b>MFA</b> để gọi API yêu cầu MFA. Không đổi quyền.</td><td>IAM user tối đa 36 giờ, root tối đa 1 giờ.</td></tr>
+        <tr><td><b>GetFederationToken</b></td><td>Kiểu cũ: ứng dụng proxy dùng IAM user dài hạn để cấp credential cho người dùng federated. Ít dùng, đề hỏi thì chọn role/Cognito.</td><td>Tối đa 36 giờ.</td></tr>
+        <tr><td><b>GetCallerIdentity</b>, <b>DecodeAuthorizationMessage</b></td><td>Xem mình là ai; giải mã thông báo AccessDenied dài.</td><td></td></tr>
+      </table></div>
+      <ul style="font-size:.94rem">
+        <li>Credential tạm gồm <b>3 phần</b>: access key, secret key, <b>session token</b>. Không thu hồi từng credential được; muốn chặn phiên đã cấp thì gắn vào role một policy Deny với condition <code>aws:TokenIssueTime</code> trước thời điểm X (nút "Revoke active sessions" trên console).</li>
+        <li>STS có endpoint global (us-east-1) và regional. Dùng regional endpoint để giảm độ trễ và tránh phụ thuộc us-east-1 (nhận diện).</li>
+      </ul>
+    </div>
+
+    <div class="block diag"><span class="eyebrow">Hình dung: cross-account role và external ID</span>
+      <svg viewBox="0 0 700 260" role="img" aria-label="Sơ đồ cross-account: account A gọi AssumeRole sang role ở account B, role có trust policy tin account A và yêu cầu external ID">
+        <rect x="20" y="40" width="300" height="190" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="170" y="66" text-anchor="middle" class="sv-t" font-weight="600">Account A (người gọi, 1111)</text>
+        <rect x="45" y="90" width="250" height="60" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="170" y="112" text-anchor="middle" class="sv-t">IAM user hoặc role của A</text>
+        <text x="170" y="131" text-anchor="middle" class="sv-m">policy: Allow sts:AssumeRole role ở B</text>
+        <text x="170" y="180" text-anchor="middle" class="sv-m">1. AssumeRole(RoleArn, ExternalId=abc123)</text>
+        <text x="170" y="200" text-anchor="middle" class="sv-m">3. nhận access key + secret + session token</text>
+        <text x="170" y="218" text-anchor="middle" class="sv-m">4. gọi S3 của B bằng credential tạm</text>
+        <rect x="380" y="40" width="300" height="190" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="530" y="66" text-anchor="middle" class="sv-t" font-weight="600">Account B (chủ resource, 2222)</text>
+        <rect x="405" y="90" width="250" height="80" rx="8" class="sv-edge" stroke-width="1.5"/>
+        <text x="530" y="110" text-anchor="middle" class="sv-t">Role CrossAccountRead</text>
+        <text x="530" y="128" text-anchor="middle" class="sv-m">trust policy: Principal 1111,</text>
+        <text x="530" y="144" text-anchor="middle" class="sv-m">Condition sts:ExternalId = abc123</text>
+        <text x="530" y="160" text-anchor="middle" class="sv-m">permission policy: s3:GetObject bucket-B</text>
+        <text x="530" y="200" text-anchor="middle" class="sv-m">2. STS kiểm trust policy + external ID</text>
+        <text x="530" y="218" text-anchor="middle" class="sv-m">rồi cấp credential tạm của role</text>
+        <line x1="320" y1="120" x2="380" y2="120" class="sv-line" stroke-width="2"/>
+      </svg>
+      <ul style="font-size:.94rem">
+        <li><b>Hai phía phải cho phép</b>: trust policy của role ở B có Principal là account A (hoặc user cụ thể), và identity policy của user ở A có <code>sts:AssumeRole</code> trên ARN role. Thiếu một phía là AccessDenied.</li>
+        <li><b>External ID</b> giải quyết <b>confused deputy</b>: bên thứ ba (SaaS giám sát) assume role vào nhiều khách hàng. Kẻ xấu biết ARN role của bạn có thể nhờ SaaS đó assume hộ. External ID là bí mật chỉ bạn và SaaS biết, kẻ xấu không đoán được. Đề có chữ <em>third party</em>, <em>SaaS provider needs access</em>, <em>confused deputy</em> → role + external ID.</li>
+        <li>So với resource-based policy (bucket policy cho account A): người gọi giữ nguyên danh tính, không "đổi mũ", nhưng chỉ dịch vụ có resource policy mới làm được (S3, SQS, SNS, KMS, Lambda, Secrets Manager). Role thì dùng cho mọi dịch vụ (EC2, DynamoDB).</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">IAM Identity Center (tên cũ AWS SSO)</span>
+      <ul>
+        <li>Một cổng đăng nhập (<b>access portal</b>) cho nhân viên vào <b>nhiều account</b> trong Organizations và các ứng dụng SaaS (Salesforce, Slack) bằng SAML. Người dùng nhận <b>credential tạm</b> qua role, không có IAM user ở từng account.</li>
+        <li><b>Identity source</b>: thư mục có sẵn của Identity Center, <b>Active Directory</b> (AWS Managed Microsoft AD hoặc AD Connector tới AD on-prem), hoặc <b>IdP ngoài</b> (Okta, Entra ID, Google Workspace) qua SAML 2.0, đồng bộ user/group bằng SCIM.</li>
+        <li><b>Permission set</b>: tập policy (managed, inline, boundary) được Identity Center biến thành IAM role ở mỗi account bạn gán. Gán theo cặp (user/group, account, permission set). Thêm account mới chỉ cần gán thêm, không tạo user.</li>
+        <li>Hỗ trợ <b>MFA</b>, attribute-based access control (ABAC) qua session tag, CLI qua <code>aws configure sso</code>. Yêu cầu Organizations (có thể bật ở account đơn nhưng ít dùng).</li>
+        <li>Khác Cognito: Identity Center cho <b>nhân viên</b> vào AWS và app công ty; Cognito cho <b>người dùng cuối</b> của app bạn xây. Khác IAM user: không credential dài hạn, quản lý tập trung, SSO.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>Người dùng mobile đăng ký, đăng nhập, MFA, quên mật khẩu</td><td>Cognito User Pool</td><td>Identity Pool (không có thư mục user), IAM user</td></tr>
+        <tr><td>Người dùng mobile upload thẳng lên S3 bằng credential tạm</td><td>Cognito Identity Pool (lấy token từ User Pool hoặc Google)</td><td>Nhúng access key vào app</td></tr>
+        <tr><td>Bảo vệ API Gateway bằng JWT của người dùng</td><td>Cognito User Pool authorizer</td><td>IAM authorizer (cho AWS principal), Lambda authorizer (khi cần logic tùy chỉnh)</td></tr>
+        <tr><td>Nhân viên dùng AD công ty vào 30 account</td><td>IAM Identity Center + AD</td><td>Cognito, IAM user ở từng account</td></tr>
+        <tr><td>SaaS bên thứ ba cần đọc bucket của bạn</td><td>Role cross-account + external ID</td><td>Tạo IAM user và gửi access key cho họ</td></tr>
+        <tr><td>IAM user cần MFA để gọi API xóa</td><td>GetSessionToken với MFA, policy có aws:MultiFactorAuthPresent</td><td>AssumeRole (được nhưng không cần đổi quyền)</td></tr>
+        <tr><td>Account B cho account A đọc SQS queue không đổi danh tính</td><td>SQS queue policy (resource-based)</td><td>Role (được nhưng người gọi mất danh tính A)</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>sign up, sign in, MFA for app users <b>→ Cognito User Pool</b></span><span>temporary AWS credentials for app users, guest access <b>→ Cognito Identity Pool</b></span><span>JWT, hosted UI, social login <b>→ User Pool</b></span><span>SAML 2.0 corporate IdP <b>→ AssumeRoleWithSAML / Identity Center</b></span><span>OIDC, Google login to AWS <b>→ AssumeRoleWithWebIdentity</b></span><span>third-party access, confused deputy <b>→ external ID</b></span><span>multiple accounts single sign-on, permission set <b>→ IAM Identity Center</b></span><span>temporary credentials <b>→ STS</b></span><span>revoke compromised session <b>→ Deny + aws:TokenIssueTime</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">15. App mobile cho người dùng đăng nhập bằng Google hoặc email, sau đó tải ảnh thẳng lên S3 vào thư mục riêng của mỗi người. Chọn kiến trúc?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Cognito User Pool (email + Google federation) phát JWT, Cognito Identity Pool đổi JWT lấy credential tạm của role có policy giới hạn prefix theo <code>${cognito-identity.amazonaws.com:sub}</code>.</b> Chỉ User Pool thì không có credential AWS. IAM user cho mỗi người dùng là sai hoàn toàn (giới hạn 5.000 user, credential dài hạn).</p></div>
+      <div class="q"><p class="qt">16. Một công ty giám sát (SaaS) cần assume role vào account của bạn để đọc CloudWatch. Bạn lo kẻ khác cũng là khách của SaaS đó lợi dụng. Cách <em>most secure</em>?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Tạo role với trust policy tin account của SaaS và condition <code>sts:ExternalId</code> bằng giá trị bí mật do SaaS cấp.</b> Đây là bài confused deputy. Tạo IAM user và gửi access key là credential dài hạn, không an toàn. Chỉ tin account SaaS mà không có external ID thì khách khác của SaaS có thể yêu cầu SaaS assume role của bạn.</p></div>
+      <div class="q"><p class="qt">17. Công ty có Okta, 15 AWS account, muốn nhân viên đăng nhập một lần, quyền theo nhóm, <em>least operational overhead</em>. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>IAM Identity Center với Okta làm identity source (SAML + SCIM), tạo permission set và gán cho group ở từng account.</b> Cấu hình SAML provider riêng ở 15 account vẫn chạy nhưng tốn công. Cognito không dành cho nhân viên vào Console.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. ORGANIZATIONS, SCP, CONTROL TOWER ============ -->
+<section id="org">
+  <span class="eyebrow">Lý thuyết 6 / 8</span>
+  <h2>Organizations, SCP, consolidated billing, Control Tower, RAM</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <ul>
+        <li><b>AWS Organizations</b>: quản lý nhiều account dưới một <b>management account</b> (tên cũ master). Cấu trúc cây: <b>Root → OU (Organizational Unit, lồng tối đa 5 cấp) → account</b>. Tạo account mới bằng API hoặc mời account có sẵn. Miễn phí. Hai chế độ: <b>consolidated billing only</b> hoặc <b>all features</b> (có SCP, tag policy, delegated admin cho các dịch vụ như GuardDuty, Security Hub, Config).</li>
+        <li>Mẫu OU hay gặp: <b>Security</b> (log archive, audit), <b>Infrastructure</b> (network, shared services), <b>Workloads</b> (prod, dev), <b>Sandbox</b>. Khuyến nghị: management account không chạy workload, chỉ làm billing và quản trị.</li>
+        <li>Lợi ích thi hay hỏi: <b>cách ly</b> workload và blast radius theo account, <b>một hóa đơn</b>, <b>chia sẻ discount</b>, <b>SCP</b> áp chính sách tập trung, <b>chia sẻ resource</b> qua RAM, bật dịch vụ bảo mật cho toàn tổ chức (GuardDuty, CloudTrail org trail, Config aggregator).</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">SCP (Service Control Policy): sáu điều phải nhớ</span>
+      <ol>
+        <li>SCP là <b>trần quyền</b> cho account thành viên, <b>không cấp quyền</b>. Quyền thực = SCP ∩ IAM policy. Giống permissions boundary nhưng ở mức account.</li>
+        <li>SCP <b>không ảnh hưởng management account</b> (dù gắn ở Root). Nhưng áp cho <b>mọi principal trong account thành viên, kể cả root user</b> của account đó.</li>
+        <li><b>Kế thừa</b> xuống cây: account chịu SCP của Root, của mọi OU cha, và của chính nó. Quyền được phép phải được Allow ở <b>mọi cấp</b> và không bị Deny ở cấp nào.</li>
+        <li>Hai chiến lược: <b>deny list</b> (giữ policy mặc định <code>FullAWSAccess</code> ở mọi cấp, thêm các SCP Deny; dễ quản lý, AWS khuyên dùng) và <b>allow list</b> (gỡ FullAWSAccess, chỉ Allow dịch vụ cho phép; chặt nhưng phải nhớ Allow ở mọi cấp cha, dễ khóa nhầm).</li>
+        <li>SCP <b>không áp cho service-linked role</b> và một số hành động quản trị của AWS. Không có Principal trong SCP (nó áp cho cả account).</li>
+        <li>Ví dụ kinh điển: chặn Region, chặn tắt CloudTrail/GuardDuty/Config, chặn rời Organization (<code>organizations:LeaveOrganization</code>), bắt buộc tag, chặn tạo EC2 không phải loại t3, chặn xóa KMS key, bắt buộc mã hóa EBS.</li>
+      </ol>
+<pre><code>// SCP chặn mọi Region ngoài Tokyo và N. Virginia, trừ dịch vụ global (dùng trong lab 6)
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Sid": "DenyOutsideAllowedRegions",
+    "Effect": "Deny",
+    "NotAction": ["iam:*", "sts:*", "organizations:*", "route53:*", "cloudfront:*",
+                  "support:*", "budgets:*", "ce:*", "health:*", "kms:*", "waf:*", "shield:*"],
+    "Resource": "*",
+    "Condition": { "StringNotEquals": { "aws:RequestedRegion": ["ap-northeast-1", "us-east-1"] } }
+  }]
+}</code></pre>
+      <p style="font-size:.92rem">Danh sách <code>NotAction</code> phải có các dịch vụ global, nếu không IAM và STS sẽ bị chặn luôn (chúng ghi nhận Region là us-east-1 nhưng một số API vẫn lạ). Gần đây AWS thêm <b>Resource Control Policy (RCP)</b> áp lên resource của cả tổ chức (ví dụ không cho principal ngoài org đọc bucket), nhận diện là đủ.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Consolidated billing</span>
+      <ul>
+        <li><b>Một hóa đơn</b> cho mọi account, management account trả. Vẫn xem được chi tiết từng account trong Cost Explorer và CUR.</li>
+        <li><b>Chia sẻ discount</b>: Reserved Instances và Savings Plans mua ở account nào cũng tự áp cho usage khớp ở account khác (RI sharing, có thể tắt cho từng account). <b>Volume discount</b>: bậc giá S3, data transfer tính trên tổng usage của cả tổ chức, nên rẻ hơn gộp lại.</li>
+        <li>Free Tier và credit áp cho cả tổ chức (một lần), không nhân theo số account.</li>
+        <li>Đề: <em>reduce cost across multiple accounts</em>, <em>RI purchased in one account not used</em> → bật RI sharing trong consolidated billing; <em>charge back to each department</em> → cost allocation tag + account riêng + Cost Explorer theo linked account.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Control Tower, RAM, tag policy, service-linked role, Service Catalog</span>
+      <div class="tbl"><table>
+        <tr><th>Dịch vụ</th><th>Là gì</th><th>Từ khóa</th></tr>
+        <tr><td><b>Control Tower</b></td><td>Dựng và vận hành môi trường nhiều account theo best practice trong vài giờ: tạo <b>landing zone</b> (Organizations, OU Security và Sandbox, account Log Archive và Audit, CloudTrail, Config, Identity Center), áp <b>controls (tên cũ guardrails)</b>: <b>preventive</b> (SCP, không cho làm), <b>detective</b> (Config rule, phát hiện vi phạm), <b>proactive</b> (CloudFormation hook, chặn trước khi tạo). <b>Account Factory</b> tạo account mới chuẩn hóa (qua Service Catalog). Dashboard compliance. Chính nó miễn phí, trả tiền cho CloudTrail, Config, S3 phía sau.</td><td><em>quickly set up multi-account environment</em>, <em>landing zone</em>, <em>guardrails</em>, <em>governance at scale</em>, <em>provision accounts</em></td></tr>
+        <tr><td><b>RAM</b> (Resource Access Manager)</td><td>Chia sẻ resource với account, OU, hoặc cả Organization mà không nhân bản: <b>VPC subnet</b> (account khác đặt EC2 vào subnet của bạn), <b>Transit Gateway</b>, Route 53 Resolver rule, License Manager, Private CA, IPAM pool, SSM parameter advanced. Miễn phí. Chủ resource vẫn kiểm soát; bên được chia sẻ tạo resource trong đó.</td><td><em>share VPC subnets</em>, <em>share Transit Gateway</em>, <em>avoid duplicating resources</em></td></tr>
+        <tr><td><b>Tag policy</b></td><td>Chuẩn hóa tag trong Organization: key viết hoa thường thế nào, giá trị cho phép, áp cho loại resource nào. Báo cáo không tuân thủ; có thể <b>enforce</b> (chặn tạo tag sai) cho một số resource. Không bắt buộc phải có tag (muốn bắt buộc thì SCP với <code>aws:RequestTag</code>).</td><td><em>consistent tagging</em>, <em>standardize tags across accounts</em></td></tr>
+        <tr><td><b>Service-linked role</b></td><td>Role do dịch vụ AWS tạo và sở hữu (ví dụ <code>AWSServiceRoleForAutoScaling</code>), trust policy chỉ tin dịch vụ đó, permission không sửa được, chỉ xóa được khi dịch vụ không còn dùng. SCP không ảnh hưởng.</td><td><em>predefined role for service</em>, cannot modify</td></tr>
+        <tr><td><b>Service Catalog</b></td><td>Admin tạo <b>portfolio</b> gồm các <b>product</b> (CloudFormation template đã duyệt), gán cho user. User tự chọn và launch mà không cần quyền tạo resource trực tiếp (launch constraint dùng role của admin). Có version, có tag enforce.</td><td><em>self-service</em>, <em>approved products</em>, <em>developers launch without full permissions</em></td></tr>
+        <tr><td><b>Delegated administrator</b></td><td>Ủy quyền một account thành viên (thường Security account) quản lý dịch vụ cho cả org (GuardDuty, Security Hub, Config, Firewall Manager, IAM Identity Center, CloudFormation StackSets), để management account ít được dùng.</td><td><em>security account manages</em>, <em>minimize use of management account</em></td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>Không cho bất kỳ ai trong account dev tạo resource ở Region ngoài danh sách, kể cả admin</td><td>SCP Deny với aws:RequestedRegion gắn vào OU dev</td><td>IAM policy ở từng user (admin tự gỡ được), Config (chỉ phát hiện)</td></tr>
+        <tr><td>Áp SCP mà vẫn không chặn được một thao tác ở management account</td><td>Đúng là vậy, SCP không áp cho management account; chuyển workload ra account thành viên</td><td>Tìm lỗi trong SCP</td></tr>
+        <tr><td>Dựng nhanh môi trường nhiều account có guardrail</td><td>Control Tower</td><td>Tự viết SCP + CloudFormation StackSets (được nhưng lâu)</td></tr>
+        <tr><td>Nhiều account dùng chung một VPC để tiết kiệm NAT, TGW</td><td>RAM chia sẻ subnet</td><td>VPC peering từng cặp</td></tr>
+        <tr><td>Developer tự tạo môi trường chuẩn mà không có quyền tạo EC2 trực tiếp</td><td>Service Catalog với launch constraint</td><td>Cấp AdministratorAccess</td></tr>
+        <tr><td>RI mua ở account A nhưng EC2 chạy ở account B</td><td>Consolidated billing, RI sharing bật</td><td>Chuyển RI sang B (không cần)</td></tr>
+        <tr><td>Chặn tag sai định dạng toàn org</td><td>Tag policy (enforce)</td><td>Config required-tags (chỉ phát hiện thiếu tag)</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>restrict even root of member account <b>→ SCP</b></span><span>SCP does not apply to <b>→ management account, service-linked role</b></span><span>single bill, share RI/Savings Plans <b>→ consolidated billing</b></span><span>landing zone, guardrails, Account Factory <b>→ Control Tower</b></span><span>share subnet / Transit Gateway <b>→ RAM</b></span><span>standardize tags across accounts <b>→ tag policy</b></span><span>self-service approved CloudFormation products <b>→ Service Catalog</b></span><span>centralize security service for all accounts <b>→ delegated administrator</b></span><span>prevent leaving organization <b>→ SCP Deny organizations:LeaveOrganization</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">18. OU "Workloads" có SCP chỉ Allow <code>ec2:*</code>, <code>s3:*</code>, <code>rds:*</code>. OU con "Prod" có SCP Allow <code>ec2:*</code>, <code>s3:*</code>, <code>dynamodb:*</code>. Account trong Prod có IAM user AdministratorAccess. User làm được gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Chỉ EC2 và S3.</b> Quyền phải được Allow ở mọi cấp: RDS không có ở Prod, DynamoDB không có ở Workloads. Đây là allow list strategy, dễ khóa nhầm, nên AWS khuyên deny list.</p></div>
+      <div class="q"><p class="qt">19. Công ty mới lên AWS, cần dựng 10 account cho các team với log tập trung, guardrail bảo mật, tạo account mới theo chuẩn, trong vài ngày. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>AWS Control Tower.</b> Nó dựng landing zone (Organizations, Log Archive, Audit, CloudTrail, Config, Identity Center) và Account Factory. Organizations đơn thuần không có guardrail và account chuẩn sẵn; tự dựng bằng StackSets thì lâu hơn.</p></div>
+      <div class="q"><p class="qt">20. Chọn 2 phát biểu đúng về SCP: (A) SCP cấp quyền khi IAM policy không có, (B) SCP không áp cho management account, (C) SCP áp cho root user của account thành viên, (D) SCP có thể gắn trực tiếp vào IAM user.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>B và C.</b> SCP không cấp quyền (A sai) và chỉ gắn vào Root, OU, account (D sai). Điểm C là lý do SCP mạnh hơn IAM: chặn được cả root của account thành viên.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. CLOUDTRAIL, CLOUDWATCH, SSM ============ -->
+<section id="monitor">
+  <span class="eyebrow">Lý thuyết 7 / 8</span>
+  <h2>Giám sát và audit: CloudTrail, CloudWatch, Systems Manager</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">CloudTrail: ai làm gì</span>
+      <ul>
+        <li>Ghi lại <b>mọi API call</b> (Console, CLI, SDK, dịch vụ gọi dịch vụ): ai, khi nào, từ IP nào, tham số gì, kết quả. <b>Event history</b> bật sẵn, miễn phí, giữ <b>90 ngày</b>, chỉ management event. Muốn giữ lâu hơn và phân tích thì tạo <b>trail</b> ghi vào <b>S3</b> (giữ vô thời hạn, dùng lifecycle) và tùy chọn <b>CloudWatch Logs</b> (để tạo metric filter và alarm, ví dụ cảnh báo khi root đăng nhập hoặc khi ai đó gọi <code>DeleteTrail</code>).</li>
+        <li><b>Management event</b> (control plane: tạo EC2, đổi Security Group, đăng nhập): ghi mặc định, read và write. <b>Data event</b> (data plane: <code>GetObject</code>/<code>PutObject</code> S3, <code>Invoke</code> Lambda, DynamoDB item): <b>không ghi mặc định</b>, bật riêng, lượng lớn, tính tiền thêm. <b>Insights event</b>: phát hiện tỉ lệ API write hoặc lỗi bất thường (ví dụ bỗng có 1.000 lần <code>RunInstances</code>), tính tiền thêm.</li>
+        <li><b>Multi-Region trail</b>: một trail ghi mọi Region (mặc định trên console), Region mới tự được thêm. <b>Organization trail</b>: tạo ở management account (hoặc delegated admin), ghi mọi account thành viên vào một bucket, account thành viên không tắt được. Dịch vụ global (IAM, STS, CloudFront) ghi event ở us-east-1.</li>
+        <li><b>Log file integrity validation</b>: CloudTrail tạo digest file mỗi giờ có hash SHA-256 và chữ ký RSA, lệnh <code>validate-logs</code> chứng minh log không bị sửa hoặc xóa. Kết hợp S3 Object Lock, MFA delete, bucket ở account Log Archive riêng để đạt <em>tamper-proof</em>. Log mã hóa SSE-S3 mặc định, có thể chọn SSE-KMS.</li>
+        <li>Delivery thường trễ khoảng 5 đến 15 phút (cần kiểm tra lại). Dùng <b>Athena</b> query log trên S3, hoặc <b>CloudTrail Lake</b> (lưu và query SQL, giữ tới 7 năm, nhận diện).</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">CloudWatch: metric, log, alarm, dashboard, EventBridge</span>
+      <div class="tbl"><table>
+        <tr><th>Thành phần</th><th>Cần nhớ</th></tr>
+        <tr><td><b>Metric</b></td><td>Namespace (<code>AWS/EC2</code>), tên, dimension (InstanceId). Standard resolution 1 phút, <b>high resolution 1 giây</b> (chỉ custom metric, <code>StorageResolution=1</code>). EC2 <b>basic monitoring 5 phút miễn phí</b>, <b>detailed monitoring 1 phút tính tiền</b>. EC2 mặc định có CPU, network, disk (instance store), status check; <b>không có memory, disk space của EBS, swap</b>, muốn có phải cài <b>CloudWatch agent</b> gửi custom metric. Retention: 1 giây giữ 3 giờ, 1 phút 15 ngày, 5 phút 63 ngày, 1 giờ 15 tháng (cần kiểm tra lại). Metric không xóa được, hết hạn tự mất.</td></tr>
+        <tr><td><b>Logs</b></td><td>Log group → log stream. Retention mặc định <b>không bao giờ hết hạn</b> (nên đặt). Nguồn: CloudWatch agent trên EC2/on-prem (unified agent gửi cả metric và log), Lambda, ECS, VPC Flow Logs, CloudTrail, Route 53. <b>Metric filter</b>: đếm pattern (ví dụ "ERROR") thành metric để đặt alarm. <b>Logs Insights</b>: query log ad hoc. <b>Subscription filter</b>: đẩy log <b>real time</b> sang Kinesis Data Streams, Firehose, Lambda, OpenSearch (kể cả cross-account). <b>Export to S3</b>: batch, trễ tới 12 giờ, không real time. Mã hóa bằng KMS được.</td></tr>
+        <tr><td><b>Alarm</b></td><td>Ba trạng thái: <b>OK, ALARM, INSUFFICIENT_DATA</b>. Cấu hình: period, evaluation periods, datapoints to alarm (M of N), threshold, treat missing data. Action: <b>SNS</b>, <b>Auto Scaling</b>, <b>EC2 action</b> (stop, terminate, reboot, <b>recover</b> khi system status check fail: chuyển sang host khác giữ nguyên IP, EBS), Systems Manager OpsItem. <b>Composite alarm</b>: AND/OR nhiều alarm để giảm cảnh báo nhiễu (chỉ báo khi CPU cao VÀ latency cao). <b>Anomaly detection</b>: band ML thay ngưỡng cố định. Alarm trên metric filter của log: cảnh báo khi có N dòng ERROR. Test bằng <code>set-alarm-state</code>.</td></tr>
+        <tr><td><b>Dashboard</b></td><td>Global, gộp metric nhiều Region và nhiều account (cross-account observability). 3 dashboard đầu miễn phí, sau đó khoảng 3 USD/dashboard/tháng (cần kiểm tra lại).</td></tr>
+        <tr><td><b>EventBridge</b> (tên cũ CloudWatch Events)</td><td>Bus sự kiện: rule khớp event (EC2 state change, GuardDuty finding, CodePipeline, Health) hoặc <b>schedule</b> (cron, rate) → target (Lambda, SNS, SQS, Step Functions, SSM Automation, API destination). Event bus default, custom, partner (SaaS). Archive và replay. <b>EventBridge Scheduler</b> cho lịch quy mô lớn. Đề: <em>react to events</em>, <em>run every night</em>, <em>when instance stops notify</em> → EventBridge.</td></tr>
+        <tr><td>Nhận diện</td><td><b>Synthetics canary</b> (giả lập user truy cập endpoint định kỳ), <b>Container Insights</b>, <b>Lambda Insights</b>, <b>Contributor Insights</b> (top N contributor trong log), <b>ServiceLens / X-Ray</b> (trace phân tán), <b>Application Signals</b>.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Systems Manager (SSM): quản lý fleet không cần SSH</span>
+      <ul>
+        <li>Điều kiện để một instance là <b>managed node</b>: có <b>SSM Agent</b> (cài sẵn trên Amazon Linux, Ubuntu, Windows AMI của AWS), có <b>IAM role với <code>AmazonSSMManagedInstanceCore</code></b>, và có đường <b>outbound HTTPS 443</b> tới endpoint SSM (qua Internet Gateway, NAT, hoặc <b>VPC interface endpoint</b> <code>ssm</code>, <code>ssmmessages</code>, <code>ec2messages</code> cho subnet hoàn toàn private). Không cần inbound. Máy on-prem cũng quản lý được qua <b>hybrid activation</b> (ID bắt đầu bằng <code>mi-</code>).</li>
+        <li><b>Session Manager</b>: shell qua Console hoặc CLI (<code>aws ssm start-session</code>), <b>không mở cổng 22/3389, không bastion, không SSH key</b>, phân quyền bằng IAM, <b>ghi lại session</b> vào S3/CloudWatch Logs để audit, <b>port forwarding</b> tới RDS private. Đáp án cho mọi đề có <em>no inbound ports</em>, <em>no bastion host</em>, <em>audit shell sessions</em>, <em>no SSH keys to manage</em>.</li>
+        <li><b>Run Command</b>: chạy lệnh/script trên nhiều instance cùng lúc theo tag, không SSH, có log. <b>Automation</b>: runbook nhiều bước (<code>AWS-RestartEC2Instance</code>, tạo AMI, remediation cho Config). <b>Patch Manager</b>: patch baseline, patch group theo tag, chạy trong <b>maintenance window</b>, báo cáo compliance; cho cả Linux và Windows, cả on-prem. <b>State Manager</b>: giữ cấu hình mong muốn (ví dụ agent luôn chạy) theo lịch. <b>Inventory</b>: thu thập phần mềm cài đặt. <b>Parameter Store</b> (bài 2). <b>Fleet Manager</b>: giao diện quản lý fleet. <b>OpsCenter, Change Manager, Distributor, Compliance</b>: nhận diện.</li>
+        <li>Lỗi hay gặp trong lab: instance không hiện trong Fleet Manager → kiểm tra role, outbound 443, agent đang chạy, hoặc subnet private không có NAT/endpoint.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">VPC Flow Logs (nhắc lại tuần 4)</span>
+      <ul>
+        <li>Ghi <b>metadata</b> traffic IP (src/dst IP, port, protocol, bytes, <b>ACCEPT/REJECT</b>) ở mức VPC, subnet hoặc ENI. Gửi tới CloudWatch Logs, S3, hoặc Firehose. <b>Không ghi nội dung gói</b>, không ghi traffic tới DNS resolver của Amazon, metadata 169.254.169.254, DHCP, license activation của Windows.</li>
+        <li>Dùng để debug Security Group/NACL (tìm dòng REJECT), phân tích bằng Athena hoặc Logs Insights, và là nguồn của GuardDuty (GuardDuty tự lấy, không cần bạn bật). Muốn bắt gói đầy đủ thì dùng <b>VPC Traffic Mirroring</b> (nhận diện).</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>Biết ai đã terminate EC2 tuần trước</td><td>CloudTrail (Event history nếu trong 90 ngày, trail trên S3 nếu lâu hơn)</td><td>CloudWatch Logs, Config (chỉ thấy resource thay đổi)</td></tr>
+        <tr><td>Ghi lại ai đọc object nào trong bucket</td><td>CloudTrail data event cho S3 (hoặc S3 server access log)</td><td>Management event (không có GetObject)</td></tr>
+        <tr><td>Chứng minh log CloudTrail không bị sửa</td><td>Log file validation + S3 Object Lock</td><td>Versioning (vẫn xóa được)</td></tr>
+        <tr><td>Cảnh báo khi memory EC2 cao</td><td>Cài CloudWatch agent gửi custom metric, đặt alarm</td><td>Bật detailed monitoring (chỉ nhanh hơn, không thêm memory)</td></tr>
+        <tr><td>Cảnh báo khi có 10 dòng "ERROR" trong 5 phút</td><td>Metric filter trên log group + alarm</td><td>Logs Insights (query thủ công), subscription filter (đẩy đi nơi khác)</td></tr>
+        <tr><td>Đẩy log real time sang OpenSearch / xử lý</td><td>Subscription filter → Kinesis/Lambda</td><td>Export to S3 (batch, trễ)</td></tr>
+        <tr><td>EC2 hỏng phần cứng, tự phục hồi giữ IP</td><td>Alarm StatusCheckFailed_System + EC2 recover action</td><td>Auto Scaling (tạo instance mới, đổi IP)</td></tr>
+        <tr><td>Chạy script trên 200 instance không SSH</td><td>SSM Run Command theo tag</td><td>User data (chỉ chạy lúc boot), SSH loop</td></tr>
+        <tr><td>Truy cập shell EC2 private subnet, có audit, không bastion</td><td>Session Manager (+ VPC endpoint)</td><td>Bastion + SSH key, mở port 22</td></tr>
+        <tr><td>Vá OS định kỳ cho fleet, báo cáo compliance</td><td>Patch Manager + maintenance window</td><td>Inspector (chỉ phát hiện CVE, không vá)</td></tr>
+        <tr><td>Chạy Lambda mỗi đêm 2 giờ</td><td>EventBridge schedule rule / Scheduler</td><td>CloudWatch alarm, cron trên EC2</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>who made the API call <b>→ CloudTrail</b></span><span>S3 object-level logging <b>→ CloudTrail data events</b></span><span>all accounts, cannot be disabled by members <b>→ Organization trail</b></span><span>tamper-proof logs <b>→ log file validation + Object Lock</b></span><span>memory / disk space metric <b>→ CloudWatch agent</b></span><span>1-minute EC2 metrics <b>→ detailed monitoring</b></span><span>sub-minute custom metric <b>→ high resolution</b></span><span>real-time log processing <b>→ subscription filter</b></span><span>reduce alarm noise <b>→ composite alarm</b></span><span>no SSH, no bastion, audit sessions <b>→ Session Manager</b></span><span>patch fleet on schedule <b>→ Patch Manager + maintenance window</b></span><span>react to events / cron <b>→ EventBridge</b></span><span>why connection rejected <b>→ VPC Flow Logs</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">21. Auditor hỏi ai đã xóa một object trong bucket 2 tháng trước. Account chỉ có Event history mặc định, chưa tạo trail. Có trả lời được không?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Không.</b> Event history chỉ giữ 90 ngày và chỉ management event; <code>DeleteObject</code> là data event, không được ghi nếu chưa bật data event trong một trail. Bài học: tạo trail multi-Region vào S3 và bật data event cho bucket quan trọng ngay từ đầu.</p></div>
+      <div class="q"><p class="qt">22. Ops cần cảnh báo khi ứng dụng trên EC2 dùng quá 90% RAM, <em>least operational overhead</em>. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Cài CloudWatch agent (có thể đẩy bằng SSM Run Command) để gửi metric <code>mem_used_percent</code>, tạo alarm gửi SNS.</b> Detailed monitoring không có memory. Tự viết script gọi PutMetricData chạy được nhưng tốn công hơn agent.</p></div>
+      <div class="q"><p class="qt">23. Security yêu cầu: không mở cổng 22 vào EC2 ở private subnet không có NAT, admin vẫn phải vào được shell và mọi phiên được ghi lại. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>SSM Session Manager, tạo VPC interface endpoint cho ssm, ssmmessages, ec2messages, gắn role AmazonSSMManagedInstanceCore, bật session logging vào CloudWatch Logs/S3.</b> Bastion mở port 22 vi phạm yêu cầu. Không có NAT nên cần endpoint để agent gọi về SSM.</p></div>
+      <div class="q"><p class="qt">24. Chọn 2 cách đưa log ứng dụng từ CloudWatch Logs sang OpenSearch gần real time: (A) subscription filter tới Lambda, (B) export to S3 rồi import, (C) subscription filter tới Kinesis Data Firehose, (D) Logs Insights.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>A và C.</b> Subscription filter là cơ chế real time. Export to S3 là batch (trễ tới 12 giờ). Logs Insights là công cụ query, không chuyển dữ liệu.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8. IAC VÀ CHI PHÍ ============ -->
+<section id="iac">
+  <span class="eyebrow">Lý thuyết 8 / 8</span>
+  <h2>IaC và chi phí: CloudFormation, Elastic Beanstalk, CDK, Cost Explorer, Budgets</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">CloudFormation: template, stack, change set</span>
+      <ul>
+        <li><b>Template</b> (YAML hoặc JSON) mô tả resource; <b>stack</b> là tập resource được tạo từ template. Các section: <code>Parameters</code> (nhập lúc tạo), <code>Mappings</code> (bảng tra, ví dụ AMI theo Region), <code>Conditions</code>, <b><code>Resources</code> (bắt buộc)</b>, <code>Outputs</code>. Hàm hay gặp: <code>!Ref</code>, <code>!GetAtt</code>, <code>!Sub</code>, <code>!FindInMap</code>, <code>!ImportValue</code>, <code>!Join</code>. Dịch vụ miễn phí, chỉ trả tiền resource tạo ra.</li>
+        <li><b>Change set</b>: xem trước stack update sẽ thêm, sửa, <b>thay thế (replace)</b> resource nào trước khi chạy. Một số thuộc tính đổi là CloudFormation xóa resource cũ tạo cái mới (ví dụ đổi tên RDS), change set cho biết điều đó để tránh mất dữ liệu.</li>
+        <li>Tạo lỗi thì <b>tự rollback</b> xóa hết (trạng thái <code>ROLLBACK_COMPLETE</code>, phải xóa stack rồi tạo lại). Update lỗi thì rollback về trạng thái trước; <code>UPDATE_ROLLBACK_FAILED</code> thì dùng continue update rollback. Có thể tắt rollback khi debug.</li>
+        <li><b>StackSets</b>: deploy một template tới <b>nhiều account và nhiều Region</b> từ một chỗ, tích hợp Organizations (service-managed permissions, tự deploy cho account mới vào OU). Đề: <em>deploy baseline to all accounts</em>, <em>same configuration in every Region</em>.</li>
+        <li><b>Drift detection</b>: phát hiện resource bị sửa tay ngoài CloudFormation (ai đó đổi Security Group trên console). Không tự sửa, chỉ báo.</li>
+        <li><b><code>DeletionPolicy</code></b>: <code>Delete</code> (mặc định), <code>Retain</code> (giữ resource khi xóa stack), <code>Snapshot</code> (chụp snapshot trước khi xóa, cho RDS, EBS, ElastiCache, Redshift, Neptune). <code>UpdateReplacePolicy</code> tương tự khi resource bị replace. <b>Termination protection</b> chặn xóa nhầm cả stack. <b>Stack policy</b> chặn update một số resource (ví dụ không cho update RDS prod).</li>
+        <li><b>Nested stack</b>: stack cha chứa resource <code>AWS::CloudFormation::Stack</code> trỏ tới template con trên S3, tái sử dụng mẫu (VPC, ALB) và vượt giới hạn số resource mỗi stack (500, cần kiểm tra lại). <b>Cross-stack reference</b>: stack A khai <code>Outputs</code> với <code>Export</code>, stack B dùng <code>!ImportValue</code>; tên export duy nhất trong Region, <b>không xóa được stack A khi B còn import</b>. Nested khi cùng vòng đời, cross-stack khi khác vòng đời (network team với app team).</li>
+        <li>Khác: <b>custom resource</b> (Lambda làm việc CloudFormation chưa hỗ trợ), <code>cfn-init</code> và <code>cfn-signal</code> với <code>CreationPolicy</code> (đợi EC2 báo cài xong mới coi là CREATE_COMPLETE), <code>DependsOn</code>, dynamic reference tới Secrets Manager/Parameter Store, <b>CloudFormation Registry và Guard</b> (nhận diện), <b>IaC generator</b> tạo template từ resource có sẵn (nhận diện).</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Elastic Beanstalk: PaaS và các deployment policy</span>
+      <ul>
+        <li>Bạn upload code (Java, .NET, Node.js, Python, PHP, Ruby, Go, Docker), Beanstalk tự dựng EC2, Auto Scaling, ELB, CloudWatch, (tùy chọn) RDS bằng CloudFormation phía sau. <b>Không tính thêm tiền</b>, chỉ trả resource. Vẫn toàn quyền vào EC2. Cấu hình bằng file <code>.ebextensions/*.config</code>. Hai tier: <b>web server</b> (ELB + ASG) và <b>worker</b> (SQS + ASG xử lý nền). Managed platform update vá platform theo maintenance window.</li>
+        <li><b>RDS tạo trong environment sẽ bị xóa cùng environment</b>. Production nên tạo RDS ngoài rồi trỏ vào bằng env variable. Đây là câu hỏi hay gặp.</li>
+      </ul>
+      <div class="tbl"><table>
+        <tr><th>Deployment policy</th><th>Cách chạy</th><th>Downtime, capacity, chi phí</th><th>Đề nhắc</th></tr>
+        <tr><td><b>All at once</b></td><td>Deploy lên mọi instance cùng lúc</td><td>Có downtime ngắn; nhanh nhất; không tốn thêm</td><td>Dev/test, <em>fastest</em></td></tr>
+        <tr><td><b>Rolling</b></td><td>Từng batch, batch đang deploy tạm ra khỏi phục vụ</td><td>Không downtime nhưng <b>giảm capacity</b> trong lúc deploy; không tốn thêm</td><td><em>no additional cost</em>, chấp nhận giảm capacity</td></tr>
+        <tr><td><b>Rolling with additional batch</b></td><td>Tạo thêm một batch mới trước, rồi rolling</td><td>Không downtime, <b>giữ nguyên capacity</b>; tốn thêm một batch trong thời gian ngắn</td><td><em>maintain full capacity</em></td></tr>
+        <tr><td><b>Immutable</b></td><td>Tạo ASG tạm với instance mới chạy version mới, health OK thì chuyển sang ASG chính, xóa cũ</td><td>Không downtime, <b>rollback nhanh nhất</b> (chỉ xóa instance mới); tốn gấp đôi trong lúc deploy; chậm</td><td><em>safest</em>, <em>quick rollback</em>, production</td></tr>
+        <tr><td><b>Traffic splitting</b></td><td>Như immutable nhưng chia % traffic sang version mới (canary)</td><td>Thử nghiệm với một phần người dùng</td><td><em>canary</em></td></tr>
+        <tr><td><b>Blue/green</b> (thủ công)</td><td>Clone environment, deploy version mới lên environment xanh, <b>swap CNAME URL</b></td><td>Không downtime, rollback bằng swap lại; tốn gấp đôi; có thể thử lâu</td><td><em>swap environment URLs</em>, <em>zero downtime with full test</em></td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">CDK và SAM (nhận diện)</span>
+      <ul>
+        <li><b>CDK</b> (Cloud Development Kit): viết hạ tầng bằng <b>ngôn ngữ lập trình</b> (TypeScript, Python, Java, C#, Go) với <b>construct</b> (L1 = resource thô, L2 = có mặc định hợp lý, L3 = pattern như "ALB + Fargate"), lệnh <code>cdk synth</code> <b>sinh ra CloudFormation template</b>, <code>cdk deploy</code> tạo stack. Có vòng lặp, điều kiện, unit test, dùng lại code. Đề: <em>define infrastructure using familiar programming language</em>, <em>type checking</em>. Tuần 9 dùng CDK hoặc CloudFormation để dựng kiến trúc 3-tier.</li>
+        <li><b>SAM</b> (Serverless Application Model): mở rộng CloudFormation cho serverless với <code>Transform: AWS::Serverless-2016-10-31</code> và resource rút gọn <code>AWS::Serverless::Function</code>, <code>::Api</code>, <code>::SimpleTable</code>. <code>sam local</code> chạy Lambda trên máy, <code>sam deploy</code> kèm CodeDeploy để chuyển traffic dần (canary) giữa version Lambda. Đề: <em>serverless application, local testing</em>.</li>
+        <li>Khác: <b>Terraform</b> (bên thứ ba, đa cloud), <b>OpsWorks</b> (Chef/Puppet managed, đã ngừng nhận khách mới), <b>CodeDeploy</b> (deploy ứng dụng lên EC2/Lambda/ECS, không phải IaC).</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Công cụ chi phí: ai làm gì</span>
+      <div class="tbl"><table>
+        <tr><th>Công cụ</th><th>Việc</th><th>Chi tiết hay hỏi</th></tr>
+        <tr><td><b>Cost Explorer</b></td><td>Xem và phân tích chi phí <b>quá khứ</b> (tới 13 tháng) theo dịch vụ, account, Region, tag, usage type; <b>forecast</b> tới 12 tháng; báo cáo <b>RI và Savings Plans recommendation</b>, utilization, coverage; <b>rightsizing recommendation</b> cho EC2.</td><td>Bật lần đầu mất tới 24 giờ. Có hourly và resource-level granularity (tính tiền thêm). Có API. Đề: <em>analyze spend by service</em>, <em>forecast</em>, <em>which RI to buy</em>.</td></tr>
+        <tr><td><b>Cost allocation tag</b></td><td>Tách chi phí theo tag trong Cost Explorer, CUR, Budgets. Hai loại: <b>AWS-generated</b> (<code>aws:createdBy</code>, <code>aws:cloudformation:stack-name</code>) và <b>user-defined</b> (<code>Project</code>, <code>Team</code>, <code>Environment</code>).</td><td><b>Phải activate</b> trong Billing console (ở management account nếu có Organizations), mất tới 24 giờ mới hiện, <b>không áp ngược</b> cho dữ liệu trước khi activate. Kết hợp <b>Cost Categories</b> để gom theo đơn vị kinh doanh. Dùng Tag Editor để gắn tag hàng loạt.</td></tr>
+        <tr><td><b>Compute Optimizer</b></td><td>Gợi ý <b>right sizing</b> bằng ML từ metric CloudWatch 14 ngày: EC2 instance type, Auto Scaling group, EBS volume type/size, Lambda memory, ECS Fargate, (mới) RDS và license.</td><td>Miễn phí (enhanced metrics tới 3 tháng tính tiền). Chỉ ra under-provisioned và over-provisioned, kèm dự báo chi phí. Khác Trusted Advisor: Trusted Advisor chỉ báo idle/underutilized theo ngưỡng đơn giản, Compute Optimizer gợi ý loại instance cụ thể. Đề: <em>recommend optimal instance type</em>, <em>Lambda memory recommendation</em>.</td></tr>
+        <tr><td><b>Budgets</b></td><td>Đặt ngưỡng và cảnh báo (SNS, email, Chatbot) khi <b>actual</b> hoặc <b>forecast</b> vượt. Bốn loại: <b>cost</b>, <b>usage</b> (giờ EC2, GB S3), <b>RI utilization/coverage</b>, <b>Savings Plans utilization/coverage</b>.</td><td><b>Budget action</b>: khi vượt ngưỡng tự gắn IAM policy Deny, gắn SCP, hoặc stop EC2/RDS (có thể yêu cầu duyệt). Hai budget đầu miễn phí, sau đó khoảng 0,02 USD/ngày/budget (cần kiểm tra lại). Cập nhật vài lần mỗi ngày nên cảnh báo trễ. Đề: <em>alert when exceeds</em>, <em>stop instances when budget exceeded</em>.</td></tr>
+        <tr><td><b>Cost and Usage Report (CUR)</b> / Data Exports</td><td>Dữ liệu billing <b>chi tiết nhất</b> (từng dòng usage theo giờ, có tag, có RI/SP áp dụng), xuất ra <b>S3</b>, phân tích bằng <b>Athena, Redshift, QuickSight</b>.</td><td>Đề: <em>most granular</em>, <em>custom billing dashboard</em>, <em>query billing data with SQL</em>.</td></tr>
+        <tr><td><b>Pricing Calculator</b></td><td>Ước tính trước khi dựng, xuất báo giá chia sẻ được.</td><td>Không cần tài khoản. Đề: <em>estimate before migration</em>.</td></tr>
+        <tr><td><b>Billing Conductor</b>, <b>Cost Anomaly Detection</b></td><td>Chia hóa đơn tùy chỉnh cho khách hàng nội bộ; ML phát hiện chi phí tăng bất thường gửi SNS (miễn phí).</td><td>Nhận diện. Đề: <em>unexpected spend spike notification</em> → Cost Anomaly Detection.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Savings Plans với Reserved Instances (nhắc lại tuần 2)</span>
+      <div class="tbl"><table>
+        <tr><th>Lựa chọn</th><th>Giảm tối đa (cần kiểm tra lại)</th><th>Linh hoạt</th><th>Chọn khi</th></tr>
+        <tr><td><b>Compute Savings Plans</b></td><td>Khoảng 66%</td><td>Mọi instance family, size, Region, OS, tenancy; cả <b>Fargate và Lambda</b></td><td>Cam kết USD/giờ, workload thay đổi loại instance, có container/serverless</td></tr>
+        <tr><td><b>EC2 Instance Savings Plans</b></td><td>Khoảng 72%</td><td>Một family trong một Region; đổi size, OS, tenancy, AZ</td><td>Biết chắc family (ví dụ m5 ở Tokyo), muốn giảm nhiều nhất</td></tr>
+        <tr><td><b>Standard RI</b></td><td>Khoảng 72%</td><td>Đổi AZ, size trong family (Linux regional); <b>không đổi family</b>; bán lại trên RI Marketplace</td><td>Steady state 1 đến 3 năm, giảm nhiều nhất, không đổi loại</td></tr>
+        <tr><td><b>Convertible RI</b></td><td>Khoảng 66%</td><td>Đổi family, OS, tenancy (exchange); không bán lại</td><td>Steady state nhưng có thể đổi loại</td></tr>
+        <tr><td><b>Spot</b></td><td>Khoảng 90%</td><td>Bị thu hồi báo trước 2 phút</td><td>Batch, chịu gián đoạn, stateless</td></tr>
+        <tr><td><b>Dedicated Host</b></td><td>Không giảm, trả theo host</td><td>Giữ license theo socket/core (BYOL Windows, Oracle)</td><td>Compliance, license</td></tr>
+      </table></div>
+      <p style="font-size:.92rem">RI còn có cho <b>RDS, ElastiCache, Redshift, OpenSearch, DynamoDB</b> (reserved capacity); Savings Plans không áp cho các dịch vụ này (trừ SageMaker Savings Plans). Thanh toán: All upfront rẻ nhất, Partial, No upfront. Đề so sánh Savings Plans với RI: Savings Plans linh hoạt hơn, RI Standard giảm bằng EC2 Instance SP nhưng cứng hơn và bán lại được.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>Xem trước update stack sẽ thay thế RDS không</td><td>Change set</td><td>Drift detection (so sánh thực tế với template)</td></tr>
+        <tr><td>Xóa stack nhưng giữ lại RDS và dữ liệu</td><td>DeletionPolicy Retain hoặc Snapshot</td><td>Termination protection (chặn xóa cả stack)</td></tr>
+        <tr><td>Deploy cùng template tới 50 account</td><td>StackSets</td><td>Nested stack (trong một account)</td></tr>
+        <tr><td>Team network và team app quản lý stack riêng, app cần VPC ID</td><td>Cross-stack Export/ImportValue</td><td>Nested stack (cùng vòng đời)</td></tr>
+        <tr><td>Beanstalk deploy không downtime, không tốn thêm, chịu giảm capacity</td><td>Rolling</td><td>Rolling with additional batch (tốn thêm), Immutable (gấp đôi)</td></tr>
+        <tr><td>Beanstalk deploy an toàn nhất, rollback nhanh</td><td>Immutable (hoặc blue/green)</td><td>All at once</td></tr>
+        <tr><td>Viết hạ tầng bằng Python có test</td><td>CDK</td><td>CloudFormation YAML thuần, SAM (chỉ serverless)</td></tr>
+        <tr><td>Biết EC2 nào đang quá to, nên đổi sang loại nào</td><td>Compute Optimizer (hoặc Cost Explorer rightsizing)</td><td>Budgets, CUR</td></tr>
+        <tr><td>Tự stop EC2 dev khi chi phí tháng vượt 100 USD</td><td>Budgets với budget action</td><td>Cost Explorer (chỉ xem), CloudWatch billing alarm (chỉ báo)</td></tr>
+        <tr><td>Tách chi phí theo dự án trong một account</td><td>Cost allocation tag (user-defined, đã activate)</td><td>Tạo account mới (được nhưng đề nói một account)</td></tr>
+        <tr><td>Chi phí dùng Lambda và Fargate lẫn EC2, cam kết để giảm</td><td>Compute Savings Plans</td><td>EC2 Instance SP, RI (không cover Lambda/Fargate)</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>preview changes before update <b>→ change set</b></span><span>deploy to multiple accounts and Regions <b>→ StackSets</b></span><span>manual changes outside template <b>→ drift detection</b></span><span>keep database when deleting stack <b>→ DeletionPolicy Retain/Snapshot</b></span><span>reference output of another stack <b>→ Export + ImportValue</b></span><span>PaaS, just upload code <b>→ Elastic Beanstalk</b></span><span>no downtime, maintain capacity <b>→ rolling with additional batch</b></span><span>safest deploy, fast rollback <b>→ immutable</b></span><span>infrastructure in TypeScript/Python <b>→ CDK</b></span><span>serverless template, local test <b>→ SAM</b></span><span>forecast, RI recommendation <b>→ Cost Explorer</b></span><span>track cost by team, must activate <b>→ cost allocation tags</b></span><span>right sizing recommendation <b>→ Compute Optimizer</b></span><span>alert / stop when exceeds budget <b>→ Budgets (action)</b></span><span>most granular billing data, Athena <b>→ CUR</b></span><span>flexible commitment incl. Lambda, Fargate <b>→ Compute Savings Plans</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">25. Stack CloudFormation có RDS production. Team muốn khi xóa stack (hoặc khi RDS bị replace lúc update) dữ liệu không mất. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Đặt <code>DeletionPolicy: Snapshot</code> (hoặc Retain) và <code>UpdateReplacePolicy: Snapshot</code> cho resource RDS; thêm termination protection cho stack.</b> Termination protection một mình không bảo vệ khi update gây replace. Backup RDS tự động cũng bị xóa khi instance bị xóa (trừ khi giữ automated backups).</p></div>
+      <div class="q"><p class="qt">26. Ứng dụng trên Elastic Beanstalk cần deploy version mới không downtime, giữ nguyên capacity, và nếu lỗi phải rollback nhanh nhất. Chọn policy?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Immutable.</b> Instance mới tạo trong ASG tạm, lỗi thì chỉ xóa chúng, instance cũ chưa đụng tới. Rolling with additional batch giữ capacity nhưng rollback phải rolling ngược lại, chậm hơn. All at once có downtime.</p></div>
+      <div class="q"><p class="qt">27. Phòng tài chính muốn biết mỗi team tốn bao nhiêu từ tháng trước, resource đã gắn tag <code>Team</code> từ đầu năm nhưng Cost Explorer không lọc được theo tag. Vì sao, và lưu ý gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Chưa activate tag <code>Team</code> làm cost allocation tag trong Billing console.</b> Sau khi activate phải chờ tới 24 giờ, và dữ liệu chỉ có từ thời điểm activate trở đi, không áp ngược cho tháng trước (muốn có số cũ phải dùng CUR kết hợp cách khác hoặc chấp nhận thiếu).</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HANDS-ON ============ -->
+<section id="handson">
+  <span class="eyebrow">Thực hành</span>
+  <h2>Hands-on: 7 lab</h2>
+  <p>Mọi lệnh chạy trong PowerShell trên Windows với AWS CLI v2, profile <code>saa</code>, Region <code>ap-northeast-1</code> (đặt <code>$env:AWS_PROFILE = "saa"</code> trước). Lab 1 tạo EC2 có sẵn role SSM và Security Group không inbound, EC2 này dùng lại cho lab 2 và lab 5. Resource tính tiền tuần này: EC2 t3.micro (khoảng 0,0136 USD/giờ ở Tokyo), public IPv4 (0,005 USD/giờ), KMS key (1 USD/tháng, tính theo giờ), Secrets Manager (0,40 USD/secret/tháng, 30 ngày đầu miễn phí), RDS db.t3.micro nếu làm lab 4 phương án A (khoảng 0,026 USD/giờ), tất cả cần kiểm tra lại. Làm xong lab 7 trong ngày 5 thì tổng khoảng 1 đến 2 USD.</p>
+
+  <div class="card">
+    <h3>Lab 1. CloudWatch alarm CPU của EC2 gửi SNS email, kích bằng stress</h3>
+    <ol class="steps">
+      <li><div><p>Tạo SNS topic và đăng ký email, rồi mở email bấm <b>Confirm subscription</b>:</p>
+<pre><code>$env:AWS_PROFILE = "saa"
+aws sns create-topic --name saa-alarm-topic
+aws sns subscribe --topic-arn arn:aws:sns:ap-northeast-1:&lt;account-id&gt;:saa-alarm-topic --protocol email --notification-endpoint ban@example.com
+aws sns list-subscriptions-by-topic --topic-arn arn:aws:sns:ap-northeast-1:&lt;account-id&gt;:saa-alarm-topic</code></pre><p><code>SubscriptionArn</code> phải khác <code>PendingConfirmation</code> trước khi làm tiếp.</p></div></li>
+      <li><div><p>Tạo IAM role cho EC2 có <code>AmazonSSMManagedInstanceCore</code> (dùng cho Session Manager ở bước 5 và lab 5). File <code>ec2-trust.json</code>:</p>
+<pre><code>{ "Version": "2012-10-17", "Statement": [{ "Effect": "Allow",
+  "Principal": { "Service": "ec2.amazonaws.com" }, "Action": "sts:AssumeRole" }] }</code></pre>
+<pre><code>aws iam create-role --role-name saa-ssm-role --assume-role-policy-document file://ec2-trust.json
+aws iam attach-role-policy --role-name saa-ssm-role --policy-arn arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+aws iam create-instance-profile --instance-profile-name saa-ssm-profile
+aws iam add-role-to-instance-profile --instance-profile-name saa-ssm-profile --role-name saa-ssm-role</code></pre></div></li>
+      <li><div><p>Tạo Security Group <b>không có inbound rule</b> trong default VPC (SG mới mặc định chỉ có outbound all):</p>
+<pre><code>aws ec2 describe-vpcs --filters Name=isDefault,Values=true --query "Vpcs[0].VpcId" --output text
+aws ec2 create-security-group --group-name saa-no-inbound --description "no inbound, SSM only" --vpc-id &lt;vpc-id&gt;
+aws ec2 describe-security-groups --group-ids &lt;sg-id&gt; --query "SecurityGroups[0].IpPermissions"   # phải là []</code></pre></div></li>
+      <li><div><p>Chạy EC2 Amazon Linux 2023 (AMI ID lấy từ public parameter của Parameter Store), ở public subnet để agent gọi ra SSM qua Internet Gateway:</p>
+<pre><code>aws ec2 describe-subnets --filters Name=vpc-id,Values=&lt;vpc-id&gt; --query "Subnets[0].SubnetId" --output text
+aws ec2 run-instances --image-id resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64 `
+  --instance-type t3.micro --subnet-id &lt;subnet-id&gt; --security-group-ids &lt;sg-id&gt; --associate-public-ip-address `
+  --iam-instance-profile Name=saa-ssm-profile `
+  --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=saa-week8},{Key=Project,Value=saa}]"
+aws ec2 describe-instances --filters Name=tag:Name,Values=saa-week8 --query "Reservations[0].Instances[0].[InstanceId,State.Name]"</code></pre><p>Ghi lại <code>i-xxxx</code>. Nếu <code>run-instances</code> báo instance profile chưa tồn tại, đợi 10 giây rồi chạy lại (IAM eventual consistency).</p></div></li>
+      <li><div><p>Tạo alarm CPU trên 70% trong 2 period 60 giây. Để metric 1 phút cần detailed monitoring (tính tiền nhỏ, vài giờ không đáng kể); nếu không bật thì đổi <code>--period 300</code>:</p>
+<pre><code>aws ec2 monitor-instances --instance-ids &lt;i-xxxx&gt;
+aws cloudwatch put-metric-alarm --alarm-name saa-cpu-high --alarm-description "CPU over 70%" `
+  --namespace AWS/EC2 --metric-name CPUUtilization --dimensions Name=InstanceId,Value=&lt;i-xxxx&gt; `
+  --statistic Average --period 60 --evaluation-periods 2 --threshold 70 --comparison-operator GreaterThanThreshold `
+  --treat-missing-data missing `
+  --alarm-actions arn:aws:sns:ap-northeast-1:&lt;account-id&gt;:saa-alarm-topic `
+  --ok-actions arn:aws:sns:ap-northeast-1:&lt;account-id&gt;:saa-alarm-topic
+aws cloudwatch describe-alarms --alarm-names saa-cpu-high --query "MetricAlarms[0].StateValue"</code></pre><p>Lúc đầu là <code>INSUFFICIENT_DATA</code>, sau vài phút có dữ liệu sẽ sang <code>OK</code>.</p></div></li>
+      <li><div><p>Vào shell qua Session Manager (Console: EC2 → chọn instance → Connect → tab <b>Session Manager</b>; chi tiết cài plugin CLI ở lab 5) và tạo tải CPU:</p>
+<pre><code>sudo dnf install -y stress-ng
+stress-ng --cpu 2 --timeout 600
+# Nếu không cài được: for i in 1 2; do yes &gt; /dev/null &amp; done   rồi sau đó: pkill yes</code></pre></div></li>
+      <li><div><p>Sau 2 đến 4 phút, kiểm tra trạng thái và email:</p>
+<pre><code>aws cloudwatch describe-alarms --alarm-names saa-cpu-high --query "MetricAlarms[0].[StateValue,StateReason]"
+aws cloudwatch describe-alarm-history --alarm-name saa-cpu-high --max-items 5</code></pre><p>Mong đợi: <code>ALARM</code>, email "ALARM: saa-cpu-high". Khi stress hết giờ, alarm về <code>OK</code> và nhận thêm email OK. Muốn thử SNS mà không chờ, dùng <code>aws cloudwatch set-alarm-state --alarm-name saa-cpu-high --state-value ALARM --state-reason "test"</code>.</p></div></li>
+      <li><div><p>Console → CloudWatch → Alarms: xem đồ thị, thử bấm <b>Create composite alarm</b> để thấy cú pháp <code>ALARM(saa-cpu-high) AND ALARM(...)</code>, không cần lưu. Thử <b>Metrics → All metrics → EC2 → Per-Instance</b> để thấy không có metric memory.</p></div></li>
+    </ol>
+    <div class="note">EC2 và public IPv4 tính theo giờ. Giữ lại cho lab 2 và lab 5 trong ngày, nhưng nếu nghỉ qua đêm thì <code>aws ec2 stop-instances --instance-ids &lt;i-xxxx&gt;</code> (dừng thì hết tiền compute và IP, EBS 8 GB vẫn tính rất nhỏ). Xóa hẳn ở lab 7.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 2. Bật CloudTrail trail ghi vào S3 (và CloudWatch Logs), tìm lại một hành động</h3>
+    <ol class="steps">
+      <li><div><p>Console → <b>CloudTrail → Trails → Create trail</b>. Trail name <code>saa-trail</code>. Storage: <b>Create new S3 bucket</b> (Console tự tạo bucket policy cho CloudTrail, làm bằng CLI phải tự viết policy nên dùng Console). Bỏ tick <b>Log file SSE-KMS encryption</b> (dùng SSE-S3 cho rẻ). Tick <b>Log file validation</b>. Tick <b>CloudWatch Logs</b>, log group <code>saa-trail-logs</code>, cho tạo role mới. Next.</p></div></li>
+      <li><div><p>Event type: giữ <b>Management events</b> Read và Write. <b>Không</b> tick Data events (S3 object-level tính tiền theo số event) và Insights events. Next → Create trail. Trail multi-Region là mặc định trên Console, kiểm tra:</p>
+<pre><code>aws cloudtrail describe-trails --query "trailList[].[Name,IsMultiRegionTrail,LogFileValidationEnabled,S3BucketName]"
+aws cloudtrail get-trail-status --name saa-trail --query "[IsLogging,LatestDeliveryTime]"</code></pre></div></li>
+      <li><div><p>Làm một hành động dễ tìm: stop rồi start instance của lab 1 (hoặc tạo một Security Group thử):</p>
+<pre><code>aws ec2 stop-instances --instance-ids &lt;i-xxxx&gt;
+aws ec2 wait instance-stopped --instance-ids &lt;i-xxxx&gt;
+aws ec2 start-instances --instance-ids &lt;i-xxxx&gt;</code></pre></div></li>
+      <li><div><p>Tìm trong <b>Event history</b> (có ngay sau vài phút, không cần trail):</p>
+<pre><code>aws cloudtrail lookup-events --lookup-attributes AttributeKey=EventName,AttributeValue=StopInstances --max-results 3 `
+  --query "Events[].[EventTime,Username,EventName]"
+aws cloudtrail lookup-events --lookup-attributes AttributeKey=ResourceName,AttributeValue=&lt;i-xxxx&gt; --max-results 5 --query "Events[].EventName"</code></pre><p>Console → CloudTrail → Event history → lọc Event name = StopInstances → mở event, đọc JSON: <code>userIdentity.arn</code>, <code>sourceIPAddress</code>, <code>requestParameters</code>, <code>eventSource</code>.</p></div></li>
+      <li><div><p>Sau 5 đến 15 phút, tìm file log trên S3 (đường dẫn <code>AWSLogs/&lt;account-id&gt;/CloudTrail/&lt;region&gt;/yyyy/mm/dd/</code>):</p>
+<pre><code>aws s3 ls s3://&lt;bucket-cloudtrail&gt;/AWSLogs/&lt;account-id&gt;/CloudTrail/ap-northeast-1/ --recursive | Select-Object -Last 5
+aws s3 cp s3://&lt;bucket-cloudtrail&gt;/AWSLogs/&lt;account-id&gt;/CloudTrail/ap-northeast-1/2026/10/29/&lt;file&gt;.json.gz .</code></pre><p>Giải nén và tìm event (Git Bash có <code>gzip</code>; hoặc PowerShell):</p>
+<pre><code># Git Bash
+gzip -d *.json.gz &amp;&amp; grep -o '"eventName":"StopInstances"' *.json
+# PowerShell
+$in = [IO.File]::OpenRead("$PWD\&lt;file&gt;.json.gz"); $gz = New-Object IO.Compression.GZipStream($in,[IO.Compression.CompressionMode]::Decompress)
+$out = [IO.File]::Create("$PWD\trail.json"); $gz.CopyTo($out); $gz.Close(); $out.Close(); $in.Close()
+Select-String -Path trail.json -Pattern '"eventName":"StopInstances"' | Measure-Object</code></pre><p>Không thấy thì event rơi vào file khác (mỗi file là một mẻ vài phút), tải thêm file lân cận. Chú ý thư mục <code>CloudTrail-Digest</code> bên cạnh: đó là digest file của log file validation.</p></div></li>
+      <li><div><p>Xem trong CloudWatch Logs và tạo một metric filter mẫu (không bắt buộc): Console → CloudWatch → Log groups → <code>saa-trail-logs</code> → Logs Insights, query:</p>
+<pre><code>fields eventTime, eventName, userIdentity.arn, sourceIPAddress
+| filter eventName = "StopInstances"
+| sort eventTime desc</code></pre><p>Thử <b>Metric filters → Create</b> với pattern <code>{ $.eventName = "ConsoleLogin" &amp;&amp; $.userIdentity.type = "Root" }</code>, đây là alarm chuẩn CIS "root login". Chỉ xem, không cần lưu.</p></div></li>
+      <li><div><p>Thử validate log (chờ ít nhất 1 giờ để có digest đầu tiên):</p>
+<pre><code>aws cloudtrail validate-logs --trail-arn arn:aws:cloudtrail:ap-northeast-1:&lt;account-id&gt;:trail/saa-trail --start-time 2026-10-29T00:00:00Z</code></pre></div></li>
+    </ol>
+    <div class="note">Trail ghi management event vào S3 gần như miễn phí ở quy mô lab (bản sao management event đầu tiên miễn phí, chỉ trả S3 và CloudWatch Logs vài cent). Vẫn xóa trail và bucket ở lab 7 để account sạch.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 3. Tạo KMS customer managed key, mã hóa EBS và S3, thử user thiếu kms:Decrypt</h3>
+    <ol class="steps">
+      <li><div><p>Tạo khóa symmetric, đặt alias, bật rotation:</p>
+<pre><code>aws kms create-key --description "saa week8 lab key" --tags TagKey=Project,TagValue=saa --query "KeyMetadata.[KeyId,Arn]"
+aws kms create-alias --alias-name alias/saa-lab --target-key-id &lt;key-id&gt;
+aws kms enable-key-rotation --key-id &lt;key-id&gt;
+aws kms get-key-rotation-status --key-id &lt;key-id&gt;
+aws kms get-key-policy --key-id &lt;key-id&gt; --policy-name default --output text</code></pre><p>Đọc key policy mặc định: chỉ có một statement cho <code>arn:aws:iam::&lt;account-id&gt;:root</code> với <code>kms:*</code>. Đó là "ủy quyền cho IAM policy".</p></div></li>
+      <li><div><p>Thử envelope encryption bằng tay để thấy hai output của <code>GenerateDataKey</code>:</p>
+<pre><code>aws kms generate-data-key --key-id alias/saa-lab --key-spec AES_256 --query "[KeyId,Plaintext,CiphertextBlob]"
+"hello saa" | Out-File -Encoding ascii -NoNewline hello.txt
+aws kms encrypt --key-id alias/saa-lab --plaintext fileb://hello.txt --query CiphertextBlob --output text &gt; enc.b64
+[IO.File]::WriteAllBytes("$PWD\enc.bin", [Convert]::FromBase64String((Get-Content enc.b64)))
+aws kms decrypt --ciphertext-blob fileb://enc.bin --query Plaintext --output text   # base64 của "hello saa"</code></pre><p>Lưu ý <code>decrypt</code> không cần truyền key ID vì bản mã đã chứa metadata khóa (với symmetric key).</p></div></li>
+      <li><div><p>Tạo EBS volume mã hóa bằng khóa này và xem KmsKeyId:</p>
+<pre><code>aws ec2 create-volume --availability-zone ap-northeast-1a --size 1 --volume-type gp3 --encrypted --kms-key-id alias/saa-lab `
+  --tag-specifications "ResourceType=volume,Tags=[{Key=Name,Value=saa-kms-vol}]"
+aws ec2 describe-volumes --filters Name=tag:Name,Values=saa-kms-vol --query "Volumes[0].[VolumeId,Encrypted,KmsKeyId]"
+aws ec2 get-ebs-encryption-by-default</code></pre><p>Tùy chọn: snapshot volume rồi copy snapshot sang <code>us-east-1</code> với <code>--encrypted --kms-key-id</code> của khóa ở us-east-1 để thấy KMS là regional (không có khóa ở đó thì lệnh sẽ dùng aws/ebs của Region đích). Nhớ xóa snapshot sau đó.</p></div></li>
+      <li><div><p>Tạo bucket với default encryption SSE-KMS dùng khóa này và bật Bucket Key:</p>
+<pre><code>aws s3 mb s3://saa-kms-quy-2026
+aws s3api put-bucket-encryption --bucket saa-kms-quy-2026 --server-side-encryption-configuration '{
+  "Rules": [{ "ApplyServerSideEncryptionByDefault": { "SSEAlgorithm": "aws:kms", "KMSMasterKeyID": "alias/saa-lab" }, "BucketKeyEnabled": true }] }'
+aws s3 cp hello.txt s3://saa-kms-quy-2026/hello.txt
+aws s3api head-object --bucket saa-kms-quy-2026 --key hello.txt --query "[ServerSideEncryption,SSEKMSKeyId,BucketKeyEnabled]"</code></pre><p>Nếu PowerShell làm hỏng JSON trong dấu nháy, ghi JSON ra file <code>enc.json</code> rồi dùng <code>file://enc.json</code>.</p></div></li>
+      <li><div><p>Tạo user chỉ có quyền S3 (không có quyền KMS) và thử upload/download. File <code>s3only.json</code>:</p>
+<pre><code>{ "Version": "2012-10-17", "Statement": [{ "Effect": "Allow", "Action": "s3:*",
+  "Resource": ["arn:aws:s3:::saa-kms-quy-2026", "arn:aws:s3:::saa-kms-quy-2026/*"] }] }</code></pre>
+<pre><code>aws iam create-user --user-name saa-s3only
+aws iam put-user-policy --user-name saa-s3only --policy-name S3Only --policy-document file://s3only.json
+aws iam create-access-key --user-name saa-s3only
+aws configure --profile s3only      # dán key, region ap-northeast-1
+aws s3 cp hello.txt s3://saa-kms-quy-2026/x.txt --profile s3only       # AccessDenied: kms:GenerateDataKey
+aws s3 cp s3://saa-kms-quy-2026/hello.txt dl.txt --profile s3only      # AccessDenied: kms:Decrypt</code></pre><p>Đọc kỹ thông báo lỗi: S3 nói rõ hành động KMS nào bị thiếu. Đây là câu 2 ở phần kiểm tra nhanh.</p></div></li>
+      <li><div><p>Cấp quyền KMS tối thiểu rồi thử lại. File <code>kms-use.json</code>:</p>
+<pre><code>{ "Version": "2012-10-17", "Statement": [{ "Effect": "Allow",
+  "Action": ["kms:GenerateDataKey", "kms:Decrypt"], "Resource": "arn:aws:kms:ap-northeast-1:&lt;account-id&gt;:key/&lt;key-id&gt;" }] }</code></pre>
+<pre><code>aws iam put-user-policy --user-name saa-s3only --policy-name KmsUse --policy-document file://kms-use.json
+aws s3 cp hello.txt s3://saa-kms-quy-2026/x.txt --profile s3only       # thành công
+aws s3 cp s3://saa-kms-quy-2026/hello.txt dl.txt --profile s3only      # thành công</code></pre><p>Thí nghiệm thêm: gỡ <code>kms:Decrypt</code> khỏi policy, upload vẫn được nhưng download lại hỏng. Sau đó mở CloudTrail Event history lọc Event source <code>kms.amazonaws.com</code> để thấy từng lần <code>GenerateDataKey</code> và <code>Decrypt</code> được ghi lại (có tên user, có encryption context là ARN bucket).</p></div></li>
+      <li><div><p>Thử <b>disable</b> khóa và thấy mọi thứ hỏng, rồi bật lại:</p>
+<pre><code>aws kms disable-key --key-id &lt;key-id&gt;
+aws s3 cp s3://saa-kms-quy-2026/hello.txt dl2.txt        # lỗi KMS.DisabledException ngay cả với admin
+aws kms enable-key --key-id &lt;key-id&gt;</code></pre><p>Đây là cách "khóa toàn bộ dữ liệu" trong một giây mà không xóa gì, đề thi thích hơn xóa khóa.</p></div></li>
+    </ol>
+    <div class="note">Khóa tính 1 USD/tháng theo giờ, volume 1 GB vài cent. Lab 7 sẽ xóa volume, bucket và schedule key deletion 7 ngày.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 4. Secrets Manager lưu mật khẩu RDS, bật rotation, đọc secret bằng CLI</h3>
+    <p style="font-size:.94rem">Hai phương án. <b>Phương án A</b> (khuyến nghị, có rotation thật): tạo RDS MySQL db.t3.micro với tùy chọn để AWS quản lý mật khẩu master trong Secrets Manager, rotation là managed rotation không cần Lambda. Tốn khoảng 0,03 USD/giờ cho RDS và 20 GB storage tính theo giờ, làm trong 1 đến 2 giờ rồi xóa ngay. <b>Phương án B</b> (0 USD nếu trong 30 ngày dùng thử): chỉ tạo secret thường, đọc bằng CLI, so sánh với Parameter Store, bỏ qua rotation vì rotation Lambda cho secret thường cần tự viết code.</p>
+    <ol class="steps">
+      <li><div><p><b>Phương án A</b>: tạo RDS với mật khẩu do Secrets Manager quản lý, không public, không backup để tạo nhanh:</p>
+<pre><code>aws rds create-db-instance --db-instance-identifier saa-secret-db --engine mysql --db-instance-class db.t3.micro `
+  --allocated-storage 20 --master-username admin --manage-master-user-password `
+  --no-publicly-accessible --backup-retention-period 0 --no-multi-az --tags Key=Project,Value=saa
+aws rds wait db-instance-available --db-instance-identifier saa-secret-db
+aws rds describe-db-instances --db-instance-identifier saa-secret-db --query "DBInstances[0].MasterUserSecret"</code></pre><p>Mất 5 đến 10 phút. Output có <code>SecretArn</code> và <code>SecretStatus: active</code>. Secret này do RDS tạo, tên dạng <code>rds!db-...</code>, rotation managed <b>mặc định mỗi 7 ngày</b>.</p></div></li>
+      <li><div><p>Đọc secret bằng CLI (đây là cách app lấy mật khẩu lúc khởi động):</p>
+<pre><code>aws secretsmanager describe-secret --secret-id &lt;SecretArn&gt; --query "[Name,RotationEnabled,RotationRules,NextRotationDate]"
+aws secretsmanager get-secret-value --secret-id &lt;SecretArn&gt; --query SecretString --output text</code></pre><p>Kết quả là JSON <code>{"username":"admin","password":"..."}</code>. Mở CloudTrail Event history lọc <code>GetSecretValue</code>: mỗi lần đọc đều có dấu vết.</p></div></li>
+      <li><div><p>Đổi lịch rotation sang 30 ngày và <b>rotate ngay</b> để thấy version đổi:</p>
+<pre><code>aws secretsmanager list-secret-version-ids --secret-id &lt;SecretArn&gt; --query "Versions[].[VersionId,VersionStages]"
+aws secretsmanager rotate-secret --secret-id &lt;SecretArn&gt; --rotation-rules "{\"ScheduleExpression\": \"rate(30 days)\"}" --rotate-immediately
+aws secretsmanager list-secret-version-ids --secret-id &lt;SecretArn&gt; --query "Versions[].[VersionId,VersionStages]"
+aws secretsmanager get-secret-value --secret-id &lt;SecretArn&gt; --version-stage AWSPREVIOUS --query SecretString --output text</code></pre><p>Sau rotation, version mới mang nhãn <code>AWSCURRENT</code>, version cũ thành <code>AWSPREVIOUS</code>. Mật khẩu trong RDS đã đổi tương ứng (managed rotation làm thay bạn, không có Lambda nào trong account). Với secret thường của bạn, bước này sẽ cần Lambda rotation function.</p></div></li>
+      <li><div><p><b>Cả hai phương án</b>: tạo một secret thường để thấy tên, KMS, recovery window, và tạo tham số Parameter Store để so sánh:</p>
+<pre><code>aws secretsmanager create-secret --name saa/demo/api-key --description "demo" --secret-string "{\"apiKey\":\"abc123\"}" --tags Key=Project,Value=saa
+aws secretsmanager get-secret-value --secret-id saa/demo/api-key --query SecretString --output text
+aws ssm put-parameter --name /saa/demo/db-host --value "saa-secret-db.xxxx.ap-northeast-1.rds.amazonaws.com" --type String
+aws ssm put-parameter --name /saa/demo/db-pass --value "Demo-Pass-123" --type SecureString
+aws ssm get-parameter --name /saa/demo/db-pass                      # Value là bản mã? Không: không có --with-decryption thì trả lỗi hoặc bản mã tùy phiên bản CLI
+aws ssm get-parameter --name /saa/demo/db-pass --with-decryption --query Parameter.Value --output text
+aws ssm get-parameters-by-path --path /saa/demo --recursive --with-decryption --query "Parameters[].[Name,Type]"
+aws ssm get-parameter --name /aws/reference/secretsmanager/saa/demo/api-key --with-decryption --query Parameter.Value --output text</code></pre><p>Dòng cuối cho thấy Parameter Store đọc được secret của Secrets Manager qua đường dẫn tham chiếu. Console → Systems Manager → Parameter Store: SecureString hiển thị giá trị bị che, tier Standard, KMS key <code>alias/aws/ssm</code>.</p></div></li>
+      <li><div><p>Thử xóa secret thường với recovery window và khôi phục:</p>
+<pre><code>aws secretsmanager delete-secret --secret-id saa/demo/api-key --recovery-window-in-days 7
+aws secretsmanager describe-secret --secret-id saa/demo/api-key --query DeletedDate
+aws secretsmanager restore-secret --secret-id saa/demo/api-key</code></pre><p>Trong thời gian chờ, <code>get-secret-value</code> trả lỗi "scheduled for deletion". Muốn xóa ngay (lab 7) dùng <code>--force-delete-without-recovery</code>.</p></div></li>
+      <li><div><p><b>Phương án A</b>: xóa RDS ngay khi xong (không đợi tới lab 7), secret <code>rds!db-...</code> bị xóa theo:</p>
+<pre><code>aws rds delete-db-instance --db-instance-identifier saa-secret-db --skip-final-snapshot --delete-automated-backups
+aws rds wait db-instance-deleted --db-instance-identifier saa-secret-db</code></pre></div></li>
+    </ol>
+    <div class="note bad">RDS là resource đắt nhất tuần này. Đừng để qua đêm: db.t3.micro + storage để quên một tháng mất khoảng 20 đến 25 USD (cần kiểm tra lại). Kiểm tra <code>aws rds describe-db-instances</code> trả về rỗng trước khi đóng máy.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 5. SSM Session Manager vào EC2 không mở cổng SSH, chạy lệnh</h3>
+    <ol class="steps">
+      <li><div><p>Xác nhận instance của lab 1 là managed node và Security Group thật sự không có inbound:</p>
+<pre><code>aws ssm describe-instance-information --query "InstanceInformationList[].[InstanceId,PingStatus,PlatformName,AgentVersion]"
+aws ec2 describe-security-groups --group-ids &lt;sg-id&gt; --query "SecurityGroups[0].IpPermissions"
+aws ec2 describe-instances --instance-ids &lt;i-xxxx&gt; --query "Reservations[0].Instances[0].[PublicIpAddress,KeyName]"</code></pre><p><code>PingStatus</code> phải là <code>Online</code>, <code>KeyName</code> là <code>null</code> (không có SSH key), inbound rỗng. Nếu không Online: kiểm tra role đã gắn, instance có public IP hoặc NAT, hoặc tạo VPC endpoint <code>ssm</code>, <code>ssmmessages</code>, <code>ec2messages</code>.</p></div></li>
+      <li><div><p>Cài <b>Session Manager plugin</b> cho CLI trên Windows: tải bộ cài từ trang tài liệu "Install the Session Manager plugin on Windows" (docs.aws.amazon.com/systems-manager, file <code>SessionManagerPluginSetup.exe</code>), cài, mở lại PowerShell, kiểm tra <code>session-manager-plugin</code> in ra version.</p></div></li>
+      <li><div><p>Mở shell và kiểm tra mình là ai, không hề có kết nối SSH:</p>
+<pre><code>aws ssm start-session --target &lt;i-xxxx&gt;
+# trong session:
+whoami            # ssm-user
+sudo -i
+ss -tlnp          # không có sshd lắng nghe từ ngoài vào được vì SG không inbound (sshd vẫn chạy nhưng không ai vào được)
+curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/   # thấy tên role saa-ssm-role
+exit; exit</code></pre><p>Cũng thử trên Console: EC2 → Connect → Session Manager. Thử SSH từ máy bạn <code>ssh ec2-user@&lt;public-ip&gt;</code> sẽ timeout, đúng như mong muốn.</p></div></li>
+      <li><div><p>Chạy lệnh trên instance bằng <b>Run Command</b> (không cần session, chạy được trên hàng trăm máy theo tag):</p>
+<pre><code>aws ssm send-command --document-name AWS-RunShellScript --targets "Key=tag:Project,Values=saa" `
+  --parameters "commands=['uptime','df -h /','cat /etc/os-release | head -2']" --comment "saa lab5" --query Command.CommandId --output text
+aws ssm list-command-invocations --command-id &lt;command-id&gt; --details --query "CommandInvocations[].[InstanceId,Status,CommandPlugins[0].Output]"</code></pre></div></li>
+      <li><div><p>Bật ghi lại session để audit: Console → Systems Manager → <b>Session Manager → Preferences → Edit</b>: tick <b>CloudWatch logging</b>, log group <code>saa-session-logs</code> (tạo trước bằng <code>aws logs create-log-group --log-group-name saa-session-logs</code>), bỏ tick encrypt nếu không có KMS key cho CloudWatch. Save. Mở một session mới, gõ vài lệnh, exit, rồi xem log group có bản ghi từng phím. Để role EC2 ghi được log, gắn thêm policy <code>CloudWatchAgentServerPolicy</code> hoặc policy inline cho <code>logs:CreateLogStream</code>, <code>logs:PutLogEvents</code>, <code>logs:DescribeLogGroups</code>.</p></div></li>
+      <li><div><p>Tùy chọn: port forwarding (cách vào RDS private hoặc web nội bộ không cần bastion):</p>
+<pre><code>aws ssm start-session --target &lt;i-xxxx&gt; --document-name AWS-StartPortForwardingSession --parameters "portNumber=80,localPortNumber=8080"</code></pre><p>Mở <code>http://localhost:8080</code> sẽ trỏ tới cổng 80 trên instance (chưa cài web thì connection refused, điều đó vẫn chứng minh đường hầm hoạt động).</p></div></li>
+      <li><div><p>Xem Console → Systems Manager → <b>Fleet Manager</b>, <b>Patch Manager → Patch now</b> (có thể chạy thử baseline mặc định cho AL2023, mất vài phút), <b>Inventory</b> để nhận diện các tính năng còn lại. Không cần cấu hình thêm.</p></div></li>
+    </ol>
+    <div class="note">Mọi phiên và lệnh đều được ghi vào CloudTrail (<code>StartSession</code>, <code>SendCommand</code>). Lab này không thêm resource tính tiền ngoài EC2 đang chạy.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 6 (tùy chọn, nếu có Organizations). SCP chặn Region ngoài ap-northeast-1 và us-east-1</h3>
+    <p style="font-size:.94rem">Cần một Organization với ít nhất một account thành viên, vì SCP không áp cho management account. Nếu account học là account đơn: có thể tạo Organization (miễn phí) rồi tạo thêm account thành viên bằng một email alias; sau lab có thể đóng account thành viên (closing mất 90 ngày để xóa hẳn, không tốn tiền). Nếu không muốn tăng số account, chỉ đọc bước 2 và 3 rồi làm thí nghiệm tương đương bằng IAM policy Deny ở lab tuần 1.</p>
+    <ol class="steps">
+      <li><div><p>Tạo Organization và account thành viên (chạy ở account hiện tại, nó trở thành management account):</p>
+<pre><code>aws organizations create-organization --feature-set ALL
+aws organizations create-account --email ten+saa-member@gmail.com --account-name saa-member --role-name OrganizationAccountAccessRole
+aws organizations list-accounts --query "Accounts[].[Id,Name,Status]"
+aws organizations list-roots --query "Roots[0].[Id,PolicyTypes]"</code></pre><p>Chờ Status của account mới là ACTIVE. Bật loại policy SCP ở Root nếu <code>PolicyTypes</code> chưa có SERVICE_CONTROL_POLICY ENABLED:</p>
+<pre><code>aws organizations enable-policy-type --root-id &lt;r-xxxx&gt; --policy-type SERVICE_CONTROL_POLICY</code></pre></div></li>
+      <li><div><p>Tạo OU <code>test</code>, chuyển account thành viên vào:</p>
+<pre><code>aws organizations create-organizational-unit --parent-id &lt;r-xxxx&gt; --name test
+aws organizations move-account --account-id &lt;member-id&gt; --source-parent-id &lt;r-xxxx&gt; --destination-parent-id &lt;ou-xxxx&gt;</code></pre></div></li>
+      <li><div><p>Tạo SCP (JSON ở bài 6, lưu thành <code>scp-region.json</code>) và gắn vào OU. Giữ nguyên <code>FullAWSAccess</code> (deny list strategy):</p>
+<pre><code>aws organizations create-policy --name DenyOutsideTokyoVirginia --type SERVICE_CONTROL_POLICY --description "allow only ap-northeast-1 and us-east-1" --content file://scp-region.json
+aws organizations attach-policy --policy-id &lt;p-xxxx&gt; --target-id &lt;ou-xxxx&gt;
+aws organizations list-policies-for-target --target-id &lt;ou-xxxx&gt; --filter SERVICE_CONTROL_POLICY</code></pre></div></li>
+      <li><div><p>Assume role vào account thành viên và thử ở hai Region:</p>
+<pre><code>$c = aws sts assume-role --role-arn arn:aws:iam::&lt;member-id&gt;:role/OrganizationAccountAccessRole --role-session-name scptest | ConvertFrom-Json
+$env:AWS_ACCESS_KEY_ID = $c.Credentials.AccessKeyId; $env:AWS_SECRET_ACCESS_KEY = $c.Credentials.SecretAccessKey; $env:AWS_SESSION_TOKEN = $c.Credentials.SessionToken
+aws sts get-caller-identity                                   # Account là member-id
+aws ec2 describe-instances --region ap-northeast-1 --query "Reservations | length(@)"   # chạy được
+aws ec2 describe-instances --region ap-southeast-1             # AccessDenied ... with an explicit deny in a service control policy
+aws iam list-users                                             # vẫn chạy vì iam:* nằm trong NotAction
+Remove-Item Env:AWS_ACCESS_KEY_ID, Env:AWS_SECRET_ACCESS_KEY, Env:AWS_SESSION_TOKEN</code></pre><p>Thông báo lỗi ghi rõ "explicit deny in a service control policy", khác với lỗi thiếu IAM policy. Thử thêm: ở management account chạy cùng lệnh <code>--region ap-southeast-1</code> vẫn được, vì SCP không áp cho management account.</p></div></li>
+      <li><div><p>Console → Organizations → Policies → mở SCP → tab Targets; và IAM → Policy simulator cũng mô phỏng được SCP khi chọn user của account thành viên (nhận diện).</p></div></li>
+    </ol>
+    <div class="note">Organizations miễn phí. Sau lab: detach và xóa SCP (bước đầu lab 7). Account thành viên có thể giữ lại làm sandbox cho tuần 9, hoặc đóng bằng <code>aws organizations close-account --account-id</code>.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 7. Dọn dẹp và kiểm tra Billing</h3>
+    <ol class="steps">
+      <li><div><p>Organizations (nếu làm lab 6):</p>
+<pre><code>aws organizations detach-policy --policy-id &lt;p-xxxx&gt; --target-id &lt;ou-xxxx&gt;
+aws organizations delete-policy --policy-id &lt;p-xxxx&gt;</code></pre></div></li>
+      <li><div><p>EC2, volume, alarm, SNS, Security Group:</p>
+<pre><code>aws ec2 terminate-instances --instance-ids &lt;i-xxxx&gt;
+aws ec2 wait instance-terminated --instance-ids &lt;i-xxxx&gt;
+aws ec2 delete-volume --volume-id &lt;vol-saa-kms-vol&gt;
+aws ec2 describe-volumes --query "Volumes[].[VolumeId,State,Size]"          # phải rỗng
+aws ec2 describe-snapshots --owner-ids self --query "Snapshots[].SnapshotId"  # xóa nếu có: aws ec2 delete-snapshot --snapshot-id
+aws cloudwatch delete-alarms --alarm-names saa-cpu-high
+aws sns delete-topic --topic-arn arn:aws:sns:ap-northeast-1:&lt;account-id&gt;:saa-alarm-topic
+aws ec2 delete-security-group --group-id &lt;sg-id&gt;</code></pre></div></li>
+      <li><div><p>RDS (nếu còn) và secret:</p>
+<pre><code>aws rds describe-db-instances --query "DBInstances[].DBInstanceIdentifier"   # phải rỗng, nếu còn thì delete như lab 4 bước 6
+aws secretsmanager delete-secret --secret-id saa/demo/api-key --force-delete-without-recovery
+aws secretsmanager list-secrets --query "SecretList[].Name"
+aws ssm delete-parameters --names /saa/demo/db-host /saa/demo/db-pass</code></pre></div></li>
+      <li><div><p>CloudTrail, log group, bucket (bucket CloudTrail phải làm trống trước):</p>
+<pre><code>aws cloudtrail delete-trail --name saa-trail
+aws logs delete-log-group --log-group-name saa-trail-logs
+aws logs delete-log-group --log-group-name saa-session-logs
+aws s3 rb s3://&lt;bucket-cloudtrail&gt; --force
+aws s3 rb s3://saa-kms-quy-2026 --force</code></pre></div></li>
+      <li><div><p>KMS: lên lịch xóa 7 ngày (hoặc chỉ disable nếu muốn giữ cho tuần 9):</p>
+<pre><code>aws kms schedule-key-deletion --key-id &lt;key-id&gt; --pending-window-in-days 7
+aws kms describe-key --key-id &lt;key-id&gt; --query "KeyMetadata.[KeyState,DeletionDate]"
+aws kms delete-alias --alias-name alias/saa-lab</code></pre><p>Trạng thái <code>PendingDeletion</code>. Trong 7 ngày có thể <code>cancel-key-deletion</code>. Khóa đang chờ xóa có còn tính tiền hay không cần kiểm tra lại trên trang giá KMS.</p></div></li>
+      <li><div><p>IAM: user thử nghiệm, role, instance profile (role không tốn tiền, có thể giữ cho tuần 9):</p>
+<pre><code>aws iam list-access-keys --user-name saa-s3only --query "AccessKeyMetadata[].AccessKeyId"
+aws iam delete-access-key --user-name saa-s3only --access-key-id &lt;AKIA...&gt;
+aws iam delete-user-policy --user-name saa-s3only --policy-name S3Only
+aws iam delete-user-policy --user-name saa-s3only --policy-name KmsUse
+aws iam delete-user --user-name saa-s3only
+# tùy chọn
+aws iam remove-role-from-instance-profile --instance-profile-name saa-ssm-profile --role-name saa-ssm-role
+aws iam delete-instance-profile --instance-profile-name saa-ssm-profile
+aws iam detach-role-policy --role-name saa-ssm-role --policy-arn arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+aws iam delete-role --role-name saa-ssm-role</code></pre><p>Xóa profile <code>s3only</code> khỏi <code>~/.aws/credentials</code>.</p></div></li>
+      <li><div><p>Quét lần cuối các thứ hay sót: <code>aws ec2 describe-addresses</code> (Elastic IP), <code>aws ec2 describe-nat-gateways --filter Name=state,Values=available</code>, <code>aws elbv2 describe-load-balancers</code>, <code>aws rds describe-db-instances</code>, tất cả phải rỗng. Console → <b>Billing and Cost Management → Bills</b>: xem dòng KMS, Secrets Manager, EC2, RDS của tháng này; <b>Cost Explorer</b> lọc theo tag <code>Project=saa</code> (nếu đã activate tag ở tuần 1, đây là lúc thấy tác dụng của cost allocation tag). <b>Budgets</b>: xác nhận chưa chạm ngưỡng 10 USD.</p></div></li>
+    </ol>
+    <div class="note ok">Sau lab 7 chỉ còn: Budget, IAM user admin, (tùy chọn) role SSM, khóa KMS đang chờ xóa, Organization nếu đã tạo. Tuần 9 sẽ dựng kiến trúc 3-tier bằng CDK hoặc CloudFormation, có ALB và RDS, nên hãy chắc tháng này còn dư ngân sách.</div>
+  </div>
+</section>
+
+<!-- ============ MỐC KIỂM TRA ============ -->
+<section id="moc">
+  <span class="eyebrow">Mốc kiểm tra</span>
+  <h2>Hai câu phải tự nói được không nhìn tài liệu</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>1. Phân biệt Secrets Manager với Parameter Store</h3>
+      <p style="font-size:.94rem">Gợi ý khung trả lời (che lại rồi tự nói):</p>
+      <ul style="font-size:.94rem">
+        <li>Cả hai lưu giá trị nhạy cảm mã hóa bằng KMS, tích hợp CloudFormation, Lambda, ECS; khác nhau ở <b>rotation</b>, <b>giá</b>, <b>cross-account</b>, <b>hierarchy</b>.</li>
+        <li>Secrets Manager: <b>rotation tự động</b> (managed cho RDS, Aurora, Redshift, DocumentDB; Lambda cho loại khác), <b>0,40 USD/secret/tháng</b>, chia sẻ cross-account bằng resource policy, nhân bản Region, recovery window 7 đến 30 ngày.</li>
+        <li>Parameter Store: <b>miễn phí</b> standard tier (4 KB, 10.000 param), advanced trả tiền (8 KB, policy hết hạn), <b>SecureString</b> mã hóa KMS, <b>hierarchy</b> và đọc theo path, <b>không có rotation</b>, truyền thống không cross-account.</li>
+        <li>Kể được quy tắc chọn: <em>rotate credentials</em>, <em>RDS password</em>, <em>share with another account</em> → Secrets Manager; <em>configuration</em>, <em>lowest cost</em>, <em>hierarchy</em> → Parameter Store.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>2. Phân biệt WAF, Shield, GuardDuty, Inspector, Macie theo mục đích</h3>
+      <p style="font-size:.94rem">Gợi ý khung trả lời:</p>
+      <ul style="font-size:.94rem">
+        <li>Chia hai nhóm: <b>chặn ở biên</b> (WAF, Shield) và <b>phát hiện bên trong</b> (GuardDuty, Inspector, Macie).</li>
+        <li><b>WAF</b>: lọc HTTP theo rule (SQLi, XSS, rate, geo, bot), gắn CloudFront/ALB/API Gateway, không NLB. <b>Shield</b>: chống DDoS; Standard miễn phí L3/L4, Advanced trả tiền L7 + SRT + cost protection.</li>
+        <li><b>GuardDuty</b>: phát hiện <b>mối đe dọa đang xảy ra</b> từ CloudTrail, VPC Flow Logs, DNS logs, không agent. <b>Inspector</b>: tìm <b>lỗ hổng CVE</b> trên EC2, ECR image, Lambda. <b>Macie</b>: tìm <b>dữ liệu nhạy cảm (PII)</b> trong S3.</li>
+        <li>Nói thêm cho trọn: <b>Security Hub</b> gom findings của cả ba và chấm điểm chuẩn; <b>Detective</b> điều tra nguyên nhân; <b>Config</b> kiểm tra cấu hình tuân thủ; <b>Trusted Advisor</b> check best practice theo support plan.</li>
+        <li>Kể được 1 ví dụ mỗi dịch vụ: SQL injection → WAF; SYN flood → Shield; EC2 đào coin → GuardDuty; Log4j CVE trong AMI → Inspector; số thẻ tín dụng trong bucket → Macie.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TỪ KHÓA ============ -->
+<section id="tukhoa">
+  <span class="eyebrow">Ôn nhanh</span>
+  <h2>Bảng từ khóa tuần 8</h2>
+  <div class="tbl"><table>
+    <tr><th>Đề bài có chữ</th><th>Nghĩ ngay tới</th></tr>
+    <tr><td><em>full control over encryption keys</em>, key policy, audit key usage</td><td>KMS customer managed key (SSE-KMS)</td></tr>
+    <tr><td>Mã hóa dữ liệu lớn hơn 4 KB, <em>data key</em></td><td>Envelope encryption, GenerateDataKey</td></tr>
+    <tr><td>Upload được nhưng download SSE-KMS bị AccessDenied</td><td>Thiếu kms:Decrypt</td></tr>
+    <tr><td><em>rotate keys automatically</em> không mã hóa lại</td><td>KMS automatic rotation (1 năm, symmetric CMK)</td></tr>
+    <tr><td>Giải mã ở Region khác, DR đa Region</td><td>Multi-Region key</td></tr>
+    <tr><td><em>dedicated hardware</em>, FIPS 140-2 Level 3, tự quản lý khóa</td><td>CloudHSM (hoặc KMS custom key store)</td></tr>
+    <tr><td>HTTPS cho CloudFront với domain riêng</td><td>ACM certificate ở us-east-1</td></tr>
+    <tr><td>Chứng chỉ TLS miễn phí, <em>automatic renewal</em></td><td>ACM (DNS validation)</td></tr>
+    <tr><td><em>rotate database credentials</em>, RDS password</td><td>Secrets Manager</td></tr>
+    <tr><td>Lưu cấu hình, <em>hierarchy</em>, <em>no additional cost</em></td><td>Parameter Store (SecureString nếu nhạy cảm)</td></tr>
+    <tr><td><em>SQL injection</em>, <em>XSS</em>, <em>rate limiting</em>, geo block</td><td>WAF trên CloudFront / ALB / API Gateway</td></tr>
+    <tr><td><em>DDoS</em> L3/L4, không tốn thêm</td><td>Shield Standard (+ CloudFront, Route 53)</td></tr>
+    <tr><td>DDoS với <em>cost protection</em>, <em>24/7 response team</em></td><td>Shield Advanced</td></tr>
+    <tr><td>Áp WAF/Shield/SG cho mọi account trong Organizations</td><td>Firewall Manager</td></tr>
+    <tr><td><em>IDS/IPS</em>, Suricata, lọc domain traffic ra khỏi VPC</td><td>Network Firewall</td></tr>
+    <tr><td><em>compromised instance</em>, crypto mining, unusual API calls</td><td>GuardDuty</td></tr>
+    <tr><td><em>vulnerabilities</em>, CVE trên EC2, ECR image, Lambda</td><td>Inspector</td></tr>
+    <tr><td><em>PII</em>, sensitive data trong S3</td><td>Macie</td></tr>
+    <tr><td><em>aggregate security findings</em>, CIS, PCI DSS score</td><td>Security Hub</td></tr>
+    <tr><td><em>investigate root cause</em> của finding</td><td>Detective</td></tr>
+    <tr><td><em>configuration compliance</em>, lịch sử cấu hình, auto remediation</td><td>Config (+ SSM Automation)</td></tr>
+    <tr><td><em>who made the API call</em>, ai xóa resource</td><td>CloudTrail (data events cho S3 object)</td></tr>
+    <tr><td>Log CloudTrail không thể bị sửa, mọi account, member không tắt được</td><td>Organization trail + log file validation + Object Lock</td></tr>
+    <tr><td>Cảnh báo memory, disk space của EC2</td><td>CloudWatch agent + custom metric + alarm</td></tr>
+    <tr><td>Đẩy log <em>real time</em> sang Kinesis / OpenSearch</td><td>CloudWatch Logs subscription filter</td></tr>
+    <tr><td>Giảm cảnh báo nhiễu, gộp nhiều điều kiện</td><td>Composite alarm</td></tr>
+    <tr><td><em>no SSH</em>, <em>no bastion</em>, <em>audit shell sessions</em></td><td>SSM Session Manager (+ VPC endpoint)</td></tr>
+    <tr><td>Vá OS định kỳ cho fleet, chạy script trên nhiều máy</td><td>Patch Manager, Run Command</td></tr>
+    <tr><td>App users sign up / sign in, MFA, social login, JWT</td><td>Cognito User Pool</td></tr>
+    <tr><td>App users cần credential AWS tạm, guest access</td><td>Cognito Identity Pool</td></tr>
+    <tr><td><em>third party</em> assume role, <em>confused deputy</em></td><td>Cross-account role + external ID</td></tr>
+    <tr><td>Nhân viên SSO vào nhiều account, AD/Okta, permission set</td><td>IAM Identity Center</td></tr>
+    <tr><td>Chặn cả root của account thành viên, chặn Region</td><td>SCP (không áp cho management account)</td></tr>
+    <tr><td><em>landing zone</em>, guardrails, Account Factory</td><td>Control Tower</td></tr>
+    <tr><td>Một hóa đơn, chia sẻ RI / Savings Plans giữa account</td><td>Consolidated billing</td></tr>
+    <tr><td>Chia sẻ subnet, Transit Gateway cho account khác</td><td>RAM</td></tr>
+    <tr><td>Xem trước thay đổi stack, deploy nhiều account, giữ RDS khi xóa stack</td><td>Change set, StackSets, DeletionPolicy Retain/Snapshot</td></tr>
+    <tr><td>Beanstalk: no downtime giữ capacity / safest, fast rollback / swap URL</td><td>Rolling with additional batch / Immutable / Blue-green</td></tr>
+    <tr><td>Hạ tầng bằng TypeScript, Python</td><td>CDK (sinh CloudFormation)</td></tr>
+    <tr><td>Phân tích chi phí, forecast, RI recommendation</td><td>Cost Explorer</td></tr>
+    <tr><td>Tách chi phí theo team, phải activate</td><td>Cost allocation tags</td></tr>
+    <tr><td><em>right sizing</em> EC2, EBS, Lambda memory</td><td>Compute Optimizer</td></tr>
+    <tr><td>Cảnh báo hoặc tự stop khi vượt ngân sách</td><td>Budgets (budget action)</td></tr>
+    <tr><td>Dữ liệu billing chi tiết nhất, query bằng Athena</td><td>Cost and Usage Report</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ CHECKLIST ============ -->
+<section id="checklist">
+  <span class="eyebrow">Theo dõi</span>
+  <h2>Checklist tuần 8</h2>
+  <p style="font-size:.94rem;color:var(--muted)">Tick ở đây để tự theo dõi trên máy này. Khi xong mục nào, nói với Claude trong session để tick vào <code>AWS-SAA-checklist.md</code>.</p>
+  <div class="card">
+    <h4>Lý thuyết</h4>
+    <label class="check"><input type="checkbox" id="c1" data-ck><span>KMS: customer managed key, envelope encryption, rotation, multi-Region key</span></label>
+    <label class="check"><input type="checkbox" id="c2" data-ck><span>Secrets Manager với Parameter Store</span></label>
+    <label class="check"><input type="checkbox" id="c3" data-ck><span>ACM, CloudHSM</span></label>
+    <label class="check"><input type="checkbox" id="c4" data-ck><span>WAF, Shield Standard / Advanced, Firewall Manager, Network Firewall</span></label>
+    <label class="check"><input type="checkbox" id="c5" data-ck><span>GuardDuty, Inspector, Macie, Security Hub, Detective</span></label>
+    <label class="check"><input type="checkbox" id="c6" data-ck><span>Cognito: User Pool với Identity Pool</span></label>
+    <label class="check"><input type="checkbox" id="c7" data-ck><span>Organizations, SCP, Control Tower, consolidated billing</span></label>
+    <label class="check"><input type="checkbox" id="c8" data-ck><span>STS, cross-account role, IAM Identity Center</span></label>
+    <label class="check"><input type="checkbox" id="c9" data-ck><span>CloudTrail, CloudWatch (metric, log, alarm, dashboard), Config, Trusted Advisor</span></label>
+    <label class="check"><input type="checkbox" id="c10" data-ck><span>Systems Manager: Session Manager, Parameter Store, Patch Manager</span></label>
+    <label class="check"><input type="checkbox" id="c11" data-ck><span>CloudFormation, Elastic Beanstalk, CDK</span></label>
+    <label class="check"><input type="checkbox" id="c12" data-ck><span>Cost Explorer, Cost Allocation Tag, Compute Optimizer, Budgets</span></label>
+    <h4>Hands-on</h4>
+    <label class="check"><input type="checkbox" id="c13" data-ck><span>CloudWatch alarm CPU gửi SNS email, thấy trạng thái ALARM</span></label>
+    <label class="check"><input type="checkbox" id="c14" data-ck><span>Bật CloudTrail ghi vào S3, tìm lại một hành động vừa làm</span></label>
+    <label class="check"><input type="checkbox" id="c15" data-ck><span>Tạo KMS key, mã hóa EBS và S3 bằng key đó, thấy lỗi thiếu kms:Decrypt</span></label>
+    <label class="check"><input type="checkbox" id="c16" data-ck><span>Secrets Manager lưu mật khẩu RDS, bật rotation, đọc bằng CLI</span></label>
+    <label class="check"><input type="checkbox" id="c17" data-ck><span>SSM Session Manager vào EC2 không mở cổng SSH</span></label>
+    <label class="check"><input type="checkbox" id="c18" data-ck><span>Nếu có Organizations: tạo SCP chặn Region, thấy explicit deny từ SCP</span></label>
+    <h4>Mốc kiểm tra</h4>
+    <label class="check"><input type="checkbox" id="c19" data-ck><span>Phân biệt được Secrets Manager với Parameter Store</span></label>
+    <label class="check"><input type="checkbox" id="c20" data-ck><span>Phân biệt được WAF, Shield, GuardDuty, Inspector, Macie theo mục đích</span></label>
+    <h4>Khác</h4>
+    <label class="check"><input type="checkbox" id="c21" data-ck><span>Quiz tuần 8 đạt từ 80%</span></label>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  // Xem đáp án
+  document.querySelectorAll('[data-reveal]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var a=b.parentElement.querySelector('.ans');
+      a.hidden=!a.hidden; b.textContent=a.hidden?'Xem đáp án':'Ẩn đáp án';
+    });
+  });
+  // Checklist lưu trên máy này
+  var boxes=document.querySelectorAll('[data-ck]'), KEY='saa-tuan-08';
+  var saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  function update(){
+    var n=0; boxes.forEach(function(c){ c.closest('.check').classList.toggle('done',c.checked); if(c.checked)n++; });
+    document.getElementById('bar').style.width=(n/boxes.length*100)+'%';
+    document.getElementById('pct').textContent=n+'/'+boxes.length;
+  }
+  boxes.forEach(function(c){
+    if(saved[c.id])c.checked=true;
+    c.addEventListener('change',function(){ saved[c.id]=c.checked; try{ localStorage.setItem(KEY,JSON.stringify(saved)); }catch(e){} update(); });
+  });
+  update();
+  // Đánh dấu mục đang đọc
+  var links=document.querySelectorAll('.toc a'), secs=[];
+  links.forEach(function(l){ var s=document.querySelector(l.getAttribute('href')); if(s)secs.push([s,l]); });
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ links.forEach(function(l){l.classList.remove('active')}); secs.forEach(function(p){ if(p[0]===e.target)p[1].classList.add('active'); }); } }); },{rootMargin:'-20% 0px -70% 0px'});
+    secs.forEach(function(p){ io.observe(p[0]); });
+  }
+})();
+</script>

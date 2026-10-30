@@ -1,0 +1,753 @@
+<title>SAA 第1週 基礎</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky mục lục bên trái (desktop), cột nội dung 760px bên phải; xếp một cột ở màn hẹp. */
+:root{
+  --bg:#f2f4f7; --surface:#ffffff; --surface-2:#e9edf2; --line:#d3dae3;
+  --fg:#172030; --muted:#5a6676; --accent:#1c6e8c; --accent-soft:#dcecf3;
+  --warm:#b35a00; --warm-soft:#fbe9d6; --ok:#2a7d4f; --ok-soft:#dcf0e4; --bad:#b3362b; --bad-soft:#f8dedb;
+  --display:"Manrope","IBM Plex Sans",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+a{color:var(--accent)}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:800}
+h2{font-size:1.5rem;font-weight:800;padding-top:8px}
+h3{font-size:1.12rem;font-weight:700}
+h4{font-size:.95rem;font-weight:700}
+p{margin:0}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+pre{font-family:var(--mono);font-size:.84rem;line-height:1.5;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:0}
+pre code{background:none;padding:0;font-size:inherit}
+em{color:var(--warm);font-style:italic}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* Header */
+.hero{max-width:1120px;margin:0 auto;padding-block:36px 20px;display:flex;flex-direction:column;gap:12px}
+.hero .lead{max-width:62ch;color:var(--muted);font-size:1.02rem}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.88rem;color:var(--muted)}
+.meta b{color:var(--fg);font-weight:600}
+.progress{display:flex;align-items:center;gap:12px;font-size:.88rem;color:var(--muted)}
+.bar{flex:1;max-width:320px;height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+
+/* Two columns */
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;align-items:start}
+.toc{position:sticky;top:max(12px,env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:2px;font-size:.9rem}
+.toc a{color:var(--muted);text-decoration:none;padding:6px 10px;border-left:2px solid var(--line);display:block}
+.toc a:hover,.toc a.active{color:var(--fg);border-left-color:var(--accent)}
+.toc .grp{margin-top:10px}
+main{display:flex;flex-direction:column;gap:56px;min-width:0;max-width:780px}
+section{display:flex;flex-direction:column;gap:18px;scroll-margin-top:16px}
+@media (max-width:860px){ .wrap{grid-template-columns:1fr;gap:24px} .toc{position:static;flex-direction:row;flex-wrap:wrap;gap:6px} .toc a{border:1px solid var(--line);border-radius:99px;padding:4px 10px} .toc .grp{margin:0} .toc a.active{border-color:var(--accent)} }
+
+/* Blocks */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.block{display:flex;flex-direction:column;gap:8px}
+.block > .eyebrow{color:var(--accent)}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:5px}
+li::marker{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.kw{display:flex;flex-wrap:wrap;gap:8px}
+.kw span{background:var(--warm-soft);color:var(--warm);border-radius:4px;padding:3px 9px;font-size:.86rem;font-style:italic}
+.kw span b{font-style:normal;font-weight:600;color:var(--fg)}
+.note{border-left:3px solid var(--warm);background:var(--warm-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.94rem}
+.note.ok{border-color:var(--ok);background:var(--ok-soft)}
+.note.bad{border-color:var(--bad);background:var(--bad-soft)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;font-size:.84rem}
+tr:last-child td{border-bottom:0}
+td.c{text-align:center}
+
+/* Checklist */
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:6px;cursor:pointer}
+.check:hover{background:var(--surface-2)}
+.check input{margin-top:5px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.check.done{color:var(--muted);text-decoration:line-through}
+
+/* Quiz reveal */
+.q{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.q .qt{font-weight:500}
+.q button{align-self:flex-start;font:inherit;font-size:.86rem;padding:5px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer}
+.q button:hover{background:var(--accent);color:var(--surface)}
+.q button:focus-visible,.check input:focus-visible,.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.q .ans{font-size:.94rem;border-top:1px dashed var(--line);padding-top:8px}
+.q .ans b{color:var(--ok)}
+
+/* Steps */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:12px;padding:0;list-style:none}
+.steps li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:start}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--mono);font-size:.8rem;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:500;margin-top:2px}
+.steps li > div{display:flex;flex-direction:column;gap:6px;min-width:0}
+
+/* Flow diagram */
+.flow{display:flex;flex-direction:column;gap:0;align-items:stretch;max-width:520px}
+.flow .n{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:.94rem}
+.flow .n .tag{font-family:var(--mono);font-size:.74rem;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.tag.deny{background:var(--bad-soft);color:var(--bad)} .tag.allow{background:var(--ok-soft);color:var(--ok)} .tag.next{background:var(--surface-2);color:var(--muted)}
+.flow .arrow{height:22px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--mono);font-size:.78rem}
+.flow .arrow::before{content:"";width:1px;height:100%;background:var(--line);position:absolute}
+.flow .arrow{position:relative} .flow .arrow span{background:var(--bg);padding:0 6px;position:relative}
+
+svg text{font-family:var(--body)}
+.diag{overflow-x:auto}
+.diag svg{width:100%;max-width:700px;height:auto;display:block}
+.sv-region{fill:var(--surface);stroke:var(--accent)} .sv-az{fill:var(--accent-soft);stroke:var(--accent)} .sv-edge{fill:var(--warm-soft);stroke:var(--warm)}
+.sv-t{fill:var(--fg);font-size:13px} .sv-m{fill:var(--muted);font-size:11px} .sv-line{stroke:var(--line)}
+@media (prefers-reduced-motion: reduce){ .bar i{transition:none} }
+</style>
+
+<header class="hero">
+  <span class="eyebrow">AWS SAA-C03 · 12週間ロードマップ · 第1週</span>
+  <h1>基礎と環境構築</h1>
+  <p class="lead">今週は5つの基礎概念（Region、Shared Responsibility、IAM、ポリシーの評価順序、料金の仕組み）を学び、以降の週でラボを行うための安全なアカウントを整えます。週末の目標は、user ではなく role を使うべき場面を説明でき、explicit deny が常に allow に勝つ理由を言えることです。</p>
+  <div class="meta"><span>学習ペース: <b>1日1.5〜2時間</b></span><span>関連ドメイン: <b>SEC 30%</b>、<b>COST 20%</b></span><span>今週のラボ費用: 手順どおりなら <b>0 USD</b></span></div>
+  <div class="progress"><span>チェックリスト進捗</span><div class="bar"><i id="bar"></i></div><span id="pct">0/15</span></div>
+</header>
+
+<div class="wrap">
+<nav class="toc" aria-label="目次">
+  <a href="#ke-hoach">7日間の計画</a>
+  <span class="grp eyebrow">理論</span>
+  <a href="#region">1. Region、AZ、Edge</a>
+  <a href="#shared">2. Shared responsibility</a>
+  <a href="#iam">3. IAM: user、group、role、policy</a>
+  <a href="#policy">4. ポリシーの評価順序</a>
+  <a href="#pricing">5. 料金と Free Tier</a>
+  <span class="grp eyebrow">ハンズオン</span>
+  <a href="#handson">ハンズオン 5 ラボ</a>
+  <a href="#moc">確認ポイント</a>
+  <a href="#tukhoa">試験キーワード表</a>
+  <a href="#checklist">週のチェックリスト</a>
+</nav>
+
+<main>
+
+<section id="ke-hoach">
+  <h2>7日間の計画</h2>
+  <p>毎日、理論を1項目学んだら、すぐに対応するラボを行います。週末は復習とクイズにあてます。</p>
+  <div class="tbl"><table>
+    <tr><th>日</th><th>理論</th><th>ハンズオン</th></tr>
+    <tr><td>1</td><td>Region、AZ、Edge location</td><td>アカウント作成、root の MFA 有効化</td></tr>
+    <tr><td>2</td><td>Shared responsibility model</td><td>管理者用 IAM user の作成、10 USD の Budget 作成</td></tr>
+    <tr><td>3</td><td>IAM: user、group、role、policy</td><td>AWS CLI のインストール、profile の設定、<code>sts get-caller-identity</code></td></tr>
+    <tr><td>4</td><td>ポリシーの評価順序</td><td>1つの bucket だけ読める policy を書き、Policy Simulator で確認</td></tr>
+    <tr><td>5</td><td>料金の仕組み、Free Tier</td><td>Billing、Cost Explorer、Free Tier usage を確認</td></tr>
+    <tr><td>6〜7</td><td>2つの確認ポイントの復習、キーワードの読み直し</td><td>セッションで「cho quiz」と伝えて <code>quiz/tuan-01.md</code> を受け取る。80% 以上が必要</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ 1. REGION ============ -->
+<section id="region">
+  <span class="eyebrow">理論 1 / 5</span>
+  <h2>Region、Availability Zone、Edge location</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <ul>
+        <li><b>Region</b>: 地理的な地域（東京 <code>ap-northeast-1</code>、シンガポール <code>ap-southeast-1</code>、バージニア北部 <code>us-east-1</code>）。各 Region は他の Region から完全に独立したインフラの集まりです。AWS には現在 30 以上の Region があります。</li>
+        <li><b>Availability Zone (AZ)</b>: Region 内の1つ以上のデータセンターで、電源、ネットワーク、冷却を個別に持ちます。火災、洪水、停電などの障害が他の AZ に及ばない距離に置かれつつ、AZ 間のネットワーク遅延はごく小さく保たれています。名前は <code>ap-northeast-1a</code>、<code>1c</code>、<code>1d</code> のような形式です。各 Region には少なくとも3つの AZ があります（新しい Region の場合）。</li>
+        <li><b>Edge location</b>: 数百の都市にある拠点（Point of Presence）で、Region よりユーザーに近い場所にあります。CloudFront（コンテンツのキャッシュ）、Route 53（DNS）、Global Accelerator、AWS Shield が使います。ここで EC2 や RDS は動きません。</li>
+        <li>あわせて覚える: <b>Local Zones</b>（Region を大都市へ拡張、EC2/EBS が動く）、<b>Wavelength</b>（通信事業者の 5G 網内）、<b>Outposts</b>（自社データセンターに置く AWS のラック）。</li>
+      </ul>
+    </div>
+
+    <div class="block diag"><span class="eyebrow">イメージ</span>
+      <svg viewBox="0 0 700 300" role="img" aria-label="Region が3つの AZ を含み、Edge location は Region の外でユーザーの近くにある図">
+        <rect x="20" y="40" width="440" height="230" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="36" y="66" class="sv-t" font-weight="600">Region ap-northeast-1 (Tokyo)</text>
+        <text x="36" y="84" class="sv-m">EC2、RDS、VPC の配置先。データは自動では Region 外に出ない</text>
+        <rect x="40" y="110" width="120" height="130" rx="8" class="sv-az" stroke-width="1.5"/>
+        <rect x="180" y="110" width="120" height="130" rx="8" class="sv-az" stroke-width="1.5"/>
+        <rect x="320" y="110" width="120" height="130" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="100" y="136" text-anchor="middle" class="sv-t" font-weight="600">AZ 1a</text>
+        <text x="240" y="136" text-anchor="middle" class="sv-t" font-weight="600">AZ 1c</text>
+        <text x="380" y="136" text-anchor="middle" class="sv-t" font-weight="600">AZ 1d</text>
+        <text x="100" y="160" text-anchor="middle" class="sv-m">1+ data center</text>
+        <text x="240" y="160" text-anchor="middle" class="sv-m">1+ data center</text>
+        <text x="380" y="160" text-anchor="middle" class="sv-m">1+ data center</text>
+        <text x="100" y="180" text-anchor="middle" class="sv-m">電源・網は独立</text>
+        <text x="240" y="180" text-anchor="middle" class="sv-m">電源・網は独立</text>
+        <text x="380" y="180" text-anchor="middle" class="sv-m">電源・網は独立</text>
+        <text x="100" y="222" text-anchor="middle" class="sv-m">EC2 · EBS · RDS</text>
+        <text x="240" y="222" text-anchor="middle" class="sv-m">EC2 · EBS · RDS</text>
+        <text x="380" y="222" text-anchor="middle" class="sv-m">EC2 · EBS · RDS</text>
+        <line x1="160" y1="175" x2="180" y2="175" class="sv-line" stroke-width="2"/>
+        <line x1="300" y1="175" x2="320" y2="175" class="sv-line" stroke-width="2"/>
+        <text x="240" y="262" text-anchor="middle" class="sv-m">AZ 間は低遅延 (ms) の専用網で接続 → Multi-AZ = Region 内の耐障害性</text>
+        <rect x="500" y="40" width="180" height="70" rx="8" class="sv-edge" stroke-width="1.5"/>
+        <text x="590" y="64" text-anchor="middle" class="sv-t" font-weight="600">Edge location</text>
+        <text x="590" y="82" text-anchor="middle" class="sv-m">CloudFront · Route 53</text>
+        <text x="590" y="98" text-anchor="middle" class="sv-m">Global Accelerator · Shield</text>
+        <rect x="500" y="140" width="180" height="60" rx="8" class="sv-region" stroke-width="1.5"/>
+        <text x="590" y="165" text-anchor="middle" class="sv-t" font-weight="600">ユーザー（ハノイ）</text>
+        <text x="590" y="184" text-anchor="middle" class="sv-m">近くの cache と DNS</text>
+        <line x1="590" y1="140" x2="590" y2="110" class="sv-line" stroke-width="2"/>
+        <line x1="500" y1="75" x2="460" y2="75" class="sv-line" stroke-width="2" stroke-dasharray="4 4"/>
+        <text x="590" y="240" text-anchor="middle" class="sv-m">cache miss 時は Edge が</text>
+        <text x="590" y="256" text-anchor="middle" class="sv-m">Region (origin) から取得</text>
+      </svg>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">どの Region を選ぶか</span>
+        <ul>
+          <li><b>Compliance / data residency</b>: 法律でデータの国内保管が求められる → その国の Region を選ぶ。</li>
+          <li><b>Latency</b>: ユーザーに最も近い Region。</li>
+          <li><b>サービスの提供状況</b>: 新しい Region はサービスが不足しがちで、<code>us-east-1</code> が最も揃っています。</li>
+          <li><b>料金</b>: Region ごとに異なり、東京はバージニアより高めです。</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Global と Regional のサービス</span>
+        <ul>
+          <li><b>Global</b>: IAM、Route 53、CloudFront、WAF（CloudFront 用）、Organizations、Billing。</li>
+          <li><b>Regional</b>: EC2、VPC、RDS、Lambda、DynamoDB。S3 bucket は1つの Region にありますが、bucket 名は全世界で一意です。</li>
+          <li><b>1つの AZ に紐づく</b>: EC2 instance、EBS volume、subnet。EBS は別 AZ の EC2 にはアタッチできません。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>データセンター1つの障害に耐える</td><td>1つの Region 内で Multi-AZ</td><td>Multi-Region（高コストで不要）</td></tr>
+        <tr><td>Region 全体の障害に耐える、DR</td><td>Multi-Region</td><td>Multi-AZ</td></tr>
+        <tr><td>世界中のユーザーがコンテンツを速く取得する</td><td>Edge location 経由の CloudFront</td><td>複数の Region に EC2 を作る</td></tr>
+        <tr><td>Region のない都市で 10 ms 未満の遅延</td><td>Local Zones</td><td>Edge location（EC2 は動かない）</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>highly available <b>→ Multi-AZ</b></span><span>disaster recovery <b>→ Multi-Region</b></span><span>data must remain in country <b>→ Region の選択</b></span><span>low latency global users <b>→ Edge / CloudFront</b></span><span>fault isolation <b>→ 独立した AZ</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">1. ある企業は、東京のデータセンター1つが停電してもアプリケーションを稼働させ続けたいと考えており、コストは最小にしたいです。どのようにデプロイすべきですか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>東京 Region 内の2つ以上の AZ にデプロイする（Multi-AZ）。</b> Multi-Region でも要件は満たせますが高コストで複雑であり、設問に <em>cost</em> とあるので除外します。AZ が1つだけでは障害に耐えられません。</p></div>
+      <div class="q"><p class="qt">2. <code>ap-northeast-1a</code> にある EBS volume を <code>ap-northeast-1c</code> の EC2 にアタッチできますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>できません。</b> EBS は1つの AZ に紐づきます。別の AZ に移すには snapshot を取り（snapshot は Region 単位）、移動先の AZ でその snapshot から新しい volume を作ります。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. SHARED RESPONSIBILITY ============ -->
+<section id="shared">
+  <span class="eyebrow">理論 2 / 5</span>
+  <h2>Shared responsibility model</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <p>AWS はクラウド<b>の</b>セキュリティ（security <em>of</em> the cloud）に責任を持ちます。対象はハードウェア、データセンター、物理ネットワーク、ハイパーバイザー、マネージドサービスのソフトウェアです。利用者はクラウド<b>内</b>のセキュリティ（security <em>in</em> the cloud）に責任を持ちます。対象はデータ、アクセス権限（IAM）、ネットワーク設定（Security Group、NACL）、暗号化、自分で導入した OS とアプリケーションです。</p>
+      <p>境界はサービスによって変わります。マネージド度が高いほど AWS の担当範囲が広がります。</p>
+    </div>
+    <div class="tbl"><table>
+      <tr><th>サービス</th><th>AWS の担当</th><th>利用者の担当</th></tr>
+      <tr><td>EC2 (IaaS)</td><td>ハードウェア、ハイパーバイザー、物理ネットワーク</td><td>OS のパッチ適用、OS 内のファイアウォール、Security Group、IAM、データ、EBS の暗号化</td></tr>
+      <tr><td>RDS (managed)</td><td>OS と DB engine 両方のパッチ適用、自動バックアップ</td><td>DB アカウント、Security Group、暗号化の有効化、データ、クエリの最適化</td></tr>
+      <tr><td>Lambda、S3、DynamoDB (serverless / abstracted)</td><td>インフラとランタイムのほぼすべて</td><td>コード、IAM policy、bucket policy、暗号化、データの分類</td></tr>
+    </table></div>
+    <div class="block"><span class="eyebrow">共通の責任（shared controls）</span>
+      <ul>
+        <li><b>Patch management</b>: AWS はインフラにパッチを当て、利用者は EC2 上の guest OS にパッチを当てます。</li>
+        <li><b>Configuration management</b>: AWS はインフラを設定し、利用者は OS、データベース、アプリケーションを設定します。</li>
+        <li><b>Awareness and training</b>: AWS は AWS の従業員を、利用者は自社の従業員を教育します。</li>
+      </ul>
+    </div>
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>physical security, hardware disposal <b>→ AWS</b></span><span>patch guest OS on EC2 <b>→ Customer</b></span><span>patch RDS engine <b>→ AWS</b></span><span>encrypt data at rest <b>→ Customer（有効化）</b></span><span>IAM, MFA, credentials <b>→ Customer</b></span><span>network infrastructure, hypervisor <b>→ AWS</b></span></div>
+    </div>
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">3. 監査で、EC2 上の guest OS にパッチが適用済みであることの証明を求められました。この作業は誰が行う必要がありますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>利用者（顧客）です。</b> EC2 では OS は利用者のものです。Systems Manager Patch Manager（第8週で学習）で自動化します。RDS なら engine のパッチは AWS が適用し、利用者は maintenance window を選ぶだけです。</p></div>
+      <div class="q"><p class="qt">4. AWS の責任に当たるものを2つ選んでください。(A) user の MFA を有効にする、(B) データセンター内の故障したディスクを交換する、(C) Security Group を設定する、(D) ハイパーバイザーにパッチを当てる。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>B と D。</b> A と C はどちらも利用者がクラウド内で行う設定です。よくある罠: 「Security Group」はネットワークインフラのように聞こえますが、顧客側の設定です。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. IAM ============ -->
+<section id="iam">
+  <span class="eyebrow">理論 3 / 5</span>
+  <h2>IAM: user、group、role、policy</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">4つの概念</span>
+      <div class="tbl"><table>
+        <tr><th>概念</th><th>内容</th><th>Credential</th><th>用途</th></tr>
+        <tr><td><b>User</b></td><td>アカウント内の固定されたアイデンティティ</td><td>長期: password（コンソール）、access key（CLI/SDK）</td><td>長期間アクセスが必要な人。1アカウントあたり最大 5,000 user（AWSドキュメントで要確認）。</td></tr>
+        <tr><td><b>Group</b></td><td>user の集まり。グループ全体に policy を付与</td><td>なし。ログインできない</td><td>職務ごとの権限管理（Developers、Admins）。Group は入れ子にできず、1人の user が所属できるのは最大 10 group。</td></tr>
+        <tr><td><b>Role</b></td><td><b>引き受ける（assume）</b>アイデンティティで、特定の人に固定されない</td><td>一時的。STS が発行し自動で失効（デフォルト1時間、最大12時間）</td><td>EC2、Lambda、AWS サービス、他アカウントの user、フェデレーションユーザー（SSO、Google、AD）。</td></tr>
+        <tr><td><b>Policy</b></td><td>権限を記述した JSON ドキュメント</td><td>なし</td><td>user、group、role に付与（identity-based）、または S3 bucket などのリソースに付与（resource-based）。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Role には2つの policy がある</span>
+      <ul>
+        <li><b>Trust policy</b>: 誰がこの role を assume できるか（Principal: <code>ec2.amazonaws.com</code>、他アカウント、SAML provider）。</li>
+        <li><b>Permission policy</b>: assume した後に role が何をできるか。</li>
+        <li>EC2 は <b>instance profile</b> を通じて role を受け取ります。一時的な credential はメタデータサービスから提供され自動でローテーションされるので、access key をマシンに埋め込む必要は一切ありません。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">user ではなく role を使う場面（確認ポイント 1）</span>
+      <div class="note ok">原則: <b>ソフトウェアと一時的なアクセス → role。長期間ログインが必要な人 → user</b>（より良いのは IAM Identity Center で、裏側は同じく role）。設問に <em>temporary</em>、<em>cross-account</em>、<em>EC2 / Lambda needs access</em>、<em>federated</em>、<em>rotate credentials</em>、<em>no long-term credentials</em> があれば、答えはほぼ必ず role です。</div>
+      <ul>
+        <li>EC2 が S3 を読む → EC2 に role を付与する。access key を作ってマシンにコピーしない。</li>
+        <li>アカウント A がアカウント B の S3 にアクセスする → B が A を信頼する role を作り、A が <code>sts:AssumeRole</code> を使う。</li>
+        <li>社員が社内の Active Directory でログインする → SAML 2.0 フェデレーションまたは IAM Identity Center で role にマッピングする。</li>
+        <li>モバイルアプリから S3 に画像をアップロードする → Cognito Identity Pool が role から一時的な credential を発行する。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">policy JSON の構造</span>
+<pre><code>{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ReadOnlyOneBucket",
+      "Effect": "Allow",                       // Allow または Deny
+      "Action": ["s3:GetObject", "s3:ListBucket"],
+      "Resource": ["arn:aws:s3:::saa-lab-quy", "arn:aws:s3:::saa-lab-quy/*"],
+      "Condition": { "Bool": { "aws:MultiFactorAuthPresent": "true" } }
+    }
+  ]
+}</code></pre>
+      <ul>
+        <li><b>Principal</b> は resource-based policy（bucket policy、KMS key policy、SQS、SNS、Lambda）にだけ存在します。identity-based policy はすでにアイデンティティに付与されているので Principal を持ちません。</li>
+        <li><b>ARN</b>: <code>arn:partition:service:region:account-id:resource</code>。S3 と IAM には region がありません。bucket と object は別々の ARN なので、<code>ListBucket</code> には bucket の ARN、<code>GetObject</code> には <code>bucket/*</code> の ARN が必要です。policy を自分で書くときに最も多い間違いです。</li>
+        <li>よく出る <b>Condition</b>: <code>aws:SourceIp</code>、<code>aws:MultiFactorAuthPresent</code>、<code>aws:RequestedRegion</code>、<code>aws:PrincipalOrgID</code>、<code>s3:prefix</code>、<code>ec2:ResourceTag/…</code>。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">policy の種類（試験に必要な範囲で見分ける）</span>
+      <div class="tbl"><table>
+        <tr><th>種類</th><th>付与先</th><th>権限を付与できるか</th><th>備考</th></tr>
+        <tr><td>AWS managed policy</td><td>User、group、role</td><td class="c">できる</td><td>AWS があらかじめ用意（<code>AdministratorAccess</code>、<code>ReadOnlyAccess</code>）。編集不可。</td></tr>
+        <tr><td>Customer managed policy</td><td>User、group、role</td><td class="c">できる</td><td>自分で作成し、複数箇所で再利用でき、バージョン管理あり。優先して使う。</td></tr>
+        <tr><td>Inline policy</td><td>1つの user/group/role のみ</td><td class="c">できる</td><td>アイデンティティを削除すると policy も消える。厳密な 1 対 1 の関係でのみ使う。</td></tr>
+        <tr><td>Resource-based policy</td><td>リソース（S3 bucket、KMS key、SQS）</td><td class="c">できる</td><td>Principal を持つ。role を assume せずにクロスアカウントを許可できる。</td></tr>
+        <tr><td>Permissions boundary</td><td>User または role</td><td class="c">できない</td><td>上限を決めるだけ。実際の権限 = identity policy ∩ boundary。</td></tr>
+        <tr><td>SCP (Organizations)</td><td>アカウントまたは OU</td><td class="c">できない</td><td>アカウント全体の上限で、そのアカウントの root も対象。第8週で詳しく学習。</td></tr>
+        <tr><td>Session policy</td><td>AssumeRole のセッション</td><td class="c">できない</td><td>1つのセッションの権限をさらに絞る。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験によく出る IAM のベストプラクティス</span>
+      <ul>
+        <li>root はごく一部の作業（サポートプランの変更、アカウントの解約、一部の請求設定）にだけ使います。root には MFA を有効にし、access key を作りません。</li>
+        <li><em>Least privilege</em>: 必要な権限だけを付与し、最小から始めて段階的に広げます。<b>IAM Access Analyzer</b> で CloudTrail から policy を生成し、外部に共有されているリソースを見つけます。</li>
+        <li><b>Credential report</b>（アカウント全体、CSV ファイル）と <b>Access Advisor</b>（1つの user/role がどのサービスを最後にいつ使ったか）で不要な権限を整理します。</li>
+        <li>強い権限を持つ user には MFA を有効にし、危険な操作には condition <code>aws:MultiFactorAuthPresent</code> を使います。</li>
+        <li>Password policy: 長さ、複雑さ、有効期限、再利用の禁止。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>組み合わせ</th><th>違い</th></tr>
+        <tr><td>IAM user と IAM Identity Center user</td><td>Identity Center（SSO）は複数アカウントを一元管理し、シングルサインオンで一時的な credential を使います。設問に <em>multiple accounts</em>、<em>single sign-on</em>、<em>existing corporate directory</em> があれば Identity Center。</td></tr>
+        <tr><td>IAM role と Cognito</td><td>Cognito はアプリの利用者（Web/モバイルの顧客）向け、IAM は管理者と AWS サービス向けです。Cognito Identity Pool も返すのは IAM role の credential です。</td></tr>
+        <tr><td>Resource-based policy と assume role（クロスアカウント）</td><td>bucket policy で他アカウントにアクセスを許可すると、呼び出し側は元のアイデンティティのままです。assume role では呼び出し側が相手アカウントの role に「帽子をかぶり替え」、そのセッション中は元のアカウントでの権限を失います。</td></tr>
+        <tr><td>Permissions boundary と SCP</td><td>どちらも権限を付与しません。boundary は1つの user/role に適用され、IAM 管理者が設定します。SCP はアカウント全体に適用され、Organizations で設定します。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>EC2 needs to access S3 <b>→ IAM role (instance profile)</b></span><span>cross-account access <b>→ role + sts:AssumeRole</b></span><span>corporate Active Directory <b>→ SAML federation / Identity Center</b></span><span>mobile app users <b>→ Cognito</b></span><span>temporary credentials <b>→ STS</b></span><span>least privilege <b>→ 最小限の policy、Access Analyzer</b></span><span>unused credentials <b>→ credential report</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">5. EC2 上で動くアプリケーションが S3 にログを書き込む必要があります。開発者は IAM user を作成し、access key を発行してインスタンス上の設定ファイルに保存することを提案しました。<em>most secure</em> にするにはアーキテクトはどうすべきですか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>bucket への書き込み権限を持つ IAM role を作成し、instance profile で EC2 に付与する。</b> マシン上の長期 access key は漏洩するおそれがあります（AMI、snapshot、git）。role は一時的な credential を発行して自動でローテーションするため、漏れるものがありません。</p></div>
+      <div class="q"><p class="qt">6. user に付与した policy には <code>arn:aws:s3:::bucket/*</code> に対する <code>s3:GetObject</code> がありますが、<code>aws s3 ls s3://bucket</code> を実行すると AccessDenied になります。なぜですか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>bucket の ARN（<code>/*</code> なし）に対する <code>s3:ListBucket</code> がないためです。</b> 一覧表示は bucket に対する操作で、object のダウンロードは object に対する操作です。リソースが異なるので2つの記述が必要です。</p></div>
+      <div class="q"><p class="qt">7. ある企業は 20 の AWS アカウントを持ち、社員に既存の Active Directory アカウントでログインさせたいと考えています。<em>least operational overhead</em> を満たすには何を選びますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>IAM Identity Center を AD に接続し（AD Connector または AWS Managed Microsoft AD 経由）、各アカウントに permission set を割り当てる。</b> 20 のアカウントそれぞれに IAM user を作るのは手間がかかり、SSO にもなりません。Cognito はアプリの利用者向けで、管理担当の社員向けではありません。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. POLICY EVALUATION ============ -->
+<section id="policy">
+  <span class="eyebrow">理論 4 / 5</span>
+  <h2>ポリシーの評価順序</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">覚えるべき3つのルール</span>
+      <ol>
+        <li>デフォルトではすべてのリクエストが拒否されます（<b>implicit deny</b>）。</li>
+        <li>該当する <b>explicit deny</b> が1つでもあれば → ただちに拒否し、それ以上は評価しません。</li>
+        <li>deny がなく、該当する <b>Allow</b> の policy があれば → 許可します。それ以外は implicit deny です。</li>
+      </ol>
+      <p>まとめ: <b>explicit deny &gt; explicit allow &gt; implicit deny</b>。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">1つのアカウント内での評価フロー</span>
+      <div class="flow">
+        <div class="n"><span>リクエスト到着。関係する<b>すべての</b> policy を集める: identity、resource、SCP、boundary、session</span><span class="tag next">開始</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span>Action + Resource + Condition に一致する <b>Effect: Deny</b> の statement はあるか</span><span class="tag deny">ある → DENY</span></div>
+        <div class="arrow"><span>ない ↓</span></div>
+        <div class="n"><span>Organizations 配下のアカウント: <b>SCP</b> は Allow しているか</span><span class="tag deny">いいえ → DENY</span></div>
+        <div class="arrow"><span>はい ↓</span></div>
+        <div class="n"><span><b>Resource-based policy</b> がこの principal を Allow しているか</span><span class="tag allow">はい → ALLOW</span></div>
+        <div class="arrow"><span>いいえ ↓</span></div>
+        <div class="n"><span><b>permissions boundary</b> があるか。あれば boundary が Allow している必要がある</span><span class="tag deny">いいえ → DENY</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span><b>session policy</b> があるか。あれば session policy が Allow している必要がある</span><span class="tag deny">いいえ → DENY</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span><b>Identity-based policy</b> は Allow しているか</span><span class="tag allow">はい → ALLOW</span></div>
+        <div class="arrow"><span>いいえ ↓</span></div>
+        <div class="n"><span>どれも許可していない</span><span class="tag deny">implicit DENY</span></div>
+      </div>
+      <p style="font-size:.9rem;color:var(--muted)">IAM ドキュメント「Policy evaluation logic」を簡略化したフローです。SAA の試験では次の点を覚えておけば十分です: deny はすべてに勝つ、boundary と SCP は上限であり権限を付与しない、同一アカウントなら identity policy か resource policy のどちらかが許可すれば足りる。</p>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">同一アカウントとクロスアカウント</span>
+        <ul>
+          <li><b>同一アカウント</b>: identity-based の Allow <b>または</b> resource-based の Allow があれば十分（和集合）。</li>
+          <li><b>クロスアカウント</b>: 呼び出し側アカウントの identity-based <b>と</b>リソース所有アカウントの resource-based の両方が Allow する必要がある（積集合）。</li>
+          <li>例: アカウント A の user がアカウント B の bucket を読みたい → A が user に <code>s3:GetObject</code> を付与し、さらに B の bucket policy で Principal にアカウント A またはその user を指定する。</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">explicit deny が allow に勝つ理由（確認ポイント 2）</span>
+        <p>explicit deny は<b>セーフティネット</b>だからです。管理者は、どこかの Allow policy に解除される心配なしに、特定の操作（CloudTrail の削除、許可リスト外の Region の利用、暗号化の無効化）を確実に禁止できます。もし allow が deny に勝てるなら、policy を付与できる人なら誰でも自分で禁止を解除でき、deny は意味を失います。deny は先に評価されてその場で終了するので、「allow を追加する」ことで回避する方法はありません。</p>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験によく出る2つの Deny パターン</span>
+<pre><code>// 東京と大阪以外でのすべての操作を禁止（global サービスは除く）
+{
+  "Effect": "Deny",
+  "NotAction": ["iam:*", "sts:*", "route53:*", "cloudfront:*", "support:*"],
+  "Resource": "*",
+  "Condition": { "StringNotEquals": { "aws:RequestedRegion": ["ap-northeast-1", "ap-northeast-3"] } }
+}
+
+// S3 のすべての削除操作に MFA を必須にする
+{
+  "Effect": "Deny",
+  "Action": ["s3:DeleteObject", "s3:DeleteBucket"],
+  "Resource": "*",
+  "Condition": { "BoolIfExists": { "aws:MultiFactorAuthPresent": "false" } }
+}</code></pre>
+      <ul>
+        <li><code>NotAction</code> + <code>Deny</code> =「このリスト以外をすべて deny」。ゆっくり読むこと。試験では引っかけによく使われます。</li>
+        <li><code>NotAction</code> + <code>Allow</code> =「このリスト以外をすべて allow」で非常に広く、設問が <em>least privilege</em> を問う場合はたいてい誤答です。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>explicit deny <b>→ 常に勝つ</b></span><span>restrict to specific Regions <b>→ Deny + aws:RequestedRegion</b></span><span>maximum permissions a developer can grant <b>→ permissions boundary</b></span><span>prevent even account root <b>→ SCP</b></span><span>why AccessDenied although Allow exists <b>→ Deny か SCP を探す</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">8. Developers グループに所属する user には <code>ec2:*</code> を Allow する policy があります。この user にはさらに <code>ec2:TerminateInstances</code> を Deny する inline policy もあります。user が TerminateInstances を実行するとどうなりますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>拒否されます。</b> 該当するどの policy の explicit deny でも勝ちます。Allow のほうが範囲が広くても、group に付与されていても同じです。付与の順序や policy の種類は関係ありません。</p></div>
+      <div class="q"><p class="qt">9. アカウントが属する OU の SCP は <code>ec2:*</code> と <code>s3:*</code> だけを Allow しています。そのアカウントの IAM user は <code>AdministratorAccess</code> を持っています。この user は RDS を作成できますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>できません。</b> SCP はアカウントの上限です。AdministratorAccess はすべてを許可しますが、実際の権限 = SCP ∩ identity policy であり、RDS は SCP の範囲外です。そのアカウントの root でも作成できません。</p></div>
+      <div class="q"><p class="qt">10. アカウント A の user はアカウント B の bucket に対する <code>s3:GetObject</code> を Allow されていますが、B の bucket には bucket policy がありません。読み取れますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>読み取れません。</b> クロスアカウントでは両側の許可が必要です。アカウント B が Principal をアカウント A とする bucket policy を追加する必要があります（または A が assume する role を作る）。</p></div>
+      <div class="q"><p class="qt">11. 管理者が user X に <code>s3:*</code> だけを許可する permissions boundary を設定しました。X の identity policy は <code>s3:*</code> と <code>dynamodb:*</code> を Allow しています。X は何ができますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>S3 だけです。</b> boundary は権限を付与せず、制限するだけです: 実際の権限 = identity ∩ boundary。DynamoDB は boundary の範囲外なので implicit deny になります。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. PRICING ============ -->
+<section id="pricing">
+  <span class="eyebrow">理論 5 / 5</span>
+  <h2>料金の基本と Free Tier</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">料金の3原則</span>
+      <ul>
+        <li><b>Pay as you go</b>: 使った分だけ支払い、契約は不要。</li>
+        <li><b>Save when you commit</b>: 1年または3年のコミット（Reserved Instances、Savings Plans）で最大約 70% 安くなる。</li>
+        <li><b>Pay less by using more</b>: 段階制の料金。S3 やデータ転送は量が多いほど GB 単価が下がる。</li>
+      </ul>
+    </div>
+    <div class="block"><span class="eyebrow">請求を生む3つの要素</span>
+      <div class="tbl"><table>
+        <tr><th>種類</th><th>課金の単位</th><th>試験での注意点</th></tr>
+        <tr><td><b>Compute</b></td><td>稼働時間または秒（EC2。Lambda は ms と GB-s 単位）、インスタンスタイプ、Region</td><td>EC2 Linux は秒単位課金で最低 60 秒。インスタンスを停止すると compute の課金は止まるが EBS は課金が続く。</td></tr>
+        <tr><td><b>Storage</b></td><td>GB-月、リクエスト数、storage class の種類</td><td>放置された EBS volume と snapshot は、気づきにくい課金の代表例。</td></tr>
+        <tr><td><b>Data transfer</b></td><td>外向きの GB</td><td>AWS への受信: 無料。インターネットへの送信: 有料。同一 Region の 2 AZ 間: 双方向とも有料。同一 AZ 内の private IP: 無料。2 Region 間: 有料。</td></tr>
+      </table></div>
+      <p style="font-size:.92rem">2024年2月から、すべての<b>パブリック IPv4 アドレス</b>が課金対象です（約 0.005 USD/時間）。稼働中のインスタンスに付いていても同じです。どこにも関連付けていない Elastic IP も課金されます。</p>
+    </div>
+    <div class="block"><span class="eyebrow">現行の Free Tier</span>
+      <div class="note"><b>2025年7月15日以降</b>に作成したアカウントは新しい Free Tier が適用されます。クレジット（登録時に 100 USD、初期設定のアクティビティを完了するとさらに最大 100 USD）が付与され、6か月で失効します。選択肢は2つです: <b>Free plan</b>（クレジットを超えて課金されることはないが、一部サービスに制限あり）と <b>Paid plan</b>（すべてのサービスを使え、クレジットを超えた分は支払う）。それ以前のアカウントは従来どおり12か月無料の方式です。<b>always free</b> のサービス（Lambda 月 100 万リクエスト、DynamoDB 25 GB、CloudWatch 10 メトリクス）は引き続き利用できます。具体的な数値は、アカウント作成前に AWS Free Tier のページで要確認です。</div>
+      <p style="font-size:.92rem">このロードマップでは、第4〜6週の NAT Gateway、ALB、RDS のラボを行えるよう <b>Paid plan</b> を選び、Budget とラボ直後にリソースを削除する習慣で費用を管理するのがおすすめです。</p>
+    </div>
+    <div class="block"><span class="eyebrow">コスト管理ツール（見分けられれば十分）</span>
+      <div class="tbl"><table>
+        <tr><th>ツール</th><th>使う場面</th></tr>
+        <tr><td><b>AWS Budgets</b></td><td>金額または使用量のしきい値を設定し、超過したとき、または超過が予測されるときにメール/SNS で通知。自動アクション（例: Deny policy の付与）も設定可能。</td></tr>
+        <tr><td><b>Cost Explorer</b></td><td>過去のコストをサービス、tag、アカウント別に表示・分析。12か月の予測、Reserved / Savings Plans の推奨。</td></tr>
+        <tr><td><b>Cost and Usage Report (CUR)</b></td><td>最も詳細なデータ。S3 に出力し Athena / QuickSight で分析。</td></tr>
+        <tr><td><b>Pricing Calculator</b></td><td>構築前にコストを見積もる。</td></tr>
+        <tr><td><b>Cost allocation tags</b></td><td>tag（Project、Team）を付けて Cost Explorer でコストを分ける。Billing で tag を有効化する必要がある。</td></tr>
+        <tr><td><b>Trusted Advisor、Compute Optimizer</b></td><td>余剰リソース（idle、oversized）を提案。第8週で詳しく学習。</td></tr>
+      </table></div>
+    </div>
+    <div class="block"><span class="eyebrow">独学中に費用が発生しやすいリソース</span>
+      <div class="tbl"><table>
+        <tr><th>リソース</th><th>参考価格（要確認）</th><th>覚えておくこと</th></tr>
+        <tr><td>NAT Gateway</td><td>約 0.045〜0.062 USD/時間 + GB 単位の料金</td><td>ラボ後すぐ削除。1か月放置すると約 35〜45 USD かかる。</td></tr>
+        <tr><td>ALB / NLB</td><td>約 0.02〜0.03 USD/時間 + LCU</td><td>ラボ後に削除。</td></tr>
+        <tr><td>RDS db.t3.micro</td><td>約 0.02 USD/時間、Multi-AZ はその2倍</td><td>当日中に削除。不要なら「create final snapshot」のチェックを外す。</td></tr>
+        <tr><td>EKS cluster</td><td>control plane だけで 0.10 USD/時間</td><td>月約 72 USD。このロードマップでは EKS を構築しない。</td></tr>
+        <tr><td>Public IPv4、Elastic IP</td><td>0.005 USD/時間</td><td>使っていない EIP は解放（Release）する。</td></tr>
+        <tr><td>EBS、snapshot</td><td>gp3 約 0.08 USD/GB-月</td><td>EC2 を terminate した後に残った volume を削除（「Delete on termination」列を確認）。</td></tr>
+      </table></div>
+    </div>
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>alert when spend exceeds <b>→ Budgets</b></span><span>analyze past cost by service <b>→ Cost Explorer</b></span><span>most granular billing data <b>→ CUR</b></span><span>track cost by project <b>→ cost allocation tags</b></span><span>data transfer cost between AZs <b>→ 有料</b></span><span>idle resources <b>→ Trusted Advisor</b></span></div>
+    </div>
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">12. 同じ VPC 内で異なる AZ にある2台の EC2 が、private IP 経由で毎月 10 TB のデータをやり取りしています。データ転送料金はかかりますか。どう減らせますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>かかります。</b>双方向とも GB 単位で課金されます。同じ AZ に置く（その代わり可用性は下がる）か、データ量を減らすことで削減できます。罠:「同じ VPC」でも無料という意味ではありません。</p></div>
+      <div class="q"><p class="qt">13. 経理部門は、共有アカウント内で各プロジェクトにいくらかかっているかを知りたいと考えています。何をすべきですか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>リソースに Project tag を付け、Billing で cost allocation tag を有効化し、Cost Explorer で絞り込む。</b> アカウントを分けることも可能ですが、設問は共有アカウント内での方法を問うています。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HANDS-ON ============ -->
+<section id="handson">
+  <span class="eyebrow">ハンズオン</span>
+  <h2>ハンズオン: 5 ラボ</h2>
+  <p>順番どおりに進めます。Lab 1〜3 はコンソールで、Lab 4 と 5 は CLI も使います。今週は課金されるリソースを作りませんが、最後に片付ける習慣は練習しておきます。</p>
+
+  <div class="card">
+    <h3>Lab 1. AWS アカウントを作成し、root の MFA を有効化</h3>
+    <ol class="steps">
+      <li><div><p><a href="https://aws.amazon.com/free" target="_blank" rel="noopener">aws.amazon.com/free</a> を開き、Create account を選びます。AWS 専用のメールアドレス（<code>ten+aws@gmail.com</code> の形式でも可）を使い、アカウント名は <code>quy-saa-lab</code> のように分かりやすくします。本人確認にクレジットカードが必要です。</p></div></li>
+      <li><div><p>プランを聞かれたら <b>Paid plan</b> を選びます（理由は Free Tier の項を参照）。サポートは Basic support（無料）を選びます。</p></div></li>
+      <li><div><p>root でサインインします。右上のアカウント名 → <b>Security credentials</b> → <b>Multi-factor authentication (MFA)</b> → Assign MFA device。</p></div></li>
+      <li><div><p><b>Authenticator app</b>（Microsoft Authenticator、Google Authenticator、1Password のどれでも可）または <b>Passkey</b> を選びます。QR コードを読み取り、連続する2つのコードを入力します。AWS は root の MFA を必須化しているので、この手順は省略できません。</p></div></li>
+      <li><div><p>同じページで root の <b>Access keys</b> が 0 であることを確認します。root の access key は絶対に作りません。</p></div></li>
+      <li><div><p><b>Billing and Cost Management → Account</b> を開き、<b>IAM user and role access to Billing information</b> までスクロールして Edit → Activate を押します。これを有効にしないと、Lab 2 の管理者用 IAM user が請求情報を見られません。</p></div></li>
+    </ol>
+    <div class="note">このラボ以降、root は本当に必要なときだけ使います。root のパスワードと MFA の復旧コードはパスワードマネージャーに保管します。</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 2. 管理者用 IAM user と 10 USD の Budget を作成</h3>
+    <ol class="steps">
+      <li><div><p>root のまま <b>IAM → Users → Create user</b> を開きます。User name は <code>quy-admin</code>。<b>Provide user access to the AWS Management Console</b> にチェック → 「I want to create an IAM user」を選択 → パスワードを設定し、必要なら「must create a new password at next sign-in」のチェックを外します。</p></div></li>
+      <li><div><p>Permissions: <b>Attach policies directly</b> → <code>AdministratorAccess</code> を検索 → Next → Create user。実際の会社では Identity Center を使いますが、一人で学習するアカウントなら IAM user で十分です。</p></div></li>
+      <li><div><p>作成した user を開き → <b>Security credentials</b> タブ → この user にもすぐ MFA を割り当てます（Authenticator アプリでは別のエントリを使う）。</p></div></li>
+      <li><div><p><b>Account ID</b>（12桁、右上に表示）と、<code>https://&lt;account-id&gt;.signin.aws.amazon.com/console</code> 形式のサインイン URL を控えます。root からサインアウトし、<code>quy-admin</code> でサインインし直します。以降はこの user だけを使います。</p></div></li>
+      <li><div><p>右上の Region を <b>Asia Pacific (Tokyo) ap-northeast-1</b> に切り替えます。ロードマップを通して1つの Region に固定すると、リソースの消し忘れを防げます。</p></div></li>
+      <li><div><p><b>Billing and Cost Management → Budgets → Create budget</b> → Use a template → <b>Monthly cost budget</b>。Budget name は <code>saa-lab-10usd</code>、Enter your budgeted amount は <code>10</code>、Email recipients に自分のメールアドレスを入れて → Create budget。このテンプレートは actual 85%、actual 100%、forecast 100% のアラートを自動で作成します。</p></div></li>
+      <li><div><p>隠れた課金が発生したらすぐ気づけるよう、<code>1</code> USD の budget もう1つ追加します。料金データは1日に数回しか更新されないため、アラートは 8〜12 時間遅れることがあります。</p></div></li>
+      <li><div><p><b>Billing preferences</b> → <b>Receive AWS Free Tier usage alerts</b> と <b>Receive CloudWatch billing alerts</b> を有効にします。新しい Free Tier のアカウントなら、<b>Free Tier</b> で残りのクレジットを確認します。</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Lab 3. AWS CLI のインストール、profile の設定、アイデンティティの確認</h3>
+    <ol class="steps">
+      <li><div><p>Windows に winget で AWS CLI v2 をインストールします（または AWS のページから MSI ファイルをダウンロード）:</p>
+<pre><code>winget install --id Amazon.AWSCLI -e
+aws --version</code></pre><p>インストール後はターミナルを開き直します。期待される結果は <code>aws-cli/2.x.x Python/3.x Windows/10 ...</code> の形式です。</p></div></li>
+      <li><div><p>管理者 user の access key を作成します: コンソール → IAM → Users → <code>quy-admin</code> → Security credentials → <b>Create access key</b> →「Command Line Interface (CLI)」を選択 → 確認にチェック → Create。CSV ファイルをダウンロードし、git にはコミットしません。これは長期の credential で、パスワード保護された個人 PC なら許容範囲です。会社では <code>aws configure sso</code> を使います。</p></div></li>
+      <li><div><p><code>saa</code> という名前の profile を設定します:</p>
+<pre><code>aws configure --profile saa
+# AWS Access Key ID: キーを貼り付け
+# AWS Secret Access Key: シークレットを貼り付け
+# Default region name: ap-northeast-1
+# Default output format: json</code></pre><p>設定は <code>C:\Users\&lt;ユーザー名&gt;\.aws\credentials</code> と <code>.aws\config</code> に書き込まれます。</p></div></li>
+      <li><div><p>現在使っているアイデンティティを確認します:</p>
+<pre><code>aws sts get-caller-identity --profile saa</code></pre><p>期待される結果:</p>
+<pre><code>{
+    "UserId": "AIDAEXAMPLE...",
+    "Account": "123456789012",
+    "Arn": "arn:aws:iam::123456789012:user/quy-admin"
+}</code></pre><p>ARN を見て、<code>root</code> ではなく <code>user/quy-admin</code> であることを確かめます。</p></div></li>
+      <li><div><p>毎回 <code>--profile</code> を入力しなくて済むよう、PowerShell で:</p>
+<pre><code>$env:AWS_PROFILE = "saa"
+aws sts get-caller-identity</code></pre><p>すべてのウィンドウで固定したい場合は、Windows のユーザー環境変数に <code>AWS_PROFILE</code> を追加します。</p></div></li>
+      <li><div><p>課金されない読み取り系コマンドをいくつか試します: <code>aws ec2 describe-regions --output table</code>、<code>aws iam list-users</code>、<code>aws s3 ls</code>（空なら正常）。</p></div></li>
+    </ol>
+    <div class="note bad"><code>InvalidClientTokenId</code> が出る場合: キーの入力ミスか、まだ有効になっていません。<code>sts get-caller-identity</code> は権限不要なので、<code>AccessDenied</code> はほぼ発生しません。コマンドが長く固まる場合は社内プロキシを確認します。</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 4. 1つの bucket だけ読める IAM policy を書き、Policy Simulator で確認</h3>
+    <ol class="steps">
+      <li><div><p>テスト用 bucket を作成します（bucket 名は全世界で一意である必要があるので、末尾を変えてください）:</p>
+<pre><code>aws s3 mb s3://saa-lab-quy-2026 --region ap-northeast-1
+echo hello &gt; hello.txt
+aws s3 cp hello.txt s3://saa-lab-quy-2026/hello.txt</code></pre></div></li>
+      <li><div><p><code>readonly-bucket.json</code> ファイルを作成します。bucket と object で Resource が異なる点に注意します:</p>
+<pre><code>{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ListBucket",
+      "Effect": "Allow",
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::saa-lab-quy-2026"
+    },
+    {
+      "Sid": "GetObjects",
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::saa-lab-quy-2026/*"
+    }
+  ]
+}</code></pre></div></li>
+      <li><div><p>policy を作成し、テスト用 user <code>saa-reader</code> を作って policy を付与し、access key と profile <code>reader</code> を作成します:</p>
+<pre><code>aws iam create-policy --policy-name SaaLabReadOnlyBucket --policy-document file://readonly-bucket.json
+aws iam create-user --user-name saa-reader
+aws iam attach-user-policy --user-name saa-reader --policy-arn arn:aws:iam::&lt;account-id&gt;:policy/SaaLabReadOnlyBucket
+aws iam create-access-key --user-name saa-reader
+aws configure --profile reader   # saa-reader のキーを貼り付け</code></pre></div></li>
+      <li><div><p><b>IAM Policy Simulator</b> を開きます: <a href="https://policysim.aws.amazon.com/" target="_blank" rel="noopener">policysim.aws.amazon.com</a>（<code>quy-admin</code> でサインイン）。左の列で Users → <code>saa-reader</code> を選択。右側で Select service は <b>Amazon S3</b>、Select actions は <code>GetObject</code>、<code>PutObject</code>、<code>ListBucket</code>、<code>DeleteObject</code>。<b>Simulation Settings</b> を開き、GetObject/PutObject/DeleteObject には Resource ARN <code>arn:aws:s3:::saa-lab-quy-2026/*</code>、ListBucket には <code>arn:aws:s3:::saa-lab-quy-2026</code> を入力します。<b>Run Simulation</b> を押します。</p>
+        <p>期待される結果: GetObject と ListBucket は <b>allowed</b>、PutObject と DeleteObject は <b>denied</b> で理由は「Implicitly denied (no matching statements)」。</p></div></li>
+      <li><div><p>実際の CLI で確認します:</p>
+<pre><code>aws s3 ls s3://saa-lab-quy-2026 --profile reader            # 成功する
+aws s3 cp s3://saa-lab-quy-2026/hello.txt . --profile reader  # 成功する
+aws s3 cp hello.txt s3://saa-lab-quy-2026/x.txt --profile reader  # AccessDenied</code></pre></div></li>
+      <li><div><p>explicit deny の実験: policy に statement <code>"Effect": "Deny", "Action": "s3:GetObject", "Resource": "arn:aws:s3:::saa-lab-quy-2026/*"</code> を追加します（<code>aws iam create-policy-version --set-as-default</code> で新しいバージョンを作るか、コンソールで編集）。Policy Simulator を再実行すると、Allow の statement はそのまま残っているのに、GetObject は「Explicitly denied」の理由で <b>denied</b> になります。これがまさに確認ポイント 2 です。</p></div></li>
+      <li><div><p>Sid ListBucket の Resource を <code>.../*</code> に変えてシミュレーターを再実行し、よくある ARN の間違いを自分で確かめます: ListBucket が denied になります。</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Lab 5. 片付けと請求の確認</h3>
+    <ol class="steps">
+      <li><div><pre><code>aws iam list-access-keys --user-name saa-reader
+aws iam delete-access-key --user-name saa-reader --access-key-id &lt;AKIA...&gt;
+aws iam detach-user-policy --user-name saa-reader --policy-arn arn:aws:iam::&lt;account-id&gt;:policy/SaaLabReadOnlyBucket
+aws iam delete-user --user-name saa-reader
+aws s3 rb s3://saa-lab-quy-2026 --force</code></pre><p>policy <code>SaaLabReadOnlyBucket</code> は残しておいても課金されません。削除する場合は、先にデフォルト以外のバージョンを削除する必要があります。</p></div></li>
+      <li><div><p>コンソール → <b>Billing and Cost Management → Bills</b>: 今月の合計が 0 USD であることを確認します。<b>Cost Explorer</b> を開きます（初めて有効にした場合、データが表示されるまで最大 24 時間かかります）。毎週末に一度ここを見る習慣をつけます。</p></div></li>
+      <li><div><p>Billing の <b>Free Tier</b> を開いて残りのクレジットや使用量を確認し、今後の週の予算を把握します。</p></div></li>
+    </ol>
+    <div class="note ok">今週は時間課金のリソースはありません。第2週から EC2 と EBS が登場するので、ラボのたびに terminate と volume の削除を忘れないようにします。</div>
+  </div>
+</section>
+
+<!-- ============ MỐC KIỂM TRA ============ -->
+<section id="moc">
+  <span class="eyebrow">確認ポイント</span>
+  <h2>資料を見ずに自分で説明できるべき2つの問い</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>1. user ではなく role を使うのはいつか</h3>
+      <p style="font-size:.94rem">回答の骨組み（隠してから自分で言ってみる）:</p>
+      <ul style="font-size:.94rem">
+        <li>role は STS 経由で<b>一時的な</b> credential を発行し、user は<b>長期の</b> credential を持つ。</li>
+        <li>主体が<b>ソフトウェア</b>（EC2、Lambda、ECS）のとき、<b>cross-account</b> のとき、<b>federated</b>（AD、Google、SSO）のとき、自動で<b>ローテーション</b>したいときは role を使う。</li>
+        <li>1つのアカウントに長期間ログインする<b>人</b>で、SSO の仕組みがない場合は user を使う。</li>
+        <li>例を1つ挙げられる: EC2 が S3 に書き込むなら role を付与し、access key を埋め込まない。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>2. explicit deny が allow に勝つのはなぜか</h3>
+      <p style="font-size:.94rem">回答の骨組み:</p>
+      <ul style="font-size:.94rem">
+        <li>デフォルトは deny。AWS は該当するすべての policy を集め、<b>まず Deny</b> を探し、見つかればそこで終了する。</li>
+        <li>目的: 他の場所の Allow policy によって解除されない<b>セーフティネット</b>を管理者に与える。</li>
+        <li>allow が勝てるなら、Allow を追加できる人は誰でも回避できてしまい、deny は無意味になる。</li>
+        <li>例を1つ挙げられる: <code>aws:RequestedRegion</code> を使った Deny で Region を制限する、または MFA なしの削除を Deny する。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TỪ KHÓA ============ -->
+<section id="tukhoa">
+  <span class="eyebrow">クイックレビュー</span>
+  <h2>第1週のキーワード表</h2>
+  <div class="tbl"><table>
+    <tr><th>設問に出る言葉</th><th>すぐに思い浮かべるもの</th></tr>
+    <tr><td><em>highly available</em>, survive AZ failure</td><td>Multi-AZ</td></tr>
+    <tr><td><em>disaster recovery</em>, survive Region failure</td><td>Multi-Region</td></tr>
+    <tr><td><em>data residency</em>, must stay in country</td><td>適切な Region を選ぶ</td></tr>
+    <tr><td><em>low latency</em>（世界中のユーザー向け）、static content</td><td>CloudFront、Edge location</td></tr>
+    <tr><td>EC2 上の guest OS にパッチを当てるのは誰か</td><td>Customer</td></tr>
+    <tr><td>RDS engine、ハイパーバイザー、ハードウェアにパッチを当てるのは誰か</td><td>AWS</td></tr>
+    <tr><td>EC2 / Lambda が他の AWS サービスにアクセスする</td><td>IAM role (instance profile / execution role)</td></tr>
+    <tr><td><em>cross-account</em> access</td><td>Role + sts:AssumeRole、または resource-based policy</td></tr>
+    <tr><td><em>corporate directory</em>、<em>SSO</em>、複数アカウント</td><td>IAM Identity Center、SAML federation</td></tr>
+    <tr><td>Web / モバイルアプリの利用者</td><td>Cognito</td></tr>
+    <tr><td><em>temporary credentials</em></td><td>STS</td></tr>
+    <tr><td>ある policy で Allow、別の policy で Deny</td><td>Deny が勝つ</td></tr>
+    <tr><td>1つの user/role の権限の上限を決める</td><td>Permissions boundary</td></tr>
+    <tr><td>root を含むアカウント全体の権限の上限を決める</td><td>SCP</td></tr>
+    <tr><td>一部の Region だけ使わせる</td><td>Deny + Condition aws:RequestedRegion</td></tr>
+    <tr><td><em>least privilege</em>、不要な権限を探す</td><td>Access Analyzer、credential report、Access Advisor</td></tr>
+    <tr><td>支出がしきい値を超えたら通知</td><td>AWS Budgets</td></tr>
+    <tr><td>サービス別、tag 別にコストを分析</td><td>Cost Explorer、cost allocation tags</td></tr>
+    <tr><td>最も詳細な請求データ</td><td>Cost and Usage Report</td></tr>
+    <tr><td>2 AZ 間の Data transfer</td><td>有料。同一 AZ の private IP なら無料</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ CHECKLIST ============ -->
+<section id="checklist">
+  <span class="eyebrow">進捗</span>
+  <h2>第1週チェックリスト</h2>
+  <p style="font-size:.94rem;color:var(--muted)">ここでチェックすると、この PC 上で進捗を記録できます。項目が終わったら、セッションで Claude に伝えて <code>AWS-SAA-checklist.md</code> にもチェックを入れてもらいます。</p>
+  <div class="card">
+    <h4>理論</h4>
+    <label class="check"><input type="checkbox" id="c1" data-ck><span>Region、Availability Zone、Edge location</span></label>
+    <label class="check"><input type="checkbox" id="c2" data-ck><span>Shared responsibility model</span></label>
+    <label class="check"><input type="checkbox" id="c3" data-ck><span>IAM: user、group、role、policy</span></label>
+    <label class="check"><input type="checkbox" id="c4" data-ck><span>IAM: ポリシーの評価順序</span></label>
+    <label class="check"><input type="checkbox" id="c5" data-ck><span>料金の基本、現行の Free Tier</span></label>
+    <h4>ハンズオン</h4>
+    <label class="check"><input type="checkbox" id="c6" data-ck><span>AWS アカウントを作成し、root の MFA を有効化</span></label>
+    <label class="check"><input type="checkbox" id="c7" data-ck><span>管理者用 IAM user を作成し、以降はこの user だけを使う</span></label>
+    <label class="check"><input type="checkbox" id="c8" data-ck><span>メール通知付きの 10 USD の AWS Budget を作成</span></label>
+    <label class="check"><input type="checkbox" id="c9" data-ck><span>AWS CLI をインストールし、profile を設定して <code>aws sts get-caller-identity</code> を実行</span></label>
+    <label class="check"><input type="checkbox" id="c10" data-ck><span>1つの bucket だけ読める IAM policy を書き、Policy Simulator で確認</span></label>
+    <h4>確認ポイント</h4>
+    <label class="check"><input type="checkbox" id="c11" data-ck><span>user ではなく role を使う場面を説明できる</span></label>
+    <label class="check"><input type="checkbox" id="c12" data-ck><span>explicit deny が allow に勝つ理由を説明できる</span></label>
+    <h4>教材（第1週で決める）</h4>
+    <label class="check"><input type="checkbox" id="c13" data-ck><span>メインの講座を選ぶ: Stephane Maarek または Adrian Cantrill</span></label>
+    <label class="check"><input type="checkbox" id="c14" data-ck><span>Tutorials Dojo の問題集を購入し、AWS Skill Builder に登録</span></label>
+    <label class="check"><input type="checkbox" id="c15" data-ck><span>第1週のクイズで 80% 以上</span></label>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  // 答えを見る
+  document.querySelectorAll('[data-reveal]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var a=b.parentElement.querySelector('.ans');
+      a.hidden=!a.hidden; b.textContent=a.hidden?'答えを見る':'答えを隠す';
+    });
+  });
+  // チェックリストはこの PC に保存
+  var boxes=document.querySelectorAll('[data-ck]'), KEY='saa-tuan-01';
+  var saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  function update(){
+    var n=0; boxes.forEach(function(c){ c.closest('.check').classList.toggle('done',c.checked); if(c.checked)n++; });
+    document.getElementById('bar').style.width=(n/boxes.length*100)+'%';
+    document.getElementById('pct').textContent=n+'/'+boxes.length;
+  }
+  boxes.forEach(function(c){
+    if(saved[c.id])c.checked=true;
+    c.addEventListener('change',function(){ saved[c.id]=c.checked; try{ localStorage.setItem(KEY,JSON.stringify(saved)); }catch(e){} update(); });
+  });
+  update();
+  // 読んでいる項目を強調
+  var links=document.querySelectorAll('.toc a'), secs=[];
+  links.forEach(function(l){ var s=document.querySelector(l.getAttribute('href')); if(s)secs.push([s,l]); });
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ links.forEach(function(l){l.classList.remove('active')}); secs.forEach(function(p){ if(p[0]===e.target)p[1].classList.add('active'); }); } }); },{rootMargin:'-20% 0px -70% 0px'});
+    secs.forEach(function(p){ io.observe(p[0]); });
+  }
+})();
+</script>

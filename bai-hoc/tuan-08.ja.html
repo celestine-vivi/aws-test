@@ -1,0 +1,1281 @@
+<title>SAA 第8週 セキュリティ 監視</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky mục lục bên trái (desktop), cột nội dung 760px bên phải; xếp một cột ở màn hẹp. */
+:root{
+  --bg:#f2f4f7; --surface:#ffffff; --surface-2:#e9edf2; --line:#d3dae3;
+  --fg:#172030; --muted:#5a6676; --accent:#1c6e8c; --accent-soft:#dcecf3;
+  --warm:#b35a00; --warm-soft:#fbe9d6; --ok:#2a7d4f; --ok-soft:#dcf0e4; --bad:#b3362b; --bad-soft:#f8dedb;
+  --display:"Manrope","IBM Plex Sans",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+a{color:var(--accent)}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:800}
+h2{font-size:1.5rem;font-weight:800;padding-top:8px}
+h3{font-size:1.12rem;font-weight:700}
+h4{font-size:.95rem;font-weight:700}
+p{margin:0}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+pre{font-family:var(--mono);font-size:.84rem;line-height:1.5;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:0}
+pre code{background:none;padding:0;font-size:inherit}
+em{color:var(--warm);font-style:italic}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* Header */
+.hero{max-width:1120px;margin:0 auto;padding-block:36px 20px;display:flex;flex-direction:column;gap:12px}
+.hero .lead{max-width:62ch;color:var(--muted);font-size:1.02rem}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.88rem;color:var(--muted)}
+.meta b{color:var(--fg);font-weight:600}
+.progress{display:flex;align-items:center;gap:12px;font-size:.88rem;color:var(--muted)}
+.bar{flex:1;max-width:320px;height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+
+/* Two columns */
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;align-items:start}
+.toc{position:sticky;top:max(12px,env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:2px;font-size:.9rem}
+.toc a{color:var(--muted);text-decoration:none;padding:6px 10px;border-left:2px solid var(--line);display:block}
+.toc a:hover,.toc a.active{color:var(--fg);border-left-color:var(--accent)}
+.toc .grp{margin-top:10px}
+main{display:flex;flex-direction:column;gap:56px;min-width:0;max-width:780px}
+section{display:flex;flex-direction:column;gap:18px;scroll-margin-top:16px}
+@media (max-width:860px){ .wrap{grid-template-columns:1fr;gap:24px} .toc{position:static;flex-direction:row;flex-wrap:wrap;gap:6px} .toc a{border:1px solid var(--line);border-radius:99px;padding:4px 10px} .toc .grp{margin:0} .toc a.active{border-color:var(--accent)} }
+
+/* Blocks */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.block{display:flex;flex-direction:column;gap:8px}
+.block > .eyebrow{color:var(--accent)}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:5px}
+li::marker{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.kw{display:flex;flex-wrap:wrap;gap:8px}
+.kw span{background:var(--warm-soft);color:var(--warm);border-radius:4px;padding:3px 9px;font-size:.86rem;font-style:italic}
+.kw span b{font-style:normal;font-weight:600;color:var(--fg)}
+.note{border-left:3px solid var(--warm);background:var(--warm-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.94rem}
+.note.ok{border-color:var(--ok);background:var(--ok-soft)}
+.note.bad{border-color:var(--bad);background:var(--bad-soft)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;font-size:.84rem}
+tr:last-child td{border-bottom:0}
+td.c{text-align:center}
+
+/* Checklist */
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:6px;cursor:pointer}
+.check:hover{background:var(--surface-2)}
+.check input{margin-top:5px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.check.done{color:var(--muted);text-decoration:line-through}
+
+/* Quiz reveal */
+.q{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.q .qt{font-weight:500}
+.q button{align-self:flex-start;font:inherit;font-size:.86rem;padding:5px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer}
+.q button:hover{background:var(--accent);color:var(--surface)}
+.q button:focus-visible,.check input:focus-visible,.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.q .ans{font-size:.94rem;border-top:1px dashed var(--line);padding-top:8px}
+.q .ans b{color:var(--ok)}
+
+/* Steps */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:12px;padding:0;list-style:none}
+.steps li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:start}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--mono);font-size:.8rem;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:500;margin-top:2px}
+.steps li > div{display:flex;flex-direction:column;gap:6px;min-width:0}
+
+/* Flow diagram */
+.flow{display:flex;flex-direction:column;gap:0;align-items:stretch;max-width:520px}
+.flow .n{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:.94rem}
+.flow .n .tag{font-family:var(--mono);font-size:.74rem;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.tag.deny{background:var(--bad-soft);color:var(--bad)} .tag.allow{background:var(--ok-soft);color:var(--ok)} .tag.next{background:var(--surface-2);color:var(--muted)}
+.flow .arrow{height:22px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--mono);font-size:.78rem}
+.flow .arrow::before{content:"";width:1px;height:100%;background:var(--line);position:absolute}
+.flow .arrow{position:relative} .flow .arrow span{background:var(--bg);padding:0 6px;position:relative}
+
+svg text{font-family:var(--body)}
+.diag{overflow-x:auto}
+.diag svg{width:100%;max-width:700px;height:auto;display:block}
+.sv-region{fill:var(--surface);stroke:var(--accent)} .sv-az{fill:var(--accent-soft);stroke:var(--accent)} .sv-edge{fill:var(--warm-soft);stroke:var(--warm)}
+.sv-t{fill:var(--fg);font-size:13px} .sv-m{fill:var(--muted);font-size:11px} .sv-line{stroke:var(--line)}
+@media (prefers-reduced-motion: reduce){ .bar i{transition:none} }
+</style>
+
+<header class="hero">
+  <span class="eyebrow">AWS SAA-C03 · 12週間ロードマップ · 第8週</span>
+  <h1>セキュリティ、監視、ガバナンス</h1>
+  <p class="lead">サービス数がもっとも多い週です。暗号化（KMS、ACM、CloudHSM）、シークレット（Secrets Manager、Parameter Store）、エッジ保護（WAF、Shield、Network Firewall）、検知（GuardDuty、Inspector、Macie、Security Hub、Config）、アイデンティティ（Cognito、STS、Identity Center）、マルチアカウント（Organizations、SCP、Control Tower）、監視（CloudTrail、CloudWatch、Systems Manager）、IaC とコスト管理を扱います。週末の目標は、設問に <em>rotate credentials</em>、<em>SQL injection</em>、<em>compromised instance</em>、<em>PII in S3</em> とあれば、隣接サービスと混同せずにどのサービスか即答できることです。</p>
+  <div class="meta"><span>学習ペース: <b>1日1.5〜2時間</b></span><span>関連ドメイン: <b>SEC 30%</b>（最大のドメイン）、<b>COST 20%</b></span><span>今週のラボ費用: <b>約1〜2 USD</b>（KMS key、Secrets Manager、RDS 数時間。料金は要確認）</span></div>
+  <div class="progress"><span>チェックリスト進捗</span><div class="bar"><i id="bar"></i></div><span id="pct">0/21</span></div>
+</header>
+
+<div class="wrap">
+<nav class="toc" aria-label="目次">
+  <a href="#ke-hoach">7日間の計画</a>
+  <span class="grp eyebrow">理論</span>
+  <a href="#kms">1. KMS、ACM、CloudHSM</a>
+  <a href="#secrets">2. Secrets Manager と Parameter Store</a>
+  <a href="#edge">3. WAF、Shield、Firewall</a>
+  <a href="#detect">4. GuardDuty、Inspector、Macie、Config</a>
+  <a href="#cognito">5. Cognito、STS、Identity Center</a>
+  <a href="#org">6. Organizations、SCP、Control Tower</a>
+  <a href="#monitor">7. CloudTrail、CloudWatch、SSM</a>
+  <a href="#iac">8. CloudFormation、Beanstalk、コスト</a>
+  <span class="grp eyebrow">ハンズオン</span>
+  <a href="#handson">ハンズオン 7 Lab</a>
+  <a href="#moc">確認ポイント</a>
+  <a href="#tukhoa">試験キーワード表</a>
+  <a href="#checklist">週のチェックリスト</a>
+</nav>
+
+<main>
+
+<section id="ke-hoach">
+  <h2>7日間の計画</h2>
+  <p>今週は理論12項目を8回に分けて学びます。1日に1〜2回分を学んだら、対応するラボをすぐに行ってください。Lab 1 で作る EC2 は Lab 2 と Lab 5 でも使い回すので、一度だけ作成します。6〜7日目は確認ポイント2つの復習とクイズです。</p>
+  <div class="tbl"><table>
+    <tr><th>日</th><th>理論</th><th>ハンズオン</th></tr>
+    <tr><td>1</td><td>第1回: KMS、envelope encryption、rotation、ACM、CloudHSM</td><td>Lab 3: KMS key を作成し、EBS と S3 を暗号化、<code>kms:Decrypt</code> のないユーザーで試す</td></tr>
+    <tr><td>2</td><td>第2回: Secrets Manager と Parameter Store。第3回: WAF、Shield、Firewall Manager、Network Firewall</td><td>Lab 4: Secrets Manager に RDS パスワードを保存、rotation を有効化、CLI で読む</td></tr>
+    <tr><td>3</td><td>第4回: GuardDuty、Inspector、Macie、Security Hub、Detective、Config、Trusted Advisor。第5回: Cognito、STS、Identity Center</td><td>Lab 1: EC2 + CloudWatch alarm（CPU）を SNS に通知。Lab 5: SSH を開けずに Session Manager</td></tr>
+    <tr><td>4</td><td>第6回: Organizations、SCP、consolidated billing、Control Tower、RAM。第7回: CloudTrail、CloudWatch、Systems Manager</td><td>Lab 2: CloudTrail を S3 に記録し、操作を探す。Lab 6: SCP で Region を制限（Organizations がある場合）</td></tr>
+    <tr><td>5</td><td>第8回: CloudFormation、Elastic Beanstalk、CDK、Cost Explorer、Budgets、Compute Optimizer</td><td>Lab 7: 片付け、key の削除予約、Billing の確認</td></tr>
+    <tr><td>6〜7</td><td>確認ポイント2つの復習、キーワード表の読み直し、前週までの間違いノートの読み直し</td><td>セッションで「cho quiz」と言って <code>quiz/tuan-08.md</code>（30問）を受け取る。80% 以上が必要</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ 1. KMS, ACM, CLOUDHSM ============ -->
+<section id="kms">
+  <span class="eyebrow">理論 1 / 8</span>
+  <h2>KMS と暗号化、ACM、CloudHSM</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要: KMS とは</span>
+      <ul>
+        <li><b>AWS KMS</b>（Key Management Service）は、AWS が管理する HSM 上で暗号鍵を作成、保管、利用するサービスです。鍵は<b>平文のまま KMS の外に出ることはありません</b>。データ（<code>Encrypt</code> 1回あたり最大 4 KB）を送ると、KMS が暗号文を返します。「encryption at rest」を持つほぼすべての AWS サービス（EBS、S3、RDS、DynamoDB、Lambda env、SQS、CloudTrail、Secrets Manager）は KMS の鍵で暗号化します。</li>
+        <li>KMS は <b>regional</b> なサービスです。東京で作った鍵は東京でしか使えません。暗号化済みの EBS/RDS スナップショットを別 Region にコピーする場合は、コピー先 Region の鍵を指定して再暗号化します。</li>
+        <li>鍵を使うたびに <b>CloudTrail</b> に記録されます（誰が、いつ、どの鍵を）。監査担当者が自前の暗号化より KMS を好む理由です。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">管理者で分ける3種類の鍵</span>
+      <div class="tbl"><table>
+        <tr><th>種類</th><th>誰が作り、誰に見えるか</th><th>Key policy、rotation</th><th>料金（要確認）</th><th>設問で問われるとき</th></tr>
+        <tr><td><b>AWS owned key</b></td><td>AWS が作成し、複数アカウントで共用。自分には見えず、管理もできず、自分の CloudTrail にも出ません。</td><td>操作できません</td><td>無料</td><td>SSE-S3、DynamoDB など多くのサービスの既定。設問が「encrypted at rest」だけを求め、制御を要求しないときに選びます。</td></tr>
+        <tr><td><b>AWS managed key</b></td><td>サービスが必要としたときに自分のアカウント内に自動作成。名前は <code>aws/s3</code>、<code>aws/ebs</code>、<code>aws/rds</code>。コンソールと CloudTrail で見えます。</td><td>Key policy は AWS が記述し、編集不可。1年ごとに自動 rotate、無効化不可。</td><td>鍵の保管料なし、リクエスト料のみ</td><td>鍵の利用を監査したいが自分で管理する必要はないとき。cross-account では使えません。</td></tr>
+        <tr><td><b>Customer managed key (CMK)</b></td><td>自分で作成し、alias を付け、key policy を書き、有効化と無効化、削除予約ができます。</td><td>完全な制御。rotation は任意で、有効にすると1年（現在は 90〜2560 日に調整可能、要確認）。</td><td>約 1 USD/鍵/月 + 10,000 リクエストあたり 0.03 USD</td><td>設問に <em>full control over keys</em>、<em>key policy</em>、<em>cross-account</em>、<em>disable key</em>、<em>audit key usage</em>、<em>rotation every X</em> とあるとき。</td></tr>
+      </table></div>
+      <p style="font-size:.92rem">補足: S3 では、<b>SSE-S3</b> は AWS owned key（無料、見えない）、<b>SSE-KMS</b> は AWS managed の <code>aws/s3</code> または CMK（CloudTrail あり、KMS 権限のないユーザーを拒否できる）、<b>SSE-C</b> はリクエストごとに自分の鍵を送る（AWS は保存しない）、<b>client-side</b> はアップロード前に自分で暗号化します。<b>DSSE-KMS</b> は高いコンプライアンス要件向けの二重暗号化です（名前だけ覚えておく）。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Symmetric と asymmetric</span>
+      <ul>
+        <li><b>Symmetric (AES-256)</b>: 1つの鍵で暗号化と復号の両方を行います。既定で、高速、安価、すべての AWS サービスで使えます。鍵はダウンロードできないため、暗号化には KMS API を呼ぶ必要があります（または data key を使う。下の envelope を参照）。</li>
+        <li><b>Asymmetric (RSA, ECC)</b>: public/private のペア。<b>Public key はダウンロードでき</b>、AWS の外で暗号化や検証に使えます。private key は KMS の外に出ません。AWS の外部から自分宛てに暗号化して送る場合や、電子署名（sign/verify）が必要な場合に使います。<b>automatic rotation はありません</b>。</li>
+        <li><b>HMAC key</b>: 認証コードの生成と検証（名前だけ覚えておく）。これも auto rotate しません。</li>
+      </ul>
+    </div>
+
+    <div class="block diag"><span class="eyebrow">イメージ: envelope encryption</span>
+      <svg viewBox="0 0 700 300" role="img" aria-label="envelope encryption の図: アプリが GenerateDataKey を呼んで平文の data key と暗号化済み data key を受け取り、大きなデータをローカルで暗号化し、暗号文と暗号化済み data key を一緒に保存する">
+        <rect x="20" y="30" width="220" height="240" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="130" y="56" text-anchor="middle" class="sv-t" font-weight="600">AWS KMS (Region)</text>
+        <rect x="45" y="80" width="170" height="60" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="130" y="104" text-anchor="middle" class="sv-t" font-weight="600">Customer managed key</text>
+        <text x="130" y="124" text-anchor="middle" class="sv-m">HSM の外には出ない</text>
+        <text x="130" y="175" text-anchor="middle" class="sv-m">1. GenerateDataKey</text>
+        <text x="130" y="192" text-anchor="middle" class="sv-m">2つを返す</text>
+        <text x="130" y="230" text-anchor="middle" class="sv-m">4. Decrypt(暗号化済み data key)</text>
+        <text x="130" y="247" text-anchor="middle" class="sv-m">平文の data key を返す</text>
+        <rect x="300" y="30" width="380" height="240" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="490" y="56" text-anchor="middle" class="sv-t" font-weight="600">アプリ / サービス (EBS, S3)</text>
+        <rect x="320" y="75" width="160" height="50" rx="8" class="sv-edge" stroke-width="1.5"/>
+        <text x="400" y="96" text-anchor="middle" class="sv-t">平文の data key</text>
+        <text x="400" y="113" text-anchor="middle" class="sv-m">RAM 上のみ、使用後に破棄</text>
+        <rect x="500" y="75" width="160" height="50" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="580" y="96" text-anchor="middle" class="sv-t">暗号化済み data key</text>
+        <text x="580" y="113" text-anchor="middle" class="sv-m">データの隣に保存</text>
+        <rect x="320" y="160" width="340" height="50" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="490" y="181" text-anchor="middle" class="sv-t">2. 大きなデータ (GB) を平文 data key でローカル暗号化</text>
+        <text x="490" y="198" text-anchor="middle" class="sv-m">3. 暗号文 + 暗号化済み data key を保存、平文 data key を破棄</text>
+        <line x1="240" y1="100" x2="320" y2="100" class="sv-line" stroke-width="2"/>
+        <line x1="400" y1="125" x2="400" y2="160" class="sv-line" stroke-width="2"/>
+        <text x="490" y="236" text-anchor="middle" class="sv-m">復号: 暗号化済み data key を KMS に送る (kms:Decrypt が必要)</text>
+        <text x="490" y="252" text-anchor="middle" class="sv-m">平文 data key を受け取り、ローカルで復号</text>
+      </svg>
+      <ul style="font-size:.94rem">
+        <li>KMS が直接暗号化できるのは最大 <b>4 KB</b> です。それより大きいデータは <b>envelope encryption</b> を使います。<code>GenerateDataKey</code> を呼んで平文の data key とその暗号文を受け取り、データは data key でローカル暗号化し、保存するのは data key の暗号文だけです。データ本体がネットワーク経由で KMS に送られることはありません。</li>
+        <li>試験での帰結: SSE-KMS バケットに<b>アップロード</b>するユーザーには <code>kms:GenerateDataKey</code>、<b>ダウンロード</b>するユーザーには <code>kms:Decrypt</code> が必要です。どちらかが欠けると、S3 の policy が十分でも AccessDenied になります。Lab 3 でこのエラーをそのまま再現します。</li>
+        <li><b>Encryption context</b>: 暗号化のたびに付ける key-value のペア（例: バケット名）で、復号時に一致している必要があり、CloudTrail に記録されます。ある場所の暗号文を別の場所で復号する行為を防ぎます。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Key policy、IAM policy、grant</span>
+      <ul>
+        <li><b>Key policy</b> は鍵ごとに付く resource-based policy で、<b>必ず存在します</b>。S3 と違い、key policy が許可していなければ、アカウント内の IAM policy も効きません。既定の key policy には <code>"Principal": {"AWS": "arn:aws:iam::ACCOUNT:root"}, "Action": "kms:*"</code> という statement があり、「このアカウントの IAM policy に判断を委ねる」という意味です。この statement を消すと、IAM policy はこの鍵に対して効かなくなります。</li>
+        <li><b>Cross-account</b>: 鍵の所有アカウントの key policy で相手アカウントの principal を Allow し、同時に相手アカウントの IAM policy でも kms アクションを Allow する必要があります。S3 の cross-account と同じ「両側の積」のルールです。暗号化済み EBS/RDS スナップショットを別アカウントに共有するには <b>CMK が必須</b>です（AWS managed の <code>aws/ebs</code> は共有できません）。</li>
+        <li><b>Grant</b>: 取り消し可能な一時的な権限で、ある principal に鍵の一部のアクションを許可します。AWS サービス（volume attach 時の EBS、RDS、Secrets Manager）は自分の代わりに grant を自動作成して鍵を使います。設問の <em>temporary, programmatic permission to use a key</em> → grant。</li>
+        <li>よく出る条件: <code>kms:ViaService</code>（S3 や EBS 経由でのみ鍵を使わせる）、<code>kms:EncryptionContext</code>、<code>aws:PrincipalOrgID</code>。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Rotation、multi-Region、import、削除</span>
+      <div class="tbl"><table>
+        <tr><th>項目</th><th>覚えるべき詳細</th></tr>
+        <tr><td><b>Automatic rotation</b></td><td>KMS が key material を生成した <b>symmetric CMK</b> のみ対象。既定は1年ごと。rotation で新しい key material が生成されますが、<b>key ID、ARN、alias は変わらず</b>、古い material は古いデータの復号用に保持されるため、アプリは何も再暗号化する必要がありません。AWS managed key は1年で自動 rotate し、無効化できません。Asymmetric、HMAC、imported material、custom key store は<b>auto rotate しません</b>。</td></tr>
+        <tr><td><b>Manual rotation</b></td><td>新しい鍵を作成し、<b>alias を付け替える</b>（<code>UpdateAlias</code>）。アプリは alias で呼ぶのでコード変更は不要です。古いデータの復号のために古い鍵は残す（削除しない）必要があります。asymmetric、imported、またはより頻繁に rotate したい場合に使います。</td></tr>
+        <tr><td><b>Multi-Region key</b></td><td>primary key と他 Region の replica が<b>同じ key ID と key material</b>を持つため、東京の暗号文を大阪で、Region をまたいで KMS を呼ばずに復号できます。クライアント側暗号化の DynamoDB global tables、DR、Region をまたぐバックアップに使います。各 replica は独立したリソースで、key policy も料金も別々です。「global key」ではありません。</td></tr>
+        <tr><td><b>Imported key material</b></td><td>社内の HSM で鍵を生成して KMS に import します（BYOK）。有効期限を設定でき、待機期間なしで<b>material を即時削除</b>できますが、material を失うとデータも失います。auto rotation はなく、自分で新しい material を import します。</td></tr>
+        <tr><td><b>鍵の削除</b></td><td>即時には削除できず、<b>7〜30日</b>（既定 30）の waiting period 付きで <b>schedule deletion</b> します。待機中は Pending deletion 状態で使用不可、キャンセル可能です。期限が切れると永久に失われ、その鍵で暗号化したデータは復元できません。削除ではなく <b>disable</b> を選ぶべきです。</td></tr>
+        <tr><td><b>リクエスト制限</b></td><td>アカウントごとに Region 単位で KMS リクエストの秒間 quota があります（数千 request/秒、具体的な数値は要確認）。小さなオブジェクトが多い S3 バケットで SSE-KMS を使うと <code>ThrottlingException</code> が出やすくなります。対策: <b>S3 Bucket Key</b> を有効化（S3 が CMK から bucket-level key を作り、KMS リクエストを最大 99% 削減）、または SDK の data key caching を使います。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">EBS と RDS の暗号化: よく出る2つの落とし穴</span>
+      <ul>
+        <li><b>暗号化されていない EBS volume をその場で暗号化することはできません。</b>手順: snapshot → Encrypt にチェックを入れて copy snapshot（CMK を選択）→ 暗号化済み snapshot から新しい volume を作成 → volume を付け替え。暗号化済み volume の snapshot は常に暗号化されます。Region 単位で <b>EBS encryption by default</b> を有効にすると、新しい volume はすべて自動で暗号化されます。</li>
+        <li><b>RDS も同じです</b>。暗号化は作成時にしか選べません。未暗号化 DB → snapshot → 暗号化付きで copy snapshot → 新しい DB として restore。暗号化済み DB の read replica は常に暗号化されます。暗号化済み snapshot を cross-account で共有するには CMK を使い、鍵も共有する必要があります。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">ACM (Certificate Manager)</span>
+      <ul>
+        <li><b>TLS/SSL 証明書</b>の発行と管理を行います。<b>Public certificate は無料</b>で、DNS 検証（CNAME を追加。Route 53 なら自動）またはメール検証を行います。ACM が発行した証明書は検証用 CNAME が残っていれば<b>自動更新</b>されます。外部から import した証明書は<b>自動更新されず</b>、再 import が必要です（ACM は期限前に EventBridge イベントを送り、Config には <code>acm-certificate-expiration-check</code> ルールがあります）。</li>
+        <li><b>ALB、NLB (TLS listener)、CloudFront、API Gateway、Elastic Beanstalk、App Runner</b> で使います。EC2 に直接付けることは<b>できず</b>、<b>public certificate は export できません</b>（private key は ACM 内にあります）。EC2 上で TLS を使うなら証明書を購入するか ACM Private CA を使います（private 証明書なら export 可能）。</li>
+        <li>ACM は <b>regional</b> です。東京の ALB 用証明書は東京で作ります。ただし <b>CloudFront は us-east-1（N. Virginia）の証明書が必須</b>です。CloudFront が global サービスだからです。これは定番の問題です。</li>
+        <li><b>ACM Private CA</b>: 社内サービス、IoT、mTLS 向けに証明書を発行する内部 CA を構築します。月額課金（約 400 USD/CA/月、要確認）のためラボでは使いません。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">CloudHSM</span>
+      <ul>
+        <li>自分の VPC 内に置く<b>専有（single-tenant）</b>の物理 HSM で、<b>FIPS 140-2 Level 3</b> 認証済みです。ハードウェアは AWS が面倒を見ますが、<b>ユーザー、鍵、バックアップは自分で管理</b>し、AWS は鍵にアクセスできません。HA のためクラスターを複数 AZ に広げます。HSM ごとに時間課金（約 1.5 USD/時、要確認）のためラボは行いません。</li>
+        <li>使いどころ: コンプライアンスが <em>dedicated hardware</em>、<em>customer must control the key hardware</em> を要求するとき、Web サーバーの SSL offload、Oracle TDE、PKCS#11、JCE、CNG ライブラリ。</li>
+        <li><b>custom key store</b> を介して KMS と組み合わせられます。API は KMS のまま（AWS サービスは通常どおり使える）ですが、key material は自分の CloudHSM 内にあります。現在は鍵を AWS の外に完全に置く external key store (XKS) もあります（名前だけ覚えておく）。</li>
+        <li>KMS との比較: KMS は multi-tenant、managed、すべてのサービスと統合、安価。CloudHSM は single-tenant、自分で運用、custom key store 経由で統合。KMS の HSM も FIPS 140-2 Level 3 を取得済み（要確認）ですが、試験では「Level 3、single-tenant、自己管理」という表現が CloudHSM を指します。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>最も安い S3 暗号化、鍵の監査は不要</td><td>SSE-S3</td><td>CMK を使う SSE-KMS（1 USD/月 + リクエスト料）</td></tr>
+        <tr><td>誰が鍵を使ったか監査し、特定ユーザーの復号を禁止</td><td>CMK + key policy を使う SSE-KMS</td><td>SSE-S3（policy を付ける鍵がない）</td></tr>
+        <tr><td>顧客が鍵を自分で保持し、AWS には保存させない</td><td>SSE-C または client-side encryption</td><td>SSE-KMS（AWS が鍵を保持する）</td></tr>
+        <tr><td>データを再暗号化せずに鍵を rotate</td><td>Automatic rotation（key ID は不変）</td><td>新しい鍵を作って全データを re-encrypt</td></tr>
+        <tr><td>asymmetric key や imported key を rotate</td><td>Manual rotation: 新しい鍵を作り alias を付け替え</td><td>Automatic rotation（非対応）</td></tr>
+        <tr><td>Region をまたいで呼ばずに別 Region で復号</td><td>Multi-Region key</td><td>鍵のコピー（不可）や global な鍵（KMS にはない）</td></tr>
+        <tr><td>暗号化済み EBS snapshot を別アカウントに共有</td><td>CMK で暗号化し、key policy で相手アカウントを許可し、snapshot を共有</td><td>aws/ebs で暗号化した snapshot（共有不可）</td></tr>
+        <tr><td>CloudFront 用の TLS 証明書</td><td>us-east-1 の ACM</td><td>origin の Region の ACM</td></tr>
+        <tr><td>EC2 自体に置く TLS 証明書</td><td>外部購入または ACM Private CA（export 可）</td><td>ACM public（export 不可）</td></tr>
+        <tr><td>FIPS 140-2 Level 3、dedicated、鍵を自己管理</td><td>CloudHSM</td><td>既定の KMS</td></tr>
+        <tr><td>S3 のリクエストが多く KMS で throttle される</td><td>S3 Bucket Key</td><td>quota 引き上げ申請（可能だが安い方法ではない）</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>full control, key policy, audit key usage <b>→ customer managed key</b></span><span>encrypt data larger than 4 KB <b>→ envelope encryption, GenerateDataKey</b></span><span>rotate automatically without re-encrypting <b>→ KMS automatic rotation</b></span><span>decrypt in another Region <b>→ multi-Region key</b></span><span>bring your own key <b>→ imported key material</b></span><span>CloudFront HTTPS custom domain <b>→ ACM us-east-1</b></span><span>free TLS cert auto renew <b>→ ACM</b></span><span>dedicated HSM, FIPS 140-2 Level 3 <b>→ CloudHSM</b></span><span>customer provides key per request <b>→ SSE-C</b></span><span>KMS throttling with S3 <b>→ S3 Bucket Key</b></span><span>schedule key deletion <b>→ 7〜30日</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">1. アプリが 200 MB のファイルを保存前に KMS で暗号化する必要があります。開発者がファイル全体を <code>kms:Encrypt</code> に渡したところエラーになりました。正しい方法は?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Envelope encryption: <code>GenerateDataKey</code> を呼び、平文の data key でファイルをローカル暗号化し、暗号化済みファイルと暗号化済み data key を一緒に保存する。</b> KMS はリクエストあたり最大 4 KB しか受け付けません。ファイルを 4 KB ずつに分割して KMS を何度も呼ぶのは設計として誤りで、リクエスト料もかかります。</p></div>
+      <div class="q"><p class="qt">2. IAM user が customer managed key の SSE-KMS バケットに対して <code>s3:*</code> の policy を持っています。アップロードはできますがダウンロードが AccessDenied になります。何が足りませんか?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>その鍵に対する <code>kms:Decrypt</code> が不足</b>（ユーザーの IAM policy に必要で、key policy が IAM に委任している必要があります）。アップロードには <code>kms:GenerateDataKey</code>、ダウンロードには <code>kms:Decrypt</code> が必要です。落とし穴: S3 の権限は十分なのに bucket policy を疑う人が多いです。</p></div>
+      <div class="q"><p class="qt">3. production の EC2 に 500 GB の未暗号化 EBS volume が付いており、<em>minimal downtime</em> で CMK により暗号化する必要があります。どうしますか?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>snapshot を取り、CMK で encrypt するオプション付きで copy snapshot し、暗号化済み snapshot から新しい volume を作り、短時間 instance を停止して volume を付け替える。</b> 既存 volume に「暗号化を有効にする」ボタンはありません。EBS encryption by default は今後作る volume にしか影響しません。</p></div>
+      <div class="q"><p class="qt">4. KMS automatic rotation について正しい記述を2つ選んでください。(A) asymmetric key に適用される、(B) rotation 後も key ID と ARN は変わらない、(C) 古いデータを再暗号化する必要がある、(D) 古い key material は古いデータの復号用に保持される。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>B と D。</b> Asymmetric key に auto rotation はありません（A は誤り）。古いデータは古い material で復号できるので re-encrypt は不要です（C は誤り）。automatic rotation がアプリに対して「透過的」な理由です。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. SECRETS MANAGER vs PARAMETER STORE ============ -->
+<section id="secrets">
+  <span class="eyebrow">理論 2 / 8</span>
+  <h2>Secrets Manager と Parameter Store</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <ul>
+        <li><b>Secrets Manager</b>: <b>シークレット</b>（DB パスワード、API key、OAuth token）の保管庫で、主な機能は<b>自動 rotation</b> です。すべてのシークレットは KMS で暗号化され、バージョン（<code>AWSCURRENT</code>、<code>AWSPREVIOUS</code>、<code>AWSPENDING</code>）を持ち、resource policy があるため cross-account で共有でき、別 Region への複製もできます。シークレットの削除には <b>7〜30日の recovery window</b> があります（または <code>--force-delete-without-recovery</code>）。</li>
+        <li><b>Systems Manager Parameter Store</b>: <b>設定値</b>（文字列、リスト、機密データ向けの SecureString）を <code>/app/prod/db/host</code> のような<b>階層 (hierarchy)</b>で保管します。バージョンがあり、<code>GetParametersByPath</code> で枝ごとまとめて取得できます。Standard tier は<b>無料</b>です。rotation 機能は組み込まれていません。</li>
+        <li>どちらも CloudFormation の dynamic reference（<code>{{resolve:secretsmanager:...}}</code>、<code>{{resolve:ssm-secure:...}}</code>）、Lambda、ECS（環境変数への注入）と統合され、どちらも CloudTrail に記録されます。Parameter Store からは <code>/aws/reference/secretsmanager/ten-secret</code> というパスで Secrets Manager のシークレットも読めます。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">比較表（確認ポイント 1）</span>
+      <div class="tbl"><table>
+        <tr><th>観点</th><th>Secrets Manager</th><th>Parameter Store</th></tr>
+        <tr><td>料金（要確認）</td><td>約 0.40 USD/シークレット/月 + 10,000 API call あたり 0.05 USD。最初の30日は無料トライアル。</td><td>Standard: 保管無料、標準 API 無料。Advanced: 約 0.05 USD/パラメータ/月 + API 料金。</td></tr>
+        <tr><td>自動 rotation</td><td><b>あり</b>（スケジュール）。RDS、Aurora、Redshift、DocumentDB では Lambda を書かなくてよい <b>managed rotation</b>。その他のシークレットは Lambda rotation function（AWS のテンプレートあり）。</td><td><b>なし</b>。rotate したければ EventBridge schedule + Lambda を自作します。</td></tr>
+        <tr><td>DB との統合</td><td>RDS、Aurora、Redshift、DocumentDB: DB 作成時に「manage master credentials in Secrets Manager」にチェック。</td><td>DB との rotation 統合はなし。</td></tr>
+        <tr><td>暗号化</td><td>常に KMS で暗号化（aws/secretsmanager または CMK）。</td><td>String、StringList は暗号化なし。<b>SecureString</b> は KMS で暗号化（aws/ssm または CMK）。</td></tr>
+        <tr><td>Cross-account</td><td>resource policy + KMS CMK の key policy で<b>可能</b>。</td><td>従来は cross-account 共有不可。最近は advanced parameter を RAM で共有可能（要確認）ですが、試験では cross-account の選択肢は Secrets Manager とみなします。</td></tr>
+        <tr><td>サイズ、数</td><td>最大 64 KB/シークレット、数十万件のシークレット。</td><td>Standard: 4 KB、10,000 パラメータ/Region。Advanced: 8 KB、100,000 パラメータ、parameter policy（有効期限、期限通知、未変更通知）あり。</td></tr>
+        <tr><td>階層、枝単位の取得</td><td>名前に「/」を含められるが、枝単位で読む API はない。</td><td><b>あり</b>。<code>GetParametersByPath --recursive</code>、prefix 単位で IAM 権限を付与。</td></tr>
+        <tr><td>Region 複製</td><td>あり（replica secret）、DR 用。</td><td>なし。</td></tr>
+        <tr><td>スループット</td><td>数千 request/秒（要確認）。</td><td>Standard 40 TPS、high throughput（有料）を有効にすると 10,000 TPS（要確認）。</td></tr>
+      </table></div>
+      <div class="note ok">選択ルール: 設問に <em>rotate credentials automatically</em>、<em>RDS password</em>、<em>share secret with another account</em> → <b>Secrets Manager</b>。<em>configuration data</em>、<em>free</em>、<em>hierarchy</em>、<em>no rotation needed</em>、<em>lowest cost</em> → <b>Parameter Store</b>（機密なら SecureString）。どちらも、コード、AMI、暗号化されていない環境変数へのハードコードよりはるかに優れています。</div>
+    </div>
+
+    <div class="block"><span class="eyebrow">rotation の仕組み（選び間違えないために）</span>
+      <ul>
+        <li>Secrets Manager は Lambda rotation を4ステップで呼びます: <code>createSecret</code>（新しいパスワードを生成し AWSPENDING ラベルを付ける）→ <code>setSecret</code>（DB のパスワードを変更）→ <code>testSecret</code>（ログインを試す）→ <code>finishSecret</code>（AWSPENDING を AWSCURRENT に付け替え）。Lambda は DB に到達できる必要があるので、DB が private subnet にあるなら Lambda を VPC 内に置き、Secrets Manager への経路（NAT または VPC endpoint）も必要です。</li>
+        <li><b>Single user</b> rotation: そのユーザー自身のパスワードを変えるため、数秒間、古いパスワードを使うアプリがエラーになります。<b>Alternating users</b>: 2つのユーザーを交互に使い、中断なし。設問に <em>without application downtime during rotation</em> とあれば → alternating users。</li>
+        <li>アプリは起動時と認証エラー時に <code>GetSecretValue</code> を呼ぶべきです（またはクライアント側のキャッシュライブラリを使う）。値をハードコードしてはいけません。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">使いどころ</span>
+      <ul>
+        <li>DB パスワードや外部 API key で、コンプライアンス上定期的な rotate が必要 → Secrets Manager。</li>
+        <li>dev/stage/prod の環境ごとに読む数百の設定パラメータ（feature flag、endpoint、最新の AMI ID）→ Parameter Store。階層を使い、パス単位で権限を付与します。</li>
+        <li>AWS の公開 AMI ID: <code>/aws/service/ami-amazon-linux-latest/...</code> は Parameter Store の public parameter で、Lab 1 で使います。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>組み合わせ</th><th>違い</th></tr>
+        <tr><td>Parameter Store SecureString と Secrets Manager</td><td>どちらも KMS で暗号化され「secure」です。違いは rotation（Secrets Manager のみ）、料金（SecureString standard は無料）、cross-account（Secrets Manager）です。</td></tr>
+        <tr><td>Secrets Manager と KMS</td><td>KMS は暗号化の<b>鍵</b>を、Secrets Manager は<b>シークレットの値</b>（KMS の鍵で暗号化される）を保持します。「store database password」という設問の答えが KMS になることはありません。</td></tr>
+        <tr><td>Secrets Manager と IAM role</td><td>サービスが IAM 認証（RDS IAM database authentication、DynamoDB、S3）に対応していれば role を使い、パスワードは不要です。Secrets Manager はパスワードが必須の場合（レガシー DB、外部 API）向けです。</td></tr>
+        <tr><td>シークレットの recovery window と KMS key の waiting period</td><td>シークレット: 7〜30日、即時の force delete も可能。KMS key: 7〜30日、省略できません。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>rotate database credentials automatically <b>→ Secrets Manager</b></span><span>store configuration, free, hierarchy <b>→ Parameter Store</b></span><span>encrypted parameter <b>→ SecureString + KMS</b></span><span>share secret across accounts <b>→ Secrets Manager resource policy</b></span><span>rotation without downtime <b>→ alternating users</b></span><span>Lambda cannot reach DB during rotation <b>→ Lambda in VPC + endpoint</b></span><span>hard-coded credentials in code <b>→ Secrets Manager / role に移行</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">5. ECS 上のアプリが RDS MySQL のパスワードを必要としています。コンプライアンスで30日ごとのパスワード変更が求められ、<em>least operational overhead</em> が条件です。何を選びますか?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>30日 rotation の Secrets Manager（RDS の managed rotation）を使い、ECS task に Secrets Manager からシークレットを注入する。</b> Parameter Store SecureString は安いですが、rotate のために Lambda + EventBridge を自作する必要があり「least overhead」ではありません。task definition へのハードコードは完全に誤りです。</p></div>
+      <div class="q"><p class="qt">6. チームが3環境分、300個の設定パラメータを保存する必要があります。一部は API key で、環境ごとに読み出し、<em>most cost-effective</em> が条件です。何を選びますか?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Parameter Store standard tier を使い、<code>/app/prod/...</code> の階層で配置し、API key は SecureString にする。</b> Secrets Manager で300個のシークレットを持つと rotation が不要なのに月約 120 USD かかります。DynamoDB で自作すると暗号化と権限管理を自分で行う必要があります。</p></div>
+      <div class="q"><p class="qt">7. Secrets Manager の rotation Lambda が、private subnet 内の RDS のパスワード変更時に timeout エラーになります。最もよくある原因は?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Lambda が VPC 内にない（RDS に到達できない）、または VPC 内にあるが Secrets Manager への出口がない（NAT Gateway や secretsmanager 用の VPC interface endpoint がない）。</b> rotation Lambda は DB（VPC 内）と通信しつつ、Secrets Manager の API（VPC 外）も呼ぶ必要があることを覚えておきましょう。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. WAF, SHIELD, FIREWALL ============ -->
+<section id="edge">
+  <span class="eyebrow">理論 3 / 8</span>
+  <h2>エッジ保護: WAF、Shield、Firewall Manager、Network Firewall</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <ul>
+        <li><b>AWS WAF</b>: <b>layer 7 (HTTP/HTTPS)</b> のファイアウォールです。<b>rule</b>（自作、または AWS や Marketplace の <b>managed rule group</b>）をまとめた <b>Web ACL</b> を作り、各 rule には Allow、Block、Count、CAPTCHA、Challenge のいずれかの action を設定します。Web ACL は <b>CloudFront、ALB、API Gateway (REST)、AppSync、Cognito User Pool、App Runner、Verified Access</b> に関連付けます。<b>NLB や EC2 には直接関連付けできません</b>（NLB と EC2 は HTTP を解釈しないため）。CloudFront 用の Web ACL は us-east-1（global）で作成します。</li>
+        <li>よく出る rule: <b>rate-based rule</b>（一定期間に N リクエストを超えた IP をブロック。ブルートフォースや軽度の layer 7 DDoS 対策）、<b>IP set</b>（allow list、block list）、<b>geo match</b>（国単位でブロック）、<b>SQL injection と XSS</b> の match、<b>size constraint</b>、<b>regex</b>、<b>Bot Control</b> managed rule（悪質な bot をブロック）、<b>Account Takeover Prevention</b>（名前だけ覚えておく）。WAF のログは CloudWatch Logs、S3、Kinesis Data Firehose に送れます。料金は Web ACL 数、rule 数、100万リクエスト単位です（要確認）。</li>
+        <li><b>Shield Standard</b>: <b>layer 3/4</b> の DDoS（SYN flood、UDP reflection）を自動で防御し、<b>無料</b>、全アカウントで既定有効、CloudFront、Route 53、Global Accelerator、ELB を保護します。何もする必要はありません。</li>
+        <li><b>Shield Advanced</b>: 約 3,000 USD/月、1年契約（要確認）。追加されるもの: <b>layer 7</b> の DDoS 検知と緩和、EC2 Elastic IP、ELB、CloudFront、Global Accelerator、Route 53 の保護、24時間365日対応の <b>Shield Response Team（SRT、旧称 DRT）</b>、<b>cost protection</b>（DDoS による費用増、例: Auto Scaling の膨張分を返金）、保護対象リソースの WAF が無料、DDoS のダッシュボードとレポート、Route 53 health check による health-based detection。</li>
+        <li><b>Firewall Manager</b>: WAF、Shield Advanced、Security Group、Network Firewall、Route 53 Resolver DNS Firewall のポリシーを <b>AWS Organizations 全体で一元管理</b>します。policy を一度作れば、全アカウントと将来<b>新しく作られるリソース</b>にも自動適用されます。Organizations と Config が前提です。</li>
+        <li><b>Network Firewall</b>: <b>VPC レベル</b>に置く managed ファイアウォールです（専用 subnet に firewall endpoint を作り、トラフィックをそこに route します）。stateless と stateful の rule、<b>Suricata rule</b> による <b>IDS/IPS</b>、<b>domain</b> フィルタ（外向き通信のドメイン allow list）、TLS inspection、プロトコルによるフィルタを備えます。VPC からインターネットへの通信、Transit Gateway 経由の VPC 間通信（集中型 inspection VPC）、オンプレミスからの通信に使います。WAF との違いは、WAF が HTTP だけを理解し CloudFront/ALB に付くのに対し、Network Firewall は VPC を通る layer 3〜7 のすべてのパケットを見る点です。</li>
+        <li>全体像のための復習: <b>Security Group</b>（stateful、instance/ENI 単位、allow のみ）、<b>NACL</b>（stateless、subnet 単位、allow と deny、特定 IP をブロック）、<b>Route 53 Resolver DNS Firewall</b>（悪性ドメインへの DNS クエリをブロック。DNS のフィルタだけでよいなら Network Firewall より安価）。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">「どの攻撃 → どのサービス」表</span>
+      <div class="tbl"><table>
+        <tr><th>設問の状況</th><th>サービス</th><th>備考</th></tr>
+        <tr><td><em>SQL injection</em>、<em>cross-site scripting</em>、OWASP Top 10 の脆弱性</td><td>WAF、managed rule group（Core rule set、SQL database）</td><td>アプリの前段の CloudFront または ALB に関連付け</td></tr>
+        <tr><td>1つの IP が毎分数千リクエストを送る、<em>brute force login</em>、小規模な HTTP flood</td><td>WAF rate-based rule</td><td>時間窓内の IP ごとのリクエスト数を数え、閾値を超えたらブロック</td></tr>
+        <tr><td>特定の国からのアクセスをブロック</td><td>WAF geo match、または CloudFront geo restriction</td><td>CloudFront geo restriction は国単位の allow/block のみ、WAF はより柔軟（条件の組み合わせ）</td></tr>
+        <tr><td>特定の IP 範囲から subnet へのアクセスをブロック</td><td>NACL の deny、Web なら WAF IP set</td><td>Security Group には deny がない</td></tr>
+        <tr><td><em>DDoS layer 3/4</em>（SYN flood、UDP reflection）</td><td>Shield Standard（既に有効）+ CloudFront、Route 53</td><td>「Shield Standard を有効にする」は常に有効なので引っかけ</td></tr>
+        <tr><td>大規模 DDoS で <em>24/7 support</em>、<em>cost protection</em>、<em>layer 7</em>、レポートが必要</td><td>Shield Advanced</td><td>WAF 無料、SRT、スケーリング費用の返金付き</td></tr>
+        <tr><td>データを収集する bot、scraping、credential stuffing</td><td>WAF Bot Control、CAPTCHA/Challenge、ATP</td><td>managed rule は追加料金</td></tr>
+        <tr><td>数十のアカウントで、新しい ALB すべてに自動で WAF を付けたい</td><td>Firewall Manager</td><td>Organizations が必要、policy で auto-remediate</td></tr>
+        <tr><td>EC2 からインターネットへの通信をドメインで制御、<em>IDS/IPS</em>、<em>Suricata</em></td><td>Network Firewall</td><td>複数 VPC には Transit Gateway と inspection VPC で配置</td></tr>
+        <tr><td>EC2 が悪性ドメインを名前解決するのを安価にブロック</td><td>Route 53 Resolver DNS Firewall</td><td>DNS のみをフィルタし、パケットは見ない</td></tr>
+        <tr><td>NLB の背後にある API を保護</td><td>WAF は付けられない。ALB に変えるか、前段に CloudFront/API Gateway を置く</td><td>よくある引っかけ: WAF + NLB</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">使いどころ、多層防御</span>
+      <p style="font-size:.94rem">公開 Web の標準構成: <b>Route 53 → CloudFront（Shield Standard、WAF）→ ALB（WAF、CloudFront の prefix list からのみ受ける Security Group）→ private subnet の EC2 → 外向き通信には Network Firewall</b>。予算があり DDoS リスクの高いアプリ（ゲーム、金融）なら Shield Advanced を追加します。CloudFront と Global Accelerator は edge にあるため DDoS の大部分を吸収します。<em>protect against DDoS, minimal cost</em> という設問の答えは、たいてい「前段に CloudFront + Shield Standard」です。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>組み合わせ</th><th>違い</th></tr>
+        <tr><td>WAF と Shield</td><td>WAF は自分で定義した rule（SQLi、XSS、rate、geo）で <b>HTTP の中身</b>をフィルタします。Shield は <b>DDoS トラフィック</b>を防ぎます。Shield Advanced には WAF が含まれますが、その逆はありません。</td></tr>
+        <tr><td>WAF と Network Firewall</td><td>WAF は CloudFront/ALB/API Gateway に付き、HTTP のみ。Network Firewall は VPC 内に置き、全プロトコル対応で、IDS/IPS と外向き通信のドメインフィルタを持ちます。</td></tr>
+        <tr><td>Network Firewall と NACL/Security Group</td><td>NACL/SG は IP、port、protocol（layer 3/4）でのみフィルタします。Network Firewall はさらに deep packet inspection、ドメイン、Suricata を備えます。Network Firewall の料金は endpoint の時間と GB 単位（安くはない、要確認）。</td></tr>
+        <tr><td>Firewall Manager と Security Hub</td><td>Firewall Manager はファイアウォールのポリシーを<b>展開して強制</b>します。Security Hub は <b>findings を集約</b>しコンプライアンスを採点するだけで、何も展開しません。</td></tr>
+        <tr><td>Shield Standard と Shield Advanced</td><td>Standard は無料、自動、L3/L4。Advanced は有料で、L7、SRT、cost protection、レポート、EIP の保護まで含みます。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>SQL injection, XSS <b>→ WAF</b></span><span>rate limit per IP <b>→ WAF rate-based rule</b></span><span>DDoS layer 3/4, no cost <b>→ Shield Standard</b></span><span>DDoS cost protection, 24/7 response team <b>→ Shield Advanced</b></span><span>centrally manage WAF rules across accounts <b>→ Firewall Manager</b></span><span>IDS/IPS, Suricata, domain filtering in VPC <b>→ Network Firewall</b></span><span>block country <b>→ WAF geo match / CloudFront geo restriction</b></span><span>protect NLB with WAF <b>→ 不可</b></span><span>block specific IP at subnet <b>→ NACL</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">8. ALB の背後で動く Web アプリが SQL injection を受け、さらに一部の IP が毎分 10,000 リクエストを送っています。<em>least operational overhead</em> で両方をブロックする必要があります。何を選びますか?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>ALB に関連付けた WAF Web ACL を作り、AWS managed rule group の SQL database（SQLi をブロック）と rate-based rule を追加する。</b> Shield Advanced は DDoS を解決しますが、SQLi 専用の rule はなく（WAF が付いてきても WAF の設定は必要）、高価です。Security Group は HTTP を理解しません。NACL は IP をブロックできますが手作業での更新が必要です。</p></div>
+      <div class="q"><p class="qt">9. Organizations に40アカウントを持つ会社が、既存および今後作成されるすべての CloudFront distribution と ALB に共通の WAF rule を自動で付けたいと考えています。何を選びますか?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Organization 全体に WAF policy を適用する AWS Firewall Manager。</b> アカウントごとに WAF を作るのは手作業で、新しいリソースを捕捉できません。Security Hub はレポートのみです。Control Tower の guardrail は WAF を付けません。</p></div>
+      <div class="q"><p class="qt">10. private subnet の EC2 はインターネットへ出る必要がありますが、承認された一部のドメインにだけ通信させ、さらに Suricata シグネチャによる侵入検知も必要です。何を選びますか?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>ドメインをフィルタする stateful rule と Suricata rule を持つ AWS Network Firewall を使い、NAT へ出るトラフィックを firewall endpoint 経由に route する。</b> WAF は HTTP の受信方向しか保護しません。Security Group はドメインでフィルタできません。DNS Firewall はドメインをフィルタできますが IPS はありません。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. GUARDDUTY, INSPECTOR, MACIE, CONFIG ============ -->
+<section id="detect">
+  <span class="eyebrow">理論 4 / 8</span>
+  <h2>検知とコンプライアンス: GuardDuty、Inspector、Macie、Security Hub、Detective、Config、Trusted Advisor</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">目的別の比較表（確認ポイント 2）</span>
+      <div class="tbl"><table>
+        <tr><th>サービス</th><th>答える問い</th><th>データソース</th><th>識別キーワード</th></tr>
+        <tr><td><b>GuardDuty</b></td><td>「誰かが私のリソースを<b>攻撃している、または乗っ取った</b>か?」ML と脅威インテリジェンスで進行中の脅威を検知します。</td><td>CloudTrail の management event と S3 data event、<b>VPC Flow Logs</b>、<b>DNS logs</b>（自動で取得、自分で有効化する必要なし）、EKS audit log、RDS login、Lambda network、EBS malware scan。</td><td><em>compromised instance</em>、<em>cryptocurrency mining</em>、<em>unusual API calls</em>、<em>malicious IP</em>、<em>credential exfiltration</em>、<em>threat detection</em>、<em>malware</em></td></tr>
+        <tr><td><b>Inspector</b></td><td>「私のリソースに<b>脆弱性</b>（CVE）や開けるべきでないポートはあるか?」継続的にスキャンし、リスクを採点します。</td><td>EC2（SSM Agent 経由）、ECR container image、Lambda 関数とコード、network reachability。</td><td><em>vulnerability</em>、<em>CVE</em>、<em>unintended network exposure</em>、<em>container image scan</em>、<em>software vulnerabilities</em></td></tr>
+        <tr><td><b>Macie</b></td><td>「私の <b>S3</b> に<b>機密データ</b>（PII、カード番号、認証情報）はあるか、どのバケットが public か?」</td><td>S3 のみ。ML とパターンで分類。</td><td><em>PII</em>、<em>personally identifiable</em>、<em>sensitive data in S3</em>、<em>data classification</em>、<em>credit card numbers</em></td></tr>
+        <tr><td><b>Security Hub</b></td><td>「すべての findings を1か所に<b>集約</b>し、標準に沿って採点する。」自ら検知はせず、集約と正規化（ASFF）のみ。</td><td>GuardDuty、Inspector、Macie、Config、IAM Access Analyzer、Firewall Manager、Systems Manager、パートナー。Config の有効化が必要。</td><td><em>single pane of glass</em>、<em>aggregate findings</em>、<em>CIS Benchmark</em>、<em>PCI DSS</em>、<em>AWS Foundational Security Best Practices</em>、<em>security score</em></td></tr>
+        <tr><td><b>Detective</b></td><td>「この finding は<b>どこから来た</b>のか、前後に何が起きたか?」行動グラフで根本原因を調査します。</td><td>CloudTrail、VPC Flow Logs、GuardDuty findings、EKS audit。</td><td><em>investigate</em>、<em>root cause</em>、<em>analyze security findings</em>、<em>visualize</em></td></tr>
+        <tr><td><b>Config</b></td><td>「リソースは<b>どう設定されている</b>か、どう変わったか、<b>rule に準拠</b>しているか?」</td><td>リソースの configuration item を時系列で記録。</td><td><em>compliance</em>、<em>configuration history</em>、<em>drift</em>、<em>who changed the Security Group</em>（CloudTrail と組み合わせ）、<em>remediation</em></td></tr>
+        <tr><td><b>Trusted Advisor</b></td><td>「アカウントに<b>無駄、セキュリティ上の弱点、quota 上限への接近</b>はあるか?」既製のチェックで、範囲は support plan 次第。</td><td>AWS のベストプラクティスに沿ってアカウントをチェック。</td><td><em>idle resources</em>、<em>service limits</em>、<em>underutilized</em>、<em>open security groups</em>、<em>MFA on root</em></td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">各サービスの補足</span>
+      <ul>
+        <li><b>GuardDuty</b>: ボタン1つで有効化でき、エージェント不要、性能への影響もありません。findings には severity があり、<b>EventBridge</b> → SNS/Lambda に送って自動対応できます（Security Group を変えて instance を隔離するなど）。Organizations の delegated administrator でマルチアカウントに対応。trusted IP と threat IP のカスタムリストを持てます。Malware Protection は finding のある instance の EBS をスキャンします（新規アップロードされた S3 オブジェクトのスキャンもある。名前だけ覚えておく）。料金は分析するログ量に応じます。</li>
+        <li><b>Inspector</b>: 新しいバージョンは継続的に動作し、新しい CVE が出たときや ECR に image が push されたときに自動スキャンします。EC2 には SSM Agent が必要です（Inspector は SSM 経由でパッケージ一覧を取得するため）。findings は export でき、Security Hub、EventBridge に送れます。GuardDuty との違い: Inspector は<b>潜在的な脆弱性</b>（まだ攻撃されていない）を探し、GuardDuty は進行中の<b>攻撃行動</b>を探します。</li>
+        <li><b>Macie</b>: バケット（public、未暗号化、外部共有）を自動で一覧化し、データ分類ジョブを実行します。S3 のみで、RDS や EBS はスキャンしません。料金はスキャンした GB とバケット数に応じます。</li>
+        <li><b>Security Hub</b>: security standard を有効にすると、各 control の裏側は Config rule です。% でスコアを出します。<b>automation rule</b> と EventBridge 連携で自動処理ができます。Organizations によるマルチアカウント、cross-Region aggregation に対応。GuardDuty や Inspector の代わりにはなりません（それらが findings を提供する必要があります）。</li>
+        <li><b>Config</b>: Region ごとに configuration recorder を有効にし、S3 に保存し、リソースごとの <b>timeline</b> を持ちます。<b>Config rule</b> は managed（例: <code>restricted-ssh</code>、<code>s3-bucket-public-read-prohibited</code>、<code>encrypted-volumes</code>、<code>required-tags</code>）または custom（Lambda、Guard）。rule は変更時または定期的に評価されます。<b>Remediation</b> は Systems Manager Automation document で行います（例: SSH 0.0.0.0/0 の rule を自動削除）。<b>Conformance pack</b> は複数の rule をコンプライアンスパッケージ（PCI、HIPAA）にまとめます。<b>Aggregator</b> で複数アカウント、複数 Region のコンプライアンスを見られます。Config は誤った操作を<b>防止しません</b>（検知と事後修正のみ）。防止したいなら SCP や IAM を使います。料金は configuration item と rule evaluation 単位です（今週のラボでは節約のため Config を有効にしませんが、Security Hub と Control Tower には必要です）。</li>
+        <li><b>Trusted Advisor</b>: チェックのカテゴリは Cost optimization、Performance、Security、Fault tolerance、Service limits です（最近 Operational excellence が加わり、新しい資料では6カテゴリ、古い問題では5カテゴリ）。<b>Basic と Developer</b> の support plan では基本的な Security チェックの一部と Service limits のみ。<b>Business、Enterprise</b> ではすべて使え、API、CloudWatch/EventBridge への送信、Trusted Advisor Priority（Enterprise）が使えます。よく出るチェック: 0.0.0.0/0 に開いた Security Group、public バケット、root の MFA、idle な EBS volume、期限切れの RI、service quota 80%。</li>
+        <li><b>Audit Manager</b>: フレームワーク（SOC 2、PCI、GDPR）に沿って監査用の<b>証跡を自動収集</b>し、評価レポートを作成します。<b>Artifact</b>: <b>AWS 自身のコンプライアンスレポート</b>（SOC、ISO、PCI）をダウンロードし、契約（HIPAA 向け BAA）を結ぶポータルです。<em>need AWS's SOC report for auditor</em> → Artifact、<em>collect evidence of our own controls</em> → Audit Manager。</li>
+        <li><b>IAM Access Analyzer</b>（第1週の復習）: アカウント外に共有されたリソース（バケット、role、KMS key）を見つけ、policy を検証し、CloudTrail から policy を生成します。findings は Security Hub にも送られます。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Config と CloudTrail（ペアでよく問われる）</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>AWS Config</th><th>CloudTrail</th></tr>
+        <tr><td>答えること</td><td>時点 X でリソースが<b>どういう状態だったか</b>、準拠しているか</td><td><b>誰がどの API を呼んだか</b>、いつ、どの IP から</td></tr>
+        <tr><td>単位</td><td>Configuration item（設定のスナップショット）</td><td>Event（1回の API call）</td></tr>
+        <tr><td>例</td><td>Security Group sg-1 には昨日 0.0.0.0/0 からの 22 番の rule があったが、今日はない</td><td>User A が 10:02 に <code>AuthorizeSecurityGroupIngress</code> を呼んだ</td></tr>
+        <tr><td>組み合わせ</td><td colspan="2">Config の timeline には変更を引き起こした CloudTrail event へのリンクがあります。「誰が変更し、リソースがどう変わったか」という設問 → 両方。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>EC2 が暗号通貨をマイニングしている、悪性 IP と通信しているのを検知</td><td>GuardDuty</td><td>Inspector（CVE を探すだけで通信は見ない）</td></tr>
+        <tr><td>デプロイ前に AMI や container image の CVE を見つける</td><td>Inspector</td><td>GuardDuty、Macie</td></tr>
+        <tr><td>バケット内の身分証番号やクレジットカード番号を見つける</td><td>Macie</td><td>GuardDuty S3 protection（異常なアクセスを検知するが中身は読まない）</td></tr>
+        <tr><td>複数アカウントの findings を1画面に集約、CIS スコア</td><td>Security Hub</td><td>Detective、Trusted Advisor</td></tr>
+        <tr><td>GuardDuty の finding を深掘り調査</td><td>Detective</td><td>Security Hub（集約のみ）</td></tr>
+        <tr><td>すべての EBS を暗号化し、違反時に自動修正</td><td>Config rule + remediation（SSM Automation）</td><td>CloudTrail（ログ記録のみ）、Trusted Advisor（自動修正しない）</td></tr>
+        <tr><td>未暗号化 EBS の作成を最初から防ぐ</td><td>SCP または IAM condition、または EBS encryption by default</td><td>Config（作成後に検知）</td></tr>
+        <tr><td>VPC quota の上限接近や idle な EBS を把握</td><td>Trusted Advisor（または Service Quotas、Compute Optimizer）</td><td>Config</td></tr>
+        <tr><td>監査人向けに AWS の SOC 2 レポートを入手</td><td>Artifact</td><td>Audit Manager（自社の証跡）</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>threat detection, compromised, crypto mining <b>→ GuardDuty</b></span><span>vulnerability, CVE, ECR image <b>→ Inspector</b></span><span>PII in S3 <b>→ Macie</b></span><span>aggregate findings, CIS benchmark <b>→ Security Hub</b></span><span>root cause investigation <b>→ Detective</b></span><span>configuration compliance, drift, auto remediate <b>→ Config</b></span><span>idle resources, service limits <b>→ Trusted Advisor</b></span><span>AWS compliance reports <b>→ Artifact</b></span><span>audit evidence collection <b>→ Audit Manager</b></span><span>who changed + what changed <b>→ CloudTrail + Config</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">11. セキュリティチームに、EC2 が見知らぬドメインへ大量の DNS クエリを送り、他国の IP から API が呼ばれているという警告が届きました。エージェントを入れずにこれを検知するサービスは?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>GuardDuty。</b> DNS logs、VPC Flow Logs、CloudTrail を、自分でそれらのログを有効にすることなく分析します。Inspector は SSM Agent が必要で、CVE を探すだけです。Macie は S3 しか見ません。</p></div>
+      <div class="q"><p class="qt">12. 会社は、暗号化されていないクレジットカード番号を含むバケットがないことを証明し、定期的に報告する必要があります。何を選びますか?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Amazon Macie</b> で S3 にデータ分類ジョブを実行し、findings を Security Hub/EventBridge に送る。GuardDuty はオブジェクトの中身を読みません。Inspector は S3 をスキャンしません。</p></div>
+      <div class="q"><p class="qt">13. 2つ選んでください: 会社は (1) 誰かが Security Group に 0.0.0.0/0 の SSH rule を追加したら自動で削除し、(2) 追加したユーザーを知りたい。(A) Config rule restricted-ssh + remediation、(B) CloudTrail、(C) GuardDuty、(D) Trusted Advisor。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>A と B。</b> Config が検知して修正し（SSM Automation 経由）、CloudTrail が誰が API を呼んだかを示します。Trusted Advisor も開いた SG を報告しますが、自動修正せず、誰がやったかも示しません。GuardDuty は攻撃を検知するもので、設定ミスは対象外です。</p></div>
+      <div class="q"><p class="qt">14. Basic support を使うスタートアップが、Trusted Advisor のコスト最適化チェックをすべて見たいと考えています。何が必要ですか?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Business support（または Enterprise）にアップグレードする。</b> Basic と Developer では Security の一部と Service limits のチェックしかありません。support 費用をかけない代替策: Cost Explorer の rightsizing、Compute Optimizer（無料）、Config rule の自作。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. COGNITO, STS, IDENTITY CENTER ============ -->
+<section id="cognito">
+  <span class="eyebrow">理論 5 / 8</span>
+  <h2>Cognito、STS、cross-account role、IAM Identity Center</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要: アプリ利用者向けの Cognito</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>Cognito User Pool</th><th>Cognito Identity Pool (Federated Identities)</th></tr>
+        <tr><td>答える問い</td><td><b>あなたは誰か?</b>（authentication）</td><td><b>どの AWS サービスを使ってよいか?</b>（AWS への authorization）</td></tr>
+        <tr><td>何か</td><td>マネージドなユーザーディレクトリ: サインアップ、サインイン、メール/SMS 確認、パスワードリセット、<b>MFA</b>、パスワードポリシー、既製の <b>hosted UI</b>、漏洩した認証情報のブロック、adaptive authentication（有料 tier）。</td><td>トークン交換機: User Pool、Google、Facebook、Apple、SAML、OIDC、または developer-authenticated のトークンを受け取り、STS を呼んで IAM role の<b>一時的な AWS 認証情報</b>を取得します。</td></tr>
+        <tr><td>返すもの</td><td><b>JWT</b>: ID token（ユーザー情報）、access token（権限）、refresh token。</td><td>Access key + secret + session token（IAM role のもの）。</td></tr>
+        <tr><td>Federation</td><td>Google、Facebook、Apple、Amazon、<b>SAML 2.0</b>、<b>OIDC</b> でログイン。ユーザーは pool 内にも作られます。</td><td>上記の IdP を直接信頼、または User Pool を信頼。</td></tr>
+        <tr><td>組み合わせる相手</td><td><b>API Gateway Cognito authorizer</b>（JWT を検証）、<b>ALB authenticate action</b>（ALB が自動でログインへリダイレクト）、AppSync、アプリ自身による JWT 検証。</td><td>アプリが一時認証情報で <b>S3、DynamoDB、Lambda</b> を直接呼びます。未ログインの利用者向けに <b>guest (unauthenticated) role</b> があります。</td></tr>
+        <tr><td>きめ細かな権限</td><td>pool 内の group、custom attribute、Lambda trigger（pre sign-up、post confirmation、pre token generation）。</td><td>Authenticated role、unauthenticated role、claim による role mapping。policy variable <code>${cognito-identity.amazonaws.com:sub}</code> で各ユーザーを自分の S3 prefix に限定。</td></tr>
+        <tr><td>料金</td><td>MAU 単位、free tier あり（無料 MAU 数は2024年に変更、要確認）。</td><td>無料。</td></tr>
+      </table></div>
+      <ul style="font-size:.94rem">
+        <li>完全なパターン: モバイルアプリ → User Pool（または Google）にログイン → JWT を受け取る → JWT を Identity Pool に渡す → 一時認証情報を受け取る → 画像を S3 に直接アップロード。2つの pool は別の役割を担い、通常は一緒に使います。</li>
+        <li>アプリが API Gateway 経由で自前の API を呼ぶだけなら、<b>User Pool だけで十分</b>です（authorizer が JWT を検証）。Identity Pool は不要です。</li>
+        <li>Cognito は<b>アプリの顧客</b>（数百万人）向けです。社員が AWS Console にアクセスするなら IAM Identity Center を使います。この2つの間で引っかけがよく出ます。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">STS: 区別すべき API</span>
+      <div class="tbl"><table>
+        <tr><th>API</th><th>誰が何のために呼ぶか</th><th>有効期間（要確認）</th></tr>
+        <tr><td><b>AssumeRole</b></td><td>IAM user や role（AWS サービスを含む）が、同一アカウントまたは <b>cross-account</b> の role に切り替えます。MFA、external ID、session policy、session tag を要求できます。</td><td>15分から role の <b>max session duration</b>（既定1時間、最大12時間）まで。role chaining（role から別の role へ AssumeRole）は最大1時間。</td></tr>
+        <tr><td><b>AssumeRoleWithSAML</b></td><td>企業の IdP（<b>AD FS、Okta、Entra ID</b>）のユーザーが SAML 2.0 assertion で利用。IAM user は不要。IAM Identity Center と従来型 federation の基盤。</td><td>max session duration まで、既定1時間。</td></tr>
+        <tr><td><b>AssumeRoleWithWebIdentity</b></td><td>Web の <b>OIDC</b> IdP（Google、Facebook、Amazon、<b>Cognito</b>、GitHub Actions、EKS IRSA）のユーザー。モバイルアプリでは直接呼ぶのではなく Cognito Identity Pool を使うよう AWS は推奨しています。</td><td>同上。</td></tr>
+        <tr><td><b>GetSessionToken</b></td><td>IAM user が MFA を要求する API を呼ぶために、<b>MFA</b> 付きの一時認証情報を自分で取得します。権限は変わりません。</td><td>IAM user は最大36時間、root は最大1時間。</td></tr>
+        <tr><td><b>GetFederationToken</b></td><td>旧方式: プロキシアプリが長期の IAM user を使って federated ユーザーに認証情報を発行します。ほぼ使われず、設問では role/Cognito を選びます。</td><td>最大36時間。</td></tr>
+        <tr><td><b>GetCallerIdentity</b>、<b>DecodeAuthorizationMessage</b></td><td>自分が誰かを確認、長い AccessDenied メッセージをデコード。</td><td></td></tr>
+      </table></div>
+      <ul style="font-size:.94rem">
+        <li>一時認証情報は <b>3つ</b>で構成されます: access key、secret key、<b>session token</b>。個々の認証情報は取り消せません。発行済みのセッションを止めたいなら、時点 X より前の <code>aws:TokenIssueTime</code> を condition とする Deny policy を role に付けます（コンソールの「Revoke active sessions」ボタン）。</li>
+        <li>STS には global（us-east-1）と regional の endpoint があります。遅延を減らし us-east-1 への依存を避けるため regional endpoint を使います（名前だけ覚えておく）。</li>
+      </ul>
+    </div>
+
+    <div class="block diag"><span class="eyebrow">イメージ: cross-account role と external ID</span>
+      <svg viewBox="0 0 700 260" role="img" aria-label="cross-account の図: アカウント A がアカウント B の role に AssumeRole する。role の trust policy はアカウント A を信頼し、external ID を要求する">
+        <rect x="20" y="40" width="300" height="190" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="170" y="66" text-anchor="middle" class="sv-t" font-weight="600">Account A (呼び出し側, 1111)</text>
+        <rect x="45" y="90" width="250" height="60" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="170" y="112" text-anchor="middle" class="sv-t">A の IAM user または role</text>
+        <text x="170" y="131" text-anchor="middle" class="sv-m">policy: B の role に AssumeRole を Allow</text>
+        <text x="170" y="180" text-anchor="middle" class="sv-m">1. AssumeRole(RoleArn, ExternalId=abc123)</text>
+        <text x="170" y="200" text-anchor="middle" class="sv-m">3. access key + secret + session token を受け取る</text>
+        <text x="170" y="218" text-anchor="middle" class="sv-m">4. 一時認証情報で B の S3 を呼ぶ</text>
+        <rect x="380" y="40" width="300" height="190" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="530" y="66" text-anchor="middle" class="sv-t" font-weight="600">Account B (リソース所有者, 2222)</text>
+        <rect x="405" y="90" width="250" height="80" rx="8" class="sv-edge" stroke-width="1.5"/>
+        <text x="530" y="110" text-anchor="middle" class="sv-t">Role CrossAccountRead</text>
+        <text x="530" y="128" text-anchor="middle" class="sv-m">trust policy: Principal 1111,</text>
+        <text x="530" y="144" text-anchor="middle" class="sv-m">Condition sts:ExternalId = abc123</text>
+        <text x="530" y="160" text-anchor="middle" class="sv-m">permission policy: s3:GetObject bucket-B</text>
+        <text x="530" y="200" text-anchor="middle" class="sv-m">2. STS が trust policy + external ID を検証</text>
+        <text x="530" y="218" text-anchor="middle" class="sv-m">し、role の一時認証情報を発行</text>
+        <line x1="320" y1="120" x2="380" y2="120" class="sv-line" stroke-width="2"/>
+      </svg>
+      <ul style="font-size:.94rem">
+        <li><b>両側が許可する必要があります</b>: B の role の trust policy の Principal がアカウント A（または特定ユーザー）であり、かつ A のユーザーの identity policy にその role ARN への <code>sts:AssumeRole</code> があること。片方が欠けると AccessDenied です。</li>
+        <li><b>External ID</b> は <b>confused deputy</b> を解決します: サードパーティ（監視 SaaS）が多くの顧客に role を assume します。あなたの role ARN を知った攻撃者が、その SaaS に代わりに assume させることができます。External ID はあなたと SaaS だけが知る秘密で、攻撃者には推測できません。設問に <em>third party</em>、<em>SaaS provider needs access</em>、<em>confused deputy</em> とあれば → role + external ID。</li>
+        <li>resource-based policy（アカウント A を許可する bucket policy）との比較: 呼び出し側は自分の ID のまま「帽子をかぶり替え」ませんが、resource policy を持つサービス（S3、SQS、SNS、KMS、Lambda、Secrets Manager）でしか使えません。role はすべてのサービス（EC2、DynamoDB）で使えます。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">IAM Identity Center（旧称 AWS SSO）</span>
+      <ul>
+        <li>社員が Organizations 内の<b>複数アカウント</b>や SaaS アプリ（Salesforce、Slack）に SAML でログインするための入口（<b>access portal</b>）です。ユーザーは role を通じて<b>一時認証情報</b>を受け取り、各アカウントに IAM user はありません。</li>
+        <li><b>Identity source</b>: Identity Center 内蔵のディレクトリ、<b>Active Directory</b>（AWS Managed Microsoft AD、またはオンプレミス AD への AD Connector）、または SAML 2.0 による<b>外部 IdP</b>（Okta、Entra ID、Google Workspace）。ユーザー/グループは SCIM で同期します。</li>
+        <li><b>Permission set</b>: policy（managed、inline、boundary）の集合で、Identity Center が割り当て先の各アカウントで IAM role に変換します。（user/group、account、permission set）の組で割り当てます。新しいアカウントを追加しても割り当てを足すだけで、ユーザー作成は不要です。</li>
+        <li><b>MFA</b>、session tag による attribute-based access control (ABAC)、<code>aws configure sso</code> による CLI に対応。Organizations が前提です（単一アカウントでも有効化できますがあまり使われません）。</li>
+        <li>Cognito との違い: Identity Center は AWS や社内アプリに入る<b>社員</b>向け、Cognito は自分が作るアプリの<b>エンドユーザー</b>向けです。IAM user との違い: 長期の認証情報がなく、一元管理と SSO ができます。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>モバイル利用者のサインアップ、サインイン、MFA、パスワードリセット</td><td>Cognito User Pool</td><td>Identity Pool（ユーザーディレクトリがない）、IAM user</td></tr>
+        <tr><td>モバイル利用者が一時認証情報で S3 に直接アップロード</td><td>Cognito Identity Pool（User Pool または Google からトークンを取得）</td><td>アプリに access key を埋め込む</td></tr>
+        <tr><td>利用者の JWT で API Gateway を保護</td><td>Cognito User Pool authorizer</td><td>IAM authorizer（AWS principal 向け）、Lambda authorizer（独自ロジックが必要なとき）</td></tr>
+        <tr><td>社員が会社の AD で30アカウントに入る</td><td>IAM Identity Center + AD</td><td>Cognito、各アカウントの IAM user</td></tr>
+        <tr><td>サードパーティの SaaS が自社のバケットを読む必要がある</td><td>cross-account role + external ID</td><td>IAM user を作って access key を渡す</td></tr>
+        <tr><td>IAM user が削除 API を呼ぶのに MFA が必要</td><td>MFA 付きの GetSessionToken、aws:MultiFactorAuthPresent を持つ policy</td><td>AssumeRole（可能だが権限を切り替える必要はない）</td></tr>
+        <tr><td>アカウント B がアカウント A に、ID を変えずに SQS queue を読ませる</td><td>SQS queue policy（resource-based）</td><td>Role（可能だが呼び出し側は A の ID を失う）</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>sign up, sign in, MFA for app users <b>→ Cognito User Pool</b></span><span>temporary AWS credentials for app users, guest access <b>→ Cognito Identity Pool</b></span><span>JWT, hosted UI, social login <b>→ User Pool</b></span><span>SAML 2.0 corporate IdP <b>→ AssumeRoleWithSAML / Identity Center</b></span><span>OIDC, Google login to AWS <b>→ AssumeRoleWithWebIdentity</b></span><span>third-party access, confused deputy <b>→ external ID</b></span><span>multiple accounts single sign-on, permission set <b>→ IAM Identity Center</b></span><span>temporary credentials <b>→ STS</b></span><span>revoke compromised session <b>→ Deny + aws:TokenIssueTime</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">15. モバイルアプリで利用者が Google またはメールでログインし、その後、各自のフォルダーへ S3 に画像を直接アップロードします。どのアーキテクチャを選びますか?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Cognito User Pool（メール + Google federation）が JWT を発行し、Cognito Identity Pool が JWT を、<code>${cognito-identity.amazonaws.com:sub}</code> で prefix を制限する policy を持つ role の一時認証情報に交換する。</b> User Pool だけでは AWS の認証情報がありません。利用者ごとに IAM user を作るのは完全に誤りです（上限5,000ユーザー、長期の認証情報）。</p></div>
+      <div class="q"><p class="qt">16. 監視会社（SaaS）が CloudWatch を読むため、あなたのアカウントの role を assume する必要があります。同じ SaaS の別の顧客に悪用されることが心配です。<em>most secure</em> な方法は?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>SaaS のアカウントを信頼する trust policy に、SaaS が発行した秘密の値と一致する <code>sts:ExternalId</code> の condition を付けた role を作る。</b> これは confused deputy の問題です。IAM user を作って access key を渡すのは長期の認証情報で安全ではありません。external ID なしで SaaS のアカウントを信頼するだけでは、SaaS の別の顧客が SaaS にあなたの role を assume させられます。</p></div>
+      <div class="q"><p class="qt">17. Okta と15の AWS アカウントを持つ会社が、社員に一度のログインでグループ単位の権限を与えたいと考えています。<em>least operational overhead</em> が条件です。何を選びますか?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Okta を identity source（SAML + SCIM）とする IAM Identity Center を使い、permission set を作って各アカウントのグループに割り当てる。</b> 15アカウントそれぞれに SAML provider を設定しても動きますが手間がかかります。Cognito は社員の Console アクセス向けではありません。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. ORGANIZATIONS, SCP, CONTROL TOWER ============ -->
+<section id="org">
+  <span class="eyebrow">理論 6 / 8</span>
+  <h2>Organizations、SCP、consolidated billing、Control Tower、RAM</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <ul>
+        <li><b>AWS Organizations</b>: 1つの <b>management account</b>（旧称 master）の下で複数アカウントを管理します。ツリー構造: <b>Root → OU（Organizational Unit、最大5階層までネスト）→ account</b>。API で新しいアカウントを作るか、既存アカウントを招待します。無料です。2つのモード: <b>consolidated billing only</b> と <b>all features</b>（SCP、tag policy、GuardDuty、Security Hub、Config などのサービスの delegated admin を含む）。</li>
+        <li>よくある OU の構成: <b>Security</b>（log archive、audit）、<b>Infrastructure</b>（network、shared services）、<b>Workloads</b>（prod、dev）、<b>Sandbox</b>。推奨: management account ではワークロードを動かさず、請求と管理だけに使います。</li>
+        <li>試験でよく問われる利点: アカウント単位でのワークロードと blast radius の<b>分離</b>、<b>請求書の一本化</b>、<b>割引の共有</b>、<b>SCP</b> による一元的なポリシー適用、RAM による<b>リソース共有</b>、組織全体でのセキュリティサービスの有効化（GuardDuty、CloudTrail org trail、Config aggregator）。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">SCP (Service Control Policy): 覚えるべき6つのこと</span>
+      <ol>
+        <li>SCP はメンバーアカウントの<b>権限の上限</b>であり、<b>権限を付与しません</b>。実際の権限 = SCP ∩ IAM policy。permissions boundary に似ていますが、アカウント単位です。</li>
+        <li>SCP は <b>management account には影響しません</b>（Root に付けても同じ）。一方、メンバーアカウントでは<b>そのアカウントの root user を含むすべての principal</b> に適用されます。</li>
+        <li>ツリーを下に<b>継承</b>します。アカウントは Root、すべての親 OU、自分自身の SCP を受けます。許可される権限は<b>すべての階層</b>で Allow され、どの階層でも Deny されていない必要があります。</li>
+        <li>2つの戦略: <b>deny list</b>（すべての階層に既定の <code>FullAWSAccess</code> を残し、Deny の SCP を追加。管理しやすく AWS 推奨）と <b>allow list</b>（FullAWSAccess を外し、許可するサービスだけを Allow。厳格だが、すべての親階層で Allow を忘れずに付ける必要があり、誤ってロックしやすい）。</li>
+        <li>SCP は <b>service-linked role</b> や一部の AWS の管理操作には適用されません。SCP には Principal がありません（アカウント全体に適用されるため）。</li>
+        <li>定番の例: Region の制限、CloudTrail/GuardDuty/Config の無効化の禁止、Organization からの離脱の禁止（<code>organizations:LeaveOrganization</code>）、タグの必須化、t3 以外の EC2 作成の禁止、KMS key の削除禁止、EBS 暗号化の必須化。</li>
+      </ol>
+<pre><code>// 東京と N. Virginia 以外のすべての Region を拒否する SCP（global サービスは除外、Lab 6 で使用）
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Sid": "DenyOutsideAllowedRegions",
+    "Effect": "Deny",
+    "NotAction": ["iam:*", "sts:*", "organizations:*", "route53:*", "cloudfront:*",
+                  "support:*", "budgets:*", "ce:*", "health:*", "kms:*", "waf:*", "shield:*"],
+    "Resource": "*",
+    "Condition": { "StringNotEquals": { "aws:RequestedRegion": ["ap-northeast-1", "us-east-1"] } }
+  }]
+}</code></pre>
+      <p style="font-size:.92rem"><code>NotAction</code> のリストには global サービスを入れる必要があります。入れないと IAM や STS までブロックされます（Region は us-east-1 として記録されますが、一部の API は挙動が特殊です）。最近、組織全体のリソースに適用する <b>Resource Control Policy (RCP)</b> が追加されました（例: 組織外の principal にバケットを読ませない）。名前を知っていれば十分です。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Consolidated billing</span>
+      <ul>
+        <li>全アカウントの<b>請求書が1つ</b>になり、management account が支払います。Cost Explorer と CUR でアカウントごとの明細も見られます。</li>
+        <li><b>割引の共有</b>: どのアカウントで購入した Reserved Instances や Savings Plans も、他のアカウントの一致する使用量に自動適用されます（RI sharing、アカウント単位で無効化可能）。<b>Volume discount</b>: S3 やデータ転送の料金階層は組織全体の合計使用量で計算されるため、合算すると安くなります。</li>
+        <li>Free Tier とクレジットは組織全体で（1回分）適用され、アカウント数で増えることはありません。</li>
+        <li>設問: <em>reduce cost across multiple accounts</em>、<em>RI purchased in one account not used</em> → consolidated billing で RI sharing を有効化。<em>charge back to each department</em> → cost allocation tag + 部門別アカウント + linked account 別の Cost Explorer。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Control Tower、RAM、tag policy、service-linked role、Service Catalog</span>
+      <div class="tbl"><table>
+        <tr><th>サービス</th><th>何か</th><th>キーワード</th></tr>
+        <tr><td><b>Control Tower</b></td><td>ベストプラクティスに沿ったマルチアカウント環境を数時間で構築、運用します。<b>landing zone</b>（Organizations、Security と Sandbox の OU、Log Archive と Audit のアカウント、CloudTrail、Config、Identity Center）を作り、<b>controls（旧称 guardrails）</b>を適用します: <b>preventive</b>（SCP、させない）、<b>detective</b>（Config rule、違反を検知）、<b>proactive</b>（CloudFormation hook、作成前にブロック）。<b>Account Factory</b> で標準化された新アカウントを作成（Service Catalog 経由）。コンプライアンスのダッシュボードあり。Control Tower 自体は無料で、裏側の CloudTrail、Config、S3 に課金されます。</td><td><em>quickly set up multi-account environment</em>、<em>landing zone</em>、<em>guardrails</em>、<em>governance at scale</em>、<em>provision accounts</em></td></tr>
+        <tr><td><b>RAM</b> (Resource Access Manager)</td><td>リソースを複製せずに、アカウント、OU、組織全体と共有します: <b>VPC subnet</b>（他アカウントが自分の subnet に EC2 を置く）、<b>Transit Gateway</b>、Route 53 Resolver rule、License Manager、Private CA、IPAM pool、SSM parameter advanced。無料。リソースの所有者が制御を保持し、共有された側はその中にリソースを作成します。</td><td><em>share VPC subnets</em>、<em>share Transit Gateway</em>、<em>avoid duplicating resources</em></td></tr>
+        <tr><td><b>Tag policy</b></td><td>Organization 内のタグを標準化します: key の大文字小文字、許可する値、適用するリソースの種類。非準拠をレポートし、一部のリソースでは<b>enforce</b>（誤ったタグの作成をブロック）できます。タグの付与自体を必須にはしません（必須化するには <code>aws:RequestTag</code> を使う SCP）。</td><td><em>consistent tagging</em>、<em>standardize tags across accounts</em></td></tr>
+        <tr><td><b>Service-linked role</b></td><td>AWS サービスが作成し所有する role（例: <code>AWSServiceRoleForAutoScaling</code>）。trust policy はそのサービスだけを信頼し、権限は編集できず、サービスが使わなくなったときだけ削除できます。SCP の影響を受けません。</td><td><em>predefined role for service</em>、cannot modify</td></tr>
+        <tr><td><b>Service Catalog</b></td><td>管理者が<b>product</b>（承認済みの CloudFormation テンプレート）を含む <b>portfolio</b> を作り、ユーザーに割り当てます。ユーザーはリソースを直接作成する権限なしで選んで起動できます（launch constraint で管理者の role を使う）。バージョン管理とタグの強制あり。</td><td><em>self-service</em>、<em>approved products</em>、<em>developers launch without full permissions</em></td></tr>
+        <tr><td><b>Delegated administrator</b></td><td>メンバーアカウント（通常は Security アカウント）に組織全体のサービス管理（GuardDuty、Security Hub、Config、Firewall Manager、IAM Identity Center、CloudFormation StackSets）を委任し、management account の利用を減らします。</td><td><em>security account manages</em>、<em>minimize use of management account</em></td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>dev アカウントの誰も（管理者を含め）リスト外の Region にリソースを作れないようにする</td><td>dev の OU に付けた aws:RequestedRegion の SCP Deny</td><td>ユーザーごとの IAM policy（管理者が自分で外せる）、Config（検知のみ）</td></tr>
+        <tr><td>SCP を適用しても management account での操作をブロックできない</td><td>それが仕様。SCP は management account に適用されないので、ワークロードをメンバーアカウントへ移す</td><td>SCP の誤りを探す</td></tr>
+        <tr><td>guardrail 付きのマルチアカウント環境を素早く構築</td><td>Control Tower</td><td>SCP + CloudFormation StackSets の自作（可能だが時間がかかる）</td></tr>
+        <tr><td>複数アカウントで1つの VPC を共用し NAT、TGW を節約</td><td>RAM で subnet を共有</td><td>ペアごとの VPC peering</td></tr>
+        <tr><td>開発者が EC2 を直接作る権限なしで標準環境を自分で作る</td><td>launch constraint 付きの Service Catalog</td><td>AdministratorAccess を付与</td></tr>
+        <tr><td>アカウント A で買った RI、EC2 はアカウント B で稼働</td><td>Consolidated billing、RI sharing を有効化</td><td>RI を B に移す（不要）</td></tr>
+        <tr><td>組織全体で書式の誤ったタグをブロック</td><td>Tag policy（enforce）</td><td>Config required-tags（タグの欠落を検知するだけ）</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>restrict even root of member account <b>→ SCP</b></span><span>SCP does not apply to <b>→ management account, service-linked role</b></span><span>single bill, share RI/Savings Plans <b>→ consolidated billing</b></span><span>landing zone, guardrails, Account Factory <b>→ Control Tower</b></span><span>share subnet / Transit Gateway <b>→ RAM</b></span><span>standardize tags across accounts <b>→ tag policy</b></span><span>self-service approved CloudFormation products <b>→ Service Catalog</b></span><span>centralize security service for all accounts <b>→ delegated administrator</b></span><span>prevent leaving organization <b>→ SCP Deny organizations:LeaveOrganization</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">18. OU「Workloads」には <code>ec2:*</code>、<code>s3:*</code>、<code>rds:*</code> だけを Allow する SCP があります。子 OU「Prod」には <code>ec2:*</code>、<code>s3:*</code>、<code>dynamodb:*</code> を Allow する SCP があります。Prod 内のアカウントに AdministratorAccess を持つ IAM user がいます。このユーザーは何ができますか?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>EC2 と S3 のみ。</b> 権限はすべての階層で Allow される必要があります。RDS は Prod になく、DynamoDB は Workloads にありません。これは allow list 戦略で、誤ってロックしやすいため AWS は deny list を推奨しています。</p></div>
+      <div class="q"><p class="qt">19. AWS を使い始めたばかりの会社が、各チーム向けに10アカウントを、ログの集約、セキュリティ guardrail、標準に沿った新規アカウント作成付きで、数日以内に構築する必要があります。何を選びますか?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>AWS Control Tower。</b> landing zone（Organizations、Log Archive、Audit、CloudTrail、Config、Identity Center）と Account Factory を構築します。Organizations 単体には guardrail も標準アカウントもありません。StackSets で自作すると時間がかかります。</p></div>
+      <div class="q"><p class="qt">20. SCP について正しい記述を2つ選んでください: (A) IAM policy がなくても SCP が権限を付与する、(B) SCP は management account に適用されない、(C) SCP はメンバーアカウントの root user に適用される、(D) SCP は IAM user に直接付けられる。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>B と C。</b> SCP は権限を付与せず（A は誤り）、Root、OU、アカウントにしか付けられません（D は誤り）。C は SCP が IAM より強力な理由で、メンバーアカウントの root までブロックできます。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. CLOUDTRAIL, CLOUDWATCH, SSM ============ -->
+<section id="monitor">
+  <span class="eyebrow">理論 7 / 8</span>
+  <h2>監視と監査: CloudTrail、CloudWatch、Systems Manager</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">CloudTrail: 誰が何をしたか</span>
+      <ul>
+        <li><b>すべての API call</b>（Console、CLI、SDK、サービス間の呼び出し）を記録します: 誰が、いつ、どの IP から、どのパラメータで、結果は何か。<b>Event history</b> は既定で有効、無料で、<b>90日間</b>保持し、management event のみです。より長く保持して分析するには、<b>S3</b> に書き込む <b>trail</b> を作り（無期限に保持、lifecycle を利用）、必要に応じて <b>CloudWatch Logs</b> にも送ります（metric filter と alarm を作るため。例: root がログインしたときや誰かが <code>DeleteTrail</code> を呼んだときの警告）。</li>
+        <li><b>Management event</b>（control plane: EC2 作成、Security Group 変更、ログイン）: 既定で記録、read と write。<b>Data event</b>（data plane: S3 の <code>GetObject</code>/<code>PutObject</code>、Lambda の <code>Invoke</code>、DynamoDB の item）: <b>既定では記録されず</b>、個別に有効化、量が多く追加料金。<b>Insights event</b>: write API やエラーの異常な割合を検知（例: 突然 <code>RunInstances</code> が1,000回）、追加料金。</li>
+        <li><b>Multi-Region trail</b>: 1つの trail で全 Region を記録（コンソールでは既定）、新しい Region も自動追加。<b>Organization trail</b>: management account（または delegated admin）で作成し、全メンバーアカウントを1つのバケットに記録、メンバーアカウントは無効化できません。global サービス（IAM、STS、CloudFront）の event は us-east-1 に記録されます。</li>
+        <li><b>Log file integrity validation</b>: CloudTrail は1時間ごとに SHA-256 ハッシュと RSA 署名を含む digest file を作り、<code>validate-logs</code> コマンドでログが改ざんや削除されていないことを証明できます。S3 Object Lock、MFA delete、専用の Log Archive アカウントのバケットと組み合わせて <em>tamper-proof</em> を実現します。ログは既定で SSE-S3 で暗号化され、SSE-KMS も選べます。</li>
+        <li>配信は通常5〜15分ほど遅れます（要確認）。S3 上のログは <b>Athena</b> でクエリするか、<b>CloudTrail Lake</b>（保存と SQL クエリ、最大7年保持、名前だけ覚えておく）を使います。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">CloudWatch: metric、log、alarm、dashboard、EventBridge</span>
+      <div class="tbl"><table>
+        <tr><th>構成要素</th><th>覚えるべきこと</th></tr>
+        <tr><td><b>Metric</b></td><td>Namespace（<code>AWS/EC2</code>）、名前、dimension（InstanceId）。Standard resolution は1分、<b>high resolution は1秒</b>（custom metric のみ、<code>StorageResolution=1</code>）。EC2 の <b>basic monitoring は5分間隔で無料</b>、<b>detailed monitoring は1分間隔で有料</b>。EC2 には既定で CPU、network、disk（instance store）、status check があり、<b>memory、EBS のディスク使用量、swap はありません</b>。必要なら <b>CloudWatch agent</b> を入れて custom metric を送ります。保持期間: 1秒は3時間、1分は15日、5分は63日、1時間は15か月（要確認）。metric は削除できず、期限が来ると自動で消えます。</td></tr>
+        <tr><td><b>Logs</b></td><td>Log group → log stream。保持期間の既定は<b>無期限</b>（設定すべき）。ソース: EC2/オンプレミスの CloudWatch agent（unified agent は metric と log の両方を送る）、Lambda、ECS、VPC Flow Logs、CloudTrail、Route 53。<b>Metric filter</b>: パターン（例: "ERROR"）を数えて metric にし、alarm を設定。<b>Logs Insights</b>: アドホックなログクエリ。<b>Subscription filter</b>: ログを<b>リアルタイム</b>で Kinesis Data Streams、Firehose、Lambda、OpenSearch に送る（cross-account も可）。<b>Export to S3</b>: バッチ、最大12時間遅延、リアルタイムではない。KMS で暗号化可能。</td></tr>
+        <tr><td><b>Alarm</b></td><td>3つの状態: <b>OK、ALARM、INSUFFICIENT_DATA</b>。設定: period、evaluation periods、datapoints to alarm（M of N）、threshold、treat missing data。Action: <b>SNS</b>、<b>Auto Scaling</b>、<b>EC2 action</b>（stop、terminate、reboot、system status check 失敗時の <b>recover</b>: IP と EBS を保ったまま別ホストに移動）、Systems Manager OpsItem。<b>Composite alarm</b>: 複数の alarm を AND/OR で組み合わせてノイズを減らす（CPU が高く、かつ latency が高いときだけ通知）。<b>Anomaly detection</b>: 固定閾値の代わりに ML のバンド。ログの metric filter に対する alarm: ERROR 行が N 件出たら警告。<code>set-alarm-state</code> でテストできます。</td></tr>
+        <tr><td><b>Dashboard</b></td><td>Global で、複数 Region、複数アカウントの metric をまとめられます（cross-account observability）。最初の3つは無料、その後は約 3 USD/dashboard/月（要確認）。</td></tr>
+        <tr><td><b>EventBridge</b>（旧称 CloudWatch Events）</td><td>イベントバス: event（EC2 state change、GuardDuty finding、CodePipeline、Health）や <b>schedule</b>（cron、rate）に一致する rule → target（Lambda、SNS、SQS、Step Functions、SSM Automation、API destination）。Event bus は default、custom、partner（SaaS）。Archive と replay。大規模なスケジュールには <b>EventBridge Scheduler</b>。設問: <em>react to events</em>、<em>run every night</em>、<em>when instance stops notify</em> → EventBridge。</td></tr>
+        <tr><td>名前だけ覚えておく</td><td><b>Synthetics canary</b>（endpoint へのユーザーアクセスを定期的に模擬）、<b>Container Insights</b>、<b>Lambda Insights</b>、<b>Contributor Insights</b>（ログ内の上位 N の contributor）、<b>ServiceLens / X-Ray</b>（分散トレース）、<b>Application Signals</b>。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Systems Manager (SSM): SSH なしでフリートを管理</span>
+      <ul>
+        <li>instance が <b>managed node</b> になる条件: <b>SSM Agent</b> がある（AWS の Amazon Linux、Ubuntu、Windows AMI にはプリインストール）、<b><code>AmazonSSMManagedInstanceCore</code> を持つ IAM role</b> がある、SSM endpoint への<b>アウトバウンド HTTPS 443</b> の経路がある（Internet Gateway、NAT、または完全に private な subnet では <code>ssm</code>、<code>ssmmessages</code>、<code>ec2messages</code> の <b>VPC interface endpoint</b>）。インバウンドは不要です。オンプレミスのマシンも <b>hybrid activation</b> で管理できます（ID は <code>mi-</code> で始まる）。</li>
+        <li><b>Session Manager</b>: Console または CLI（<code>aws ssm start-session</code>）でシェルを開きます。<b>22/3389 番ポートを開けず、bastion も SSH key も不要</b>、IAM で権限管理し、監査のために<b>セッションを S3/CloudWatch Logs に記録</b>し、private な RDS への <b>port forwarding</b> もできます。<em>no inbound ports</em>、<em>no bastion host</em>、<em>audit shell sessions</em>、<em>no SSH keys to manage</em> という設問すべての答えです。</li>
+        <li><b>Run Command</b>: tag で指定した多数の instance で同時にコマンド/スクリプトを実行、SSH 不要、ログあり。<b>Automation</b>: 複数ステップの runbook（<code>AWS-RestartEC2Instance</code>、AMI 作成、Config の remediation）。<b>Patch Manager</b>: patch baseline、tag による patch group、<b>maintenance window</b> 内で実行、コンプライアンスをレポート。Linux と Windows、オンプレミスにも対応。<b>State Manager</b>: 望ましい設定（例: エージェントが常に動いている）をスケジュールで維持。<b>Inventory</b>: インストール済みソフトウェアを収集。<b>Parameter Store</b>（第2回）。<b>Fleet Manager</b>: フリート管理の UI。<b>OpsCenter、Change Manager、Distributor、Compliance</b>: 名前だけ覚えておく。</li>
+        <li>ラボでよくあるエラー: instance が Fleet Manager に表示されない → role、アウトバウンド 443、エージェントの稼働、NAT/endpoint のない private subnet かどうかを確認。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">VPC Flow Logs（第4週の復習）</span>
+      <ul>
+        <li>VPC、subnet、ENI 単位で IP トラフィックの<b>メタデータ</b>（送信元/宛先 IP、port、protocol、bytes、<b>ACCEPT/REJECT</b>）を記録します。CloudWatch Logs、S3、Firehose に送れます。<b>パケットの中身は記録せず</b>、Amazon の DNS resolver への通信、メタデータ 169.254.169.254、DHCP、Windows のライセンス認証も記録しません。</li>
+        <li>Security Group/NACL のデバッグ（REJECT の行を探す）、Athena や Logs Insights による分析に使い、GuardDuty のデータソースでもあります（GuardDuty は自分で取得するので有効化不要）。パケット全体をキャプチャするなら <b>VPC Traffic Mirroring</b> を使います（名前だけ覚えておく）。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>先週 EC2 を terminate したのは誰か知りたい</td><td>CloudTrail（90日以内なら Event history、それより前なら S3 上の trail）</td><td>CloudWatch Logs、Config（リソースの変化しか見えない）</td></tr>
+        <tr><td>バケット内のどのオブジェクトを誰が読んだか記録</td><td>S3 の CloudTrail data event（または S3 server access log）</td><td>Management event（GetObject を含まない）</td></tr>
+        <tr><td>CloudTrail のログが改ざんされていないことを証明</td><td>Log file validation + S3 Object Lock</td><td>Versioning（削除できてしまう）</td></tr>
+        <tr><td>EC2 のメモリ使用率が高いときに警告</td><td>CloudWatch agent を入れて custom metric を送り、alarm を設定</td><td>detailed monitoring を有効化（頻度が上がるだけでメモリは増えない）</td></tr>
+        <tr><td>5分間に "ERROR" 行が10件出たら警告</td><td>log group の metric filter + alarm</td><td>Logs Insights（手動クエリ）、subscription filter（別の場所へ送る）</td></tr>
+        <tr><td>ログをリアルタイムで OpenSearch に送る / 処理する</td><td>Subscription filter → Kinesis/Lambda</td><td>Export to S3（バッチ、遅延あり）</td></tr>
+        <tr><td>EC2 のハードウェア障害時に IP を保ったまま自動復旧</td><td>Alarm StatusCheckFailed_System + EC2 recover action</td><td>Auto Scaling（新しい instance を作り、IP が変わる）</td></tr>
+        <tr><td>200台の instance で SSH なしにスクリプトを実行</td><td>tag 指定の SSM Run Command</td><td>User data（起動時のみ実行）、SSH のループ</td></tr>
+        <tr><td>private subnet の EC2 にシェルアクセス、監査あり、bastion なし</td><td>Session Manager（+ VPC endpoint）</td><td>Bastion + SSH key、22番ポートを開ける</td></tr>
+        <tr><td>フリートの OS を定期的にパッチ適用し、コンプライアンスを報告</td><td>Patch Manager + maintenance window</td><td>Inspector（CVE を検知するだけでパッチは当てない）</td></tr>
+        <tr><td>毎晩2時に Lambda を実行</td><td>EventBridge schedule rule / Scheduler</td><td>CloudWatch alarm、EC2 上の cron</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>who made the API call <b>→ CloudTrail</b></span><span>S3 object-level logging <b>→ CloudTrail data events</b></span><span>all accounts, cannot be disabled by members <b>→ Organization trail</b></span><span>tamper-proof logs <b>→ log file validation + Object Lock</b></span><span>memory / disk space metric <b>→ CloudWatch agent</b></span><span>1-minute EC2 metrics <b>→ detailed monitoring</b></span><span>sub-minute custom metric <b>→ high resolution</b></span><span>real-time log processing <b>→ subscription filter</b></span><span>reduce alarm noise <b>→ composite alarm</b></span><span>no SSH, no bastion, audit sessions <b>→ Session Manager</b></span><span>patch fleet on schedule <b>→ Patch Manager + maintenance window</b></span><span>react to events / cron <b>→ EventBridge</b></span><span>why connection rejected <b>→ VPC Flow Logs</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">21. 監査人から、2か月前にバケット内のオブジェクトを削除したのは誰かと聞かれました。アカウントには既定の Event history しかなく、trail はまだ作っていません。答えられますか?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>答えられません。</b> Event history は90日間かつ management event しか保持しません。<code>DeleteObject</code> は data event であり、trail で data event を有効にしていなければ記録されません。教訓: 最初から S3 への multi-Region trail を作り、重要なバケットの data event を有効にしておくこと。</p></div>
+      <div class="q"><p class="qt">22. 運用チームは、EC2 上のアプリが RAM を90%超えて使ったときに警告を受けたいと考えています。<em>least operational overhead</em> が条件です。何を選びますか?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>CloudWatch agent を入れて（SSM Run Command で配布可能）<code>mem_used_percent</code> metric を送り、SNS に通知する alarm を作る。</b> detailed monitoring にメモリは含まれません。PutMetricData を呼ぶスクリプトの自作も動きますが、agent より手間がかかります。</p></div>
+      <div class="q"><p class="qt">23. セキュリティ要件: NAT のない private subnet の EC2 に22番ポートを開けないこと。ただし管理者はシェルに入れる必要があり、すべてのセッションを記録すること。何を選びますか?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>SSM Session Manager を使い、ssm、ssmmessages、ec2messages の VPC interface endpoint を作り、AmazonSSMManagedInstanceCore の role を付け、CloudWatch Logs/S3 へのセッションログを有効にする。</b> 22番を開ける bastion は要件違反です。NAT がないので、エージェントが SSM に接続するには endpoint が必要です。</p></div>
+      <div class="q"><p class="qt">24. アプリのログを CloudWatch Logs からほぼリアルタイムで OpenSearch に送る方法を2つ選んでください: (A) Lambda への subscription filter、(B) S3 に export してから import、(C) Kinesis Data Firehose への subscription filter、(D) Logs Insights。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>A と C。</b> Subscription filter がリアルタイムの仕組みです。Export to S3 はバッチ（最大12時間遅延）です。Logs Insights はクエリツールでデータを転送しません。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8. IAC VÀ CHI PHÍ ============ -->
+<section id="iac">
+  <span class="eyebrow">理論 8 / 8</span>
+  <h2>IaC とコスト: CloudFormation、Elastic Beanstalk、CDK、Cost Explorer、Budgets</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">CloudFormation: template、stack、change set</span>
+      <ul>
+        <li><b>Template</b>（YAML または JSON）がリソースを記述し、<b>stack</b> はその template から作られたリソースの集合です。セクション: <code>Parameters</code>（作成時に入力）、<code>Mappings</code>（参照表。例: Region ごとの AMI）、<code>Conditions</code>、<b><code>Resources</code>（必須）</b>、<code>Outputs</code>。よく使う関数: <code>!Ref</code>、<code>!GetAtt</code>、<code>!Sub</code>、<code>!FindInMap</code>、<code>!ImportValue</code>、<code>!Join</code>。サービス自体は無料で、作成したリソースの料金だけを払います。</li>
+        <li><b>Change set</b>: 実行前に、stack の更新でどのリソースが追加、変更、<b>置換 (replace)</b> されるかをプレビューします。一部のプロパティを変えると CloudFormation は古いリソースを削除して新しく作ります（例: RDS の名前変更）。change set はそれを示してくれるので、データ消失を防げます。</li>
+        <li>作成に失敗すると<b>自動 rollback</b> ですべて削除されます（<code>ROLLBACK_COMPLETE</code> 状態になり、stack を削除して作り直す必要あり）。更新に失敗すると以前の状態に rollback します。<code>UPDATE_ROLLBACK_FAILED</code> なら continue update rollback を使います。デバッグ時は rollback を無効にできます。</li>
+        <li><b>StackSets</b>: 1か所から1つの template を<b>複数アカウント、複数 Region</b> にデプロイします。Organizations と統合でき（service-managed permissions、OU に追加された新アカウントへ自動デプロイ）、設問: <em>deploy baseline to all accounts</em>、<em>same configuration in every Region</em>。</li>
+        <li><b>Drift detection</b>: CloudFormation の外で手動変更されたリソースを検知します（誰かがコンソールで Security Group を変えた）。自動修正はせず、報告だけです。</li>
+        <li><b><code>DeletionPolicy</code></b>: <code>Delete</code>（既定）、<code>Retain</code>（stack 削除時にリソースを残す）、<code>Snapshot</code>（削除前に snapshot を取る。RDS、EBS、ElastiCache、Redshift、Neptune 向け）。<code>UpdateReplacePolicy</code> はリソースが replace されるときの同様の設定です。<b>Termination protection</b> は stack 全体の誤削除を防ぎます。<b>Stack policy</b> は一部リソースの更新を禁止します（例: prod の RDS を更新させない）。</li>
+        <li><b>Nested stack</b>: 親 stack が S3 上の子 template を指す <code>AWS::CloudFormation::Stack</code> リソースを持ち、パターン（VPC、ALB）を再利用し、stack あたりのリソース数上限（500、要確認）を超えられます。<b>Cross-stack reference</b>: stack A が <code>Outputs</code> で <code>Export</code> を宣言し、stack B が <code>!ImportValue</code> で使います。export 名は Region 内で一意で、<b>B が import している間は A を削除できません</b>。ライフサイクルが同じなら nested、異なるなら cross-stack（network チームと app チーム）。</li>
+        <li>その他: <b>custom resource</b>（CloudFormation が未対応の処理を Lambda で行う）、<code>CreationPolicy</code> と組み合わせる <code>cfn-init</code> と <code>cfn-signal</code>（EC2 からインストール完了の通知を待って CREATE_COMPLETE とみなす）、<code>DependsOn</code>、Secrets Manager/Parameter Store への dynamic reference、<b>CloudFormation Registry と Guard</b>（名前だけ覚えておく）、既存リソースから template を作る <b>IaC generator</b>（名前だけ覚えておく）。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Elastic Beanstalk: PaaS と deployment policy</span>
+      <ul>
+        <li>コード（Java、.NET、Node.js、Python、PHP、Ruby、Go、Docker）をアップロードすると、Beanstalk が裏側の CloudFormation で EC2、Auto Scaling、ELB、CloudWatch、（任意で）RDS を自動構築します。<b>追加料金はなく</b>、リソース代だけです。EC2 への完全なアクセス権も残ります。設定は <code>.ebextensions/*.config</code> ファイルで行います。2つの tier: <b>web server</b>（ELB + ASG）と <b>worker</b>（SQS + ASG でバックグラウンド処理）。Managed platform update で maintenance window にプラットフォームをパッチ適用します。</li>
+        <li><b>environment 内で作った RDS は environment と一緒に削除されます</b>。本番では RDS を外部に作り、環境変数で参照すべきです。よく出る問題です。</li>
+      </ul>
+      <div class="tbl"><table>
+        <tr><th>Deployment policy</th><th>動き方</th><th>ダウンタイム、キャパシティ、コスト</th><th>設問の表現</th></tr>
+        <tr><td><b>All at once</b></td><td>全 instance に同時にデプロイ</td><td>短いダウンタイムあり。最速。追加コストなし</td><td>Dev/test、<em>fastest</em></td></tr>
+        <tr><td><b>Rolling</b></td><td>batch ごとにデプロイし、デプロイ中の batch は一時的にサービスから外れる</td><td>ダウンタイムはないが、デプロイ中は<b>キャパシティが減る</b>。追加コストなし</td><td><em>no additional cost</em>、キャパシティ減を許容</td></tr>
+        <tr><td><b>Rolling with additional batch</b></td><td>先に新しい batch を1つ追加してから rolling</td><td>ダウンタイムなし、<b>キャパシティを維持</b>。短時間 batch 1つ分の追加コスト</td><td><em>maintain full capacity</em></td></tr>
+        <tr><td><b>Immutable</b></td><td>新バージョンを動かす新しい instance を持つ一時 ASG を作り、health OK なら本来の ASG に移し、古いものを削除</td><td>ダウンタイムなし、<b>rollback が最速</b>（新しい instance を消すだけ）。デプロイ中はコスト2倍。遅い</td><td><em>safest</em>、<em>quick rollback</em>、production</td></tr>
+        <tr><td><b>Traffic splitting</b></td><td>immutable と同様だが、トラフィックの % を新バージョンに振り分ける（canary）</td><td>一部の利用者で試験</td><td><em>canary</em></td></tr>
+        <tr><td><b>Blue/green</b>（手動）</td><td>environment を複製し、green の environment に新バージョンをデプロイし、<b>CNAME URL を swap</b></td><td>ダウンタイムなし、swap し直して rollback。コスト2倍。長期間の試験も可能</td><td><em>swap environment URLs</em>、<em>zero downtime with full test</em></td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">CDK と SAM（名前だけ覚えておく）</span>
+      <ul>
+        <li><b>CDK</b>（Cloud Development Kit）: インフラを<b>プログラミング言語</b>（TypeScript、Python、Java、C#、Go）と <b>construct</b>（L1 = 素のリソース、L2 = 妥当な既定値付き、L3 = 「ALB + Fargate」のようなパターン）で記述し、<code>cdk synth</code> で <b>CloudFormation template を生成</b>し、<code>cdk deploy</code> で stack を作成します。ループ、条件分岐、ユニットテスト、コードの再利用ができます。設問: <em>define infrastructure using familiar programming language</em>、<em>type checking</em>。第9週は CDK または CloudFormation で3層アーキテクチャを構築します。</li>
+        <li><b>SAM</b>（Serverless Application Model）: <code>Transform: AWS::Serverless-2016-10-31</code> と短縮リソース <code>AWS::Serverless::Function</code>、<code>::Api</code>、<code>::SimpleTable</code> による、サーバーレス向けの CloudFormation 拡張です。<code>sam local</code> でローカルに Lambda を実行し、<code>sam deploy</code> は CodeDeploy と組み合わせて Lambda バージョン間でトラフィックを段階的に移します（canary）。設問: <em>serverless application, local testing</em>。</li>
+        <li>その他: <b>Terraform</b>（サードパーティ、マルチクラウド）、<b>OpsWorks</b>（マネージドな Chef/Puppet、新規受付終了）、<b>CodeDeploy</b>（EC2/Lambda/ECS へのアプリのデプロイで、IaC ではない）。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">コストツール: どれが何をするか</span>
+      <div class="tbl"><table>
+        <tr><th>ツール</th><th>役割</th><th>よく問われる詳細</th></tr>
+        <tr><td><b>Cost Explorer</b></td><td><b>過去</b>（最大13か月）のコストをサービス、アカウント、Region、tag、usage type 別に表示、分析。最大12か月の <b>forecast</b>。<b>RI と Savings Plans の recommendation</b>、utilization、coverage のレポート。EC2 の <b>rightsizing recommendation</b>。</td><td>初回有効化には最大24時間かかります。hourly と resource-level の粒度あり（追加料金）。API あり。設問: <em>analyze spend by service</em>、<em>forecast</em>、<em>which RI to buy</em>。</td></tr>
+        <tr><td><b>Cost allocation tag</b></td><td>Cost Explorer、CUR、Budgets で tag 別にコストを分けます。2種類: <b>AWS-generated</b>（<code>aws:createdBy</code>、<code>aws:cloudformation:stack-name</code>）と <b>user-defined</b>（<code>Project</code>、<code>Team</code>、<code>Environment</code>）。</td><td>Billing console で<b>activate が必要</b>（Organizations があれば management account で）、表示まで最大24時間、activate 前のデータには<b>遡って適用されません</b>。<b>Cost Categories</b> と組み合わせて事業単位でまとめます。Tag Editor で一括でタグを付けます。</td></tr>
+        <tr><td><b>Compute Optimizer</b></td><td>CloudWatch の14日分の metric から ML で <b>right sizing</b> を提案: EC2 instance type、Auto Scaling group、EBS volume type/size、Lambda memory、ECS Fargate、（新）RDS とライセンス。</td><td>無料（最大3か月の enhanced metrics は有料）。under-provisioned と over-provisioned を示し、コスト見積もりも付きます。Trusted Advisor との違い: Trusted Advisor は単純な閾値で idle/underutilized を報告するだけ、Compute Optimizer は具体的な instance type を提案します。設問: <em>recommend optimal instance type</em>、<em>Lambda memory recommendation</em>。</td></tr>
+        <tr><td><b>Budgets</b></td><td><b>actual</b> または <b>forecast</b> が超えたときの閾値と通知（SNS、メール、Chatbot）を設定。4種類: <b>cost</b>、<b>usage</b>（EC2 の時間、S3 の GB）、<b>RI utilization/coverage</b>、<b>Savings Plans utilization/coverage</b>。</td><td><b>Budget action</b>: 閾値超過時に IAM の Deny policy や SCP を自動で付ける、または EC2/RDS を停止する（承認を必須にできる）。最初の2つの budget は無料、その後は約 0.02 USD/日/budget（要確認）。更新は1日に数回なので通知は遅れます。設問: <em>alert when exceeds</em>、<em>stop instances when budget exceeded</em>。</td></tr>
+        <tr><td><b>Cost and Usage Report (CUR)</b> / Data Exports</td><td><b>最も詳細</b>な請求データ（時間単位の使用量の各行、tag、適用された RI/SP を含む）を <b>S3</b> に出力し、<b>Athena、Redshift、QuickSight</b> で分析します。</td><td>設問: <em>most granular</em>、<em>custom billing dashboard</em>、<em>query billing data with SQL</em>。</td></tr>
+        <tr><td><b>Pricing Calculator</b></td><td>構築前に見積もり、共有可能な見積書を出力。</td><td>アカウント不要。設問: <em>estimate before migration</em>。</td></tr>
+        <tr><td><b>Billing Conductor</b>、<b>Cost Anomaly Detection</b></td><td>社内顧客向けにカスタマイズした請求書の分割。ML でコストの異常な増加を検知し SNS に送る（無料）。</td><td>名前だけ覚えておく。設問: <em>unexpected spend spike notification</em> → Cost Anomaly Detection。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Savings Plans と Reserved Instances（第2週の復習）</span>
+      <div class="tbl"><table>
+        <tr><th>選択肢</th><th>最大割引率（要確認）</th><th>柔軟性</th><th>選ぶとき</th></tr>
+        <tr><td><b>Compute Savings Plans</b></td><td>約 66%</td><td>すべての instance family、サイズ、Region、OS、tenancy。<b>Fargate と Lambda</b> も対象</td><td>USD/時をコミット、instance type が変わるワークロード、コンテナ/サーバーレスあり</td></tr>
+        <tr><td><b>EC2 Instance Savings Plans</b></td><td>約 72%</td><td>1つの Region 内の1つの family。サイズ、OS、tenancy、AZ は変更可</td><td>family が確定（例: 東京の m5）、割引を最大にしたい</td></tr>
+        <tr><td><b>Standard RI</b></td><td>約 72%</td><td>AZ、family 内のサイズを変更可（Linux regional）。<b>family は変更不可</b>。RI Marketplace で転売可</td><td>1〜3年の steady state、最大の割引、type を変えない</td></tr>
+        <tr><td><b>Convertible RI</b></td><td>約 66%</td><td>family、OS、tenancy を変更可（exchange）。転売不可</td><td>steady state だが type を変える可能性あり</td></tr>
+        <tr><td><b>Spot</b></td><td>約 90%</td><td>2分前の通知で中断される</td><td>バッチ、中断を許容、stateless</td></tr>
+        <tr><td><b>Dedicated Host</b></td><td>割引なし、ホスト単位で支払い</td><td>socket/core 単位のライセンスを維持（BYOL Windows、Oracle）</td><td>コンプライアンス、ライセンス</td></tr>
+      </table></div>
+      <p style="font-size:.92rem">RI は <b>RDS、ElastiCache、Redshift、OpenSearch、DynamoDB</b>（reserved capacity）にもあります。これらには Savings Plans は適用されません（SageMaker Savings Plans を除く）。支払い方法: All upfront が最安、Partial、No upfront。Savings Plans と RI の比較問題では、Savings Plans の方が柔軟で、Standard RI は EC2 Instance SP と同じ割引率だが硬直的で転売できる、と押さえます。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>stack の更新で RDS が置換されるか事前に確認</td><td>Change set</td><td>Drift detection（実際の状態と template を比較）</td></tr>
+        <tr><td>stack を削除しても RDS とデータを残す</td><td>DeletionPolicy Retain または Snapshot</td><td>Termination protection（stack 全体の削除を防ぐ）</td></tr>
+        <tr><td>同じ template を50アカウントにデプロイ</td><td>StackSets</td><td>Nested stack（1アカウント内）</td></tr>
+        <tr><td>network チームと app チームが別々に stack を管理し、app 側が VPC ID を必要とする</td><td>Cross-stack Export/ImportValue</td><td>Nested stack（同じライフサイクル）</td></tr>
+        <tr><td>Beanstalk でダウンタイムなし、追加コストなし、キャパシティ減は許容</td><td>Rolling</td><td>Rolling with additional batch（追加コスト）、Immutable（2倍）</td></tr>
+        <tr><td>Beanstalk で最も安全、rollback が速い</td><td>Immutable（または blue/green）</td><td>All at once</td></tr>
+        <tr><td>Python でテスト付きのインフラを書く</td><td>CDK</td><td>素の CloudFormation YAML、SAM（サーバーレスのみ）</td></tr>
+        <tr><td>どの EC2 が過大で、どの type に変えるべきか知りたい</td><td>Compute Optimizer（または Cost Explorer rightsizing）</td><td>Budgets、CUR</td></tr>
+        <tr><td>月のコストが 100 USD を超えたら dev の EC2 を自動停止</td><td>budget action 付きの Budgets</td><td>Cost Explorer（閲覧のみ）、CloudWatch billing alarm（通知のみ）</td></tr>
+        <tr><td>1つのアカウント内でプロジェクト別にコストを分ける</td><td>Cost allocation tag（user-defined、activate 済み）</td><td>新しいアカウントを作る（可能だが設問は1アカウント）</td></tr>
+        <tr><td>Lambda と Fargate と EC2 を併用し、コミットで割引したい</td><td>Compute Savings Plans</td><td>EC2 Instance SP、RI（Lambda/Fargate を対象外）</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>preview changes before update <b>→ change set</b></span><span>deploy to multiple accounts and Regions <b>→ StackSets</b></span><span>manual changes outside template <b>→ drift detection</b></span><span>keep database when deleting stack <b>→ DeletionPolicy Retain/Snapshot</b></span><span>reference output of another stack <b>→ Export + ImportValue</b></span><span>PaaS, just upload code <b>→ Elastic Beanstalk</b></span><span>no downtime, maintain capacity <b>→ rolling with additional batch</b></span><span>safest deploy, fast rollback <b>→ immutable</b></span><span>infrastructure in TypeScript/Python <b>→ CDK</b></span><span>serverless template, local test <b>→ SAM</b></span><span>forecast, RI recommendation <b>→ Cost Explorer</b></span><span>track cost by team, must activate <b>→ cost allocation tags</b></span><span>right sizing recommendation <b>→ Compute Optimizer</b></span><span>alert / stop when exceeds budget <b>→ Budgets (action)</b></span><span>most granular billing data, Athena <b>→ CUR</b></span><span>flexible commitment incl. Lambda, Fargate <b>→ Compute Savings Plans</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">25. CloudFormation stack に本番の RDS があります。チームは stack を削除したとき（または更新時に RDS が replace されたとき）にデータを失わないようにしたいと考えています。何を選びますか?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>RDS リソースに <code>DeletionPolicy: Snapshot</code>（または Retain）と <code>UpdateReplacePolicy: Snapshot</code> を設定し、stack に termination protection を付ける。</b> termination protection だけでは、replace を伴う更新からは守れません。RDS の自動バックアップも instance の削除と一緒に消えます（automated backups を保持しない限り）。</p></div>
+      <div class="q"><p class="qt">26. Elastic Beanstalk 上のアプリで、新バージョンをダウンタイムなし、キャパシティ維持でデプロイし、失敗時は最速で rollback する必要があります。どの policy を選びますか?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Immutable。</b> 新しい instance は一時 ASG に作られ、失敗したらそれを消すだけで、古い instance には手を付けていません。Rolling with additional batch もキャパシティを維持しますが、rollback は逆方向の rolling になるため遅くなります。All at once はダウンタイムがあります。</p></div>
+      <div class="q"><p class="qt">27. 財務部門が先月から各チームのコストを知りたいと考えています。リソースには年初から <code>Team</code> タグが付いていますが、Cost Explorer でタグによる絞り込みができません。なぜか、また何に注意すべきか?</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b><code>Team</code> タグを Billing console で cost allocation tag として activate していないため。</b> activate 後、最大24時間待つ必要があり、データは activate した時点以降しかなく、先月分には遡って適用されません（過去の数値が必要なら CUR と別の方法を組み合わせるか、欠落を受け入れる）。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HANDS-ON ============ -->
+<section id="handson">
+  <span class="eyebrow">ハンズオン</span>
+  <h2>ハンズオン: 7 Lab</h2>
+  <p>すべてのコマンドは Windows の PowerShell で AWS CLI v2、profile <code>saa</code>、Region <code>ap-northeast-1</code> を使って実行します（事前に <code>$env:AWS_PROFILE = "saa"</code> を設定）。Lab 1 で SSM 用 role とインバウンドなしの Security Group を持つ EC2 を作り、この EC2 を Lab 2 と Lab 5 で再利用します。今週の課金リソース: EC2 t3.micro（東京で約 0.0136 USD/時）、public IPv4（0.005 USD/時）、KMS key（1 USD/月、時間按分）、Secrets Manager（0.40 USD/シークレット/月、最初の30日は無料）、Lab 4 の案 A を行う場合は RDS db.t3.micro（約 0.026 USD/時）。いずれも要確認です。5日目に Lab 7 まで終えれば合計約 1〜2 USD です。</p>
+
+  <div class="card">
+    <h3>Lab 1. EC2 の CPU に対する CloudWatch alarm を SNS メールで通知し、stress で発火させる</h3>
+    <ol class="steps">
+      <li><div><p>SNS topic を作ってメールを登録し、届いたメールで <b>Confirm subscription</b> をクリックします:</p>
+<pre><code>$env:AWS_PROFILE = "saa"
+aws sns create-topic --name saa-alarm-topic
+aws sns subscribe --topic-arn arn:aws:sns:ap-northeast-1:&lt;account-id&gt;:saa-alarm-topic --protocol email --notification-endpoint ban@example.com
+aws sns list-subscriptions-by-topic --topic-arn arn:aws:sns:ap-northeast-1:&lt;account-id&gt;:saa-alarm-topic</code></pre><p>先に進む前に、<code>SubscriptionArn</code> が <code>PendingConfirmation</code> 以外になっている必要があります。</p></div></li>
+      <li><div><p><code>AmazonSSMManagedInstanceCore</code> を持つ EC2 用の IAM role を作ります（手順 5 と Lab 5 の Session Manager で使用）。ファイル <code>ec2-trust.json</code>:</p>
+<pre><code>{ "Version": "2012-10-17", "Statement": [{ "Effect": "Allow",
+  "Principal": { "Service": "ec2.amazonaws.com" }, "Action": "sts:AssumeRole" }] }</code></pre>
+<pre><code>aws iam create-role --role-name saa-ssm-role --assume-role-policy-document file://ec2-trust.json
+aws iam attach-role-policy --role-name saa-ssm-role --policy-arn arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+aws iam create-instance-profile --instance-profile-name saa-ssm-profile
+aws iam add-role-to-instance-profile --instance-profile-name saa-ssm-profile --role-name saa-ssm-role</code></pre></div></li>
+      <li><div><p>default VPC に<b>インバウンド rule のない</b> Security Group を作ります（新しい SG は既定でアウトバウンド全許可のみ）:</p>
+<pre><code>aws ec2 describe-vpcs --filters Name=isDefault,Values=true --query "Vpcs[0].VpcId" --output text
+aws ec2 create-security-group --group-name saa-no-inbound --description "no inbound, SSM only" --vpc-id &lt;vpc-id&gt;
+aws ec2 describe-security-groups --group-ids &lt;sg-id&gt; --query "SecurityGroups[0].IpPermissions"   # [] であること</code></pre></div></li>
+      <li><div><p>Amazon Linux 2023 の EC2 を起動します（AMI ID は Parameter Store の public parameter から取得）。エージェントが Internet Gateway 経由で SSM に接続できるよう public subnet に置きます:</p>
+<pre><code>aws ec2 describe-subnets --filters Name=vpc-id,Values=&lt;vpc-id&gt; --query "Subnets[0].SubnetId" --output text
+aws ec2 run-instances --image-id resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64 `
+  --instance-type t3.micro --subnet-id &lt;subnet-id&gt; --security-group-ids &lt;sg-id&gt; --associate-public-ip-address `
+  --iam-instance-profile Name=saa-ssm-profile `
+  --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=saa-week8},{Key=Project,Value=saa}]"
+aws ec2 describe-instances --filters Name=tag:Name,Values=saa-week8 --query "Reservations[0].Instances[0].[InstanceId,State.Name]"</code></pre><p><code>i-xxxx</code> を控えておきます。<code>run-instances</code> が instance profile が存在しないと返したら、10秒待って再実行します（IAM の結果整合性）。</p></div></li>
+      <li><div><p>60秒の period 2回で CPU が 70% を超えたら発火する alarm を作ります。1分間隔の metric には detailed monitoring が必要です（少額の課金、数時間なら無視できる程度）。有効にしない場合は <code>--period 300</code> に変更します:</p>
+<pre><code>aws ec2 monitor-instances --instance-ids &lt;i-xxxx&gt;
+aws cloudwatch put-metric-alarm --alarm-name saa-cpu-high --alarm-description "CPU over 70%" `
+  --namespace AWS/EC2 --metric-name CPUUtilization --dimensions Name=InstanceId,Value=&lt;i-xxxx&gt; `
+  --statistic Average --period 60 --evaluation-periods 2 --threshold 70 --comparison-operator GreaterThanThreshold `
+  --treat-missing-data missing `
+  --alarm-actions arn:aws:sns:ap-northeast-1:&lt;account-id&gt;:saa-alarm-topic `
+  --ok-actions arn:aws:sns:ap-northeast-1:&lt;account-id&gt;:saa-alarm-topic
+aws cloudwatch describe-alarms --alarm-names saa-cpu-high --query "MetricAlarms[0].StateValue"</code></pre><p>最初は <code>INSUFFICIENT_DATA</code> で、数分後にデータが集まると <code>OK</code> になります。</p></div></li>
+      <li><div><p>Session Manager でシェルに入り（Console: EC2 → instance を選択 → Connect → <b>Session Manager</b> タブ。CLI 用プラグインのインストールは Lab 5 を参照）、CPU 負荷をかけます:</p>
+<pre><code>sudo dnf install -y stress-ng
+stress-ng --cpu 2 --timeout 600
+# インストールできない場合: for i in 1 2; do yes &gt; /dev/null &amp; done   その後: pkill yes</code></pre></div></li>
+      <li><div><p>2〜4分後、状態とメールを確認します:</p>
+<pre><code>aws cloudwatch describe-alarms --alarm-names saa-cpu-high --query "MetricAlarms[0].[StateValue,StateReason]"
+aws cloudwatch describe-alarm-history --alarm-name saa-cpu-high --max-items 5</code></pre><p>期待結果: <code>ALARM</code>、メール「ALARM: saa-cpu-high」。stress が終わると alarm は <code>OK</code> に戻り、OK のメールも届きます。待たずに SNS を試すなら <code>aws cloudwatch set-alarm-state --alarm-name saa-cpu-high --state-value ALARM --state-reason "test"</code> を使います。</p></div></li>
+      <li><div><p>Console → CloudWatch → Alarms でグラフを見て、<b>Create composite alarm</b> を押して <code>ALARM(saa-cpu-high) AND ALARM(...)</code> の構文を確認します（保存は不要）。<b>Metrics → All metrics → EC2 → Per-Instance</b> も開き、memory の metric がないことを確認します。</p></div></li>
+    </ol>
+    <div class="note">EC2 と public IPv4 は時間課金です。同じ日の Lab 2 と Lab 5 のために残しておきますが、夜をまたいで休むなら <code>aws ec2 stop-instances --instance-ids &lt;i-xxxx&gt;</code> で停止します（停止すれば compute と IP の料金はかからず、8 GB の EBS はごく少額の課金が続きます）。Lab 7 で完全に削除します。</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 2. CloudTrail trail を S3（と CloudWatch Logs）に記録し、操作を探し出す</h3>
+    <ol class="steps">
+      <li><div><p>Console → <b>CloudTrail → Trails → Create trail</b>。Trail name は <code>saa-trail</code>。Storage: <b>Create new S3 bucket</b>（Console が CloudTrail 用の bucket policy を自動作成します。CLI では policy を自分で書く必要があるので Console を使います）。<b>Log file SSE-KMS encryption</b> のチェックを外します（安く済むよう SSE-S3 を使用）。<b>Log file validation</b> にチェック。<b>CloudWatch Logs</b> にチェックし、log group は <code>saa-trail-logs</code>、新しい role の作成を許可します。Next。</p></div></li>
+      <li><div><p>Event type: <b>Management events</b> の Read と Write はそのまま。Data events（S3 オブジェクトレベルは event 数で課金）と Insights events には<b>チェックしません</b>。Next → Create trail。Console では multi-Region trail が既定です。確認します:</p>
+<pre><code>aws cloudtrail describe-trails --query "trailList[].[Name,IsMultiRegionTrail,LogFileValidationEnabled,S3BucketName]"
+aws cloudtrail get-trail-status --name saa-trail --query "[IsLogging,LatestDeliveryTime]"</code></pre></div></li>
+      <li><div><p>探しやすい操作を1つ行います: Lab 1 の instance を stop して start します（またはテスト用の Security Group を作る）:</p>
+<pre><code>aws ec2 stop-instances --instance-ids &lt;i-xxxx&gt;
+aws ec2 wait instance-stopped --instance-ids &lt;i-xxxx&gt;
+aws ec2 start-instances --instance-ids &lt;i-xxxx&gt;</code></pre></div></li>
+      <li><div><p><b>Event history</b> で探します（数分後には表示され、trail は不要）:</p>
+<pre><code>aws cloudtrail lookup-events --lookup-attributes AttributeKey=EventName,AttributeValue=StopInstances --max-results 3 `
+  --query "Events[].[EventTime,Username,EventName]"
+aws cloudtrail lookup-events --lookup-attributes AttributeKey=ResourceName,AttributeValue=&lt;i-xxxx&gt; --max-results 5 --query "Events[].EventName"</code></pre><p>Console → CloudTrail → Event history → Event name = StopInstances で絞り込み → event を開いて JSON を読みます: <code>userIdentity.arn</code>、<code>sourceIPAddress</code>、<code>requestParameters</code>、<code>eventSource</code>。</p></div></li>
+      <li><div><p>5〜15分後、S3 上のログファイルを探します（パスは <code>AWSLogs/&lt;account-id&gt;/CloudTrail/&lt;region&gt;/yyyy/mm/dd/</code>）:</p>
+<pre><code>aws s3 ls s3://&lt;bucket-cloudtrail&gt;/AWSLogs/&lt;account-id&gt;/CloudTrail/ap-northeast-1/ --recursive | Select-Object -Last 5
+aws s3 cp s3://&lt;bucket-cloudtrail&gt;/AWSLogs/&lt;account-id&gt;/CloudTrail/ap-northeast-1/2026/10/29/&lt;file&gt;.json.gz .</code></pre><p>解凍して event を探します（Git Bash には <code>gzip</code> があります。または PowerShell）:</p>
+<pre><code># Git Bash
+gzip -d *.json.gz &amp;&amp; grep -o '"eventName":"StopInstances"' *.json
+# PowerShell
+$in = [IO.File]::OpenRead("$PWD\&lt;file&gt;.json.gz"); $gz = New-Object IO.Compression.GZipStream($in,[IO.Compression.CompressionMode]::Decompress)
+$out = [IO.File]::Create("$PWD\trail.json"); $gz.CopyTo($out); $gz.Close(); $out.Close(); $in.Close()
+Select-String -Path trail.json -Pattern '"eventName":"StopInstances"' | Measure-Object</code></pre><p>見つからなければ event は別のファイルに入っています（1ファイルは数分ごとのまとまり）。近い時刻のファイルも取得してください。隣の <code>CloudTrail-Digest</code> フォルダーに注目: これが log file validation の digest file です。</p></div></li>
+      <li><div><p>CloudWatch Logs で確認し、サンプルの metric filter を作ります（任意）: Console → CloudWatch → Log groups → <code>saa-trail-logs</code> → Logs Insights でクエリ:</p>
+<pre><code>fields eventTime, eventName, userIdentity.arn, sourceIPAddress
+| filter eventName = "StopInstances"
+| sort eventTime desc</code></pre><p><b>Metric filters → Create</b> でパターン <code>{ $.eventName = "ConsoleLogin" &amp;&amp; $.userIdentity.type = "Root" }</code> を試します。これは CIS 標準の「root login」alarm です。見るだけで、保存は不要です。</p></div></li>
+      <li><div><p>ログを検証します（最初の digest ができるまで最低1時間待つ）:</p>
+<pre><code>aws cloudtrail validate-logs --trail-arn arn:aws:cloudtrail:ap-northeast-1:&lt;account-id&gt;:trail/saa-trail --start-time 2026-10-29T00:00:00Z</code></pre></div></li>
+    </ol>
+    <div class="note">management event を S3 に記録する trail は、ラボの規模ではほぼ無料です（management event の最初のコピーは無料で、S3 と CloudWatch Logs の数セントのみ）。それでもアカウントをきれいに保つため、Lab 7 で trail とバケットを削除します。</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 3. KMS customer managed key を作成し、EBS と S3 を暗号化、kms:Decrypt のないユーザーで試す</h3>
+    <ol class="steps">
+      <li><div><p>symmetric key を作り、alias を付け、rotation を有効にします:</p>
+<pre><code>aws kms create-key --description "saa week8 lab key" --tags TagKey=Project,TagValue=saa --query "KeyMetadata.[KeyId,Arn]"
+aws kms create-alias --alias-name alias/saa-lab --target-key-id &lt;key-id&gt;
+aws kms enable-key-rotation --key-id &lt;key-id&gt;
+aws kms get-key-rotation-status --key-id &lt;key-id&gt;
+aws kms get-key-policy --key-id &lt;key-id&gt; --policy-name default --output text</code></pre><p>既定の key policy を読みます: <code>arn:aws:iam::&lt;account-id&gt;:root</code> に <code>kms:*</code> を与える statement が1つだけあります。これが「IAM policy への委任」です。</p></div></li>
+      <li><div><p>手作業で envelope encryption を試し、<code>GenerateDataKey</code> の2つの出力を確認します:</p>
+<pre><code>aws kms generate-data-key --key-id alias/saa-lab --key-spec AES_256 --query "[KeyId,Plaintext,CiphertextBlob]"
+"hello saa" | Out-File -Encoding ascii -NoNewline hello.txt
+aws kms encrypt --key-id alias/saa-lab --plaintext fileb://hello.txt --query CiphertextBlob --output text &gt; enc.b64
+[IO.File]::WriteAllBytes("$PWD\enc.bin", [Convert]::FromBase64String((Get-Content enc.b64)))
+aws kms decrypt --ciphertext-blob fileb://enc.bin --query Plaintext --output text   # "hello saa" の base64</code></pre><p>注意: 暗号文に鍵のメタデータが含まれているため、<code>decrypt</code> には key ID を渡す必要がありません（symmetric key の場合）。</p></div></li>
+      <li><div><p>この鍵で暗号化した EBS volume を作り、KmsKeyId を確認します:</p>
+<pre><code>aws ec2 create-volume --availability-zone ap-northeast-1a --size 1 --volume-type gp3 --encrypted --kms-key-id alias/saa-lab `
+  --tag-specifications "ResourceType=volume,Tags=[{Key=Name,Value=saa-kms-vol}]"
+aws ec2 describe-volumes --filters Name=tag:Name,Values=saa-kms-vol --query "Volumes[0].[VolumeId,Encrypted,KmsKeyId]"
+aws ec2 get-ebs-encryption-by-default</code></pre><p>任意: volume の snapshot を取り、us-east-1 の鍵の <code>--encrypted --kms-key-id</code> を付けて snapshot を <code>us-east-1</code> にコピーすると、KMS が regional であることを確認できます（その Region に鍵がなければ、コピー先 Region の aws/ebs が使われます）。終わったら snapshot を削除してください。</p></div></li>
+      <li><div><p>この鍵による SSE-KMS を default encryption とするバケットを作り、Bucket Key を有効にします:</p>
+<pre><code>aws s3 mb s3://saa-kms-quy-2026
+aws s3api put-bucket-encryption --bucket saa-kms-quy-2026 --server-side-encryption-configuration '{
+  "Rules": [{ "ApplyServerSideEncryptionByDefault": { "SSEAlgorithm": "aws:kms", "KMSMasterKeyID": "alias/saa-lab" }, "BucketKeyEnabled": true }] }'
+aws s3 cp hello.txt s3://saa-kms-quy-2026/hello.txt
+aws s3api head-object --bucket saa-kms-quy-2026 --key hello.txt --query "[ServerSideEncryption,SSEKMSKeyId,BucketKeyEnabled]"</code></pre><p>PowerShell が引用符内の JSON を壊す場合は、JSON を <code>enc.json</code> ファイルに書き、<code>file://enc.json</code> を使います。</p></div></li>
+      <li><div><p>S3 の権限だけを持つ（KMS の権限がない）ユーザーを作り、アップロード/ダウンロードを試します。ファイル <code>s3only.json</code>:</p>
+<pre><code>{ "Version": "2012-10-17", "Statement": [{ "Effect": "Allow", "Action": "s3:*",
+  "Resource": ["arn:aws:s3:::saa-kms-quy-2026", "arn:aws:s3:::saa-kms-quy-2026/*"] }] }</code></pre>
+<pre><code>aws iam create-user --user-name saa-s3only
+aws iam put-user-policy --user-name saa-s3only --policy-name S3Only --policy-document file://s3only.json
+aws iam create-access-key --user-name saa-s3only
+aws configure --profile s3only      # key を貼り付け、region は ap-northeast-1
+aws s3 cp hello.txt s3://saa-kms-quy-2026/x.txt --profile s3only       # AccessDenied: kms:GenerateDataKey
+aws s3 cp s3://saa-kms-quy-2026/hello.txt dl.txt --profile s3only      # AccessDenied: kms:Decrypt</code></pre><p>エラーメッセージをよく読んでください。S3 はどの KMS アクションが不足しているかを明示します。確認クイズの問2と同じ状況です。</p></div></li>
+      <li><div><p>最小限の KMS 権限を付けて再試行します。ファイル <code>kms-use.json</code>:</p>
+<pre><code>{ "Version": "2012-10-17", "Statement": [{ "Effect": "Allow",
+  "Action": ["kms:GenerateDataKey", "kms:Decrypt"], "Resource": "arn:aws:kms:ap-northeast-1:&lt;account-id&gt;:key/&lt;key-id&gt;" }] }</code></pre>
+<pre><code>aws iam put-user-policy --user-name saa-s3only --policy-name KmsUse --policy-document file://kms-use.json
+aws s3 cp hello.txt s3://saa-kms-quy-2026/x.txt --profile s3only       # 成功
+aws s3 cp s3://saa-kms-quy-2026/hello.txt dl.txt --profile s3only      # 成功</code></pre><p>追加の実験: policy から <code>kms:Decrypt</code> を外すと、アップロードはできてもダウンロードは再び失敗します。その後、CloudTrail Event history で Event source <code>kms.amazonaws.com</code> を絞り込むと、<code>GenerateDataKey</code> と <code>Decrypt</code> が1回ずつ記録されているのが見えます（ユーザー名と、バケット ARN の encryption context 付き）。</p></div></li>
+      <li><div><p>鍵を <b>disable</b> してすべてが壊れることを確認し、再度有効にします:</p>
+<pre><code>aws kms disable-key --key-id &lt;key-id&gt;
+aws s3 cp s3://saa-kms-quy-2026/hello.txt dl2.txt        # admin でも KMS.DisabledException エラー
+aws kms enable-key --key-id &lt;key-id&gt;</code></pre><p>何も削除せずに1秒で「すべてのデータをロックする」方法で、試験では鍵の削除よりこちらが好まれます。</p></div></li>
+    </ol>
+    <div class="note">鍵は 1 USD/月（時間按分）、1 GB の volume は数セントです。Lab 7 で volume、バケットを削除し、鍵を7日後に削除予約します。</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 4. Secrets Manager に RDS パスワードを保存し、rotation を有効にし、CLI でシークレットを読む</h3>
+    <p style="font-size:.94rem">2つの案があります。<b>案 A</b>（推奨、実際に rotation が動く）: master パスワードを AWS が Secrets Manager で管理するオプション付きで RDS MySQL db.t3.micro を作ります。rotation は Lambda 不要の managed rotation です。RDS と 20 GB のストレージで約 0.03 USD/時（時間按分）かかるので、1〜2時間で済ませてすぐ削除します。<b>案 B</b>（30日の無料トライアル内なら 0 USD）: 通常のシークレットだけを作り、CLI で読み、Parameter Store と比較します。通常のシークレットの rotation Lambda はコードを自作する必要があるので、rotation は省略します。</p>
+    <ol class="steps">
+      <li><div><p><b>案 A</b>: Secrets Manager がパスワードを管理する RDS を、すばやく作るため public なし、バックアップなしで作成します:</p>
+<pre><code>aws rds create-db-instance --db-instance-identifier saa-secret-db --engine mysql --db-instance-class db.t3.micro `
+  --allocated-storage 20 --master-username admin --manage-master-user-password `
+  --no-publicly-accessible --backup-retention-period 0 --no-multi-az --tags Key=Project,Value=saa
+aws rds wait db-instance-available --db-instance-identifier saa-secret-db
+aws rds describe-db-instances --db-instance-identifier saa-secret-db --query "DBInstances[0].MasterUserSecret"</code></pre><p>5〜10分かかります。出力に <code>SecretArn</code> と <code>SecretStatus: active</code> があります。このシークレットは RDS が作成したもので、名前は <code>rds!db-...</code> の形式、managed rotation は<b>既定で7日ごと</b>です。</p></div></li>
+      <li><div><p>CLI でシークレットを読みます（アプリが起動時にパスワードを取得する方法です）:</p>
+<pre><code>aws secretsmanager describe-secret --secret-id &lt;SecretArn&gt; --query "[Name,RotationEnabled,RotationRules,NextRotationDate]"
+aws secretsmanager get-secret-value --secret-id &lt;SecretArn&gt; --query SecretString --output text</code></pre><p>結果は JSON <code>{"username":"admin","password":"..."}</code> です。CloudTrail Event history で <code>GetSecretValue</code> を絞り込むと、読み出しのたびに痕跡が残っているのがわかります。</p></div></li>
+      <li><div><p>rotation のスケジュールを30日に変え、<b>即時 rotate</b> してバージョンが変わるのを確認します:</p>
+<pre><code>aws secretsmanager list-secret-version-ids --secret-id &lt;SecretArn&gt; --query "Versions[].[VersionId,VersionStages]"
+aws secretsmanager rotate-secret --secret-id &lt;SecretArn&gt; --rotation-rules "{\"ScheduleExpression\": \"rate(30 days)\"}" --rotate-immediately
+aws secretsmanager list-secret-version-ids --secret-id &lt;SecretArn&gt; --query "Versions[].[VersionId,VersionStages]"
+aws secretsmanager get-secret-value --secret-id &lt;SecretArn&gt; --version-stage AWSPREVIOUS --query SecretString --output text</code></pre><p>rotation 後、新しいバージョンに <code>AWSCURRENT</code> ラベルが付き、古いバージョンは <code>AWSPREVIOUS</code> になります。RDS のパスワードも対応して変更されています（managed rotation が代わりに行うため、アカウント内に Lambda はありません）。自分の通常のシークレットでは、この手順に Lambda rotation function が必要です。</p></div></li>
+      <li><div><p><b>両方の案</b>: 通常のシークレットを作って名前、KMS、recovery window を確認し、比較のため Parameter Store のパラメータも作ります:</p>
+<pre><code>aws secretsmanager create-secret --name saa/demo/api-key --description "demo" --secret-string "{\"apiKey\":\"abc123\"}" --tags Key=Project,Value=saa
+aws secretsmanager get-secret-value --secret-id saa/demo/api-key --query SecretString --output text
+aws ssm put-parameter --name /saa/demo/db-host --value "saa-secret-db.xxxx.ap-northeast-1.rds.amazonaws.com" --type String
+aws ssm put-parameter --name /saa/demo/db-pass --value "Demo-Pass-123" --type SecureString
+aws ssm get-parameter --name /saa/demo/db-pass                      # Value は暗号文? いいえ: --with-decryption がないと CLI のバージョンによりエラーか暗号文を返す
+aws ssm get-parameter --name /saa/demo/db-pass --with-decryption --query Parameter.Value --output text
+aws ssm get-parameters-by-path --path /saa/demo --recursive --with-decryption --query "Parameters[].[Name,Type]"
+aws ssm get-parameter --name /aws/reference/secretsmanager/saa/demo/api-key --with-decryption --query Parameter.Value --output text</code></pre><p>最後の行は、Parameter Store が参照パス経由で Secrets Manager のシークレットを読めることを示しています。Console → Systems Manager → Parameter Store: SecureString は値がマスク表示され、tier は Standard、KMS key は <code>alias/aws/ssm</code> です。</p></div></li>
+      <li><div><p>recovery window 付きで通常のシークレットを削除し、復元してみます:</p>
+<pre><code>aws secretsmanager delete-secret --secret-id saa/demo/api-key --recovery-window-in-days 7
+aws secretsmanager describe-secret --secret-id saa/demo/api-key --query DeletedDate
+aws secretsmanager restore-secret --secret-id saa/demo/api-key</code></pre><p>待機期間中、<code>get-secret-value</code> は「scheduled for deletion」エラーを返します。即時に削除するなら（Lab 7）<code>--force-delete-without-recovery</code> を使います。</p></div></li>
+      <li><div><p><b>案 A</b>: 終わったらすぐ RDS を削除します（Lab 7 まで待たない）。シークレット <code>rds!db-...</code> も一緒に削除されます:</p>
+<pre><code>aws rds delete-db-instance --db-instance-identifier saa-secret-db --skip-final-snapshot --delete-automated-backups
+aws rds wait db-instance-deleted --db-instance-identifier saa-secret-db</code></pre></div></li>
+    </ol>
+    <div class="note bad">RDS は今週もっとも高価なリソースです。夜をまたいで放置しないでください。db.t3.micro + ストレージを1か月忘れると約 20〜25 USD かかります（要確認）。PC を閉じる前に <code>aws rds describe-db-instances</code> が空を返すことを確認してください。</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 5. SSH ポートを開けずに SSM Session Manager で EC2 に入り、コマンドを実行する</h3>
+    <ol class="steps">
+      <li><div><p>Lab 1 の instance が managed node であり、Security Group に本当にインバウンドがないことを確認します:</p>
+<pre><code>aws ssm describe-instance-information --query "InstanceInformationList[].[InstanceId,PingStatus,PlatformName,AgentVersion]"
+aws ec2 describe-security-groups --group-ids &lt;sg-id&gt; --query "SecurityGroups[0].IpPermissions"
+aws ec2 describe-instances --instance-ids &lt;i-xxxx&gt; --query "Reservations[0].Instances[0].[PublicIpAddress,KeyName]"</code></pre><p><code>PingStatus</code> は <code>Online</code>、<code>KeyName</code> は <code>null</code>（SSH key なし）、インバウンドは空であるはずです。Online でない場合: role が付いているか、instance に public IP か NAT があるかを確認するか、VPC endpoint <code>ssm</code>、<code>ssmmessages</code>、<code>ec2messages</code> を作成します。</p></div></li>
+      <li><div><p>Windows の CLI 用 <b>Session Manager plugin</b> をインストールします: ドキュメントのページ「Install the Session Manager plugin on Windows」（docs.aws.amazon.com/systems-manager、ファイル <code>SessionManagerPluginSetup.exe</code>）からインストーラーをダウンロードしてインストールし、PowerShell を開き直して、<code>session-manager-plugin</code> がバージョンを表示することを確認します。</p></div></li>
+      <li><div><p>シェルを開き、自分が誰か、SSH 接続が一切ないことを確認します:</p>
+<pre><code>aws ssm start-session --target &lt;i-xxxx&gt;
+# セッション内で:
+whoami            # ssm-user
+sudo -i
+ss -tlnp          # SG にインバウンドがないため外から到達できる sshd はない（sshd は動いているが誰も入れない）
+curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/   # role 名 saa-ssm-role が見える
+exit; exit</code></pre><p>Console でも試します: EC2 → Connect → Session Manager。手元から <code>ssh ec2-user@&lt;public-ip&gt;</code> で SSH を試すと timeout します。期待どおりです。</p></div></li>
+      <li><div><p><b>Run Command</b> で instance 上のコマンドを実行します（セッション不要で、tag で数百台に実行できる）:</p>
+<pre><code>aws ssm send-command --document-name AWS-RunShellScript --targets "Key=tag:Project,Values=saa" `
+  --parameters "commands=['uptime','df -h /','cat /etc/os-release | head -2']" --comment "saa lab5" --query Command.CommandId --output text
+aws ssm list-command-invocations --command-id &lt;command-id&gt; --details --query "CommandInvocations[].[InstanceId,Status,CommandPlugins[0].Output]"</code></pre></div></li>
+      <li><div><p>監査のためにセッションの記録を有効にします: Console → Systems Manager → <b>Session Manager → Preferences → Edit</b>: <b>CloudWatch logging</b> にチェック、log group は <code>saa-session-logs</code>（事前に <code>aws logs create-log-group --log-group-name saa-session-logs</code> で作成）、CloudWatch 用の KMS key がなければ encrypt のチェックを外します。Save。新しいセッションを開き、いくつかコマンドを打って exit し、log group に入力ごとの記録があることを確認します。EC2 の role がログを書けるよう、<code>CloudWatchAgentServerPolicy</code> policy、または <code>logs:CreateLogStream</code>、<code>logs:PutLogEvents</code>、<code>logs:DescribeLogGroups</code> の inline policy を追加で付けます。</p></div></li>
+      <li><div><p>任意: port forwarding（bastion なしで private な RDS や社内 Web に入る方法）:</p>
+<pre><code>aws ssm start-session --target &lt;i-xxxx&gt; --document-name AWS-StartPortForwardingSession --parameters "portNumber=80,localPortNumber=8080"</code></pre><p><code>http://localhost:8080</code> を開くと instance の80番ポートに転送されます（Web をインストールしていなければ connection refused になりますが、それでもトンネルが動いていることの証明になります）。</p></div></li>
+      <li><div><p>Console → Systems Manager → <b>Fleet Manager</b>、<b>Patch Manager → Patch now</b>（AL2023 の既定 baseline を試しに実行可能、数分かかる）、<b>Inventory</b> を見て、残りの機能を把握します。追加設定は不要です。</p></div></li>
+    </ol>
+    <div class="note">すべてのセッションとコマンドは CloudTrail に記録されます（<code>StartSession</code>、<code>SendCommand</code>）。このラボでは稼働中の EC2 以外に課金リソースは増えません。</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 6（任意、Organizations がある場合）. ap-northeast-1 と us-east-1 以外の Region を SCP で拒否する</h3>
+    <p style="font-size:.94rem">SCP は management account に適用されないため、メンバーアカウントが1つ以上ある Organization が必要です。学習用アカウントが単独アカウントなら、Organization を作成（無料）し、メールエイリアスでメンバーアカウントを追加できます。ラボ後はメンバーアカウントを閉鎖できます（closing から完全削除まで90日、費用はかかりません）。アカウントを増やしたくなければ、手順 2 と 3 を読むだけにして、第1週のラボの IAM Deny policy で同等の実験を行ってください。</p>
+    <ol class="steps">
+      <li><div><p>Organization とメンバーアカウントを作成します（現在のアカウントで実行すると、そのアカウントが management account になります）:</p>
+<pre><code>aws organizations create-organization --feature-set ALL
+aws organizations create-account --email ten+saa-member@gmail.com --account-name saa-member --role-name OrganizationAccountAccessRole
+aws organizations list-accounts --query "Accounts[].[Id,Name,Status]"
+aws organizations list-roots --query "Roots[0].[Id,PolicyTypes]"</code></pre><p>新しいアカウントの Status が ACTIVE になるまで待ちます。<code>PolicyTypes</code> に SERVICE_CONTROL_POLICY ENABLED がなければ、Root で SCP の policy type を有効にします:</p>
+<pre><code>aws organizations enable-policy-type --root-id &lt;r-xxxx&gt; --policy-type SERVICE_CONTROL_POLICY</code></pre></div></li>
+      <li><div><p>OU <code>test</code> を作り、メンバーアカウントを移動します:</p>
+<pre><code>aws organizations create-organizational-unit --parent-id &lt;r-xxxx&gt; --name test
+aws organizations move-account --account-id &lt;member-id&gt; --source-parent-id &lt;r-xxxx&gt; --destination-parent-id &lt;ou-xxxx&gt;</code></pre></div></li>
+      <li><div><p>SCP を作成し（第6回の JSON を <code>scp-region.json</code> として保存）、OU に付けます。<code>FullAWSAccess</code> はそのまま残します（deny list 戦略）:</p>
+<pre><code>aws organizations create-policy --name DenyOutsideTokyoVirginia --type SERVICE_CONTROL_POLICY --description "allow only ap-northeast-1 and us-east-1" --content file://scp-region.json
+aws organizations attach-policy --policy-id &lt;p-xxxx&gt; --target-id &lt;ou-xxxx&gt;
+aws organizations list-policies-for-target --target-id &lt;ou-xxxx&gt; --filter SERVICE_CONTROL_POLICY</code></pre></div></li>
+      <li><div><p>メンバーアカウントに assume role し、2つの Region で試します:</p>
+<pre><code>$c = aws sts assume-role --role-arn arn:aws:iam::&lt;member-id&gt;:role/OrganizationAccountAccessRole --role-session-name scptest | ConvertFrom-Json
+$env:AWS_ACCESS_KEY_ID = $c.Credentials.AccessKeyId; $env:AWS_SECRET_ACCESS_KEY = $c.Credentials.SecretAccessKey; $env:AWS_SESSION_TOKEN = $c.Credentials.SessionToken
+aws sts get-caller-identity                                   # Account は member-id
+aws ec2 describe-instances --region ap-northeast-1 --query "Reservations | length(@)"   # 実行できる
+aws ec2 describe-instances --region ap-southeast-1             # AccessDenied ... with an explicit deny in a service control policy
+aws iam list-users                                             # iam:* は NotAction に含まれるので実行できる
+Remove-Item Env:AWS_ACCESS_KEY_ID, Env:AWS_SECRET_ACCESS_KEY, Env:AWS_SESSION_TOKEN</code></pre><p>エラーメッセージには「explicit deny in a service control policy」と明記され、IAM policy 不足のエラーとは異なります。さらに試すこと: management account で同じ <code>--region ap-southeast-1</code> のコマンドを実行すると成功します。SCP は management account に適用されないからです。</p></div></li>
+      <li><div><p>Console → Organizations → Policies → SCP を開く → Targets タブ。また IAM → Policy simulator でも、メンバーアカウントのユーザーを選ぶと SCP をシミュレートできます（名前だけ覚えておく）。</p></div></li>
+    </ol>
+    <div class="note">Organizations は無料です。ラボ後: SCP を detach して削除します（Lab 7 の最初の手順）。メンバーアカウントは第9週の sandbox として残すか、<code>aws organizations close-account --account-id</code> で閉鎖します。</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 7. 片付けと Billing の確認</h3>
+    <ol class="steps">
+      <li><div><p>Organizations（Lab 6 を行った場合）:</p>
+<pre><code>aws organizations detach-policy --policy-id &lt;p-xxxx&gt; --target-id &lt;ou-xxxx&gt;
+aws organizations delete-policy --policy-id &lt;p-xxxx&gt;</code></pre></div></li>
+      <li><div><p>EC2、volume、alarm、SNS、Security Group:</p>
+<pre><code>aws ec2 terminate-instances --instance-ids &lt;i-xxxx&gt;
+aws ec2 wait instance-terminated --instance-ids &lt;i-xxxx&gt;
+aws ec2 delete-volume --volume-id &lt;vol-saa-kms-vol&gt;
+aws ec2 describe-volumes --query "Volumes[].[VolumeId,State,Size]"          # 空であること
+aws ec2 describe-snapshots --owner-ids self --query "Snapshots[].SnapshotId"  # あれば削除: aws ec2 delete-snapshot --snapshot-id
+aws cloudwatch delete-alarms --alarm-names saa-cpu-high
+aws sns delete-topic --topic-arn arn:aws:sns:ap-northeast-1:&lt;account-id&gt;:saa-alarm-topic
+aws ec2 delete-security-group --group-id &lt;sg-id&gt;</code></pre></div></li>
+      <li><div><p>RDS（残っていれば）とシークレット:</p>
+<pre><code>aws rds describe-db-instances --query "DBInstances[].DBInstanceIdentifier"   # 空であること。残っていれば Lab 4 の手順 6 のように削除
+aws secretsmanager delete-secret --secret-id saa/demo/api-key --force-delete-without-recovery
+aws secretsmanager list-secrets --query "SecretList[].Name"
+aws ssm delete-parameters --names /saa/demo/db-host /saa/demo/db-pass</code></pre></div></li>
+      <li><div><p>CloudTrail、log group、バケット（CloudTrail のバケットは先に空にする必要あり）:</p>
+<pre><code>aws cloudtrail delete-trail --name saa-trail
+aws logs delete-log-group --log-group-name saa-trail-logs
+aws logs delete-log-group --log-group-name saa-session-logs
+aws s3 rb s3://&lt;bucket-cloudtrail&gt; --force
+aws s3 rb s3://saa-kms-quy-2026 --force</code></pre></div></li>
+      <li><div><p>KMS: 7日後の削除を予約します（第9週のために残すなら disable だけ）:</p>
+<pre><code>aws kms schedule-key-deletion --key-id &lt;key-id&gt; --pending-window-in-days 7
+aws kms describe-key --key-id &lt;key-id&gt; --query "KeyMetadata.[KeyState,DeletionDate]"
+aws kms delete-alias --alias-name alias/saa-lab</code></pre><p>状態は <code>PendingDeletion</code> です。7日以内なら <code>cancel-key-deletion</code> できます。削除待ちの鍵に課金が続くかどうかは KMS の料金ページで要確認です。</p></div></li>
+      <li><div><p>IAM: テスト用ユーザー、role、instance profile（role は無料なので第9週のために残してもよい）:</p>
+<pre><code>aws iam list-access-keys --user-name saa-s3only --query "AccessKeyMetadata[].AccessKeyId"
+aws iam delete-access-key --user-name saa-s3only --access-key-id &lt;AKIA...&gt;
+aws iam delete-user-policy --user-name saa-s3only --policy-name S3Only
+aws iam delete-user-policy --user-name saa-s3only --policy-name KmsUse
+aws iam delete-user --user-name saa-s3only
+# 任意
+aws iam remove-role-from-instance-profile --instance-profile-name saa-ssm-profile --role-name saa-ssm-role
+aws iam delete-instance-profile --instance-profile-name saa-ssm-profile
+aws iam detach-role-policy --role-name saa-ssm-role --policy-arn arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+aws iam delete-role --role-name saa-ssm-role</code></pre><p><code>~/.aws/credentials</code> から profile <code>s3only</code> を削除します。</p></div></li>
+      <li><div><p>残りがちなものを最後に確認します: <code>aws ec2 describe-addresses</code>（Elastic IP）、<code>aws ec2 describe-nat-gateways --filter Name=state,Values=available</code>、<code>aws elbv2 describe-load-balancers</code>、<code>aws rds describe-db-instances</code>、すべて空であること。Console → <b>Billing and Cost Management → Bills</b>: 今月の KMS、Secrets Manager、EC2、RDS の行を確認。<b>Cost Explorer</b> で tag <code>Project=saa</code> により絞り込み（第1週で tag を activate していれば、cost allocation tag の効果がここで見えます）。<b>Budgets</b>: 10 USD の閾値に達していないことを確認。</p></div></li>
+    </ol>
+    <div class="note ok">Lab 7 の後に残るのは: Budget、IAM admin ユーザー、（任意で）SSM role、削除待ちの KMS key、作成した場合は Organization です。第9週は CDK または CloudFormation で ALB と RDS を含む3層アーキテクチャを構築するので、今月の予算に余裕があることを確認しておきましょう。</div>
+  </div>
+</section>
+
+<!-- ============ MỐC KIỂM TRA ============ -->
+<section id="moc">
+  <span class="eyebrow">確認ポイント</span>
+  <h2>資料を見ずに自分で説明できるべき2つの問い</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>1. Secrets Manager と Parameter Store の違い</h3>
+      <p style="font-size:.94rem">回答の骨組みのヒント（隠してから自分で話す）:</p>
+      <ul style="font-size:.94rem">
+        <li>どちらも機密値を KMS で暗号化して保存し、CloudFormation、Lambda、ECS と統合されています。違いは <b>rotation</b>、<b>料金</b>、<b>cross-account</b>、<b>階層</b>です。</li>
+        <li>Secrets Manager: <b>自動 rotation</b>（RDS、Aurora、Redshift、DocumentDB は managed、その他は Lambda）、<b>0.40 USD/シークレット/月</b>、resource policy による cross-account 共有、Region 複製、7〜30日の recovery window。</li>
+        <li>Parameter Store: standard tier は<b>無料</b>（4 KB、10,000 パラメータ）、advanced は有料（8 KB、有効期限の policy）、KMS 暗号化の <b>SecureString</b>、<b>階層</b>とパス単位の取得、<b>rotation なし</b>、従来は cross-account 不可。</li>
+        <li>選択ルールを言えること: <em>rotate credentials</em>、<em>RDS password</em>、<em>share with another account</em> → Secrets Manager。<em>configuration</em>、<em>lowest cost</em>、<em>hierarchy</em> → Parameter Store。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>2. WAF、Shield、GuardDuty、Inspector、Macie を目的で区別する</h3>
+      <p style="font-size:.94rem">回答の骨組みのヒント:</p>
+      <ul style="font-size:.94rem">
+        <li>2つのグループに分けます: <b>エッジでブロック</b>（WAF、Shield）と<b>内部で検知</b>（GuardDuty、Inspector、Macie）。</li>
+        <li><b>WAF</b>: rule（SQLi、XSS、rate、geo、bot）で HTTP をフィルタし、CloudFront/ALB/API Gateway に付ける。NLB は不可。<b>Shield</b>: DDoS 対策。Standard は無料で L3/L4、Advanced は有料で L7 + SRT + cost protection。</li>
+        <li><b>GuardDuty</b>: CloudTrail、VPC Flow Logs、DNS logs から<b>進行中の脅威</b>を検知、エージェント不要。<b>Inspector</b>: EC2、ECR image、Lambda の <b>CVE 脆弱性</b>を探す。<b>Macie</b>: S3 内の<b>機密データ (PII)</b> を探す。</li>
+        <li>補足して全体像を: <b>Security Hub</b> は3つの findings を集約し標準で採点、<b>Detective</b> は原因を調査、<b>Config</b> は設定の準拠をチェック、<b>Trusted Advisor</b> は support plan に応じてベストプラクティスをチェック。</li>
+        <li>各サービスの例を1つずつ言えること: SQL injection → WAF、SYN flood → Shield、EC2 の暗号通貨マイニング → GuardDuty、AMI 内の Log4j CVE → Inspector、バケット内のクレジットカード番号 → Macie。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TỪ KHÓA ============ -->
+<section id="tukhoa">
+  <span class="eyebrow">クイックレビュー</span>
+  <h2>第8週のキーワード表</h2>
+  <div class="tbl"><table>
+    <tr><th>設問にある語句</th><th>すぐ思い浮かべるもの</th></tr>
+    <tr><td><em>full control over encryption keys</em>、key policy、audit key usage</td><td>KMS customer managed key（SSE-KMS）</td></tr>
+    <tr><td>4 KB を超えるデータの暗号化、<em>data key</em></td><td>Envelope encryption、GenerateDataKey</td></tr>
+    <tr><td>アップロードはできるが SSE-KMS のダウンロードが AccessDenied</td><td>kms:Decrypt が不足</td></tr>
+    <tr><td><em>rotate keys automatically</em>、再暗号化なし</td><td>KMS automatic rotation（1年、symmetric CMK）</td></tr>
+    <tr><td>別 Region で復号、マルチ Region の DR</td><td>Multi-Region key</td></tr>
+    <tr><td><em>dedicated hardware</em>、FIPS 140-2 Level 3、鍵の自己管理</td><td>CloudHSM（または KMS custom key store）</td></tr>
+    <tr><td>独自ドメインの CloudFront で HTTPS</td><td>us-east-1 の ACM certificate</td></tr>
+    <tr><td>無料の TLS 証明書、<em>automatic renewal</em></td><td>ACM（DNS validation）</td></tr>
+    <tr><td><em>rotate database credentials</em>、RDS password</td><td>Secrets Manager</td></tr>
+    <tr><td>設定値の保存、<em>hierarchy</em>、<em>no additional cost</em></td><td>Parameter Store（機密なら SecureString）</td></tr>
+    <tr><td><em>SQL injection</em>、<em>XSS</em>、<em>rate limiting</em>、geo block</td><td>CloudFront / ALB / API Gateway 上の WAF</td></tr>
+    <tr><td><em>DDoS</em> L3/L4、追加費用なし</td><td>Shield Standard（+ CloudFront、Route 53）</td></tr>
+    <tr><td><em>cost protection</em>、<em>24/7 response team</em> 付きの DDoS 対策</td><td>Shield Advanced</td></tr>
+    <tr><td>Organizations の全アカウントに WAF/Shield/SG を適用</td><td>Firewall Manager</td></tr>
+    <tr><td><em>IDS/IPS</em>、Suricata、VPC から出る通信のドメインフィルタ</td><td>Network Firewall</td></tr>
+    <tr><td><em>compromised instance</em>、crypto mining、unusual API calls</td><td>GuardDuty</td></tr>
+    <tr><td><em>vulnerabilities</em>、EC2、ECR image、Lambda の CVE</td><td>Inspector</td></tr>
+    <tr><td><em>PII</em>、S3 内の sensitive data</td><td>Macie</td></tr>
+    <tr><td><em>aggregate security findings</em>、CIS、PCI DSS score</td><td>Security Hub</td></tr>
+    <tr><td>finding の <em>investigate root cause</em></td><td>Detective</td></tr>
+    <tr><td><em>configuration compliance</em>、設定履歴、auto remediation</td><td>Config（+ SSM Automation）</td></tr>
+    <tr><td><em>who made the API call</em>、誰がリソースを削除したか</td><td>CloudTrail（S3 オブジェクトには data events）</td></tr>
+    <tr><td>改ざんできない CloudTrail ログ、全アカウント、メンバーは無効化不可</td><td>Organization trail + log file validation + Object Lock</td></tr>
+    <tr><td>EC2 のメモリやディスク使用量の警告</td><td>CloudWatch agent + custom metric + alarm</td></tr>
+    <tr><td>ログを <em>real time</em> で Kinesis / OpenSearch に送る</td><td>CloudWatch Logs subscription filter</td></tr>
+    <tr><td>ノイズの多い警告を減らし、複数条件をまとめる</td><td>Composite alarm</td></tr>
+    <tr><td><em>no SSH</em>、<em>no bastion</em>、<em>audit shell sessions</em></td><td>SSM Session Manager（+ VPC endpoint）</td></tr>
+    <tr><td>フリートの OS を定期パッチ、多数のマシンでスクリプト実行</td><td>Patch Manager、Run Command</td></tr>
+    <tr><td>App users sign up / sign in、MFA、social login、JWT</td><td>Cognito User Pool</td></tr>
+    <tr><td>アプリ利用者に一時的な AWS 認証情報、guest access</td><td>Cognito Identity Pool</td></tr>
+    <tr><td><em>third party</em> が assume role、<em>confused deputy</em></td><td>Cross-account role + external ID</td></tr>
+    <tr><td>社員が複数アカウントに SSO、AD/Okta、permission set</td><td>IAM Identity Center</td></tr>
+    <tr><td>メンバーアカウントの root までブロック、Region を制限</td><td>SCP（management account には適用されない）</td></tr>
+    <tr><td><em>landing zone</em>、guardrails、Account Factory</td><td>Control Tower</td></tr>
+    <tr><td>請求書を1つに、アカウント間で RI / Savings Plans を共有</td><td>Consolidated billing</td></tr>
+    <tr><td>subnet、Transit Gateway を他アカウントと共有</td><td>RAM</td></tr>
+    <tr><td>stack の変更をプレビュー、複数アカウントへのデプロイ、stack 削除時に RDS を残す</td><td>Change set、StackSets、DeletionPolicy Retain/Snapshot</td></tr>
+    <tr><td>Beanstalk: キャパシティを保ったまま no downtime / safest, fast rollback / URL の swap</td><td>Rolling with additional batch / Immutable / Blue-green</td></tr>
+    <tr><td>TypeScript、Python でインフラを書く</td><td>CDK（CloudFormation を生成）</td></tr>
+    <tr><td>コスト分析、forecast、RI recommendation</td><td>Cost Explorer</td></tr>
+    <tr><td>チーム別にコストを分ける、activate が必要</td><td>Cost allocation tags</td></tr>
+    <tr><td><em>right sizing</em> EC2、EBS、Lambda memory</td><td>Compute Optimizer</td></tr>
+    <tr><td>予算超過時に警告または自動停止</td><td>Budgets（budget action）</td></tr>
+    <tr><td>最も詳細な請求データ、Athena でクエリ</td><td>Cost and Usage Report</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ CHECKLIST ============ -->
+<section id="checklist">
+  <span class="eyebrow">進捗</span>
+  <h2>第8週チェックリスト</h2>
+  <p style="font-size:.94rem;color:var(--muted)">ここでチェックすると、この端末で自分の進捗を管理できます。項目が終わったら、セッションで Claude に伝えて <code>AWS-SAA-checklist.md</code> にチェックを入れてもらいましょう。</p>
+  <div class="card">
+    <h4>理論</h4>
+    <label class="check"><input type="checkbox" id="c1" data-ck><span>KMS: customer managed key、envelope encryption、rotation、multi-Region key</span></label>
+    <label class="check"><input type="checkbox" id="c2" data-ck><span>Secrets Manager と Parameter Store</span></label>
+    <label class="check"><input type="checkbox" id="c3" data-ck><span>ACM、CloudHSM</span></label>
+    <label class="check"><input type="checkbox" id="c4" data-ck><span>WAF、Shield Standard / Advanced、Firewall Manager、Network Firewall</span></label>
+    <label class="check"><input type="checkbox" id="c5" data-ck><span>GuardDuty、Inspector、Macie、Security Hub、Detective</span></label>
+    <label class="check"><input type="checkbox" id="c6" data-ck><span>Cognito: User Pool と Identity Pool</span></label>
+    <label class="check"><input type="checkbox" id="c7" data-ck><span>Organizations、SCP、Control Tower、consolidated billing</span></label>
+    <label class="check"><input type="checkbox" id="c8" data-ck><span>STS、cross-account role、IAM Identity Center</span></label>
+    <label class="check"><input type="checkbox" id="c9" data-ck><span>CloudTrail、CloudWatch（metric、log、alarm、dashboard）、Config、Trusted Advisor</span></label>
+    <label class="check"><input type="checkbox" id="c10" data-ck><span>Systems Manager: Session Manager、Parameter Store、Patch Manager</span></label>
+    <label class="check"><input type="checkbox" id="c11" data-ck><span>CloudFormation、Elastic Beanstalk、CDK</span></label>
+    <label class="check"><input type="checkbox" id="c12" data-ck><span>Cost Explorer、Cost Allocation Tag、Compute Optimizer、Budgets</span></label>
+    <h4>ハンズオン</h4>
+    <label class="check"><input type="checkbox" id="c13" data-ck><span>CPU の CloudWatch alarm を SNS メールで通知し、ALARM 状態を確認</span></label>
+    <label class="check"><input type="checkbox" id="c14" data-ck><span>CloudTrail を S3 に記録し、直前の操作を探し出す</span></label>
+    <label class="check"><input type="checkbox" id="c15" data-ck><span>KMS key を作成し、その鍵で EBS と S3 を暗号化、kms:Decrypt 不足のエラーを確認</span></label>
+    <label class="check"><input type="checkbox" id="c16" data-ck><span>Secrets Manager に RDS パスワードを保存、rotation を有効化、CLI で読む</span></label>
+    <label class="check"><input type="checkbox" id="c17" data-ck><span>SSH ポートを開けずに SSM Session Manager で EC2 に入る</span></label>
+    <label class="check"><input type="checkbox" id="c18" data-ck><span>Organizations がある場合: Region を制限する SCP を作り、SCP による explicit deny を確認</span></label>
+    <h4>確認ポイント</h4>
+    <label class="check"><input type="checkbox" id="c19" data-ck><span>Secrets Manager と Parameter Store を区別できる</span></label>
+    <label class="check"><input type="checkbox" id="c20" data-ck><span>WAF、Shield、GuardDuty、Inspector、Macie を目的で区別できる</span></label>
+    <h4>その他</h4>
+    <label class="check"><input type="checkbox" id="c21" data-ck><span>第8週のクイズで 80% 以上</span></label>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  // Xem đáp án
+  document.querySelectorAll('[data-reveal]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var a=b.parentElement.querySelector('.ans');
+      a.hidden=!a.hidden; b.textContent=a.hidden?'答えを見る':'答えを隠す';
+    });
+  });
+  // Checklist lưu trên máy này
+  var boxes=document.querySelectorAll('[data-ck]'), KEY='saa-tuan-08';
+  var saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  function update(){
+    var n=0; boxes.forEach(function(c){ c.closest('.check').classList.toggle('done',c.checked); if(c.checked)n++; });
+    document.getElementById('bar').style.width=(n/boxes.length*100)+'%';
+    document.getElementById('pct').textContent=n+'/'+boxes.length;
+  }
+  boxes.forEach(function(c){
+    if(saved[c.id])c.checked=true;
+    c.addEventListener('change',function(){ saved[c.id]=c.checked; try{ localStorage.setItem(KEY,JSON.stringify(saved)); }catch(e){} update(); });
+  });
+  update();
+  // Đánh dấu mục đang đọc
+  var links=document.querySelectorAll('.toc a'), secs=[];
+  links.forEach(function(l){ var s=document.querySelector(l.getAttribute('href')); if(s)secs.push([s,l]); });
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ links.forEach(function(l){l.classList.remove('active')}); secs.forEach(function(p){ if(p[0]===e.target)p[1].classList.add('active'); }); } }); },{rootMargin:'-20% 0px -70% 0px'});
+    secs.forEach(function(p){ io.observe(p[0]); });
+  }
+})();
+</script>

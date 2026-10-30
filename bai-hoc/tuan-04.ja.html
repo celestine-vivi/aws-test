@@ -1,0 +1,882 @@
+<title>SAA 第4週 VPC</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky mục lục bên trái (desktop), cột nội dung 760px bên phải; xếp một cột ở màn hẹp. */
+:root{
+  --bg:#f2f4f7; --surface:#ffffff; --surface-2:#e9edf2; --line:#d3dae3;
+  --fg:#172030; --muted:#5a6676; --accent:#1c6e8c; --accent-soft:#dcecf3;
+  --warm:#b35a00; --warm-soft:#fbe9d6; --ok:#2a7d4f; --ok-soft:#dcf0e4; --bad:#b3362b; --bad-soft:#f8dedb;
+  --display:"Manrope","IBM Plex Sans",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+a{color:var(--accent)}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:800}
+h2{font-size:1.5rem;font-weight:800;padding-top:8px}
+h3{font-size:1.12rem;font-weight:700}
+h4{font-size:.95rem;font-weight:700}
+p{margin:0}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+pre{font-family:var(--mono);font-size:.84rem;line-height:1.5;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:0}
+pre code{background:none;padding:0;font-size:inherit}
+em{color:var(--warm);font-style:italic}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* Header */
+.hero{max-width:1120px;margin:0 auto;padding-block:36px 20px;display:flex;flex-direction:column;gap:12px}
+.hero .lead{max-width:62ch;color:var(--muted);font-size:1.02rem}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.88rem;color:var(--muted)}
+.meta b{color:var(--fg);font-weight:600}
+.progress{display:flex;align-items:center;gap:12px;font-size:.88rem;color:var(--muted)}
+.bar{flex:1;max-width:320px;height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+
+/* Two columns */
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;align-items:start}
+.toc{position:sticky;top:max(12px,env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:2px;font-size:.9rem}
+.toc a{color:var(--muted);text-decoration:none;padding:6px 10px;border-left:2px solid var(--line);display:block}
+.toc a:hover,.toc a.active{color:var(--fg);border-left-color:var(--accent)}
+.toc .grp{margin-top:10px}
+main{display:flex;flex-direction:column;gap:56px;min-width:0;max-width:780px}
+section{display:flex;flex-direction:column;gap:18px;scroll-margin-top:16px}
+@media (max-width:860px){ .wrap{grid-template-columns:1fr;gap:24px} .toc{position:static;flex-direction:row;flex-wrap:wrap;gap:6px} .toc a{border:1px solid var(--line);border-radius:99px;padding:4px 10px} .toc .grp{margin:0} .toc a.active{border-color:var(--accent)} }
+
+/* Blocks */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.block{display:flex;flex-direction:column;gap:8px}
+.block > .eyebrow{color:var(--accent)}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:5px}
+li::marker{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.kw{display:flex;flex-wrap:wrap;gap:8px}
+.kw span{background:var(--warm-soft);color:var(--warm);border-radius:4px;padding:3px 9px;font-size:.86rem;font-style:italic}
+.kw span b{font-style:normal;font-weight:600;color:var(--fg)}
+.note{border-left:3px solid var(--warm);background:var(--warm-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.94rem}
+.note.ok{border-color:var(--ok);background:var(--ok-soft)}
+.note.bad{border-color:var(--bad);background:var(--bad-soft)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;font-size:.84rem}
+tr:last-child td{border-bottom:0}
+td.c{text-align:center}
+
+/* Checklist */
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:6px;cursor:pointer}
+.check:hover{background:var(--surface-2)}
+.check input{margin-top:5px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.check.done{color:var(--muted);text-decoration:line-through}
+
+/* Quiz reveal */
+.q{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.q .qt{font-weight:500}
+.q button{align-self:flex-start;font:inherit;font-size:.86rem;padding:5px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer}
+.q button:hover{background:var(--accent);color:var(--surface)}
+.q button:focus-visible,.check input:focus-visible,.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.q .ans{font-size:.94rem;border-top:1px dashed var(--line);padding-top:8px}
+.q .ans b{color:var(--ok)}
+
+/* Steps */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:12px;padding:0;list-style:none}
+.steps li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:start}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--mono);font-size:.8rem;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:500;margin-top:2px}
+.steps li > div{display:flex;flex-direction:column;gap:6px;min-width:0}
+
+/* Flow diagram */
+.flow{display:flex;flex-direction:column;gap:0;align-items:stretch;max-width:520px}
+.flow .n{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:.94rem}
+.flow .n .tag{font-family:var(--mono);font-size:.74rem;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.tag.deny{background:var(--bad-soft);color:var(--bad)} .tag.allow{background:var(--ok-soft);color:var(--ok)} .tag.next{background:var(--surface-2);color:var(--muted)}
+.flow .arrow{height:22px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--mono);font-size:.78rem}
+.flow .arrow::before{content:"";width:1px;height:100%;background:var(--line);position:absolute}
+.flow .arrow{position:relative} .flow .arrow span{background:var(--bg);padding:0 6px;position:relative}
+
+svg text{font-family:var(--body)}
+.diag{overflow-x:auto}
+.diag svg{width:100%;max-width:700px;height:auto;display:block}
+.sv-region{fill:var(--surface);stroke:var(--accent)} .sv-az{fill:var(--accent-soft);stroke:var(--accent)} .sv-edge{fill:var(--warm-soft);stroke:var(--warm)}
+.sv-t{fill:var(--fg);font-size:13px} .sv-m{fill:var(--muted);font-size:11px} .sv-line{stroke:var(--line)}
+.sv-sub{fill:var(--surface);stroke:var(--line)} .sv-ok{fill:var(--ok-soft);stroke:var(--ok)}
+@media (prefers-reduced-motion: reduce){ .bar i{transition:none} }
+</style>
+
+<header class="hero">
+  <span class="eyebrow">AWS SAA-C03 · 12週間ロードマップ · 第4週</span>
+  <h1>VPC：AWS 上のプライベートネットワーク</h1>
+  <p class="lead">今週は Networking ブロックの前半で、SAA 試験で最も比重が大きいブロックです。学ぶのは6項目です。VPC を subnet と route table に分ける方法、Internet への出口（IGW、NAT、Egress-only）、Security Group と NACL という2層のファイアウォール、VPC endpoint、VPC 同士の接続（peering、Transit Gateway）、オンプレミスとの接続（VPN、Direct Connect）。週末の目標は、console を見ずに2 AZ 構成の VPC を描き直せること、そして private EC2 から Internet へ出るパケットが何を通過するかを説明できることです。第5週で ELB、Auto Scaling、Route 53、CloudFront、Global Accelerator を学んでから、ブロック共通のクイズに取り組みます。</p>
+  <div class="meta"><span>学習ペース：<b>1日2時間</b></span><span>関連ドメイン：<b>SEC 30%</b>、<b>RES 26%</b></span><span>今週のラボ費用：<b>約1〜2 USD</b>（NAT Gateway を当日中に削除した場合）</span></div>
+  <div class="progress"><span>チェックリスト進捗</span><div class="bar"><i id="bar"></i></div><span id="pct">0/16</span></div>
+</header>
+
+<div class="wrap">
+<nav class="toc" aria-label="目次">
+  <a href="#ke-hoach">7日間の計画</a>
+  <span class="grp eyebrow">理論</span>
+  <a href="#vpc">1. VPC、CIDR、subnet、route table</a>
+  <a href="#gateway">2. IGW、NAT、Egress-only IGW</a>
+  <a href="#sg-nacl">3. Security Group と NACL</a>
+  <a href="#endpoint">4. VPC endpoint、PrivateLink</a>
+  <a href="#peering-tgw">5. Peering、Transit Gateway</a>
+  <a href="#vpn-dx">6. VPN、Direct Connect</a>
+  <span class="grp eyebrow">ハンズオン</span>
+  <a href="#handson">ハンズオン 5つのラボ</a>
+  <a href="#moc">確認ポイント</a>
+  <a href="#tukhoa">試験キーワード表</a>
+  <a href="#checklist">週のチェックリスト</a>
+</nav>
+
+<main>
+
+<section id="ke-hoach">
+  <h2>7日間の計画</h2>
+  <p>Lab 2、3、4 は bastion と NAT Gateway を共用するので、同じ日にまとめて行い、その日の最後に NAT を削除します。NAT Gateway は traffic がなくても時間単位で課金されるため、一晩放置すると約1.5 USD かかります。</p>
+  <div class="tbl"><table>
+    <tr><th>日</th><th>理論</th><th>ハンズオン</th></tr>
+    <tr><td>1</td><td>VPC、CIDR、subnet、route table</td><td>Lab 1：「VPC and more」で2 AZ の VPC を構築し、各コンポーネントを自分で確認（無料）</td></tr>
+    <tr><td>2</td><td>IGW、NAT Gateway、NAT Instance、Egress-only IGW</td><td>Lab 2 と Lab 3 を続けて実施：NAT Gateway、bastion、private EC2 への多段 SSH、S3 の gateway endpoint。<b>その日の最後に NAT Gateway を削除</b></td></tr>
+    <tr><td>3</td><td>Security Group と NACL</td><td>Lab 4：NACL で1つの IP を deny し、SG では遮断できないことを確認（bastion だけで可、NAT は不要）</td></tr>
+    <tr><td>4</td><td>VPC endpoint、PrivateLink、VPC peering、Transit Gateway</td><td>endpoint の prefix list が入った route table を見直す。3つの VPC を peering で接続した図と Transit Gateway で接続した図を描き、違いを確認</td></tr>
+    <tr><td>5</td><td>Site-to-Site VPN、Client VPN、Direct Connect</td><td>Lab 5：後片付け。Elastic IP の release、EC2 の terminate、Billing の確認</td></tr>
+    <tr><td>6〜7</td><td>3つの確認ポイントの復習、紙に VPC を描く、キーワード表の読み直し</td><td>session で「VPC のミニクイズ15問をください」と頼んで自己チェック。ブロック共通クイズは <code>quiz/tuan-04-05.md</code>（40問）で、第5週の最後に解きます</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ 1. VPC ============ -->
+<section id="vpc">
+  <span class="eyebrow">理論 1 / 6</span>
+  <h2>VPC、CIDR、subnet、route table</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <ul>
+        <li><b>VPC</b>（Virtual Private Cloud）：論理的に分離された仮想プライベートネットワークで、<b>1つの Region</b> 内に作られ、その Region のすべての AZ にまたがります。IP アドレスを持つもの（EC2、RDS、VPC 内の Lambda、ALB、interface endpoint）はすべて、いずれかの VPC の中に置く必要があります。VPC は Region ごとにデフォルトで最大5個です（quota、引き上げ可能）。</li>
+        <li>VPC の <b>CIDR</b>：<b>/16</b>（65,536 アドレス）から <b>/28</b>（16 アドレス）まで。RFC 1918 のプライベート範囲 <code>10.0.0.0/8</code>、<code>172.16.0.0/12</code>、<code>192.168.0.0/16</code> を使うのが推奨です。プライマリ CIDR は作成後に変更できませんが、IP が足りなくなったら <b>secondary CIDR</b>（デフォルト quota は5範囲、AWSドキュメントで要確認）を追加できます。CIDR を決めるときは、将来の peering や社内との VPN を先に考えておきます。<b>範囲が重複すると接続できません</b>。</li>
+        <li><b>Subnet</b>：VPC の CIDR を切り出したもので、<b>ちょうど1つの AZ</b> に属し、AZ をまたげません。subnet の CIDR も /16〜/28 で、互いに重複できません。各 subnet で AWS は <b>5つのアドレスを予約</b>します。先頭（ネットワークアドレス）、2番目（VPC router）、3番目（DNS resolver、Route 53 Resolver）、4番目（将来用の予備）、最後（broadcast。VPC は broadcast をサポートしないが予約はされる）です。/24 の subnet で実際に使えるのは251個、/28 の subnet では11個しかありません。</li>
+        <li><b>Route table</b>：ルーティングテーブルです。各 subnet は<b>ちょうど1つ</b>の route table に関連付けられ、1つの route table は複数の subnet に関連付けられます。明示的に関連付けていない subnet は VPC の <b>main route table</b> を自動的に使います。どの route table にも必ず <b>local</b> の行（VPC の CIDR → local）があり、VPC 内の subnet 同士が通信できるようにしています。この行は削除も変更もできません。route は <b>longest prefix match</b> で選ばれます。範囲が狭いほうが優先され、<code>0.0.0.0/0</code> は最後の行き先にすぎません。</li>
+        <li><b>Public subnet と private subnet</b>：違いは <b>route table だけ</b>です。<code>0.0.0.0/0 → igw-xxx</code> の route がある subnet が public、なければ private です。subnet に「public」というフラグはありません。public subnet の instance が Internet に出るには、さらに <b>public IPv4</b>（自動割り当てまたは Elastic IP）が必要です。</li>
+        <li><b>Default VPC</b>：AWS が Region ごとにあらかじめ作成する <code>172.31.0.0/16</code> の VPC です。AZ ごとに /20 の public subnet があり、IGW が付いていて、main route table は <code>0.0.0.0/0</code> を IGW に向けており、instance には public IP が自動で付きます。手早く試すには便利ですが、本番環境では使いません。</li>
+        <li><b>IPv6 の基本</b>：VPC には AWS が割り当てる <b>/56</b> の範囲（または BYOIP で持ち込んだ範囲）が付き、subnet ごとに <b>/64</b> の範囲を持ちます。AWS 上の IPv6 アドレスはすべて <b>global unicast で Internet からルーティング可能</b>であり、IPv6 には NAT という概念がありません。IPv6 の subnet を外向きのみにしたい場合は Egress-only Internet Gateway を使います（項目2）。IPv6 は IPv4 と並行して動作し（dual-stack）、2024年からは IPv6-only の subnet もあります。</li>
+        <li><b>VPC 内の DNS</b>：<code>enableDnsSupport</code> と <code>enableDnsHostnames</code> の2つのフラグがあります。両方を有効にして初めて、instance に <code>ip-10-0-2-15.ap-northeast-1.compute.internal</code> のような hostname が付き、interface endpoint の private DNS が機能します。DHCP option set は instance が使う DNS サーバーを決めます（デフォルトは VPC の2番目のアドレスにある AmazonProvidedDNS で、通称 <code>.2</code>）。</li>
+      </ul>
+    </div>
+
+    <div class="block diag"><span class="eyebrow">イメージ：2 AZ 構成の VPC。Lab 1 と Lab 2 で構築するものそのものです</span>
+      <svg viewBox="0 0 700 460" role="img" aria-label="VPC 10.0.0.0/16 の構成図。2つの AZ にそれぞれ public subnet と private subnet が1つずつあり、上部に Internet Gateway、public subnet 内に NAT Gateway がある。public subnet の route table は 0.0.0.0/0 を IGW に、private subnet の route table は 0.0.0.0/0 を NAT に向けている">
+        <rect x="280" y="8" width="140" height="30" rx="8" class="sv-edge" stroke-width="1.5"/>
+        <text x="350" y="28" text-anchor="middle" class="sv-t" font-weight="600">Internet</text>
+        <line x1="350" y1="38" x2="350" y2="60" class="sv-line" stroke-width="2"/>
+        <rect x="20" y="60" width="660" height="392" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="36" y="84" class="sv-t" font-weight="600">VPC saa-vpc 10.0.0.0/16 (Region ap-northeast-1)</text>
+        <rect x="280" y="66" width="140" height="28" rx="6" class="sv-edge" stroke-width="1.5"/>
+        <text x="350" y="85" text-anchor="middle" class="sv-t" font-weight="600">Internet Gateway</text>
+        <rect x="40" y="110" width="305" height="330" rx="8" class="sv-az" stroke-width="1.5"/>
+        <rect x="355" y="110" width="305" height="330" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="52" y="130" class="sv-t" font-weight="600">AZ ap-northeast-1a</text>
+        <text x="367" y="130" class="sv-t" font-weight="600">AZ ap-northeast-1c</text>
+        <rect x="52" y="142" width="281" height="120" rx="6" class="sv-sub" stroke-width="1.5"/>
+        <rect x="367" y="142" width="281" height="120" rx="6" class="sv-sub" stroke-width="1.5"/>
+        <text x="62" y="160" class="sv-t" font-weight="600">Public subnet 10.0.0.0/24</text>
+        <text x="377" y="160" class="sv-t" font-weight="600">Public subnet 10.0.1.0/24</text>
+        <rect x="62" y="170" width="120" height="36" rx="5" class="sv-ok" stroke-width="1.5"/>
+        <text x="122" y="185" text-anchor="middle" class="sv-t">NAT Gateway</text>
+        <text x="122" y="200" text-anchor="middle" class="sv-m">+ Elastic IP</text>
+        <rect x="196" y="170" width="128" height="36" rx="5" class="sv-ok" stroke-width="1.5"/>
+        <text x="260" y="185" text-anchor="middle" class="sv-t">Bastion EC2</text>
+        <text x="260" y="200" text-anchor="middle" class="sv-m">SG：自分の IP のみ</text>
+        <rect x="377" y="170" width="120" height="36" rx="5" class="sv-ok" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <text x="437" y="185" text-anchor="middle" class="sv-t">NAT Gateway 2</text>
+        <text x="437" y="200" text-anchor="middle" class="sv-m">（本番環境、HA 用）</text>
+        <text x="62" y="226" class="sv-m">Route table public（2つの subnet で共用）：</text>
+        <text x="62" y="241" class="sv-m">10.0.0.0/16 → local   0.0.0.0/0 → igw</text>
+        <text x="377" y="226" class="sv-m">Route table public（2つの subnet で共用）：</text>
+        <text x="377" y="241" class="sv-m">10.0.0.0/16 → local   0.0.0.0/0 → igw</text>
+        <rect x="52" y="276" width="281" height="150" rx="6" class="sv-sub" stroke-width="1.5"/>
+        <rect x="367" y="276" width="281" height="150" rx="6" class="sv-sub" stroke-width="1.5"/>
+        <text x="62" y="294" class="sv-t" font-weight="600">Private subnet 10.0.2.0/24</text>
+        <text x="377" y="294" class="sv-t" font-weight="600">Private subnet 10.0.3.0/24</text>
+        <rect x="62" y="304" width="128" height="36" rx="5" class="sv-ok" stroke-width="1.5"/>
+        <text x="126" y="319" text-anchor="middle" class="sv-t">App EC2</text>
+        <text x="126" y="334" text-anchor="middle" class="sv-m">private IP 10.0.2.x のみ</text>
+        <rect x="377" y="304" width="128" height="36" rx="5" class="sv-ok" stroke-width="1.5"/>
+        <text x="441" y="319" text-anchor="middle" class="sv-t">App EC2</text>
+        <text x="441" y="334" text-anchor="middle" class="sv-m">private IP 10.0.3.x のみ</text>
+        <text x="62" y="362" class="sv-m">Route table private-1a：</text>
+        <text x="62" y="377" class="sv-m">10.0.0.0/16 → local   0.0.0.0/0 → nat-1a</text>
+        <text x="62" y="392" class="sv-m">pl-s3 → vpce（gateway endpoint、Lab 3）</text>
+        <text x="377" y="362" class="sv-m">Route table private-1c：</text>
+        <text x="377" y="377" class="sv-m">10.0.0.0/16 → local   0.0.0.0/0 → nat-1c</text>
+        <text x="377" y="392" class="sv-m">（ラボでは一時的に nat-1a、本番は nat-1c）</text>
+        <line x1="126" y1="304" x2="126" y2="206" class="sv-line" stroke-width="2"/>
+        <line x1="122" y1="170" x2="122" y2="150" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="280" y1="80" x2="186" y2="150" class="sv-line" stroke-width="2"/>
+        <line x1="420" y1="80" x2="437" y2="150" class="sv-line" stroke-width="2" stroke-dasharray="4 3"/>
+        <text x="350" y="444" text-anchor="middle" class="sv-m">public と private の違いは route 0.0.0.0/0 → igw だけ。subnet は1つの AZ に属し、NAT Gateway も1つの AZ に属します。</text>
+      </svg>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">よく使う CIDR の分け方</span>
+        <ul>
+          <li>VPC <code>10.0.0.0/16</code>、subnet はそれぞれ <code>/24</code>（251 IP）で、ラボやほとんどの workload には十分です。本番環境では Auto Scaling、EKS、大規模な Lambda を置く subnet に /20 を使うことがよくあります。</li>
+          <li>各 AZ に少なくとも public subnet と private subnet を1つずつ用意します。ALB、NAT、bastion は public に、app と DB は private に置きます。DB には NAT への route を持たない「isolated」な subnet 層を別に設けることもあります。</li>
+          <li>早見：/16 = 65,536、/20 = 4,096、/24 = 256、/28 = 16 アドレス。プレフィックス長が1増えるごとに半分になります。</li>
+          <li><code>172.17.0.0/16</code> は Docker がデフォルトで使う範囲なので避けます。社内 VPN との重複も避けます。</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Route table：1行の読み方</span>
+        <ul>
+          <li><b>Destination</b>（どこへ）→ <b>Target</b>（何を経由して）：<code>local</code>、<code>igw-</code>、<code>nat-</code>、<code>vgw-</code>、<code>pcx-</code>（peering）、<code>tgw-</code>、<code>vpce-</code>、<code>eni-</code>（NAT instance、appliance）、<code>eigw-</code>。</li>
+          <li><b>Propagated route</b> もあります。Virtual Private Gateway がオンプレミスの route を自動で追加するもので、Route propagation で有効にします。</li>
+          <li>main route table には IGW への route を入れないほうがよいです。新しく作った subnet がすべて意図せず public になってしまいます。</li>
+          <li>Route table は<b>パケットが subnet から出ていく方向だけを決める</b>ものです。戻りのパケットは相手側 subnet の route table で決まります。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>VPC の IP が枯渇したが、作り直しはできない</td><td>secondary CIDR を追加し、新しい範囲に subnet を作成</td><td>プライマリ CIDR の変更（不可）や subnet を /23 に変更（subnet はリサイズ不可）</td></tr>
+        <tr><td>「public subnet」の instance が Internet に出られない</td><td>public IP の割り当て、route 0.0.0.0/0 → igw、SG の outbound、NACL を確認</td><td>NAT Gateway を作成（NAT は private subnet 用）</td></tr>
+        <tr><td>1つの subnet で AZ 障害に耐えたい</td><td>不可能。subnet は1つの AZ に属するので、別の AZ に subnet を作成</td><td>複数 AZ にまたがる subnet（存在しない）</td></tr>
+        <tr><td>/28 の subnet なのに instance が11台しか起動できない</td><td>正常。AWS が subnet ごとに5アドレスを予約している</td><td>設定ミス</td></tr>
+        <tr><td>2つの VPC を将来 peering する予定</td><td>最初から重複しない CIDR を選ぶ</td><td>両方ともデフォルトの 10.0.0.0/16 のままにする</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>subnet cannot span AZ <b>→ 1 subnet は1つの AZ</b></span><span>5 reserved IP addresses <b>→ /24 なら残り251</b></span><span>route 0.0.0.0/0 to igw <b>→ public subnet</b></span><span>ran out of IP addresses <b>→ secondary CIDR</b></span><span>overlapping CIDR <b>→ peering 不可</b></span><span>longest prefix match <b>→ 狭い route が優先</b></span><span>main route table <b>→ 明示的な関連付けのない subnet が使う</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">1. subnet <code>10.0.5.0/26</code> で instance を60台動かす予定です。可能でしょうか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>不可能です。</b>/26 は64アドレスで、AWS が5つ予約するので残りは59です。IP が1つ足りません。落とし穴：予約される5アドレスを忘れること。特に Lambda や interface endpoint の ENI 用の小さな subnet に関する問題で狙われます。</p></div>
+      <div class="q"><p class="qt">2. public IP を持つ EC2 が、route table に <code>10.0.0.0/16 → local</code> の行しかない subnet にあります。<code>8.8.8.8</code> に ping できるでしょうか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>できません。</b>public IP があっても route 0.0.0.0/0 → igw がなければ、パケットは行き先がわかりません。public IP は半分にすぎず、残りの半分は route table です。instance に public IP があっても、この subnet は実質的に private です。</p></div>
+      <div class="q"><p class="qt">3. route table に <code>0.0.0.0/0 → nat-abc</code> と <code>10.20.0.0/16 → pcx-123</code>（peering）の2行があります。<code>10.20.1.7</code> 宛てのパケットはどこへ行くでしょうか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>peering pcx-123 を経由します。</b>longest prefix match により、/16 は /0 より狭いので優先されます。行の順番は関係ありません。Lab 3 で S3 の gateway endpoint（prefix list）が NAT の route より優先されるのも、この原理によるものです。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. GATEWAY ============ -->
+<section id="gateway">
+  <span class="eyebrow">理論 2 / 6</span>
+  <h2>Internet Gateway、NAT Gateway、NAT Instance、Egress-only IGW</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <ul>
+        <li><b>Internet Gateway（IGW）</b>：VPC と Internet の間の双方向の出入口です。<b>1つの VPC に IGW は1つだけ</b>アタッチでき、VPC レベルのリソースでどの AZ にも属さず、スケールと HA は AWS が担い、<b>無料</b>です。役割は2つあります。route <code>0.0.0.0/0</code> の target になることと、instance の private IP と public IP / Elastic IP の間で <b>1:1 NAT</b> を行うことです。instance 自身は自分の public IP を知りません（<code>ip addr</code> で見えるのは 10.x だけ）。アドレスを変換しているのは IGW です。</li>
+        <li><b>NAT Gateway</b>：<b>private subnet の instance が Internet に出る</b>（package のダウンロード、外部 API の呼び出し）ための managed サービスで、Internet 側からは<b>能動的に接続できません</b>。NAT Gateway は <b>public subnet</b> に置き、<b>Elastic IP</b> を関連付け、private subnet の route table で <code>0.0.0.0/0 → nat-xxx</code> を設定します。NAT 自体は public subnet の IGW を通って外に出ます。</li>
+        <li>NAT Gateway は<b>1つの AZ</b> に属します。その AZ に障害が起きると、別の AZ の subnet も含め、そこを向いているすべての private subnet が Internet に出られなくなります。HA にするには <b>AZ ごとに NAT Gateway を1つ</b>作り、各 AZ の private route table を同じ AZ の NAT に向けます。AZ をまたいで向けると、AZ 間のデータ転送料金も追加でかかります。</li>
+        <li>帯域幅：<b>5 Gbps</b> から始まり、<b>100 Gbps</b> まで自動でスケールします。同じ宛先への同時接続は約55,000（AWSドキュメントで要確認）です。料金は<b>時間単位</b>（東京で約0.062 USD/時間、AWSドキュメントで要確認）と、通過した<b>GB 単位</b>の合計です。NAT Gateway には Security Group がなく、配置先 subnet の NACL だけが適用されます。bastion としては使えず、port forwarding もできません。</li>
+        <li><b>NAT Instance</b>：NAT AMI を動かす EC2 です（古い方式。Amazon Linux の NAT AMI はサポート終了済みで、使うなら iptables を自分で設定する必要があります）。自分宛てではないパケットを転送するため、instance の <b>Source/Destination check を無効化</b>する必要があります。Security Group があり、bastion として使え、port forwarding もでき、traffic が少なければ安価（t3.nano）です。ただし HA は自前で用意し、帯域幅は instance type に依存し、OS のパッチも自分で当てます。private route table は instance の <code>0.0.0.0/0 → eni-xxx</code> に向けます。</li>
+        <li><b>Egress-only Internet Gateway</b>：<b>IPv6 専用</b>です。IPv6 には NAT がないため、private subnet の IPv6 instance を外に出しつつ Internet からは入れないようにするには、route <code>::/0 → eigw-xxx</code> を設定します。Stateful で無料です。IPv4 は NAT、IPv6 は Egress-only を使い、互いに代替はできません。</li>
+        <li><b>Elastic IP（EIP）</b>：account に属する静的な public IPv4 で、instance や NAT に付け外しできます。instance を停止して再起動しても <b>EIP は維持</b>されますが、<b>自動割り当ての public IP は失われます</b>。2024年からすべての public IPv4 に約0.005 USD/時間の料金がかかり、何にも関連付けていない EIP も課金されます。デフォルト quota は Region ごとに EIP 5個です。</li>
+        <li><b>Private NAT Gateway</b>（名前を知っておく程度）：EIP を持たない NAT です。CIDR が重複する2つのネットワーク（例：VPC とオンプレミス）を、重複しない範囲に変換することで Transit Gateway 経由で通信させるために使います。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">private EC2 から Internet へ出るパケットは何を通るか（確認ポイント2）</span>
+      <div class="flow">
+        <div class="n"><span>private EC2 10.0.2.15 上の app が 93.184.216.34:443 に送信</span><span class="tag next">開始</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span>EC2 の <b>ENI</b>：<b>Security Group の outbound</b> は 443 の外向きを許可しているか（デフォルトは all）。stateful なので接続を記憶</span><span class="tag allow">通過</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span>private subnet の <b>NACL outbound</b>：宛先 0.0.0.0/0、port 443 に一致する rule はどれか（デフォルトは allow all）</span><span class="tag allow">通過</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span><b>private の route table</b>：93.184.216.34 は local に一致しない → <code>0.0.0.0/0 → nat-1a</code> に一致</span><span class="tag next">NAT へ</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span>public subnet の <b>NACL inbound</b>（NAT がある subnet に入るパケット）、続いて <b>NAT Gateway</b> が送信元を EIP に変換し、port の mapping を記憶</span><span class="tag next">SNAT</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span>public subnet の <b>NACL outbound</b> → <b>public の route table</b>：<code>0.0.0.0/0 → igw</code> → <b>Internet Gateway</b> → Internet</span><span class="tag allow">外へ</span></div>
+        <div class="arrow"><span>戻り ↓</span></div>
+        <div class="n"><span>EIP 宛ての応答 → IGW → public の NACL inbound（ephemeral port 1024-65535 の allow が必要）→ NAT が mapping を参照して宛先を 10.0.2.15 に戻す → public の NACL outbound → route local → private の NACL inbound（ephemeral）→ EC2 の SG は <b>stateful なので自動的に許可</b></span><span class="tag allow">app へ</span></div>
+      </div>
+      <p style="font-size:.9rem;color:var(--muted)">各区間の順序を覚えておきましょう。instance から出るパケットは SG、次に NACL を通ります。instance に入るパケットは NACL、次に SG を通ります。NAT と IGW には SG がなく、subnet の NACL だけが適用されます。デフォルト NACL（allow all）なら上の NACL はすべて通過します。試験の落とし穴は、custom NACL で ephemeral port を開け忘れるケースです。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">NAT Gateway と NAT Instance の比較</span>
+      <div class="tbl"><table>
+        <tr><th>観点</th><th>NAT Gateway</th><th>NAT Instance</th></tr>
+        <tr><td>管理</td><td>AWS managed、<em>least operational overhead</em></td><td>自己管理。OS のパッチ適用、failover のスクリプトも自前</td></tr>
+        <tr><td>HA</td><td>AZ 内では自動で HA。AZ 障害に耐えるには AZ ごとに NAT を1つ</td><td>自前で構成（route を切り替えるスクリプト、ASG）</td></tr>
+        <tr><td>帯域幅</td><td>5 Gbps から 100 Gbps まで自動スケール</td><td>instance type 次第</td></tr>
+        <tr><td>Security Group</td><td>関連付け不可</td><td>あり</td></tr>
+        <tr><td>Bastion、port forwarding</td><td>不可</td><td>可</td></tr>
+        <tr><td>Source/Dest check</td><td>関係なし</td><td>無効化が必要</td></tr>
+        <tr><td>コスト</td><td>時間 + GB 課金。traffic が少ないと割高</td><td>EC2 の料金のみ。traffic が少なければ安価、Free Tier あり</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>private EC2 が Internet から update をダウンロード、<em>highly available</em></td><td>各 AZ に NAT Gateway を置き、各 AZ の private route table を同じ AZ の NAT に向ける</td><td>共用の NAT Gateway 1つ（AZ 障害で停止）、または EC2 に public IP を付ける</td></tr>
+        <tr><td>private subnet の IPv6 instance を Internet に出し、入ってこさせない</td><td>Egress-only Internet Gateway</td><td>NAT Gateway（IPv6 の NAT はしない）</td></tr>
+        <tr><td>NAT Instance を作ったのに private subnet から外に出られない</td><td>Source/Destination check を無効化。NAT instance の SG で private CIDR からの inbound を許可しているか確認</td><td>2つ目の IGW を作成（1つの VPC に IGW は1つ）</td></tr>
+        <tr><td>stop/start 後もサーバーの IP を固定したい</td><td>Elastic IP</td><td>自動割り当ての public IP（stop/start のたびに変わる）</td></tr>
+        <tr><td>NAT Gateway が遅いので帯域幅を増やしたい</td><td>workload を複数 subnet の複数 NAT Gateway に分散する、または同じ宛先への接続数の上限を確認</td><td>instance type を変更（NAT Gateway に instance type はない）</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>private subnet needs outbound Internet <b>→ public subnet に NAT Gateway</b></span><span>NAT must survive AZ failure <b>→ AZ ごとに NAT Gateway を1つ</b></span><span>IPv6 outbound only <b>→ Egress-only IGW</b></span><span>source/destination check <b>→ NAT Instance</b></span><span>static public IP <b>→ Elastic IP</b></span><span>one IGW per VPC <b>→ IGW は VPC レベル、最初から HA</b></span><span>least operational overhead for NAT <b>→ NAT Gateway</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">4. ある会社は3つの AZ に private subnet を持ち、すべての route <code>0.0.0.0/0</code> が AZ 1a の NAT Gateway 1つに向いています。AZ 1a で停電が発生しました。何が起きて、どう直すべきでしょうか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>3つの subnet すべてが Internet に出られなくなります。</b>NAT Gateway は1つの AZ に属します。対処：1c と 1d にも NAT Gateway を作り、各 AZ の private route table を同じ AZ の NAT に向けます。「NAT Gateway は自動で HA」という選択肢が正しいのは、1つの AZ の<b>中</b>だけです。</p></div>
+      <div class="q"><p class="qt">5. スタートアップに private instance が3台あり、毎週数 MB の patch をダウンロードするだけです。<em>most cost-effective</em> にしたい場合、何を選ぶべきでしょうか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Source/Dest check を無効化した NAT Instance（t3.nano）。</b>NAT Gateway は traffic がなくても時間課金され、約45 USD/月かかるため、数 MB の用途には高すぎます。設問に <em>highly available</em> や <em>least operational overhead</em> とあれば NAT Gateway を選びます。</p></div>
+      <div class="q"><p class="qt">6. public subnet の EC2 に public IP があります。stop してから start し直すと、以前の IP で SSH できなくなりました。なぜでしょうか。また、どう防ぐべきでしょうか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>自動割り当ての public IP は stop/start のたびに変わります。</b>固定するには Elastic IP を関連付けます。reboot では IP は変わらず、変わるのは stop/start のときだけである点に注意してください。EIP は約0.005 USD/時間かかります。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. SG vs NACL ============ -->
+<section id="sg-nacl">
+  <span class="eyebrow">理論 3 / 6</span>
+  <h2>Security Group と Network ACL</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <ul>
+        <li><b>Security Group（SG）</b>：<b>ENI</b>（EC2、RDS、ALB、VPC 内の Lambda、interface endpoint、EFS mount target のネットワークカード）に付けるファイアウォールです。<b>Stateful</b> なので、外向きのパケットを許可すれば応答パケットは自動的に入れます（逆も同様）。逆方向の rule は不要です。rule は <b>Allow</b> のみで Deny はなく、許可されていないものはすべて遮断されます。すべての rule が同時に評価され、順序はありません。1つの ENI に付けられる SG は最大5個（デフォルト quota、16まで引き上げ可能）、SG ごとの rule はデフォルトで inbound 60、outbound 60 です（AWSドキュメントで要確認）。</li>
+        <li>新規作成した SG は <b>inbound なし</b>、outbound は <b>allow all</b> です。VPC の <b>Default SG</b> は、inbound で同じ SG からのすべての traffic を許可し（同じ default SG を持つ instance 同士は通信可能）、outbound は all です。</li>
+        <li>SG の rule の Source/Destination には、CIDR、<b>別の SG</b>（または自分自身）、prefix list を指定できます。「Source = sg-app」は、IP に関係なく sg-app を付けているすべての ENI を許可するという意味です。IP を知らなくても DB が app 層からの接続だけを受け付けるようにする標準的な方法です。同じ Region なら peering 越しに SG を参照できます。</li>
+        <li><b>Network ACL（NACL）</b>：<b>subnet</b> に付けるファイアウォールで、各 subnet にちょうど1つ、1つの NACL は複数の subnet に関連付けられます。<b>Stateless</b> なのでパケットを1つずつ独立して評価し、応答パケットも含めて inbound と outbound の両方の rule を開ける必要があります。<b>Allow と Deny</b> の両方があります。rule には <b>1〜32766 の番号</b>があり、小さい番号から順に評価され、<b>最初に一致した rule で評価が止まります</b>。最後には削除できない <code>*</code> の deny all rule があります。後から挿入できるよう、AWS は100刻みでの採番を推奨しています。</li>
+        <li>VPC の <b>Default NACL</b>：inbound、outbound ともに allow all（rule 100）。新規作成した <b>Custom NACL</b>：rule を追加するまで両方向とも <b>deny all</b>。新しく作った subnet は自動的に default NACL に関連付けられます。</li>
+        <li><b>Ephemeral port</b>：NACL は stateless なので、応答パケットはクライアントが選んだ一時的な port に戻ります。この範囲を逆方向で開ける必要があります。Linux（Amazon Linux）は 32768-60999、Windows Server は 49152-65535、NAT Gateway と ELB は 1024-65535 を使います。実務では安全のため <b>1024-65535</b> を開けることが多いです。</li>
+        <li><b>通過順序</b>：instance に入るパケットは subnet の NACL、次に ENI の SG を通ります。出るパケットは SG、次に NACL です。<b>同じ subnet</b> の2つの instance 間の通信は NACL を通らず（NACL は subnet の境界にのみある）、SG だけを通ります。</li>
+        <li><b>特定の IP を遮断する</b>：SG には Deny がないのでできません。番号の小さい Deny rule を持つ NACL か、AWS WAF（ALB/CloudFront 経由の HTTP の場合）を使います。この項目で最もよく出題されるパターンです。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">比較表</span>
+      <div class="tbl"><table>
+        <tr><th>観点</th><th>Security Group</th><th>Network ACL</th></tr>
+        <tr><td>適用先</td><td>ENI（instance、RDS、ALB、endpoint）</td><td>Subnet</td></tr>
+        <tr><td>状態</td><td><b>Stateful</b>、応答パケットは自動で通過</td><td><b>Stateless</b>、両方向を開ける必要あり</td></tr>
+        <tr><td>rule の種類</td><td>Allow のみ</td><td>Allow と Deny</td></tr>
+        <tr><td>順序</td><td>すべて評価、番号なし</td><td>rule 番号順、最初に一致したものが優先</td></tr>
+        <tr><td>新規作成時のデフォルト</td><td>Inbound：なし、outbound：all</td><td>Custom：deny all。Default NACL：allow all</td></tr>
+        <tr><td>Source</td><td>CIDR、別の SG、prefix list</td><td>CIDR のみ</td></tr>
+        <tr><td>適用範囲</td><td>関連付けた ENI のみ</td><td>subnet 内のすべての instance</td></tr>
+        <tr><td>使いどころ</td><td>役割（web、app、db）ごとのきめ細かな制御</td><td>第2の防御層、特定の IP や IP 範囲の遮断</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">パケットの具体例：クライアント 203.0.113.10 が web サーバー 10.0.0.20 に HTTPS でアクセス（確認ポイント3）</span>
+      <div class="tbl"><table>
+        <tr><th>区間</th><th>パケット</th><th>web サーバーの SG に必要なもの</th><th>public subnet の NACL に必要なもの</th></tr>
+        <tr><td>1. リクエストの受信</td><td>src 203.0.113.10:51234 → dst 10.0.0.20:443</td><td>0.0.0.0/0 からの TCP 443 を inbound で allow。SG はこの接続を記憶する。</td><td>0.0.0.0/0 からの TCP 443 を inbound rule で allow（例：rule 100）</td></tr>
+        <tr><td>2. レスポンスの送信</td><td>src 10.0.0.20:443 → dst 203.0.113.10:51234</td><td><b>rule は不要</b>。outbound をすべて削除していても stateful なので自動で通過</td><td>0.0.0.0/0 宛ての TCP <b>1024-65535</b> を outbound rule で allow。この行がないとクライアントが応答待ちのまま止まる</td></tr>
+        <tr><td>3. web サーバーが外部 API を呼ぶ</td><td>src 10.0.0.20:40000 → dst 198.51.100.5:443</td><td>outbound で 443 を allow（デフォルトであり）</td><td>outbound で 443 を allow、さらに応答パケット用に inbound で 1024-65535 を allow</td></tr>
+        <tr><td>4. 203.0.113.10 だけを遮断したい</td><td>この IP からのすべてのパケット</td><td><b>できない</b>。Deny がなく、source を絞ると他のユーザーも遮断される</td><td><b>100より小さい番号</b>の rule を追加。例：90 で 203.0.113.10/32 からの all を Deny。110 にすると 100 がすでに allow しているので無意味</td></tr>
+      </table></div>
+      <div class="note">試験のサイン：custom NACL を作成した後に「接続はできるが<b>応答が返ってこない</b>」→ outbound の ephemeral port が不足しています。VPC Flow Logs では inbound が ACCEPT、outbound が REJECT になります。SG が遮断している場合は、SG が stateful で応答パケットを決して遮断しないため、受信方向の REJECT が1行出るだけです。</div>
+    </div>
+
+    <div class="block"><span class="eyebrow">SG から SG を参照する3層構成のパターン</span>
+      <ul>
+        <li><code>sg-alb</code>：0.0.0.0/0 からの 443 を inbound で許可。</li>
+        <li><code>sg-app</code>：<b>source sg-alb</b> からの 8080 を inbound で許可。CIDR を書かないので、ALB の IP が変わってもノードが増えても正しく動きます。</li>
+        <li><code>sg-db</code>：<b>source sg-app</b> からの 3306 を inbound で許可。sg-app を持たないものは、同じ subnet にあっても DB に入れません。</li>
+        <li><code>sg-bastion</code>：社内 IP /32 からの 22 を inbound で許可。<code>sg-app</code> に source sg-bastion からの 22 を inbound で追加。Lab 2 はまさにこのパターンです。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>EC2 を攻撃している IP を1つ遮断したい</td><td>その IP に対する、番号の小さい NACL の Deny rule</td><td>Security Group（Deny がない）</td></tr>
+        <tr><td>ALB / CloudFront への HTTP 攻撃元の IP を遮断したい</td><td>AWS WAF の IP set（第8週）、または ALB の subnet の NACL</td><td>ALB の SG</td></tr>
+        <tr><td>DB には app サーバーだけを入れたい。app は自動でスケールする</td><td>DB の SG の source を app の SG にする</td><td>app の IP を DB の SG に列挙する</td></tr>
+        <tr><td>custom NACL を作成したら何にも接続できなくなった</td><td>custom NACL はデフォルトで deny all。両方向に allow rule を追加する必要がある</td><td>SG のエラー</td></tr>
+        <tr><td>SSH には入れるが、ファイルのダウンロードがとても遅く途中で切れる</td><td>MTU、NACL の ephemeral を確認。SG ではない</td><td>SG に outbound rule を追加（stateful なので許可済み）</td></tr>
+        <tr><td>同じ subnet の2つの EC2 が互いに ping できない</td><td>SG で相互の ICMP を許可していない（NACL は subnet 内の traffic には適用されない）</td><td>NACL や route table を修正</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>stateful <b>→ Security Group</b></span><span>stateless <b>→ NACL</b></span><span>block a specific IP address <b>→ NACL Deny</b></span><span>rules evaluated in order <b>→ NACL</b></span><span>reference another security group <b>→ SG source = sg-id</b></span><span>ephemeral ports <b>→ NACL outbound 1024-65535</b></span><span>subnet level <b>→ NACL</b></span><span>instance level <b>→ SG</b></span><span>default security group <b>→ 同じ SG 同士は通信可</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">7. web サーバーのある subnet に custom NACL があります。inbound rule 100 で 0.0.0.0/0 からの TCP 80 を allow、outbound rule 100 で 0.0.0.0/0 宛ての TCP 80 を allow。SG は inbound 80 を allow しています。ユーザーが web ページを開くと応答待ちのまま止まります。どう直すべきでしょうか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>NACL の outbound に 0.0.0.0/0 宛ての TCP 1024-65535 の allow を追加します。</b>レスポンスはクライアントの ephemeral port に戻るのであって、port 80 ではありません。outbound の port 80 が意味を持つのは、web サーバーが自分から外に接続するときだけです。落とし穴：「80 を両方向に開ければ十分」と考える人が多いです。</p></div>
+      <div class="q"><p class="qt">8. NACL に inbound rule 100 で 0.0.0.0/0 からの all を allow、rule 200 で 198.51.100.0/24 からの all を deny があります。198.51.100.7 からの traffic は遮断されるでしょうか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>遮断されません。</b>rule 100 が先に一致し（0.0.0.0/0 はすべての IP を含む）、NACL は一致した時点で評価を止めます。遮断したいなら、deny を100より小さい番号（例：50）に変えます。</p></div>
+      <div class="q"><p class="qt">9. アーキテクトが web 用 EC2 の SG から outbound rule をすべて削除しました。ユーザーは引き続き web にアクセスできるでしょうか。EC2 で <code>yum update</code> は実行できるでしょうか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>ユーザーは引き続きアクセスできます。</b>レスポンスは inbound で許可された接続に属するため、stateful により自動で外に出られます。<b>yum update は実行できません。</b>EC2 が自分から開始する新しい接続なので、outbound の allow が必要です。stateful を本当に理解しているかを見分ける問題です。</p></div>
+      <div class="q"><p class="qt">10. 正しい記述を2つ選んでください：(A) SG は subnet に関連付けられる、(B) NACL は rule を番号の小さい順に評価する、(C) SG には Deny rule がある、(D) 1つの subnet に関連付けられる NACL は1つだけ、(E) NACL は stateful。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>B と D。</b>A は誤り：SG は ENI に付ける。C は誤り：SG は Allow のみ。E は誤り：NACL は stateless。「2つ選べ」形式には、明らかな誤りが2つと、紛らわしいほぼ正解の選択肢が1つ含まれるのが定番です。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. ENDPOINT ============ -->
+<section id="endpoint">
+  <span class="eyebrow">理論 4 / 6</span>
+  <h2>VPC endpoint：gateway、interface（PrivateLink）</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <p>デフォルトでは、EC2 から S3 や DynamoDB を呼び出すとサービスの <b>public endpoint</b> にアクセスすることになり、両者が同じ AWS 内にあってもパケットは IGW か NAT を通って Internet に出る必要があります。<b>VPC endpoint</b> は AWS ネットワーク内に専用の経路を作ります。IGW、NAT、public IP が不要で、traffic は AWS ネットワークの外に出ず、NAT の料金を減らせ、policy で制限もできます。種類は2つあり、その区別は試験で非常によく問われます。</p>
+      <ul>
+        <li><b>Gateway endpoint</b>：<b>S3 と DynamoDB 専用</b>です。<b>route table</b> の target として機能し、選択した route table に AWS が <code>pl-xxxx（S3 の prefix list）→ vpce-xxxx</code> の行を追加します。<b>無料</b>で、ENI も SG もなく、帯域幅の制限もありません。使えるのは<b>同じ VPC 内、同じ Region</b> からだけで、peering、Transit Gateway、VPN、Direct Connect 越しには使えません。<b>endpoint policy</b>（endpoint 経由で呼び出せる bucket を制限）があり、bucket policy で <code>aws:SourceVpce</code> を必須にして、その endpoint からのリクエストだけを受け付けることもできます。</li>
+        <li><b>Interface endpoint</b>（<b>AWS PrivateLink</b> 上に構築）：選択した subnet に置かれる <b>private IP を持つ ENI</b> で（AZ ごとに1つの ENI が推奨）、<b>Security Group</b> があります。ほとんどの AWS サービス（SQS、SNS、Kinesis、KMS、Secrets Manager、CloudWatch、EC2 API、ECR、SSM。S3 にも interface 版あり）、Marketplace のパートナーサービス、自分で公開するサービスに使います。料金は<b>ENI ごと（AZ ごと）の時間単位</b>で約0.01〜0.014 USD、これに GB 単位の料金が加わります（AWSドキュメントで要確認）。<b>private DNS</b> を有効にすると、<code>sqs.ap-northeast-1.amazonaws.com</code> のようなデフォルトの hostname が ENI の private IP に自動で解決され、コードを一切変更する必要がありません。VPC で <code>enableDnsHostnames</code> と <code>enableDnsSupport</code> の両方を有効にしておく必要があります。VPC 内の ENI なので、<b>VPN / Direct Connect 経由のオンプレミスや VPC peering からもアクセスできます</b>。</li>
+        <li><b>S3 には両方の種類があります</b>。VPC 内の EC2 には無料の gateway endpoint、Direct Connect 経由のオンプレミスや peering 経由の別 VPC から S3 を呼び出す必要があり、時間課金を受け入れる場合は S3 の interface endpoint を使います。設問が「on-premises access S3 privately」なら interface endpoint です。</li>
+        <li><b>自分のサービスを PrivateLink で公開する</b>（Endpoint Service）：提供側はサービスを <b>Network Load Balancer</b>（または Gateway Load Balancer）の背後に置き、その NLB を指す Endpoint Service を作成します。利用側は自分の VPC に interface endpoint を作成し、提供側が承認します（または自動承認）。結果として、別 account を含む数千の顧客 VPC が private IP でサービスを呼び出せ、<b>peering も route table も不要で、CIDR の重複も気にする必要がなく</b>、通信は顧客からサービスへの一方向だけになります。「SaaS provider wants to expose service to customers' VPCs privately」という設問の答えです。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">比較表</span>
+      <div class="tbl"><table>
+        <tr><th>観点</th><th>Gateway endpoint</th><th>Interface endpoint（PrivateLink）</th></tr>
+        <tr><td>サービス</td><td>S3、DynamoDB のみ</td><td>ほとんどの AWS サービス、パートナー、自前で公開するサービス、S3 も</td></tr>
+        <tr><td>形態</td><td>route table の行（prefix list）</td><td>subnet 内の private IP を持つ ENI</td></tr>
+        <tr><td>料金</td><td>無料</td><td>AZ ごとの時間課金 + GB 課金</td></tr>
+        <tr><td>Security Group</td><td>なし</td><td>あり</td></tr>
+        <tr><td>オンプレミス（VPN/DX）、VPC peering から</td><td>不可</td><td>可</td></tr>
+        <tr><td>DNS</td><td>通常の public DNS を使い、残りは route table が処理</td><td>private DNS でデフォルトの hostname を上書き、または endpoint 固有の hostname を使用</td></tr>
+        <tr><td>Policy</td><td>Endpoint policy</td><td>Endpoint policy + SG</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">別 VPC のサービスを使うときの PrivateLink と VPC peering の比較</span>
+      <div class="tbl"><table>
+        <tr><th>組み合わせ</th><th>違い</th></tr>
+        <tr><td>PrivateLink と peering</td><td>Peering は2つの VPC 間で<b>ネットワーク全体を双方向に</b>開放し、CIDR が重複しないことと双方の route table の変更が必要で、peering 数にも上限があります。PrivateLink は<b>1つのサービスを一方向だけ</b>開放し、CIDR は関係なく、数千の consumer までスケールします。設問に <em>expose a single service</em>、<em>thousands of VPCs</em>、<em>overlapping CIDR</em>、<em>do not want to expose entire network</em> とあれば → PrivateLink。</td></tr>
+        <tr><td>S3 に対する gateway endpoint と NAT Gateway</td><td>どちらも private EC2 から S3 へのアクセスを可能にします。gateway endpoint は無料で、traffic は Internet に出ません。S3/DynamoDB について <em>reduce NAT Gateway data processing charges</em> とあれば → gateway endpoint。</td></tr>
+        <tr><td>Interface endpoint と IGW 経由の public endpoint</td><td>public endpoint には public IP か NAT が必要で、traffic は Internet を通ります（TLS で暗号化はされる）。設問に <em>must not traverse the public Internet</em> とあれば → endpoint。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>private EC2 から S3 に書き込む、<em>most cost-effective</em>、Internet を通らない</td><td>S3 の gateway endpoint + private の route table</td><td>Interface endpoint（有料）、NAT Gateway</td></tr>
+        <tr><td>Direct Connect 経由のオンプレミスから private IP で S3 を読む</td><td>S3 の interface endpoint</td><td>Gateway endpoint（DX 越しには使えない）</td></tr>
+        <tr><td>private VPC 内の Lambda から Secrets Manager を呼び出す</td><td>Secrets Manager の interface endpoint</td><td>Gateway endpoint（Secrets Manager には存在しない）</td></tr>
+        <tr><td>gateway endpoint を作ったのに EC2 から S3 に届かない</td><td>endpoint がその subnet の route table に正しく関連付けられているか、endpoint policy、bucket が同じ Region か、SG の outbound 443 を確認</td><td>IGW を追加</td></tr>
+        <tr><td>interface endpoint を作ったのに app が public IP に接続している</td><td>private DNS を有効化、VPC の DNS hostnames/support を有効化</td><td>route table を修正（interface endpoint は route を使わない）</td></tr>
+        <tr><td>bucket が VPC 内からのリクエストだけを受け付けるようにしたい</td><td><code>aws:SourceVpce</code> が endpoint id と異なる場合に Deny する bucket policy</td><td>bucket の SG（S3 に SG はない）</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>S3 or DynamoDB privately, no cost <b>→ gateway endpoint</b></span><span>other AWS services privately <b>→ interface endpoint</b></span><span>PrivateLink <b>→ interface endpoint、ENI</b></span><span>expose service to other VPCs / accounts <b>→ PrivateLink + NLB</b></span><span>traffic must not leave AWS network <b>→ VPC endpoint</b></span><span>aws:SourceVpce <b>→ endpoint で制限する bucket policy</b></span><span>private DNS <b>→ interface endpoint</b></span><span>overlapping CIDR, single service <b>→ peering ではなく PrivateLink</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">11. NAT Gateway の請求額が急増し、分析すると90%が private EC2 から同じ Region の S3 へのログ送信でした。<em>least effort</em> でコストを下げるには。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>S3 の gateway endpoint を作成し、private subnet の route table に関連付けます。</b>無料で、コードも hostname も変更不要です。interface endpoint でも動きますが、時間課金なので「most cost-effective」ではありません。</p></div>
+      <div class="q"><p class="qt">12. ある SaaS 企業には500社の顧客がいて、各顧客は任意の CIDR を持つ自社 VPC を持っています。顧客に private IP で社内 API を呼び出してもらいたい場合、どのアーキテクチャを選ぶべきでしょうか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>API を NLB の背後に置き、Endpoint Service（PrivateLink）を作成。顧客は interface endpoint を作成します。</b>500 VPC との peering は quota を超え、CIDR の重複も確実に起きます。Transit Gateway も CIDR の重複に阻まれ、ネットワーク全体を開放するため、外部の顧客には適しません。</p></div>
+      <div class="q"><p class="qt">13. データセンターが Direct Connect で AWS に接続しており、Internet を通らずに S3 からファイルをダウンロードする必要があります。S3 の gateway endpoint で対応できるでしょうか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>できません。</b>gateway endpoint はその VPC 内からしか使えません。オンプレミスからは <b>S3 の interface endpoint</b>（VPC 内に private IP を持ち、オンプレミスは DX 経由でそこへルーティング）か、Direct Connect の public VIF で S3 の public endpoint にアクセスします。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. PEERING, TGW ============ -->
+<section id="peering-tgw">
+  <span class="eyebrow">理論 5 / 6</span>
+  <h2>VPC peering と Transit Gateway</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">概要</span>
+      <ul>
+        <li><b>VPC peering</b>：<b>2つの VPC</b> を private IP で1つのネットワークのようにつなぎます。IGW も NAT も不要で、帯域幅に追加の制限はなく、接続料金もかかりません（AZ 間や Region 間と同様のデータ転送料金のみ）。<b>cross-account</b> でも <b>cross-Region</b> でも使えます（Region 間の traffic は暗号化される）。一方がリクエストを作成し、もう一方が承認した後、<b>双方がそれぞれ route を追加</b>して相手の CIDR を <code>pcx-xxx</code> に向けます。片方を忘れると一方向しか通信できません。2つの CIDR は、一部であっても<b>重複してはいけません</b>。</li>
+        <li>Peering は <b>transitive ではありません</b>。A と B、B と C を peering しても A から C には届きません。届かせるには A と C を peering する必要があります。<b>edge-to-edge routing</b> もありません。A は B の IGW、NAT、VPN、Direct Connect、gateway endpoint を借りて使えません。n 個の VPC には n(n-1)/2 個の peering が必要で、10 VPC なら45接続となり、管理しきれません。quota は VPC ごとに約50 peering で、125まで引き上げ可能です（AWSドキュメントで要確認）。同じ Region なら peering 越しに SG を参照できます。</li>
+        <li><b>Transit Gateway（TGW）</b>：Region レベルの<b>ハブ</b>で、数千の VPC、VPN、Direct Connect Gateway を <b>hub-and-spoke</b> 方式でつなぎます。各 VPC は n-1 個の peering の代わりに、TGW への <b>attachment を1つ</b>作るだけです。<b>Transitive</b> であり、TGW にアタッチされたものは TGW の route table に従って互いに通信できます。<b>multicast</b>（AWS で唯一サポート）や、複数 tunnel の帯域幅を束ねる VPN ECMP をサポートします。料金は<b>attachment ごとの時間単位</b>に GB 単位を加えたもので（AWSドキュメントで要確認）、VPC が2〜3個だけなら peering より割高です。</li>
+        <li><b>TGW route table</b>：各 attachment は TGW の route table の1つに <b>associate</b> し（その attachment から来たパケットの行き先を決める）、自分の route を選択した route table に <b>propagate</b> します。これにより分離が実現できます。たとえば Dev VPC と Prod VPC が同じ TGW にアタッチされていても互いには見えず、どちらも Shared Services VPC だけは見える、という構成です。各 VPC 内の route table にも宛先範囲 → <code>tgw-xxx</code> の行が必要で、TGW が VPC の route table を自動で書き換えることはありません。</li>
+        <li><b>TGW peering</b>（Region 間、cross-account）：2つの Region の TGW を peering attachment でつなぎます。route は静的で、traffic は AWS の backbone を通り、暗号化されます。マルチ Region 構成に使います。同じ Region 内の2つの TGW も peering できます。</li>
+        <li><b>AWS Resource Access Manager（RAM）</b>による <b>VPC sharing</b>（名前を知っておく程度）：VPC を所有する account が、同じ Organization 内の別 account に <b>subnet</b> を共有します。共有された account は、その subnet 内に自分の EC2、RDS、ALB を直接作成できます。peering ではなく、route の追加も不要で、すべてのリソースが1つの VPC を共用するので、VPC 数を減らし、NAT や endpoint の重複も減らせます。RAM は、Transit Gateway を別 account に共有してアタッチさせるときにも使います。</li>
+        <li>その他、名前を知っておくもの：<b>Transit Gateway Network Manager</b>（ネットワーク全体の可視化）、<b>Cloud WAN</b>（TGW 上に構築された managed なグローバルネットワーク）、<b>Transit Gateway Connect</b>（SD-WAN appliance を GRE でアタッチ）。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">イメージ：4つの VPC を peering で接続する場合と Transit Gateway で接続する場合</span>
+      <div class="grid2">
+        <div class="block"><span class="eyebrow">Peering（full mesh）</span>
+          <ul>
+            <li>4 VPC には <b>6</b> 個の peering、10 VPC には45個が必要。</li>
+            <li>peering ごとに<b>両方</b>の VPC の route table を変更。</li>
+            <li>5つ目の VPC を追加すると、新しい peering が4つ、route table の変更が8つ。</li>
+            <li>オンプレミスから4つの VPC すべてに届かせるには、VPC ごとに個別の VPN/DX が必要（peering を経由して相乗りできない）。</li>
+            <li>VPC が2〜3個だけなら最も安く、帯域幅も高く、時間課金もない。</li>
+          </ul>
+        </div>
+        <div class="block"><span class="eyebrow">Transit Gateway（hub-and-spoke）</span>
+          <ul>
+            <li>4 VPC には <b>4</b> 個の attachment、10 VPC には10個。</li>
+            <li>各 VPC に共通範囲（例：10.0.0.0/8）→ tgw の route を1つ。</li>
+            <li>5つ目の VPC を追加しても、attachment 1つと route 1行だけ。</li>
+            <li>VPN または DX Gateway を1つ TGW にアタッチすれば、すべての VPC に届く。</li>
+            <li>attachment は時間課金。分離は TGW の route table で行う。</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>同じ account、同じ Region の2つの VPC を通信させる、<em>most cost-effective</em></td><td>VPC peering と双方の route table</td><td>Transit Gateway（attachment の料金がかかる）、2つの VPC 間の VPN</td></tr>
+        <tr><td>複数 account にまたがる数十の VPC とオンプレミス、<em>simplify</em>、<em>scalable</em></td><td>Transit Gateway、RAM で共有</td><td>Full mesh の peering</td></tr>
+        <tr><td>A と B、B と C が peering 済みで、A から C に届かせたい</td><td>A と C を peering、または TGW に移行</td><td>B に route を追加（peering は transitive ではない）</td></tr>
+        <tr><td>VPC A から peering 経由で VPC B の NAT Gateway を使う</td><td>不可（no edge-to-edge）。TGW を使えば NAT の集約が可能</td><td>A の route を pcx 経由で B の NAT に向ける</td></tr>
+        <tr><td>peering を作ったが、A から B には ping できるのに B から A にはできない</td><td>B に A の CIDR → pcx の route がない、または A の SG/NACL が ICMP を遮断</td><td>逆方向の peering を作成（peering はすでに双方向）</td></tr>
+        <tr><td>Dev と Prod を同じ TGW にアタッチするが、互いに見えないようにしたい</td><td>TGW route table を2つに分け、Shared Services だけを両方に propagate</td><td>TGW を2つ別々に用意（コストがかかり不要）</td></tr>
+        <tr><td>複数 account で1つの VPC を共用し、NAT や endpoint を節約したい</td><td>RAM による VPC sharing</td><td>account ごとに peering</td></tr>
+        <tr><td>アプリケーションが VPC 間で multicast を必要とする</td><td>Transit Gateway</td><td>Peering（multicast 非対応）</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>connect two VPCs <b>→ peering</b></span><span>not transitive <b>→ peering</b></span><span>overlapping CIDR <b>→ peering/TGW は不可、PrivateLink か private NAT を検討</b></span><span>hub-and-spoke, hundreds of VPCs <b>→ Transit Gateway</b></span><span>transitive routing <b>→ Transit Gateway</b></span><span>multicast <b>→ Transit Gateway</b></span><span>share subnets across accounts <b>→ VPC sharing (RAM)</b></span><span>inter-Region connectivity between TGWs <b>→ TGW peering</b></span><span>centralized egress / inspection <b>→ TGW + 集約用 VPC</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">14. 2つの account にある VPC A <code>10.0.0.0/16</code> と VPC B <code>10.0.0.0/16</code> が、private IP でデータをやり取りする必要があります。peering できるでしょうか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>できません。CIDR が重複しています。</b>選択肢：一方の CIDR を変える（重複しない secondary CIDR を追加してそこにリソースを置く）、1つのサービスを公開するだけなら PrivateLink を使う、または TGW 経由で private NAT Gateway を使う。cross-account であることは問題ではなく、問題は CIDR です。</p></div>
+      <div class="q"><p class="qt">15. ある会社は5つの account に30の VPC を持ち、データセンターは1本の Direct Connect で接続しています。すべての VPC がオンプレミスにも互いにも届くようにしたい、<em>least operational overhead</em>。何を選ぶべきでしょうか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>RAM で共有した Transit Gateway に各 VPC から attachment を1つずつ作成し、Direct Connect Gateway を transit VIF 経由で TGW にアタッチします。</b>30 VPC の peering は435接続になり、peering ではオンプレミスが相乗りできません。DX Gateway の詳細は項目6で扱います。</p></div>
+      <div class="q"><p class="qt">16. VPC を Transit Gateway にアタッチして route を propagate した後も、VPC 内の EC2 から別の VPC に届きません。何が足りないでしょうか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>VPC の subnet の route table に、宛先 CIDR（または共通範囲）→ tgw-xxx の route がありません。</b>TGW が管理するのは自分自身の route table だけで、subnet の route table には自分で追加する必要があります。そのうえで SG と NACL を確認します。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. VPN, DX ============ -->
+<section id="vpn-dx">
+  <span class="eyebrow">理論 6 / 6</span>
+  <h2>Site-to-Site VPN、Client VPN、Direct Connect</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">Site-to-Site VPN</span>
+      <ul>
+        <li>データセンター（またはオフィス）と VPC を <b>Internet 経由の暗号化された IPsec</b> で結ぶ接続です。構成要素は3つあります。AWS 側で VPC にアタッチする <b>Virtual Private Gateway（VGW）</b>（VGW の代わりに Transit Gateway も可）、自社側の router/firewall 機器（public IP、ASN）を表すレコードである <b>Customer Gateway（CGW）</b>、そして両者をつなぐ <b>VPN connection</b> です。</li>
+        <li>各 VPN connection には、異なる2つの AZ にある AWS endpoint への <b>2本の tunnel</b> があるので、AWS 側は最初から HA です。両端を HA にするには、自社側も2台の機器に2つの CGW を用意する必要があります。tunnel ごとの上限は約 <b>1.25 Gbps</b> で、それ以上が必要なら TGW の <b>ECMP</b> で複数 tunnel を束ねます。</li>
+        <li>静的 route または <b>BGP</b>（動的）。VPC の route table で <b>route propagation</b> を有効にすると、VGW がオンプレミスの route を自動で追加します。構築は<b>数分から数時間</b>で、料金は connection ごとに約0.05 USD/時間とデータ送信料です（AWSドキュメントで要確認）。Internet を通るため、レイテンシと帯域幅は<b>安定しません</b>。</li>
+        <li><b>VPN CloudHub</b>：1つの VGW が複数拠点からの複数 VPN を受け付けます（拠点ごとに CGW を1つ、異なる ASN で BGP）。拠点同士は hub-and-spoke 方式で <b>AWS を経由して</b>通信でき、安価で、副回線や小規模オフィスの接続に使います。</li>
+        <li><b>Accelerated Site-to-Site VPN</b>：tunnel が近くの <b>AWS Global Accelerator</b> の edge に入り、AWS の backbone 上を通るので jitter が減ります。<b>Transit Gateway が必須</b>で、VGW では使えません。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Client VPN</span>
+      <ul>
+        <li><b>個々のユーザー</b>（ノート PC、リモートワーカー）が <b>OpenVPN</b> クライアントで VPC に入るための managed VPN です。Client VPN endpoint を作成し、VPC 内の subnet に関連付け（association）、クライアント用の CIDR 範囲（VPC と重複しない）を設定し、宛先範囲に対する <b>authorization rule</b> と route を追加します。</li>
+        <li>認証：<b>mutual TLS</b>（証明書）、<b>Active Directory</b>（AWS Directory Service 経由）、または <b>SAML / SSO</b>（IAM Identity Center、Okta）。<b>split-tunnel</b> を使うと、VPC 宛ての traffic だけが VPN を通り、それ以外は直接 Internet に出ます。</li>
+        <li>VPC から先、VPC peering、VPN/DX 経由のオンプレミス、Internet（VPC の NAT 経由）にも到達できます。料金：subnet の association ごとの時間課金と、クライアント接続ごとの時間課金です（AWSドキュメントで要確認）。</li>
+        <li>区別：Site-to-Site は<b>ネットワークとネットワーク</b>、Client VPN は<b>人とネットワーク</b>。設問に <em>remote employees</em>、<em>OpenVPN</em>、<em>Active Directory authentication for users</em> とあれば → Client VPN。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Direct Connect（DX）</span>
+      <ul>
+        <li>自社のデータセンターから <b>Direct Connect location</b>（AWS の router があるコロケーション施設）までの<b>物理的な専用線</b>で、<b>Internet を通りません</b>。帯域幅が安定し、レイテンシが低く一定で、データ送信料も下がります（DX の data out は Internet より安い）。cross-connect の敷設やパートナーとの調整が必要なため、構築には<b>数週間から数か月</b>かかります。</li>
+        <li><b>Dedicated connection</b>：自社専用の物理 port で、速度は <b>1、10、100 Gbps</b>（一部の location では 400 Gbps、AWSドキュメントで要確認）、AWS に直接申し込みます。<b>Hosted connection</b>：<b>AWS Direct Connect Partner</b> 経由で port の一部を借りるもので、<b>50 Mbps から 10 Gbps</b>（一部のパートナーはそれ以上、AWSドキュメントで要確認）。必要な帯域幅が少ない場合は、より早く安く用意できます。</li>
+        <li>1つの connection 上に <b>Virtual Interface（VIF）</b>を作成します。<b>private VIF</b> は VGW 経由で VPC へ、<b>public VIF</b> は public endpoint を持つ AWS サービス（S3、DynamoDB）へ public IP で Internet を通らずに、<b>transit VIF</b> は Direct Connect Gateway 経由で Transit Gateway へ接続します。</li>
+        <li><b>Direct Connect Gateway</b>：1つの location の1つの connection から、<b>複数 Region、複数 account の複数 VPC</b> に到達するためのグローバルリソースです（各 VPC の VGW 経由、または TGW 経由）。DX Gateway がなければ、1つの private VIF は location と同じ Region にある1つの VPC の1つの VGW にしか届きません。</li>
+        <li><b>デフォルトでは暗号化されません</b>。DX は専用の layer 2 で、データはそのまま流れます。暗号化するには、対応 location の dedicated 10/100 Gbps で <b>MACsec</b> を使うか、<b>VPN over Direct Connect</b>（public VIF 上で Site-to-Site VPN を構築し IPsec で暗号化。性能低下と tunnel ごと 1.25 Gbps の上限は受け入れる）を使います。設問に <em>encrypted</em> と <em>consistent low latency</em> の両方があれば → VPN over DX。</li>
+        <li><b>LAG（Link Aggregation Group）</b>：<b>同じ速度、同じ location</b> の複数の dedicated connection を1本の論理回線に束ね（最大4 connection、AWSドキュメントで要確認）、帯域幅を増やします。LAG は location 障害への対策にはなりません。</li>
+        <li>AWS 推奨の <b>Resiliency</b>：<b>Maximum</b> は2つの location にそれぞれ2台の機器で2 connection、<b>High</b> は2つの location にそれぞれ1 connection、<b>Development</b> は1つの location（2 connection または1つ）です。安価に予備回線を持つ方法は <b>DX をメイン + Site-to-Site VPN をバックアップ</b>にする構成で、BGP で DX を優先し、DX が切れると VPN が自動で使われます。2つの location に DX を2本置く構成は最も高価ですが、設問に <em>maximum resiliency</em>、<em>mission-critical</em> とあればこれが正解です。</li>
+        <li><b>Direct Connect SiteLink</b>（名前を知っておく程度）：DX location を経由して自社の2つのデータセンター同士を接続し、VPC に入らずに AWS の backbone を利用します。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">VPN と Direct Connect の選択表</span>
+      <div class="tbl"><table>
+        <tr><th>観点</th><th>Site-to-Site VPN</th><th>Direct Connect</th><th>設問にこうあれば選ぶ</th></tr>
+        <tr><td>帯域幅</td><td>tunnel ごとに 1.25 Gbps、TGW の ECMP で束ねる</td><td>50 Mbps〜100 Gbps（一部 400 Gbps）、安定</td><td><em>large data transfer</em>、<em>consistent throughput</em> → DX</td></tr>
+        <tr><td>構築期間</td><td>数分〜数時間</td><td>数週間〜数か月</td><td><em>quickly</em>、<em>within days</em>、<em>immediately</em> → VPN（DX を待つ間の一時的な VPN も可）</td></tr>
+        <tr><td>経路</td><td>公衆 Internet、レイテンシが変動</td><td>専用線、レイテンシが低く一定</td><td><em>predictable latency</em>、<em>bypass the Internet</em> → DX</td></tr>
+        <tr><td>セキュリティ</td><td>最初から IPsec で暗号化</td><td>プライベートだが暗号化なし。MACsec か VPN over DX を追加</td><td><em>encrypted in transit</em> + DX → VPN over DX</td></tr>
+        <tr><td>コスト</td><td>低い、connection ごとの時間課金</td><td>高い：port-hour + cross-connect + パートナー。data out は安い</td><td><em>cost-effective</em>、<em>low volume</em> → VPN</td></tr>
+        <tr><td>HA</td><td>最初から2本の tunnel。自社側の HA には CGW が2つ必要</td><td>2 connection / 2 location を自分で用意するか、VPN をバックアップに</td><td><em>backup for Direct Connect</em> → Site-to-Site VPN</td></tr>
+        <tr><td>複数 VPC / Region への接続</td><td>VPC ごとに VGW、または TGW</td><td>Direct Connect Gateway（+ TGW）</td><td><em>multiple Regions over one DX</em> → DX Gateway</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">ネットワークの可視化ツール3つと Network Firewall（名前を知っておく程度、第8週で詳しく学習）</span>
+      <div class="tbl"><table>
+        <tr><th>ツール</th><th>何をするか</th><th>試験のサイン</th></tr>
+        <tr><td><b>VPC Flow Logs</b></td><td>IP traffic の metadata（src、dst、port、protocol、ACCEPT/REJECT）を VPC、subnet、ENI のレベルで記録し、CloudWatch Logs、S3、Kinesis Data Firehose に送ります。パケットの中身は記録せず、Amazon の DNS 宛て、metadata 169.254.169.254、DHCP、license activation の traffic も記録しません。リアルタイムではありません。</td><td><em>troubleshoot why connection is rejected</em>、<em>audit network traffic</em>、<em>which SG or NACL blocked</em> → Flow Logs を取得し、Athena や CloudWatch Logs Insights で分析</td></tr>
+        <tr><td><b>Reachability Analyzer</b></td><td>2地点間（ENI、IGW、VPN など）の<b>設定</b>（route、SG、NACL、peering、TGW）を分析し、遮断しているコンポーネントを示します。<b>実際のパケットは送りません</b>。</td><td><em>verify connectivity configuration</em>、<em>identify the component blocking traffic</em> → Reachability Analyzer</td></tr>
+        <tr><td><b>AWS Network Firewall</b></td><td><b>VPC</b> レベルの managed ファイアウォールです。stateful と stateless の rule、<b>ドメイン</b>によるフィルタリング、Suricata 形式の IPS を備え、firewall subnet に配置して route table で traffic を経由させます。SG/NACL より強力で（ドメインでのフィルタリング、deep inspection）、WAF とも異なります（WAF は ALB/CloudFront/API Gateway 経由の HTTP 向けの layer 7）。</td><td><em>filter outbound traffic by domain name</em>、<em>intrusion prevention</em>、<em>centralized inspection across VPCs</em> → Network Firewall（TGW と組み合わせることが多い）</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">混同しやすい点</span>
+      <div class="tbl"><table>
+        <tr><th>設問の要求</th><th>選ぶ</th><th>選ばない</th></tr>
+        <tr><td>今週中にデータセンターを AWS に接続、データは暗号化必須</td><td>Site-to-Site VPN（VGW + CGW）</td><td>Direct Connect（数か月かかる）</td></tr>
+        <tr><td>毎月50 TB を転送、レイテンシは一定、長期利用</td><td>Direct Connect</td><td>VPN（tunnel ごと 1.25 Gbps、Internet で変動）</td></tr>
+        <tr><td>DX はすでにあり、DX 上の traffic を暗号化したい</td><td>VPN over Direct Connect（public VIF）または MACsec</td><td>DX は最初から暗号化されていると考える</td></tr>
+        <tr><td>DX が切れたときの予備回線が必要、<em>cost-effective</em></td><td>Site-to-Site VPN をバックアップにし、BGP で DX を優先</td><td>2本目の DX（高価。設問が maximum resiliency の場合のみ正解）</td></tr>
+        <tr><td>1本の DX で東京、シンガポール、バージニアの VPC に接続</td><td>Direct Connect Gateway</td><td>DX を3本別々に用意</td></tr>
+        <tr><td>リモートワークの社員が AD アカウントで VPC に入る</td><td>AD 認証の Client VPN</td><td>Site-to-Site VPN（拠点に router 機器が必要）</td></tr>
+        <tr><td>5つの小規模拠点が AWS 経由で安価に相互通信</td><td>1つの VGW 上の VPN CloudHub</td><td>拠点ごとに Direct Connect</td></tr>
+        <tr><td>Internet 経由の VPN で jitter が出る。DX を買わずに安定させたい</td><td>Accelerated Site-to-Site VPN（TGW が必要）</td><td>VGW の tunnel 数を増やす</td></tr>
+        <tr><td>テストパケットを送らずに、どの SG や NACL が遮断しているか知りたい</td><td>Reachability Analyzer</td><td>Flow Logs（実際の traffic が必要）</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>IPsec over the Internet <b>→ Site-to-Site VPN</b></span><span>Virtual Private Gateway, Customer Gateway <b>→ Site-to-Site VPN</b></span><span>two tunnels <b>→ AWS 側の VPN HA</b></span><span>dedicated private connection, consistent latency <b>→ Direct Connect</b></span><span>takes weeks or months <b>→ Direct Connect</b></span><span>encrypt Direct Connect <b>→ VPN over DX、MACsec</b></span><span>one DX to many Regions <b>→ Direct Connect Gateway</b></span><span>DX backup, cost-effective <b>→ Site-to-Site VPN</b></span><span>remote users, OpenVPN <b>→ Client VPN</b></span><span>multiple branch offices via AWS <b>→ VPN CloudHub</b></span><span>bandwidth above 1.25 Gbps over VPN <b>→ TGW + ECMP</b></span><span>capture network traffic metadata <b>→ VPC Flow Logs</b></span><span>filter by domain, IPS <b>→ Network Firewall</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">17. ある会社は Direct Connect の開通を待っています（約2か月の見込み）が、来週からデータ移行を始めなければならず、データは機密性が高いものです。どうすべきでしょうか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>すぐに使える Site-to-Site VPN を構築し、DX 開通後はバックアップとして残します。</b>VPN は最初から IPsec で暗号化され、数時間で構築できます。設問が期間を強調しているので、DX を待つ選択肢はすぐに除外できます。データ量が 1.25 Gbps に対して多すぎる場合は Snowball（第3週）も検討しますが、この問題の焦点は接続です。</p></div>
+      <div class="q"><p class="qt">18. 10 Gbps の Direct Connect がすでにある状態で、オンプレミスと VPC 間の traffic を暗号化する方法を2つ選んでください：(A) private VIF で encryption を有効にする、(B) public VIF 経由の VPN over DX、(C) dedicated connection で MACsec、(D) Transit Gateway を使う、(E) VGW で SSL を有効にする。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>B と C。</b>A と E は存在しません（VIF にも VGW にも encryption の設定はない）。D はルーティングのハブで、何も暗号化しません。落とし穴：DX が「専用」であることを「暗号化されている」と誤解する人が多いです。</p></div>
+      <div class="q"><p class="qt">19. 東京 location の1本の Direct Connect から、東京の VPC 6つとシンガポールの VPC 3つに接続する必要があります。<em>least operational overhead</em> のアーキテクチャは。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Direct Connect Gateway を使い、各 Region の Transit Gateway に transit VIF でアタッチします（VPC が少なければ各 VPC の VGW に private VIF でも可）。</b>1つの DX Gateway で複数の Region と account に届きます。9つの VGW に9本の private VIF を張っても動きますが、1つの connection あたりの VIF の quota を超え、手作業も多すぎます。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HANDS-ON ============ -->
+<section id="handson">
+  <span class="eyebrow">ハンズオン</span>
+  <h2>ハンズオン：5つのラボ</h2>
+  <p>順番どおりに進めてください。Lab 1 は無料です。Lab 2 からは NAT Gateway（約0.062 USD/時間）と Elastic IP を使うので、Lab 2 と Lab 3 は同じ日に行い、<b>すぐに NAT Gateway を削除</b>します。Lab 4 は bastion だけで行えます。CLI コマンドはすべて Windows の PowerShell で、profile <code>saa</code>、Region <code>ap-northeast-1</code> を使って実行します。現在のウィンドウで先に <code>$env:AWS_PROFILE = "saa"</code> を設定しておきます。後片付けで漏れがないよう、リソース名は <code>saa-</code> で始めます。</p>
+
+  <div class="card">
+    <h3>Lab 1. public subnet と private subnet、Internet Gateway、route table を備えた2 AZ の VPC を構築</h3>
+    <ol class="steps">
+      <li><div><p>Console → <b>VPC → Your VPCs → Create VPC</b> → <b>VPC and more</b> を選択。Name tag auto-generation：<code>saa</code>。IPv4 CIDR <code>10.0.0.0/16</code>。IPv6：No IPv6 CIDR block。Tenancy：Default。</p></div></li>
+      <li><div><p>Number of AZs：<b>2</b>（Customize AZs を開き、<code>ap-northeast-1a</code> と <code>ap-northeast-1c</code> を選択）。Public subnets：<b>2</b>、Private subnets：<b>2</b>。Customize subnets CIDR blocks を開き、public を <code>10.0.0.0/24</code>、<code>10.0.1.0/24</code>、private を <code>10.0.2.0/24</code>、<code>10.0.3.0/24</code> に変更します（wizard のデフォルトは /20 なので、読みやすいよう /24 に変更）。</p></div></li>
+      <li><div><p>NAT gateways：<b>None</b>（各ステップを理解するため Lab 2 で自分で作成）。VPC endpoints：<b>None</b>（Lab 3 で自分で作成）。DNS options：<b>Enable DNS hostnames</b> と <b>Enable DNS resolution</b> の両方にチェック。右側の Preview 図を確認します。wizard が作成するのは subnet 4つ、IGW 1つ、route table 3つです。<b>Create VPC</b> をクリックし、数秒待ちます。</p></div></li>
+      <li><div><p>Console で各コンポーネントを自分で確認します。<b>Subnets</b>：VPC <code>saa-vpc</code> で絞り込むと、各 subnet の Available IPv4 列は <b>251</b>（256 から AWS が予約する5アドレスを引いた数）のはずです。<b>Internet gateways</b>：<code>saa-igw</code> が saa-vpc に Attached の状態。<b>Route tables</b>：4つあり、main が1つ（名前なし、local の行のみ、明示的に関連付けた subnet なし）、<code>saa-rtb-public</code> は2つの public subnet に関連付けられ route <code>0.0.0.0/0 → igw</code> を持ち、<code>saa-rtb-private1-ap-northeast-1a</code> と <code>saa-rtb-private2-ap-northeast-1c</code> はそれぞれ private subnet 1つに関連付けられ local の行だけを持ちます。</p></div></li>
+      <li><div><p>各 public subnet を開き → <b>Actions → Edit subnet settings</b> → まだなら <b>Enable auto-assign public IPv4 address</b> にチェック。このフラグがないと public subnet の EC2 に public IP が付かず、SSH できません。</p></div></li>
+      <li><div><p>CLI でも確認します。<code>&lt;vpc-id&gt;</code> は実際の id（<code>vpc-0abc...</code> の形式）に置き換えます。</p>
+<pre><code>$env:AWS_PROFILE = "saa"
+aws ec2 describe-vpcs --filters Name=tag:Name,Values=saa-vpc --query "Vpcs[].[VpcId,CidrBlock]" --output table
+aws ec2 describe-subnets --filters Name=vpc-id,Values=&lt;vpc-id&gt; --query "Subnets[].[Tags[?Key=='Name']|[0].Value,CidrBlock,AvailabilityZone,AvailableIpAddressCount,MapPublicIpOnLaunch]" --output table
+aws ec2 describe-route-tables --filters Name=vpc-id,Values=&lt;vpc-id&gt; --query "RouteTables[].[RouteTableId,Associations[0].Main,Routes[].[DestinationCidrBlock,GatewayId]]" --output json
+aws ec2 describe-internet-gateways --filters Name=attachment.vpc-id,Values=&lt;vpc-id&gt; --output table</code></pre><p>結果を読んで自分で答えてみましょう。どの subnet が public で、どの行からそう判断できるか。これが確認ポイント1の前半です。</p></div></li>
+      <li><div><p>作成した VPC を紙に描きます。VPC の枠、2つの AZ、CIDR 付きの4つの subnet、IGW、3つの route table とそれぞれの route の行。項目1の図と比べます。</p></div></li>
+    </ol>
+    <div class="note ok">VPC、subnet、route table、IGW、Security Group はすべて無料です。第5週（ALB、ASG）で作り直さずに済むよう、この VPC はそのまま残しておきます。</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 2. private subnet 用の NAT Gateway、bastion host、private EC2 への多段 SSH と Internet への curl</h3>
+    <ol class="steps">
+      <li><div><p><b>VPC → Elastic IPs → Allocate Elastic IP address</b> → Allocate。tag Name を <code>saa-eip-nat</code> にします。この時点から EIP に約0.005 USD/時間の料金がかかります。</p></div></li>
+      <li><div><p><b>VPC → NAT gateways → Create NAT gateway</b>：Name <code>saa-nat</code>、Subnet は <code>saa-subnet-public1-ap-northeast-1a</code>（public subnet であること）、Connectivity type <b>Public</b>、Elastic IP allocation ID は作成した EIP を選択 → Create。状態が Pending から <b>Available</b> になるまで待ちます（1〜3分）。<b>ここから課金が始まります。</b></p></div></li>
+      <li><div><p><b>Route tables → saa-rtb-private1-ap-northeast-1a → Routes → Edit routes → Add route</b>：Destination <code>0.0.0.0/0</code>、Target NAT Gateway → <code>saa-nat</code> → Save。<code>saa-rtb-private2-ap-northeast-1c</code> も同じ NAT に向けます（ラボでは AZ をまたぐことを許容。本番環境では AZ ごとに NAT を1つ）。</p></div></li>
+      <li><div><p><b>EC2 → Key Pairs → Create key pair</b>：Name <code>saa-key</code>、type RSA、format <code>.pem</code>。ファイルを <code>C:\Users\&lt;ユーザー名&gt;\.ssh\saa-key.pem</code> に保存します。Windows の OpenSSH に拒否されないよう、ファイルの権限を絞ります。</p>
+<pre><code>icacls "$env:USERPROFILE\.ssh\saa-key.pem" /inheritance:r /grant:r "$env:USERNAME:R"</code></pre></div></li>
+      <li><div><p>SSH を自分のアドレス1つだけに開けるため、自分の public IP を取得します。</p>
+<pre><code>(Invoke-WebRequest -Uri https://checkip.amazonaws.com -UseBasicParsing).Content.Trim()</code></pre><p><b>EC2 → Security Groups → Create security group</b> を2回行い、どちらも VPC <code>saa-vpc</code> を選択します。(a) <code>saa-sg-bastion</code>：inbound SSH TCP 22、Source Custom <code>&lt;自分のIP&gt;/32</code>。(b) <code>saa-sg-private</code>：inbound SSH TCP 22、Source は <b>security group</b> の <code>saa-sg-bastion</code> を選択（source 欄に「saa」と入力すると候補が出る）。Outbound はデフォルトの all のまま。項目3の「SG から SG を参照する」パターンです。</p></div></li>
+      <li><div><p>bastion 用に <b>EC2 → Launch instance</b>：Name <code>saa-bastion</code>、AMI <b>Amazon Linux 2023</b>、type <code>t3.micro</code>（旧 Free Tier なら <code>t2.micro</code>）、Key pair <code>saa-key</code>。Network settings → Edit：VPC <code>saa-vpc</code>、Subnet <code>saa-subnet-public1-ap-northeast-1a</code>、Auto-assign public IP <b>Enable</b>、Select existing security group <code>saa-sg-bastion</code> → Launch。</p></div></li>
+      <li><div><p>2台目を Launch：Name <code>saa-private</code>、同じ AMI と type、key <code>saa-key</code>、Subnet <code>saa-subnet-private1-ap-northeast-1a</code>、Auto-assign public IP <b>Disable</b>、SG <code>saa-sg-private</code> → Launch。private IP（<code>10.0.2.x</code> の形式）と bastion の public IP を控えておきます。</p></div></li>
+      <li><div><p>Windows に標準搭載の OpenSSH で bastion を経由して SSH します（<code>-J</code> オプションは ProxyJump。key は手元の PC にあり、bastion にはコピーしない）。</p>
+<pre><code>ssh -i "$env:USERPROFILE\.ssh\saa-key.pem" -J ec2-user@&lt;bastion-public-ip&gt; ec2-user@&lt;private-ip&gt;</code></pre><p>初回は fingerprint を2回（bastion、次に private）聞かれるので yes と入力します。プロンプトに <code>[ec2-user@ip-10-0-2-x ~]$</code> と表示されれば private のマシンに入れています。</p></div></li>
+      <li><div><p>private のマシンで、Internet への経路が NAT を通っていることを確認します。</p>
+<pre><code>curl -s https://checkip.amazonaws.com
+curl -sI https://aws.amazon.com | head -n 1
+ip addr show eth0 | grep "inet "</code></pre><p>1行目には<b>NAT Gateway の Elastic IP そのもの</b>が表示されるはずで、パケットが SNAT されていることの証拠です。最後の行には 10.0.2.x しか表示されません。instance は public IP をまったく持っていません。</p></div></li>
+      <li><div><p>route table の実験：Console で <code>saa-rtb-private1-ap-northeast-1a</code> から route <code>0.0.0.0/0</code> を削除し、private のマシンで <code>curl -m 5 https://checkip.amazonaws.com</code> を再実行 → timeout。route を戻すとすぐに再び動きます。SSH の traffic は bastion からの local の行を通るので、SSH セッションは切れません。結論：外に出る経路があるかどうかを決めるのは SG ではなく route table です。</p></div></li>
+      <li><div><p>逆方向を試す：手元の PC から private IP に直接 <code>ssh ec2-user@10.0.2.x</code> → 届きません。10.0.2.x は private であり、Internet から入る経路がないためです。NAT は外向きの一方向だけです。</p></div></li>
+    </ol>
+    <div class="note">NAT Gateway と Elastic IP は時間単位で課金されています。すぐに Lab 3 に進み、Lab 3 の最後に NAT Gateway を削除して EIP を release します。途中で中断する必要があれば、NAT を先に削除して後で作り直す（数分）ほうが、一晩置くより安上がりです。</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 3. private EC2 から gateway endpoint 経由で S3 にアクセスし、NAT を削除しても動くことを確認</h3>
+    <ol class="steps">
+      <li><div><p>EC2 用の IAM role を作成：<b>IAM → Roles → Create role</b> → Trusted entity は AWS service、Use case は <b>EC2</b> → policy <code>AmazonS3ReadOnlyAccess</code> → Role name <code>saa-ec2-s3-readonly</code> → Create。instance に関連付け：<b>EC2 → saa-private → Actions → Security → Modify IAM role</b> → role を選択 → Update。role がないと <code>aws s3 ls</code> は「Unable to locate credentials」と表示します。これは権限のエラーでありネットワークのエラーではないので、混同しないようにしましょう。</p></div></li>
+      <li><div><p>private のマシンの SSH セッションで（Amazon Linux 2023 には AWS CLI v2 が標準搭載）、Region を設定し、NAT がまだある状態で試します。</p>
+<pre><code>export AWS_DEFAULT_REGION=ap-northeast-1
+aws s3 ls
+aws sts get-caller-identity</code></pre><p><code>assumed-role/saa-ec2-s3-readonly/i-...</code> の形式の ARN が表示されれば role が有効です。この時点では、S3 へのリクエストは NAT を通って S3 の public endpoint に出ています。</p></div></li>
+      <li><div><p>gateway endpoint を作成：<b>VPC → Endpoints → Create endpoint</b>：Name <code>saa-s3-gw</code>、Type <b>AWS services</b>、Services で <code>com.amazonaws.ap-northeast-1.s3</code> を検索し Type が <b>Gateway</b> の行を選択（Interface の行は選ばない）、VPC <code>saa-vpc</code>、Route tables は <code>saa-rtb-private1</code> と <code>saa-rtb-private2</code> の両方にチェック、Policy は Full access → Create endpoint。</p></div></li>
+      <li><div><p><code>saa-rtb-private1-ap-northeast-1a</code> を開き → Routes タブ：Destination <code>pl-xxxxxxxx</code>（東京の S3 の public IP 範囲を含む prefix list）→ Target <code>vpce-xxxx</code> という新しい行が現れます。prefix list の中身を CLI で確認します。</p>
+<pre><code>aws ec2 describe-prefix-lists --filters Name=prefix-list-name,Values=com.amazonaws.ap-northeast-1.s3 --query "PrefixLists[].Cidrs" --output text</code></pre></div></li>
+      <li><div><p>メインの実験：Console で2つの private route table の両方から <b>route <code>0.0.0.0/0 → nat</code> を削除</b>します（またはステップ7で NAT Gateway ごと削除してから試す）。private のマシンで次を実行します。</p>
+<pre><code>curl -m 5 -s https://checkip.amazonaws.com ; echo "exit=$?"
+aws s3 ls
+aws s3 ls s3://&lt;自分のバケット名&gt;/</code></pre><p>Internet への経路がなくなったので curl は timeout（exit 28）しますが、<code>aws s3 ls</code> は<b>引き続き動きます</b>。S3 の IP は prefix list に含まれており、狭い route が <code>0.0.0.0/0</code> に優先し、パケットは AWS ネットワーク内の endpoint に直接向かいます。longest prefix match と gateway endpoint の証拠です。</p></div></li>
+      <li><div><p>Region の制限を試す：<code>aws s3 ls --region us-east-1</code>（バージニアの endpoint 経由で bucket を一覧表示）は、gateway endpoint が同じ Region の S3 にしか対応しないため、応答待ちの後にエラーになります。endpoint policy を試す：endpoint の policy を特定の bucket に対する <code>s3:ListBucket</code> のみ Allow に変更して再実行し、他の bucket で AccessDenied になることを確認します。終わったら Full access に戻します。</p></div></li>
+      <li><div><p><b>すぐに NAT Gateway を削除</b>：<b>VPC → NAT gateways → saa-nat → Actions → Delete NAT gateway</b> で delete と入力。Deleting の状態が数分続いた後 Deleted になり、Deleted になった時点で課金が止まります。次に <b>Elastic IPs → saa-eip-nat → Actions → Release</b>。CLI で確認し、2つのコマンドの結果がどちらも空であることを確かめます。</p>
+<pre><code>aws ec2 describe-nat-gateways --filter Name=state,Values=available,pending --query "NatGateways[].NatGatewayId"
+aws ec2 describe-addresses --query "Addresses[].PublicIp"</code></pre></div></li>
+    </ol>
+    <div class="note">NAT Gateway を削除し、EIP を release しましたか。t3.micro の instance 2台は一晩置いてもわずかな料金で済み（東京で1台あたり約0.0136 USD/時間、AWSドキュメントで要確認。旧 Free Tier なら無料）、Lab 4 でも使います。Lab 4 を別の日に行う場合は2台とも Stop します。Start し直すと bastion の public IP は変わります。</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 4. NACL で1つの IP を deny し、Security Group では遮断できないことを確認</h3>
+    <ol class="steps">
+      <li><div><p>bastion への SSH が動いていることを確認します：<code>ssh -i "$env:USERPROFILE\.ssh\saa-key.pem" ec2-user@&lt;bastion-public-ip&gt;</code>。切断されるかどうかを見るため、このウィンドウは開いたままにします。</p></div></li>
+      <li><div><p>まず Security Group で遮断を試みます：<code>saa-sg-bastion</code> を開き → Edit inbound rules。確認点：Type 列には Allow しかなく、<b>「IP X からは Deny」と書く方法はありません</b>。唯一の方法は SSH の rule を削除することですが、そうすると全員が遮断され、特定の IP だけを遮断することはできません。何も変更せず Cancel します。</p></div></li>
+      <li><div><p><b>VPC → Network ACLs → Create network ACL</b>：Name <code>saa-nacl-test</code>、VPC <code>saa-vpc</code> → Create。開いて <b>Inbound rules</b> タブを見ると、<code>*</code> の Deny rule しかありません。つまり custom NACL はデフォルトですべてを遮断します。</p></div></li>
+      <li><div><p>Edit inbound rules で rule を2つ追加します。<b>Rule 100</b>：Type All traffic、Source <code>&lt;自分のIP&gt;/32</code>、Allow/Deny は <b>Deny</b>。<b>Rule 200</b>：All traffic、Source <code>0.0.0.0/0</code>、<b>Allow</b>。Save。<b>Outbound rules</b> タブ：Rule 100 All traffic、Destination <code>0.0.0.0/0</code>、Allow を追加。Save。</p></div></li>
+      <li><div><p><b>Subnet associations → Edit subnet associations</b> タブ → <code>saa-subnet-public1-ap-northeast-1a</code>（bastion がある subnet）にチェック → Save。この subnet は default NACL から外れ、テスト用 NACL を使うようになります。</p></div></li>
+      <li><div><p>SSH のウィンドウに戻り、いくつかコマンドを入力すると、セッションが固まった後に切断されます。新しく SSH すると → <code>Connection timed out</code>。bastion の SG は自分の IP からの 22 を Allow したままですが、パケットは <b>ENI に届く前に</b> NACL で遮断され、SG には評価する機会がありません。Flow Logs（有効なら）には subnet レベルで REJECT が記録されます。</p></div></li>
+      <li><div><p>rule の順序の実験：Deny rule の番号を 100 から <b>300</b>（Allow 200 の後）に変更します。再度 SSH → 入れます。rule 200 の Allow 0.0.0.0/0 が先に一致して NACL は評価を止め、Deny 300 には決して到達しません。100 に戻すと再び遮断されます。試験で常に「rule number が小さいほうが優先」と言われるのはこのためです。</p></div></li>
+      <li><div><p>stateless の実験：Deny rule を削除し、inbound 200 の Allow all は残します。<b>Outbound</b> の rule 100 を、0.0.0.0/0 宛ての TCP port 22 のみ Allow に変更します（ephemeral は開けない）。SSH → timeout。bastion からの応答パケットは、port 22 ではなく自分側の ephemeral port（例：51234）に戻るためです。outbound を TCP <b>1024-65535</b> の Allow に変更 → SSH に入れます。これが ephemeral port の落とし穴です。</p></div></li>
+      <li><div><p>元に戻す：<b>default NACL</b>（Default 列が Yes の行）の Subnet associations → Edit → public1 subnet に再びチェック → Save。その後 <code>saa-nacl-test</code> を削除します。最後にもう一度 SSH で確認します。</p></div></li>
+    </ol>
+    <div class="note ok">NACL は無料です。確認ポイント3の結論：SG は stateful、Allow のみ、ENI に付ける。NACL は stateless、Deny あり、subnet に付ける、番号順に評価。特定の IP を遮断するなら NACL を使います。</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 5. 後片付け：NAT Gateway の削除、Elastic IP の release、EC2 の terminate、Billing の確認</h3>
+    <ol class="steps">
+      <li><div><p>2つの instance を terminate：<b>EC2 → Instances</b> → <code>saa-bastion</code> と <code>saa-private</code> を選択 → Instance state → Terminate。その後 <b>Elastic Block Store → Volumes</b> を開き、available 状態の volume が残っていないことを確認します（root volume はデフォルトで Delete on termination）。</p></div></li>
+      <li><div><p>時間課金される3つのものを最終確認します。すべてのコマンドの結果が空であることを確かめます。</p>
+<pre><code>aws ec2 describe-nat-gateways --filter Name=state,Values=available,pending,deleting --query "NatGateways[].[NatGatewayId,State]" --output table
+aws ec2 describe-addresses --query "Addresses[].[PublicIp,AssociationId]" --output table
+aws ec2 describe-instances --filters Name=instance-state-name,Values=running,stopped --query "Reservations[].Instances[].[InstanceId,State.Name,Tags[?Key=='Name']|[0].Value]" --output table
+aws ec2 describe-volumes --query "Volumes[].[VolumeId,State,Size]" --output table</code></pre><p>NAT Gateway や EIP が残っていれば、VPC → NAT gateways → Delete、Elastic IPs → Release を行い、空になるまで再実行します。</p></div></li>
+      <li><div><p>第5週のために残すもの：VPC、subnet、route table、IGW、S3 の gateway endpoint、2つの Security Group、key pair、IAM role。すべて無料です。すべて削除したい場合は、<b>VPC → Your VPCs → saa-vpc → Actions → Delete VPC</b> で subnet、route table、IGW、endpoint、SG もまとめて削除されます（VPC 内に ENI が残っていないこと）。</p></div></li>
+      <li><div><p><b>Billing and Cost Management → Bills</b>：<b>EC2-Other</b> の行（NAT Gateway と EIP はここに含まれ、VPC の行ではない）と <b>EC2-Instances</b> を確認します。今週の合計の目標は約1〜2 USD です。<b>Cost Explorer</b> を開き、Service = EC2-Other で絞り込み、Group by Usage type にすると <code>NatGateway-Hours</code> と <code>NatGateway-Bytes</code> が見えます。データは約24時間遅れるので、翌日にもう一度確認します。</p></div></li>
+      <li><div><p>第1週で作成した1 USD の budget からメールが届いているか確認します。すべて削除済みなのに警告メールが届いた場合は問題ありません。ラボ当日の費用です。</p></div></li>
+    </ol>
+    <div class="note">今週最も忘れやすいのは2つです。<b>NAT Gateway</b>（放置すると約45 USD/月）と、release していない <b>Elastic IP</b>（約3.6 USD/月）。Console でうっかり Region を切り替えたことがあれば、両方の Region を確認してください。</div>
+  </div>
+</section>
+
+<!-- ============ 確認ポイント ============ -->
+<section id="moc">
+  <span class="eyebrow">確認ポイント</span>
+  <h2>資料を見ずに自分でできるべき3つのこと</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>1. 構築した VPC を紙に描き直す</h3>
+      <p style="font-size:.94rem">枠組みのヒント（描き終えてから Console と照合）：</p>
+      <ul style="font-size:.94rem">
+        <li>外枠：VPC <code>10.0.0.0/16</code>、Region は東京。IGW は VPC の境界にアタッチ。</li>
+        <li>AZ 1a と 1c の2列。各列に public subnet（/24）と private subnet（/24）を1つずつ、CIDR も記入。</li>
+        <li>public 1a の中：NAT Gateway + EIP、bastion。private 1a の中：private IP だけを持つ app EC2。</li>
+        <li>3つの route table とそれぞれの行：public には <code>0.0.0.0/0 → igw</code>、private には <code>0.0.0.0/0 → nat</code> と <code>pl-s3 → vpce</code>、すべての表に <code>10.0.0.0/16 → local</code>。</li>
+        <li>メモ：AWS が予約する5 IP、subnet は1つの AZ、NAT も1つの AZ。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>2. private EC2 から Internet へ出るパケットは何を通るか</h3>
+      <p style="font-size:.94rem">回答の枠組みのヒント：</p>
+      <ul style="font-size:.94rem">
+        <li>行き：app → <b>ENI</b> → <b>SG outbound</b>（stateful、記憶）→ private subnet の <b>NACL outbound</b> → private の <b>route table</b> で <code>0.0.0.0/0 → nat</code> に一致 → public subnet の NACL inbound → <b>NAT Gateway</b> が送信元を EIP に変換 → public の NACL outbound → public の route table <code>0.0.0.0/0 → igw</code> → <b>IGW</b> → Internet。</li>
+        <li>戻り：Internet → IGW → public の NACL inbound（ephemeral）→ NAT が表を参照して宛先を private IP に戻す → public の NACL outbound → local → private の NACL inbound（ephemeral）→ SG は stateful なので自動で許可 → app。</li>
+        <li>強調点：NAT と IGW には SG がない。NACL は stateless なので ephemeral が必要。S3 なら prefix list が NAT の route に優先する。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>3. Security Group と NACL の違いを具体例で説明する</h3>
+      <p style="font-size:.94rem">回答の枠組みのヒント：</p>
+      <ul style="font-size:.94rem">
+        <li>5つの軸：適用先（ENI と subnet）、状態（stateful と stateless）、rule の種類（Allow のみと Allow・Deny）、順序（すべて評価と番号順・最初の一致で停止）、デフォルト（新規 SG は inbound なし、custom NACL は deny all）。</li>
+        <li>例1（Lab 4）：bastion への IP 203.0.113.10 からのアクセスを遮断。SG ではできない。NACL なら rule 200 の Allow より前に rule 100 で /32 を Deny。</li>
+        <li>例2：HTTPS の web サーバー。SG は inbound 443 だけで十分。NACL は inbound 443 <b>と</b> outbound 1024-65535 が必要で、足りないとクライアントが応答待ちのまま止まる。</li>
+        <li>例3：DB は app からのみ受け付ける。DB の SG の source = app の SG。NACL は SG を指定して書けない。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ キーワード ============ -->
+<section id="tukhoa">
+  <span class="eyebrow">クイックレビュー</span>
+  <h2>第4週のキーワード表</h2>
+  <div class="tbl"><table>
+    <tr><th>設問に出てくる言葉</th><th>すぐに思い浮かべるもの</th></tr>
+    <tr><td><em>subnet</em> が AZ 障害に耐える必要がある</td><td>不可能。subnet は1つの AZ に属するので、別の AZ に subnet を作成</td></tr>
+    <tr><td><em>5 reserved addresses</em>、subnet 内の最大 instance 数</td><td>CIDR のサイズから5を引く</td></tr>
+    <tr><td>VPC で <em>ran out of IP addresses</em></td><td>Secondary CIDR</td></tr>
+    <tr><td>subnet が public か private か</td><td>route <code>0.0.0.0/0 → igw</code> の有無</td></tr>
+    <tr><td><em>longest prefix match</em>、重なる2つの route</td><td>狭い範囲が優先</td></tr>
+    <tr><td><em>private subnet outbound Internet</em></td><td>public subnet に NAT Gateway + EIP、private の route を NAT に向ける</td></tr>
+    <tr><td><em>NAT must be highly available</em></td><td>AZ ごとに NAT Gateway を1つ</td></tr>
+    <tr><td><em>IPv6 outbound only</em></td><td>Egress-only Internet Gateway</td></tr>
+    <tr><td><em>source/destination check</em></td><td>NAT Instance（無効化が必要）</td></tr>
+    <tr><td>stop/start 後も <em>static public IP</em></td><td>Elastic IP</td></tr>
+    <tr><td><em>stateful</em>、Allow のみ、instance に付ける</td><td>Security Group</td></tr>
+    <tr><td><em>stateless</em>、Deny あり、subnet に付ける、rule 番号順</td><td>Network ACL</td></tr>
+    <tr><td><em>block a specific IP</em></td><td>番号の小さい NACL の Deny（HTTP なら WAF）</td></tr>
+    <tr><td>NACL を作成した後、接続はできるが応答がない</td><td>outbound の ephemeral 1024-65535 が不足</td></tr>
+    <tr><td>DB が auto scale する app 層からのみ受け付ける</td><td>DB の SG の source = app の SG</td></tr>
+    <tr><td><em>S3 / DynamoDB privately</em>、<em>no additional cost</em></td><td>Gateway endpoint + route table</td></tr>
+    <tr><td>他の AWS サービスに <em>privately</em>、<em>PrivateLink</em>、ENI</td><td>Interface endpoint</td></tr>
+    <tr><td>DX/VPN 経由のオンプレミスから private IP で S3</td><td>S3 の interface endpoint（gateway は DX 越しに使えない）</td></tr>
+    <tr><td><em>expose service to thousands of VPCs</em>、<em>overlapping CIDR</em></td><td>PrivateLink + NLB（Endpoint Service）</td></tr>
+    <tr><td><em>connect two VPCs</em>、安価、transitive ではない</td><td>VPC peering、双方の route table、CIDR の重複なし</td></tr>
+    <tr><td><em>hub-and-spoke</em>、数十の VPC、<em>transitive</em>、<em>multicast</em></td><td>Transit Gateway</td></tr>
+    <tr><td><em>share subnets with other accounts</em></td><td>RAM による VPC sharing</td></tr>
+    <tr><td><em>IPsec over Internet</em>、VGW + CGW、2本の tunnel</td><td>Site-to-Site VPN</td></tr>
+    <tr><td>複数拠点が AWS 経由で相互通信</td><td>VPN CloudHub</td></tr>
+    <tr><td><em>remote users</em>、<em>OpenVPN</em>、ユーザー向けの AD / SAML</td><td>Client VPN</td></tr>
+    <tr><td><em>dedicated connection</em>、<em>consistent latency</em>、数週間〜数か月かかる</td><td>Direct Connect</td></tr>
+    <tr><td>DX を暗号化したい</td><td>VPN over DX（public VIF）または MACsec</td></tr>
+    <tr><td>1本の DX で複数の Region / account へ</td><td>Direct Connect Gateway</td></tr>
+    <tr><td>DX のバックアップ、<em>cost-effective</em></td><td>Site-to-Site VPN</td></tr>
+    <tr><td>traffic の ACCEPT/REJECT の確認、ネットワークの監査</td><td>VPC Flow Logs</td></tr>
+    <tr><td>実際のパケットを送らずに、どの設定が遮断しているかを調べる</td><td>Reachability Analyzer</td></tr>
+    <tr><td>ドメインによるフィルタリング、IPS、VPC レベルのファイアウォール</td><td>AWS Network Firewall</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ CHECKLIST ============ -->
+<section id="checklist">
+  <span class="eyebrow">進捗</span>
+  <h2>第4週チェックリスト</h2>
+  <p style="font-size:.94rem;color:var(--muted)">ここでチェックすると、このマシン上で進捗を管理できます。項目が終わったら session で Claude に伝え、<code>AWS-SAA-checklist.md</code> にチェックを入れてもらいます。第4〜5週のブロック共通クイズは第5週の最後に解きます。</p>
+  <div class="card">
+    <h4>理論</h4>
+    <label class="check"><input type="checkbox" id="c1" data-ck><span>VPC、CIDR、subnet、route table</span></label>
+    <label class="check"><input type="checkbox" id="c2" data-ck><span>Internet Gateway、NAT Gateway、NAT Instance、Egress-only IGW</span></label>
+    <label class="check"><input type="checkbox" id="c3" data-ck><span>Security Group と NACL（stateful と stateless）</span></label>
+    <label class="check"><input type="checkbox" id="c4" data-ck><span>VPC endpoint：gateway（S3、DynamoDB）と interface（PrivateLink）</span></label>
+    <label class="check"><input type="checkbox" id="c5" data-ck><span>VPC peering、Transit Gateway</span></label>
+    <label class="check"><input type="checkbox" id="c6" data-ck><span>Site-to-Site VPN、Client VPN、Direct Connect</span></label>
+    <h4>ハンズオン</h4>
+    <label class="check"><input type="checkbox" id="c7" data-ck><span>public subnet と private subnet、Internet Gateway、route table を備えた2 AZ の VPC を構築</span></label>
+    <label class="check"><input type="checkbox" id="c8" data-ck><span>private subnet 用の NAT Gateway、bastion host、private EC2 への多段 SSH と Internet への curl</span></label>
+    <label class="check"><input type="checkbox" id="c9" data-ck><span>private EC2 から gateway endpoint 経由で S3 にアクセスし、NAT を外しても <code>aws s3 ls</code> が動く</span></label>
+    <label class="check"><input type="checkbox" id="c10" data-ck><span>NACL で1つの IP を deny し、SG では遮断できないことを確認</span></label>
+    <label class="check"><input type="checkbox" id="c11" data-ck><span>NAT Gateway の削除、Elastic IP の release、EC2 の terminate、Billing の確認</span></label>
+    <h4>確認ポイント</h4>
+    <label class="check"><input type="checkbox" id="c12" data-ck><span>console を見ずに、構築した VPC を紙に描き直す</span></label>
+    <label class="check"><input type="checkbox" id="c13" data-ck><span>private EC2 から Internet へ出るパケットが何を通るかを、戻りも含めて説明する</span></label>
+    <label class="check"><input type="checkbox" id="c14" data-ck><span>Security Group と NACL の違いを具体例で説明する</span></label>
+    <h4>その他</h4>
+    <label class="check"><input type="checkbox" id="c15" data-ck><span>6〜7日目：peering と Transit Gateway の図を自分で描き、session で VPC のミニクイズ15問を解く</span></label>
+    <label class="check"><input type="checkbox" id="c16" data-ck><span>第4〜5週のクイズ（<code>quiz/tuan-04-05.md</code>、第5週の最後に実施）で80%以上</span></label>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  // Xem đáp án
+  document.querySelectorAll('[data-reveal]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var a=b.parentElement.querySelector('.ans');
+      a.hidden=!a.hidden; b.textContent=a.hidden?'答えを見る':'答えを隠す';
+    });
+  });
+  // Checklist lưu trên máy này
+  var boxes=document.querySelectorAll('[data-ck]'), KEY='saa-tuan-04';
+  var saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  function update(){
+    var n=0; boxes.forEach(function(c){ c.closest('.check').classList.toggle('done',c.checked); if(c.checked)n++; });
+    document.getElementById('bar').style.width=(n/boxes.length*100)+'%';
+    document.getElementById('pct').textContent=n+'/'+boxes.length;
+  }
+  boxes.forEach(function(c){
+    if(saved[c.id])c.checked=true;
+    c.addEventListener('change',function(){ saved[c.id]=c.checked; try{ localStorage.setItem(KEY,JSON.stringify(saved)); }catch(e){} update(); });
+  });
+  update();
+  // Đánh dấu mục đang đọc
+  var links=document.querySelectorAll('.toc a'), secs=[];
+  links.forEach(function(l){ var s=document.querySelector(l.getAttribute('href')); if(s)secs.push([s,l]); });
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ links.forEach(function(l){l.classList.remove('active')}); secs.forEach(function(p){ if(p[0]===e.target)p[1].classList.add('active'); }); } }); },{rootMargin:'-20% 0px -70% 0px'});
+    secs.forEach(function(p){ io.observe(p[0]); });
+  }
+})();
+</script>

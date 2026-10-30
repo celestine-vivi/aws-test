@@ -1,0 +1,932 @@
+<title>SAA 第12週 試験当日</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky mục lục bên trái (desktop), cột nội dung 760px bên phải; xếp một cột ở màn hẹp. */
+:root{
+  --bg:#f2f4f7; --surface:#ffffff; --surface-2:#e9edf2; --line:#d3dae3;
+  --fg:#172030; --muted:#5a6676; --accent:#1c6e8c; --accent-soft:#dcecf3;
+  --warm:#b35a00; --warm-soft:#fbe9d6; --ok:#2a7d4f; --ok-soft:#dcf0e4; --bad:#b3362b; --bad-soft:#f8dedb;
+  --display:"Manrope","IBM Plex Sans",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+a{color:var(--accent)}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:800}
+h2{font-size:1.5rem;font-weight:800;padding-top:8px}
+h3{font-size:1.12rem;font-weight:700}
+h4{font-size:.95rem;font-weight:700}
+p{margin:0}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+pre{font-family:var(--mono);font-size:.84rem;line-height:1.5;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:0}
+pre code{background:none;padding:0;font-size:inherit}
+em{color:var(--warm);font-style:italic}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* Header */
+.hero{max-width:1120px;margin:0 auto;padding-block:36px 20px;display:flex;flex-direction:column;gap:12px}
+.hero .lead{max-width:62ch;color:var(--muted);font-size:1.02rem}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.88rem;color:var(--muted)}
+.meta b{color:var(--fg);font-weight:600}
+.progress{display:flex;align-items:center;gap:12px;font-size:.88rem;color:var(--muted)}
+.bar{flex:1;max-width:320px;height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+
+/* Two columns */
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;align-items:start}
+.toc{position:sticky;top:max(12px,env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:2px;font-size:.9rem}
+.toc a{color:var(--muted);text-decoration:none;padding:6px 10px;border-left:2px solid var(--line);display:block}
+.toc a:hover,.toc a.active{color:var(--fg);border-left-color:var(--accent)}
+.toc .grp{margin-top:10px}
+main{display:flex;flex-direction:column;gap:56px;min-width:0;max-width:780px}
+section{display:flex;flex-direction:column;gap:18px;scroll-margin-top:16px}
+@media (max-width:860px){ .wrap{grid-template-columns:1fr;gap:24px} .toc{position:static;flex-direction:row;flex-wrap:wrap;gap:6px} .toc a{border:1px solid var(--line);border-radius:99px;padding:4px 10px} .toc .grp{margin:0} .toc a.active{border-color:var(--accent)} }
+
+/* Blocks */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.block{display:flex;flex-direction:column;gap:8px}
+.block > .eyebrow{color:var(--accent)}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:5px}
+li::marker{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.kw{display:flex;flex-wrap:wrap;gap:8px}
+.kw span{background:var(--warm-soft);color:var(--warm);border-radius:4px;padding:3px 9px;font-size:.86rem;font-style:italic}
+.kw span b{font-style:normal;font-weight:600;color:var(--fg)}
+.note{border-left:3px solid var(--warm);background:var(--warm-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.94rem}
+.note.ok{border-color:var(--ok);background:var(--ok-soft)}
+.note.bad{border-color:var(--bad);background:var(--bad-soft)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;font-size:.84rem}
+tr:last-child td{border-bottom:0}
+td.c{text-align:center}
+
+/* Checklist */
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:6px;cursor:pointer}
+.check:hover{background:var(--surface-2)}
+.check input{margin-top:5px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.check.done{color:var(--muted);text-decoration:line-through}
+
+/* Quiz reveal */
+.q{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.q .qt{font-weight:500}
+.q button{align-self:flex-start;font:inherit;font-size:.86rem;padding:5px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer}
+.q button:hover{background:var(--accent);color:var(--surface)}
+.q button:focus-visible,.check input:focus-visible,.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.q .ans{font-size:.94rem;border-top:1px dashed var(--line);padding-top:8px}
+.q .ans b{color:var(--ok)}
+
+/* Steps */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:12px;padding:0;list-style:none}
+.steps li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:start}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--mono);font-size:.8rem;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:500;margin-top:2px}
+.steps li > div{display:flex;flex-direction:column;gap:6px;min-width:0}
+
+/* Flow diagram */
+.flow{display:flex;flex-direction:column;gap:0;align-items:stretch;max-width:520px}
+.flow .n{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:.94rem}
+.flow .n .tag{font-family:var(--mono);font-size:.74rem;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.tag.deny{background:var(--bad-soft);color:var(--bad)} .tag.allow{background:var(--ok-soft);color:var(--ok)} .tag.next{background:var(--surface-2);color:var(--muted)}
+.flow .arrow{height:22px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--mono);font-size:.78rem}
+.flow .arrow::before{content:"";width:1px;height:100%;background:var(--line);position:absolute}
+.flow .arrow{position:relative} .flow .arrow span{background:var(--bg);padding:0 6px;position:relative}
+
+svg text{font-family:var(--body)}
+.diag{overflow-x:auto}
+.diag svg{width:100%;max-width:700px;height:auto;display:block}
+.sv-region{fill:var(--surface);stroke:var(--accent)} .sv-az{fill:var(--accent-soft);stroke:var(--accent)} .sv-edge{fill:var(--warm-soft);stroke:var(--warm)}
+.sv-t{fill:var(--fg);font-size:13px} .sv-m{fill:var(--muted);font-size:11px} .sv-line{stroke:var(--line)}
+@media (prefers-reduced-motion: reduce){ .bar i{transition:none} }
+/* Thêm cho tuần 12: cột con số in đậm bằng mono */
+.tbl td.num{font-family:var(--mono);font-size:.86rem;white-space:nowrap;font-weight:500}
+</style>
+
+<header class="hero">
+  <span class="eyebrow">AWS SAA-C03 · 12週間ロードマップ · 第12週</span>
+  <h1>最終週: 仕上げの模試、試験予約、そして本番へ</h1>
+  <p class="lead">第10週では比較表を復習して最初の3回分の模試を解き、第11週ではTutorials Dojoの模試2〜5を終えてdomain別に復習しました。今週は新しいことは学びません。模試6を解き、80%未満だった模試を解き直し、Pearson VUEで試験を予約し、数値表を暗記し、AWS accountを片付けてから試験に臨みます。今週の目標はただ一つ、<b>合格</b>です。</p>
+  <div class="meta"><span>学習ペース: <b>1日1.5〜2時間</b>、試験前日は軽く目を通すだけ</span><span>関連Domain: <b>4つすべて</b>（SEC 30%、RES 26%、PERF 24%、COST 20%）</span><span>費用: <b>受験料150 USD</b>、lab 0 USD</span></div>
+  <div class="progress"><span>チェックリスト進捗</span><div class="bar"><i id="bar"></i></div><span id="pct">0/12</span></div>
+</header>
+
+<div class="wrap">
+<nav class="toc" aria-label="目次">
+  <a href="#ke-hoach">7日間の計画</a>
+  <span class="grp eyebrow">試験準備</span>
+  <a href="#dat-lich">1. 受験登録</a>
+  <a href="#cheat-sheet-so">2. 覚えるべき数値</a>
+  <a href="#cheat-sheet-tu-khoa">3. 最終キーワード表</a>
+  <a href="#chien-thuat">4. 試験当日の戦略</a>
+  <a href="#ngay-truoc-thi">5. 48時間前と試験当日</a>
+  <a href="#sau-khi-thi">6. 試験のあと</a>
+  <span class="grp eyebrow">第12週の予定</span>
+  <a href="#handson">第12週の予定: 4つのタスク</a>
+  <a href="#moc">確認ポイント</a>
+  <a href="#tukhoa">設問の書き出し → domain</a>
+  <a href="#checklist">週のチェックリスト</a>
+</nav>
+
+<main>
+
+<section id="ke-hoach">
+  <h2>7日間の計画</h2>
+  <p>今週は試験日を軸に予定を組みます。第11週で予約済みなら7日目が試験日です。まだなら3日目までに予約を済ませて試験日を翌週にずらし、残りの日は順番どおりに進めます。</p>
+  <div class="tbl"><table>
+    <tr><th>日</th><th>主なタスク</th><th>メモ</th></tr>
+    <tr><td>1</td><td>Tutorials Dojo模試6を<b>timed</b>モードで、65問130分</td><td>%をチェックリストに記録します。正解した問題の解説も読み、間違えた問題を<code>so-ghi-cau-sai.md</code>に記録します。</td></tr>
+    <tr><td>2</td><td>80%未満の模試を解き直す（TD模試1〜5、AWS Official Practice Set、講座の模試）</td><td>2回目は80%超えが必須です。届かなければscore reportで弱いdomainを復習し、3回目に挑みます。</td></tr>
+    <tr><td>3</td><td>未予約なら試験を予約（先にESLを申請し、次にPearson VUE、最後にsystem test）。第1〜11週の間違いノートを復習。</td><td>間違いノートは今週いちばん価値のある復習資料です。1行ずつ読み、「今ならどれを選ぶか」と自問します。</td></tr>
+    <tr><td>4</td><td><a href="#cheat-sheet-so">覚えるべき数値</a>の表を読み、隠して確認</td><td>「数値」列を隠して口に出し、開いて照合します。数時間あけて2周します。</td></tr>
+    <tr><td>5</td><td><a href="#cheat-sheet-tu-khoa">最終キーワード表</a>を読み、AWS accountを片付ける</td><td>Regionを1つずつ確認し、残ったresourceを削除してBudgetは残します。翌日分のBillsが0 USDになることを確認します。</td></tr>
+    <tr><td>6</td><td>休養。2つのcheat sheetに軽く目を通すだけにし、模試も新しい学習もしない。</td><td>十分に寝ます。身分証を準備し、試験部屋（online）または会場までの道順（test center）を確認します。</td></tr>
+    <tr><td>7</td><td><b>試験</b>（または予約した試験日）</td><td>30分前にcheck-in（online）、または15分前に到着（test center）。難問はflagし、誤答を2つ消去し、空欄を残さないこと。</td></tr>
+  </table></div>
+  <div class="note">第12週にはClaudeが作る小テストはありません。今週の「小テスト」はTD模試6と本番の試験です。チェックリストに記録する最後のテストは、<code>AWS-SAA-checklist.md</code>の「THI ĐỖ」（合格）の項目です。</div>
+</section>
+
+<!-- ============ 1. ĐĂNG KÝ THI ============ -->
+<section id="dat-lich">
+  <span class="eyebrow">試験準備 1 / 6</span>
+  <h2>受験登録: アカウント、Pearson VUE、ESL、身分証</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">予約する条件</span>
+      <div class="note ok">ロードマップのルール: <b>模試で2回連続80%以上</b>（timedモード、資料を見ない）を取ったら、「もう少し復習してから」と待たずにすぐ予約します。Tutorials Dojoの模試は本番より少し難しいため、TDの80%はおおむね本番の750〜800点に相当します（コミュニティの経験からの推定で、公式の数値ではありません）。早めに予約すると、学習を続ける強制力にもなります。試験日が決まれば先延ばしする理由がなくなります。</div>
+      <ul>
+        <li>80%超えがまだ1回だけなら、7〜10日後で予約し、その期間に80%未満の模試を解き直します。Pearson VUEは日程変更ができます（詳細は後述）。</li>
+        <li>80%を超えた模試がまだ1つもなければ、急いで予約しません。第11週に戻り、TDのscore reportで弱いdomainを復習し、3〜4日後に解き直します。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">AWS Certificationアカウント</span>
+      <ul>
+        <li><a href="https://www.aws.training/certification" target="_blank" rel="noopener">aws.training/certification</a> → Sign inを開きます。Amazon account、Builder ID、または企業アカウントでログインできます。初回は<b>CertMetrics</b>（AWSの認定管理システム）に移動し、プロフィールを入力します。</li>
+        <li><b>プロフィールの氏名は、試験に持参する身分証と完全に一致させてください</b>。姓名の順序、アクセント記号、ミドルネームまで合わせます。日本で在留カードやベトナムのpassportを使って受験するなら、アクセント記号なしで、passportの順序どおりに入力します（例: <code>HO VAN QUY</code>ならFirst nameは<code>VAN QUY</code>、Last nameは<code>HO</code>、またはpassportでの区切り方に従う）。氏名が違うと入室を拒否され、受験料も失います。予約後の氏名修正はsupport経由になります。</li>
+        <li>まもなく変わる会社のメールではなく、個人のメールを使います。認定、badge、voucherは3年間このアカウントに紐づきます。</li>
+        <li>すでに他のAWS認定（例: Cloud Practitioner）を持っているなら、<b>Benefits</b>で次回試験用の<b>50% off</b> voucherを取得し、Pearson VUEの支払い時にコードを適用します。voucherには有効期限があるので確認してください。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">accommodation「ESL +30 minutes」の申請（予約前に必ず行う）</span>
+      <div class="note bad"><b>英語</b>で受験し、英語が母語でない場合は<b>30分</b>の延長を申請できます。このaccommodationは<b>予約前に承認されている</b>必要があります。予約後に申請しても既存の予約には適用されず、キャンセルして予約し直すことになります。日本語で受験する場合はESLを申請できません（ESLは英語の試験のみ）。</div>
+      <ol>
+        <li>CertMetricsでメニュー<b>Request Exam Accommodations</b>を開きます（メニュー名は多少異なる場合があるので、実際の画面で要確認）。</li>
+        <li>accommodation <b>ESL +30 MINUTES</b>を選びます。証明書類は不要で、通常は自動承認か数営業日で承認されます。</li>
+        <li>ステータスが<b>Approved</b>になるまで待ちます。そうなってから初めてPearson VUEでScheduleを押します。予約時の試験時間は130分ではなく160分と表示されます。</li>
+      </ol>
+      <p style="font-size:.92rem;color:var(--muted)">その他のaccommodation（医療上の理由による時間延長、個室、screen reader）は書類が必要で承認にも時間がかかるため、このロードマップでは扱いません。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">受験形式の選択: online proctoredかtest centerか</span>
+      <div class="tbl"><table>
+        <tr><th>観点</th><th>Pearson VUE online（OnVUE）</th><th>Test center</th></tr>
+        <tr><td>受験場所</td><td>自宅の個室。机の上は完全に空にし、ドアを閉め、試験中は<b>誰も入室できない</b></td><td>Pearson VUEの会場（東京には多数あり、予約時にPearson VUEで検索）</td></tr>
+        <tr><td>機器</td><td>webcam、マイク付きの個人PC、モニターは1台のみ。サブモニター禁止、policyでロックされた会社PCも不可（OnVUE appを通常インストールできない）</td><td>会場のPCを使うので、ネットワークやソフトの心配がない</td></tr>
+        <tr><td>事前チェック</td><td>受験に使うPC、ネットワークでOnVUEの<b>system test</b>を実行する必要がある（webcam、マイク、回線速度、appの動作）</td><td>不要</td></tr>
+        <tr><td>Check-in</td><td><b>試験開始30分前</b>からcheck-in可能。顔写真、身分証の写真、スマートフォンで部屋の写真4枚を撮影し、proctorの確認後に開始。予約時刻から15分を超えて遅れると受験資格を失う（要確認）</td><td>15分前に到着し、署名、写真撮影、荷物をlockerへ</td></tr>
+        <tr><td>リスク</td><td>途中で回線が切れる、家族がドアを開ける、画面外を見てproctorに中断される、問題を声に出して読む（禁止）</td><td>移動、電車の遅延、他の受験者のタイピング音</td></tr>
+        <tr><td>proctorとのやりとりの言語</td><td>英語（一部の時間帯は日本語を選べる場合あり、要確認）</td><td>会場スタッフ、日本語</td></tr>
+        <tr><td>向いている人</td><td>静かな個室と安定した回線があり、時間を柔軟に選びたい人（深夜、週末の枠あり）</td><td>家が騒がしい、回線に不安がある、技術トラブルが心配、「試験に行く」雰囲気がほしい人</td></tr>
+      </table></div>
+      <p style="font-size:.92rem">アドバイス: 日本に住んでいて東京に行けるなら、<b>test center</b>のほうがリスクは低めです。onlineを選ぶなら、system testは予約直後と前日の夜の少なくとも2回実行してください。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験言語の選択</span>
+      <ul>
+        <li><b>英語</b>: 講座、Tutorials Dojo、この11週間読んできたcheat sheetと同じ言語です。キーワード（<em>least operational overhead</em>、<em>most cost-effective</em>）も見慣れていて、ESL +30分も申請できます。このロードマップではこちらを推奨します。</li>
+        <li><b>日本語</b>: 翻訳された問題で、用語の訳が原文より分かりにくいことがあります。ESLはありません。技術的な日本語を英語より明らかに速く読める場合だけ選んでください。日本語で受験しても、試験中に言語切り替えボタンで英語の原文を表示できます（受験時点でこの機能があるか要確認）。</li>
+        <li>言語は予約時に選び、試験室では変更できません。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">受験料、日程変更、キャンセル</span>
+      <div class="tbl"><table>
+        <tr><th>項目</th><th>値</th><th>メモ</th></tr>
+        <tr><td>SAA-C03の受験料</td><td class="num">150 USD</td><td>Associateレベル。Pearson VUEでカード払い。地域によっては消費税が加算される場合があります。持っていれば50% voucherを使います。</td></tr>
+        <tr><td>日程変更（reschedule）</td><td class="num">24時間前まで無料</td><td>試験開始まで24時間以上あれば通常は無料で変更できます。それより直前だと変更できず、受験料を失います（予約時にPearson VUEで現行ポリシーを要確認）。</td></tr>
+        <tr><td>キャンセル（cancel）</td><td class="num">24時間前まで</td><td>24時間以上前ならキャンセルで返金されます（要確認）。無断欠席（no-show）は受験料全額を失います。</td></tr>
+        <tr><td>不合格後の再受験</td><td class="num">14日待機</td><td>受験料を再度全額支払います。再受験の回数制限はありません。</td></tr>
+        <tr><td>合格後の再受験</td><td class="num">不要</td><td>認定の有効期間は3年で、その後は最新版を受験して更新します。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">身分証</span>
+      <ul>
+        <li>念のため<b>2種類の身分証</b>を持参します。1つは政府発行で有効期限内、<b>写真と署名</b>があるもの（passportが最適。日本なら在留カードやマイナンバーカードも）、もう1つは氏名入りの補助書類（署名入りのクレジットカード、キャッシュカード）です。現行のAWSのポリシーでは主要な身分証1つだけでよい場合もありますが、2つ持っていて困ることはありません（AWS CertificationのID policyページで要確認）。</li>
+        <li><b>身分証の氏名はAWS Certificationアカウントの氏名と一致している必要があります</b>。試験当日に入室を拒否される理由として最も多いのはこれで、知識不足ではありません。</li>
+        <li>online受験: 身分証は物理的な原本が必要で、check-in時にスマートフォンで撮影します。ぼやけていると撮り直しになるので、机の上に用意しておきます。</li>
+        <li>期限切れの身分証、コピー、スマートフォン上の画像はいずれも認められません。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>ESL +30 minutes <b>→ 予約前に申請</b></span><span>OnVUE system test <b>→ 本番と同じPC、同じ回線で実行</b></span><span>30分前にcheck-in <b>→ online</b></span><span>15分前に到着 <b>→ test center</b></span><span>氏名と身分証の一致 <b>→ CertMetricsを確認</b></span><span>50% voucher <b>→ 認定保有者はBenefitsで</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">1. 英語の試験を予約した後で、ESL +30分を申請していなかったことに気づきました。今申請すれば、予約済みの試験に30分が追加されますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>されません。</b>accommodationは承認後に行った予約にだけ適用されます。対処法は、ESLを申請してApprovedを待ち、古い予約をキャンセルし（24時間以上前なら返金、要確認）、新しく予約し直すことです。第12週の予定でESLの申請が予約より前に置かれているのはこのためです。</p></div>
+      <div class="q"><p class="qt">2. passportの氏名は<code>HO VAN QUY</code>ですが、AWS CertificationアカウントにはFirst name <code>Quy</code>、Last name <code>Ho Van</code>と入力しました。試験当日に問題はありますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>入室を拒否される可能性があります。</b>Pearson VUEはプロフィールの氏名と身分証を照合するため、順序や姓名の区切り方が違うのはリスクです。<b>予約前に</b>CertMetricsのプロフィールをpassportに合わせて修正します。予約済みならAWS Certification supportに連絡して修正してもらいますが、数日かかります。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. CON SỐ PHẢI NHỚ ============ -->
+<section id="cheat-sheet-so">
+  <span class="eyebrow">試験準備 2 / 6</span>
+  <h2>試験日までに覚えるべき数値</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">この表の使い方</span>
+      <p>SAAの試験で「数値はいくつか」と直接問われることは少ないですが、数値はシナリオの中によく隠れています。「8 GBのobjectのuploadがよく失敗する」（single PUT 5 GBのひっかけ）、「500 KBのmessage」（SQS 256 KBのひっかけ）、「streamのデータを7日間保持したい」（Kinesis retentionのひっかけ）、「別RegionへのDRでRPO 1秒」（Aurora Global Database）などです。数値を覚えるのは<b>ひっかけに気づく</b>ためで、計算するためではありません。学習法: 「数値」列を隠して口に出し、開いて照合します。4日目に2周、6日目に1周します。「（要確認）」と付いた数値はAWSが頻繁に変更するか、確信のないもので、試験では古い値が使われていることが多いです。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">SAA-C03試験</span>
+      <div class="tbl"><table>
+        <tr><th>項目</th><th>数値</th><th>ひっかけポイント</th></tr>
+        <tr><td>問題数 / 時間</td><td class="num">65問 / 130分</td><td>平均1問2分。ESL +30分で160分になり、1問あたり約2.5分。</td></tr>
+        <tr><td>採点対象外の問題</td><td class="num">15問</td><td>採点対象は50問で、15問の試行問題が混ざっており、どれかは分かりません。見慣れない問題に出会っても試行問題かもしれないので、慌てないこと。</td></tr>
+        <tr><td>合格点</td><td class="num">720 / 1000</td><td>100〜1000のscaled scoreで、パーセントではありません。domainごとの合格ラインはありません。</td></tr>
+        <tr><td>domainの配分</td><td class="num">30 / 26 / 24 / 20</td><td>SEC / RES / PERF / COST。Securityが最も多く、IAM、KMS、VPC endpoint、WAFの問題が全体の約3分の1を占めます。</td></tr>
+        <tr><td>認定の有効期間</td><td class="num">3年</td><td>再受験または上位資格の取得で更新します（ProfessionalでもAssociateが更新されます）。</td></tr>
+        <tr><td>不合格後の再受験</td><td class="num">14日</td><td>受験料は毎回150 USD。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">S3とGlacier</span>
+      <div class="tbl"><table>
+        <tr><th>サービス</th><th>数値</th><th>ひっかけポイント</th></tr>
+        <tr><td>objectの最大サイズ</td><td class="num">5 TB</td><td>1 objectの上限で、bucketの上限ではありません。bucketの容量は無制限です。</td></tr>
+        <tr><td>Single PUTの最大</td><td class="num">5 GB</td><td>5 GBを超えるとmultipart uploadが<b>必須</b>です。設問「upload 10 GB file fails」→ multipart。</td></tr>
+        <tr><td>multipartの推奨サイズ</td><td class="num">100 MB</td><td>推奨であって必須ではありません。遠隔地からのuploadには<b>Transfer Acceleration</b>を組み合わせます。</td></tr>
+        <tr><td>multipartのpart数</td><td class="num">最大10,000 part、各part 5 MB〜5 GB</td><td>最後のpartは5 MB未満でも可。lifecycle ruleで未完了のmultipart uploadを削除してコストを節約します。</td></tr>
+        <tr><td>prefixごとのrequest rate</td><td class="num">毎秒3,500 PUT / 5,500 GET</td><td>それ以上必要ならprefixを分けます。昔のようにkey名をランダム化する必要はもうありません。</td></tr>
+        <tr><td>Standard-IA、One Zone-IA: min storage duration</td><td class="num">30日</td><td>早く削除や移行をしても30日分課金されます。課金対象の最小objectは<b>128 KB</b>。lifecycleでStandardからIAへ移すには作成から<b>30日</b>待つ必要があります。</td></tr>
+        <tr><td>Glacier Instant Retrieval: min duration</td><td class="num">90日</td><td>IAと同じくミリ秒で取り出せますが、より安価です。四半期に1回程度のアクセス向け。</td></tr>
+        <tr><td>Glacier Flexible Retrieval: min duration</td><td class="num">90日</td><td>Retrieval: <b>Expedited 1〜5分</b>、Standard 3〜5時間、Bulk 5〜12時間（Bulkは無料）。</td></tr>
+        <tr><td>Glacier Deep Archive: min duration</td><td class="num">180日</td><td>Retrieval: Standard <b>12時間</b>、Bulk 48時間。Expeditedはありません。S3で最も安価です。</td></tr>
+        <tr><td>Intelligent-Tiering</td><td class="num">objectごとの監視料金、retrieval料金なし</td><td>128 KB未満のobjectは自動でtier移動しません。<em>unknown or changing access pattern</em>のときに選びます。</td></tr>
+        <tr><td>Object Lock retention</td><td class="num">Governance / Compliance</td><td>Compliance modeではrootでも期限前に削除できません。versioningの有効化が必須です。設問: <em>WORM</em>、<em>regulatory</em>。</td></tr>
+        <tr><td>S3 Replication</td><td class="num">有効化後の新しいobjectのみ</td><td>既存objectには<b>S3 Batch Replication</b>が必要です。両方のbucketでversioningが必要。CRRは別Region、SRRは同一Region。</td></tr>
+        <tr><td>Presigned URL</td><td class="num">最大7日（SigV4）</td><td>署名者のcredentialを使うため、credentialが先に失効するとURLも早く失効します（例: EC2のroleで署名すると最大数時間）。</td></tr>
+        <tr><td>Snowball Edge Storage Optimized</td><td class="num">80 TB（210 TB版あり）</td><td>回線が遅い状況で10 TB超を移すときに使います（目安: 回線100 Mbps未満、またはネットワーク転送に1週間超）。Snowmobileは提供終了（要確認）。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">EBS、EFS、FSx、Instance Store</span>
+      <div class="tbl"><table>
+        <tr><th>サービス</th><th>数値</th><th>ひっかけポイント</th></tr>
+        <tr><td>gp3</td><td class="num">3,000 IOPSと125 MB/sは無料、最大16,000 IOPS / 1,000 MB/s</td><td>IOPSは容量に依存しません（gp2は3 IOPS/GB）。通常のworkloadすべてのデフォルト。volumeの最大は16 TiB。</td></tr>
+        <tr><td>io1 / io2</td><td class="num">io1は最大64,000 IOPS、io2 Block Expressは最大256,000 IOPS、64 TiB</td><td>設問に<em>over 16,000 IOPS</em>、database、<em>sub-millisecond</em>とあれば選びます。高い数値はNitro instanceでのみ出ます。</td></tr>
+        <tr><td>EBS Multi-Attach</td><td class="num">io1/io2、最大16 instance、同一AZ</td><td>cluster-awareなfile systemが必要です。通常の共有file systemを作る方法ではありません（それはEFS）。</td></tr>
+        <tr><td>st1 / sc1</td><td class="num">HDD、boot不可</td><td>st1はthroughput向け（big data、log）、sc1は最安でアクセスが少ないデータ向け。boot volumeには使えません。</td></tr>
+        <tr><td>EBS snapshot</td><td class="num">incremental、S3に保存、Regionレベル</td><td>別AZにコピーするには、移行先AZでsnapshotからvolumeを作成します。別Regionへはsnapshotをcopy。Fast Snapshot Restoreで「warm」待ちをなくせます。</td></tr>
+        <tr><td>Instance store</td><td class="num">stop / terminate / ハードウェア障害でデータ消失</td><td>rebootでは残ります。cache、buffer、一時データ向け。IOPSが非常に高く、instanceに含まれ追加料金なし。</td></tr>
+        <tr><td>EFS</td><td class="num">数千のNFS clientが同時接続、petabyteまで自動拡張</td><td>Linuxのみ（NFS v4）。Regionalで、複数AZからmountできます。storage classはStandard / IA / Archiveで、未アクセス日数によるlifecycleあり。GBあたりはEBSより高価。</td></tr>
+        <tr><td>EFS throughput mode</td><td class="num">Elastic（デフォルト） / Provisioned / Bursting</td><td>performance modeはほとんどの場合General Purposeで十分。Max I/Oは数百のinstanceが並列アクセスする場合向けで、latencyは高めです。</td></tr>
+        <tr><td>FSx for Windows</td><td class="num">SMB、Active Directory、DFS</td><td>設問: <em>Windows file share</em>、<em>NTFS ACL</em>。Multi-AZ構成あり。</td></tr>
+        <tr><td>FSx for Lustre</td><td class="num">数百GB/s、sub-millisecond</td><td>HPC、ML、S3と連携（lazy load）。Scratch（一時的、安価）またはPersistent。</td></tr>
+        <tr><td>FSx for NetApp ONTAP / OpenZFS</td><td class="num">NFS + SMB + iSCSI / NFS</td><td>設問に<em>multi-protocol</em>、<em>SnapMirror</em>、オンプレミスのNetAppからの移行とあればONTAP。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">EC2</span>
+      <div class="tbl"><table>
+        <tr><th>サービス</th><th>数値</th><th>ひっかけポイント</th></tr>
+        <tr><td>Spot interruption notice</td><td class="num">2分</td><td>EventBridgeまたはmetadataで受け取ります。Spotはbatch、CI、<em>fault-tolerant</em>、<em>interruption acceptable</em>向け。メインのdatabaseには絶対に使いません。</td></tr>
+        <tr><td>Reserved Instance / Savings Plans</td><td class="num">1年または3年</td><td>最大約72%割引。Standard RIはinstance familyを変更できず、Convertibleは変更できる代わりに割引が少なめ。Compute Savings Plansが最も柔軟（EC2、Fargate、Lambda）。</td></tr>
+        <tr><td>Placement group: Cluster</td><td class="num">1 AZ、1 rack</td><td>latencyが最も低く、HPC向け。リスク: 同じrackでまとめて停止する。</td></tr>
+        <tr><td>Placement group: Spread</td><td class="num">AZあたり最大7 instance</td><td>instanceごとに別のrackを使います。少数の重要なinstance向け。</td></tr>
+        <tr><td>Placement group: Partition</td><td class="num">AZあたり最大7 partition</td><td>Hadoop、Kafka、Cassandra: 多数のinstanceをrackのグループに分けます。</td></tr>
+        <tr><td>Dedicated Host vs Dedicated Instance</td><td class="num">Host: socketとcoreが見える</td><td>設問に<em>BYOL</em>（socket/core単位のlicense）やハードウェアのcomplianceとあればHost。物理サーバーを専有するだけならDedicated Instance。</td></tr>
+        <tr><td>EC2 Linuxの課金</td><td class="num">秒単位、最低60秒</td><td>stopするとcompute料金は止まりますが、EBSとEIPは課金が続きます。HibernateはRAMをEBSに保存します。</td></tr>
+        <tr><td>Instance metadata</td><td class="num">169.254.169.254</td><td>IMDSv2はtokenが必要（GETの前にPUT）で、SSRF対策になります。User dataは初回boot時に1回、root権限で実行されます。</td></tr>
+        <tr><td>Enhanced Networking / EFA</td><td class="num">ENAで最大100 Gbps+</td><td>EFAはHPCのMPI向け（kernel bypass）。ENI（通常の仮想ネットワークカード）と混同しないこと。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">VPCと接続</span>
+      <div class="tbl"><table>
+        <tr><th>サービス</th><th>数値</th><th>ひっかけポイント</th></tr>
+        <tr><td>VPC CIDR</td><td class="num">/16〜/28</td><td>最大65,536 IP、最小16。secondary CIDRを追加できます。peering予定のVPCやオンプレミスのネットワークと重複させてはいけません。</td></tr>
+        <tr><td>subnetごとの予約IP</td><td class="num">5</td><td>network、VPC router、DNS、予備、broadcast。/24のsubnetで使えるのは<b>251</b> IP。/28では11しか残りません。</td></tr>
+        <tr><td>NAT Gateway</td><td class="num">1 AZ、帯域は自動拡張（5 Gbpsから100 Gbpsまで、要確認）</td><td>HAにするには<b>AZごとにNATを1つ</b>作り、AZごとにroute tableを分けます。public subnetに置き、Elastic IPが必要です。Security Group非対応。時間とGBで課金。</td></tr>
+        <tr><td>Internet Gateway</td><td class="num">VPCごとに1つ</td><td>帯域制限なし、最初からHA。IPv6にはEgress-only IGW（NATのような役割）。</td></tr>
+        <tr><td>VPC peering</td><td class="num">transitiveではない、CIDR重複不可</td><td>A-BとB-Cがあっても、AからCには行けません。多数のVPC → <b>Transit Gateway</b>。peeringはcross-Region、cross-accountも可能。</td></tr>
+        <tr><td>Security Group</td><td class="num">stateful、Allowのみ</td><td>デフォルト: inboundはすべて拒否、outboundはすべて許可。別のSGをsourceとして参照できます。ENIあたり最大5 SG（デフォルト）。</td></tr>
+        <tr><td>NACL</td><td class="num">stateless、番号の小さいruleから評価、Denyあり</td><td>default NACLはallow all、custom NACLはdeny all。戻りの通信用にephemeral port 1024〜65535を開ける必要があります。特定のIPをブロック → NACL（SGではDenyできない）。</td></tr>
+        <tr><td>Site-to-Site VPN</td><td class="num">tunnelあたり1.25 Gbps、tunnel 2本</td><td>Internet経由で、数分で構築できます。Accelerated VPNはGlobal Accelerator経由。安定した帯域とプライベートな接続が必要 → Direct Connect。</td></tr>
+        <tr><td>Direct Connect</td><td class="num">1、10、100 Gbps（dedicated）、50 Mbps〜10 Gbps（hosted）</td><td>構築に<b>数週間から数か月</b>かかります。デフォルトでは暗号化されない → 必要ならVPN over DXを追加。HA: 2つのlocationに2本のDX、またはDX + VPN backup。</td></tr>
+        <tr><td>VPC endpoint: Gateway</td><td class="num">S3とDynamoDB、無料</td><td>route tableのentryです。他のサービスにはInterface endpoint（PrivateLink）を使い、ENIを持ち時間課金されます。S3は両方に対応し、VPC内からならGateway、オンプレミスからならInterfaceを選びます。</td></tr>
+        <tr><td>Transit Gateway</td><td class="num">hub、transitive、数千のVPCまで</td><td>multicast、cross-Region peeringに対応。TGW route tableでrouting domainを分けます。</td></tr>
+        <tr><td>Elastic IP</td><td class="num">Regionごとに5（soft limit）</td><td>アタッチ中も課金されます（2024年からすべてのpublic IPv4が0.005 USD/時間）。使わないEIPはreleaseします。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">ELB、Auto Scaling、Route 53、CloudFront</span>
+      <div class="tbl"><table>
+        <tr><th>サービス</th><th>数値</th><th>ひっかけポイント</th></tr>
+        <tr><td>ASG default cooldown</td><td class="num">300秒</td><td>scaling activityの後、cooldownが明けるまで次のscaleを待ちます（simple scaling）。target trackingとstep scalingはcooldownの代わりにwarm-upを使います。</td></tr>
+        <tr><td>ASG health check grace period</td><td class="num">デフォルト300秒</td><td>grace period中の新しいinstanceはunhealthyでも置き換えられません。ELB health checkを有効にすると、OSは動いていてappが落ちたinstanceもASGが置き換えます。</td></tr>
+        <tr><td>ELB deregistration delay（connection draining）</td><td class="num">デフォルト300秒、0〜3,600</td><td>instanceがtarget groupから外れるときに処理中の接続を維持します。statelessなappでは短くしてscale-inを速めます。</td></tr>
+        <tr><td>ALB</td><td class="num">Layer 7、HTTP/HTTPS/gRPC</td><td>path、host、header、queryでrouting。targetはLambda、IP、ECS。<b>static IPなし</b>（static IPが必要 → 前段にNLBかGlobal Accelerator）。sticky sessionはcookieで実現。</td></tr>
+        <tr><td>NLB</td><td class="num">Layer 4、毎秒数百万request、AZごとにstatic IP</td><td>TCP/UDP/TLS、latencyが非常に低く、clientのsource IPを保持します。targetにALBを指定可能。PrivateLinkに使います。</td></tr>
+        <tr><td>Gateway Load Balancer</td><td class="num">Layer 3、GENEVE 6081</td><td>サードパーティのfirewall / IDSをネットワーク経路に挿入します。設問: <em>third-party virtual appliances</em>。</td></tr>
+        <tr><td>Route 53 health check</td><td class="num">標準30秒、fast 10秒</td><td>health checkerのIPをSGで許可する必要があります。health check対象のendpointはpublicである必要があり、privateなresourceにはCloudWatch alarmのhealth checkを使います。health checkがないとfailoverは切り替わりません。</td></tr>
+        <tr><td>Route 53 TTL</td><td class="num">任意、60〜300秒がよく使われる</td><td>移行の数日前にTTLを下げておき、clientが早く更新されるようにします。Alias recordはTTLを設定せず（resourceに従う）、AWS resourceへのqueryは無料で、zone apexにも使えます。</td></tr>
+        <tr><td>Route 53 Multivalue</td><td class="num">正常なrecordを最大8件</td><td>load balancerの代わりにはなりません。health check付きで複数のIPを返すDNSにすぎません。</td></tr>
+        <tr><td>CloudFront default TTL</td><td class="num">24時間</td><td>cacheを早く消すにはInvalidate（月1,000 pathを超えると課金）。Origin: S3、ALB、EC2、任意のHTTP。OACでS3 originを保護。非公開コンテンツにはSigned URL/cookie。Field-level encryption。</td></tr>
+        <tr><td>Global Accelerator</td><td class="num">static anycast IP 2つ</td><td>TCP/UDP、数秒でfailover、cacheなし。設問: <em>static IP</em>、<em>gaming, VoIP, IoT</em>、<em>non-HTTP</em>。CloudFrontはHTTPコンテンツをcacheします。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Lambda、API Gateway、Step Functions</span>
+      <div class="tbl"><table>
+        <tr><th>サービス</th><th>数値</th><th>ひっかけポイント</th></tr>
+        <tr><td>Lambdaの最大timeout</td><td class="num">15分（900秒）</td><td>デフォルトは3秒。15分を超える処理 → ECS Fargate、Batch、Step Functionsで分割。</td></tr>
+        <tr><td>Lambda memory</td><td class="num">128 MB〜10 GB</td><td>CPUはmemoryに比例して増えます（10 GBで6 vCPU相当）。CPUが原因で遅い → memoryを増やす。</td></tr>
+        <tr><td>Lambdaのデフォルトconcurrency</td><td class="num">Regionごとに1,000（soft limit）</td><td>Reserved concurrency: 枠を確保し、そのfunctionの上限にもなります。Provisioned concurrency: cold start対策。throttle時は429エラー。</td></tr>
+        <tr><td>Lambda payload</td><td class="num">sync 6 MB、async 256 KB</td><td>それより大きいファイル → S3に置いてkeyを渡す。Response streamingは最大20 MB（要確認）。</td></tr>
+        <tr><td>Lambda /tmp</td><td class="num">512 MB〜10 GB</td><td>1つのexecution environment内だけで有効。呼び出し間で共有したい → LambdaにEFSをmount。</td></tr>
+        <tr><td>Lambda deployment package</td><td class="num">zip 50 MB、展開後250 MB、container image 10 GB</td><td>libraryの共有にはLayer（最大5 layer）。</td></tr>
+        <tr><td>API Gateway integration timeout</td><td class="num">デフォルト29秒</td><td>2024年からregionalのREST APIでは29秒超への引き上げを申請できます（要確認）が、試験では29秒を上限とみなします。長い処理 → 202を返し、SQSやStep Functionsで非同期処理。</td></tr>
+        <tr><td>API Gateway throttling</td><td class="num">Regionごとに毎秒10,000 request、burst 5,000</td><td>顧客ごとの制限にはUsage plan + API key。responseのcacheは0.5 GB〜237 GB。payloadは最大10 MB。</td></tr>
+        <tr><td>Step Functions Standard</td><td class="num">最大1年、exactly-once</td><td>Expressは最大5分、at-least-onceで、大量のeventに安く速く対応。設問: <em>orchestrate</em>、<em>retry</em>、<em>human approval</em> → Step Functions。SQSではありません。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">SQS、SNS、Kinesis、EventBridge</span>
+      <div class="tbl"><table>
+        <tr><th>サービス</th><th>数値</th><th>ひっかけポイント</th></tr>
+        <tr><td>SQS message size</td><td class="num">256 KB</td><td>AWSは2025年に1 MBへ引き上げました（要確認）が、古い問題では256 KBのままです。それより大きいmessage → S3に保存する<b>SQS Extended Client Library</b>。</td></tr>
+        <tr><td>SQS retention</td><td class="num">デフォルト4日、1分〜14日</td><td>期限を過ぎると消えます。複数のconsumerでreplayしたい → SQSではなくKinesis。</td></tr>
+        <tr><td>SQS visibility timeout</td><td class="num">デフォルト30秒、最大12時間</td><td>処理時間がvisibilityより長い → messageが再び見えて重複処理されます。visibilityを延ばすかChangeMessageVisibilityを呼びます。maxReceiveCountを超えるとDLQへ。</td></tr>
+        <tr><td>SQS long polling</td><td class="num">最大20秒</td><td>空のresponseが減り、コストも下がります。Delay queueは最大15分。Message timerはmessageごと。</td></tr>
+        <tr><td>SQS FIFO throughput</td><td class="num">毎秒300 msg、batchingで3,000</td><td>High throughput modeならはるかに高い（要確認）。queue名は<code>.fifo</code>で終わる必要があります。exactly-onceは5分間のdeduplication IDで実現。Standard: 無制限、at-least-once、best-effortの順序。</td></tr>
+        <tr><td>SNS</td><td class="num">topicごとに約1,250万subscriptionへfan-out</td><td>push型で保存しません。bufferを持つfan-outには<b>SNS → 複数のSQS</b>のpattern。FIFO topicはFIFO queueと組み合わせます。attributeによるmessage filtering。</td></tr>
+        <tr><td>Kinesis Data Streams: shardごと</td><td class="num">入力は毎秒1 MBまたは1,000 record、出力は毎秒2 MB</td><td>総throughput = shard数。recordは最大1 MB。Enhanced fan-out: <b>consumerごとに</b>毎秒2 MB。On-demand modeは自動でscale。</td></tr>
+        <tr><td>Kinesis Data Streams retention</td><td class="num">デフォルト24時間、最大365日</td><td>replay可能で、複数のconsumerが同じデータを読めます。順序はshard内のpartition keyごと。<code>ProvisionedThroughputExceeded</code>エラー → shardを追加するかpartition keyの分散を改善。</td></tr>
+        <tr><td>Kinesis Data Firehose</td><td class="num">near real-time、buffer 0〜900秒または1〜128 MB</td><td>データを保持せずreplayも不可、自動でscale、宛先はS3 / Redshift / OpenSearch / HTTP。Lambdaで変換。設問: <em>load streaming data into S3 with least effort</em>。</td></tr>
+        <tr><td>EventBridge</td><td class="num">rule、schedule、90以上のSaaS partner</td><td>CloudWatch Eventsの後継。Event bus、archiveとreplay、schema registry。設問: <em>event-driven</em>、<em>cron</em>、<em>third-party SaaS events</em>。</td></tr>
+        <tr><td>Amazon MQ</td><td class="num">ActiveMQ、RabbitMQ</td><td>設問に<em>migrate existing application using MQTT/AMQP/JMS without code change</em>とある場合だけ選びます。新規ならSQS/SNS。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">DynamoDB、ElastiCache</span>
+      <div class="tbl"><table>
+        <tr><th>サービス</th><th>数値</th><th>ひっかけポイント</th></tr>
+        <tr><td>itemの最大サイズ</td><td class="num">400 KB</td><td>それより大きい → S3に保存し、DynamoDBにはpointerを持たせます。</td></tr>
+        <tr><td>1 RCU</td><td class="num">4 KBのstrongly consistent readを毎秒1回、またはeventually consistentを2回</td><td>8 KBのitemをstrongで読むと2 RCU、eventuallyなら1 RCU。Transactional readは4 KBあたり2 RCU。</td></tr>
+        <tr><td>1 WCU</td><td class="num">1 KBのwriteを毎秒1回</td><td>2.5 KBのitemは3 WCU（切り上げ）。Transactional writeは2倍。</td></tr>
+        <tr><td>LSI vs GSI</td><td class="num">LSIはtable作成時のみ作成可、partition keyは同じ。GSIは後から追加でき、keyが異なり、RCU/WCUも別</td><td>GSIがthrottleされると元のtableもthrottleされます。LSIはpartition key valueごとに10 GBまで。</td></tr>
+        <tr><td>DynamoDB Streams</td><td class="num">24時間</td><td>Lambdaのtrigger、Global Tablesに使われます。より長く保持するならKinesis Data Streams for DynamoDB。</td></tr>
+        <tr><td>PITR</td><td class="num">35日</td><td>秒単位で復元できます。On-demand backupは無期限に保持。TTLは期限切れのitemを無料で削除（48時間以内）。</td></tr>
+        <tr><td>DAX</td><td class="num">microsecond、in-memory cache</td><td>codeの変更不要（API互換）。read-heavyでeventually consistentな用途のみ。RDSのcacheや集計データのcacheにはElastiCache。</td></tr>
+        <tr><td>Global Tables</td><td class="num">multi-Region active-active、replication約1秒</td><td>Streamsが必要。Last writer wins。設問: <em>multi-Region low latency read and write</em>。</td></tr>
+        <tr><td>ElastiCache Redis vs Memcached</td><td class="num">Redis: HA、persistence、sorted set、pub/sub。Memcached: multi-thread、シンプル</td><td>Leaderboard、session store、<em>Multi-AZ failover</em> → Redis。単純なcacheで水平scaleするだけ → Memcached。Redis Cluster modeでwriteをscale。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">RDS、Aurora、Redshift、その他のDB</span>
+      <div class="tbl"><table>
+        <tr><th>サービス</th><th>数値</th><th>ひっかけポイント</th></tr>
+        <tr><td>RDS automated backup retention</td><td class="num">0〜35日（デフォルト7）</td><td>0はbackup無効。PITRは直近5分前まで。Manual snapshotはinstance削除後も無期限に残ります。</td></tr>
+        <tr><td>RDS Read Replica</td><td class="num">最大15（MySQL、MariaDB、PostgreSQL。OracleとSQL Serverは5）、要確認</td><td>非同期で、cross-Regionも可能、独立したDBへpromoteできます。<em>read scaling</em>やreporting用で、HA用では<b>ありません</b>。</td></tr>
+        <tr><td>RDS Multi-AZ</td><td class="num">同期standby、failover 60〜120秒</td><td>standbyは読めません（readableなstandbyを2つ持つMulti-AZ DB clusterを除く）。DNSのendpointは変わりません。料金は2倍。設問: <em>high availability</em>、<em>automatic failover</em>。</td></tr>
+        <tr><td>RDS storageの最大</td><td class="num">64 TiB（SQL Serverは16 TiB）</td><td>Storage Auto Scalingを有効にできます。OS権限が必要なOracle / SQL ServerにはRDS Custom。</td></tr>
+        <tr><td>RDS Proxy</td><td class="num">connection pooling、failoverが約66%速い</td><td>設問: Lambdaが大量のconnectionを開く、<em>too many connections</em> → RDS Proxy。IAM auth、Secrets Managerを利用。</td></tr>
+        <tr><td>Aurora storage</td><td class="num">3 AZに6つのコピー、10 GBから128 TiBまで自動拡張</td><td>2つのコピーを失ってもwrite可能、3つ失ってもread可能。自己修復します。料金はRDSより約20%高いものの、性能はMySQLの5倍、PostgreSQLの3倍（マーケティング上の数値）。</td></tr>
+        <tr><td>Aurora Replica</td><td class="num">最大15、failoverは30秒未満</td><td>Reader endpointが自動で負荷分散します。Replicaがfailover先にもなります（RDSとの違い）。Custom endpointでinstanceをサイズ別にまとめます。</td></tr>
+        <tr><td>Aurora Global Database</td><td class="num">RPO 1秒、RTO 1分未満、secondary Regionは最大5（要確認）</td><td>replication lagは1秒未満で、storageレベルのreplicationを使います。設問: <em>cross-Region DR with RPO of seconds</em>。secondaryからのWrite forwarding。</td></tr>
+        <tr><td>Aurora Serverless v2</td><td class="num">ACU単位で数秒でscale</td><td>負荷が一定しないworkload、dev/test、<em>unpredictable</em>。Backtrack（MySQL、最大72時間）はrestoreとは違い、新しいclusterを作らずその場で巻き戻します。</td></tr>
+        <tr><td>Redshift</td><td class="num">OLAP、columnar、petabyte</td><td>自動snapshotのcross-Regionコピーを有効にできます。SpectrumでS3を読みます。RA3はcomputeとstorageを分離。設問: <em>data warehouse</em>、<em>BI complex queries</em>。Serverless版あり。</td></tr>
+        <tr><td>Database Migration Service</td><td class="num">homogeneousとheterogeneous、CDC</td><td>engineを変える場合はSchema Conversion Tool。移行中もsource DBは稼働を続けます。非常に大きなDBにはSnowball Edge + DMS。</td></tr>
+        <tr><td>Neptune / DocumentDB / Keyspaces / Timestream / QLDB</td><td class="num">graph / MongoDB / Cassandra / time-series / ledger</td><td>キーワードで見分けられれば十分です: <em>social graph</em>、<em>MongoDB-compatible</em>、<em>Cassandra</em>、<em>IoT time-series</em>、<em>immutable cryptographically verifiable</em>。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Security: KMS、Secrets Manager、CloudTrail、SCP、WAF</span>
+      <div class="tbl"><table>
+        <tr><th>サービス</th><th>数値</th><th>ひっかけポイント</th></tr>
+        <tr><td>KMS automatic rotation</td><td class="num">1年（customer managed keyは任意で有効化、90〜2,560日に設定可、要確認）</td><td>AWS managed keyは1年ごとに自動rotation。rotationしても既存データは再暗号化されず、古いkeyでも復号できます。Imported key materialは自動rotationされません。</td></tr>
+        <tr><td>KMS key deletion waiting period</td><td class="num">7〜30日（デフォルト30）</td><td>keyを削除すると、そのkeyで暗号化したデータはすべて永久に失われます。待機期間中なら削除を取り消せます。</td></tr>
+        <tr><td>KMSで直接Encrypt</td><td class="num">最大4 KB</td><td>それより大きいデータは<b>envelope encryption</b>: GenerateDataKeyでdata keyを作り、データをdata keyで暗号化し、暗号化済みdata keyをデータと一緒に保存します。</td></tr>
+        <tr><td>KMS keyの範囲</td><td class="num">Regional。snapshotのcopyやDRにはmulti-Region key</td><td>暗号化されたEBS snapshotを別Regionへcopyするには、移行先Regionのkeyで再暗号化が必要です。S3 SSE-KMSはKMSのAPI callに課金されるため、<b>S3 Bucket Key</b>でコストを下げます。</td></tr>
+        <tr><td>S3 encryption</td><td class="num">SSE-S3（デフォルト）、SSE-KMS、DSSE-KMS、SSE-C、client-side</td><td>設問: <em>audit key usage</em>、<em>control who uses key</em> → SSE-KMS。<em>Customer manages keys outside AWS</em> → SSE-Cまたはclient-side。upload時の暗号化を必須にする → headerがなければDenyするbucket policy。</td></tr>
+        <tr><td>Secrets Manager</td><td class="num">secretごとに月約0.40 USD、Lambdaによる自動rotation</td><td>RDS、Redshift、DocumentDBと標準で統合。<b>Parameter Store</b>はStandardが無料（4 KB）、Advancedは8 KBで、自動rotationなし。設問: <em>rotate database credentials automatically</em> → Secrets Manager。</td></tr>
+        <tr><td>CloudTrail Event history</td><td class="num">90日</td><td>より長く保存 → S3（とCloudWatch Logs）に書き込むTrailを作成。Management eventはデフォルトで有効、data event（S3 object、Lambda invoke）は有効化が必要で課金対象。Log file validationで改ざんを検知。Organization trailで全accountを対象に。</td></tr>
+        <tr><td>CloudWatch metric</td><td class="num">standard 5分、detailed 1分、high resolution 1秒</td><td>EC2のmemoryやdisk使用率には<b>CloudWatch Agent</b>（custom metric）が必要。metricの保持は15か月。Logsのretentionはデフォルトで無期限、1日〜10年に設定可能。</td></tr>
+        <tr><td>AWS Config</td><td class="num">ruleによる継続的評価、SSM Automationでremediation</td><td>Configはブロックせず、検知して事後に修正するだけ。事前にブロック → SCPまたはIAM。設問: <em>compliance</em>、<em>configuration history</em>、<em>who changed SG</em>（Config） vs <em>who called API</em>（CloudTrail）。</td></tr>
+        <tr><td>SCP</td><td class="num">OUまたはaccountごとに直接アタッチできるのは最大5 SCP（要確認）</td><td>management accountには影響しません。権限を付与せず、上限を決めるだけです。<code>FullAWSAccess</code>がデフォルトでアタッチされ、外すとすべてブロックされます。allow listよりdeny listのほうがよく使われます。</td></tr>
+        <tr><td>IAM</td><td class="num">role sessionはデフォルト1時間、最大12時間。accountあたり5,000 user（要確認）</td><td>access keyはuserあたり最大2つ。policyサイズには文字数の上限があります。Inline vs managed: customer managedを優先。</td></tr>
+        <tr><td>WAF</td><td class="num">Web ACLをCloudFront、ALB、API Gateway、AppSync、Cognitoにアタッチ</td><td>Rate-based rule（5分間にN requestを超えたIPをブロック）、geo match、SQL injection、managed rule group。<b>NLBやEC2にはアタッチできません</b>。Shield Standardは無料（L3/L4）、Shield Advancedは月3,000 USDでDRTとコスト補償付き。</td></tr>
+        <tr><td>ACM certificate</td><td class="num">無料、自動更新</td><td>ALB、CloudFront（<code>us-east-1</code>に置く必要あり）、API Gatewayで使います。private keyを取り出してEC2にインストールすることは<b>できません</b>。外部の証明書もimportできますが、自動更新されません。</td></tr>
+        <tr><td>GuardDuty / Inspector / Macie / Detective / Security Hub</td><td class="num">threat detection / vulnerability scan / PII in S3 / investigate / aggregate</td><td>GuardDutyはCloudTrail、VPC Flow Logs、DNS logsを読み、<em>compromised credentials, crypto mining</em>を検知します。InspectorはEC2、ECR、Lambdaをスキャン。MacieはS3内の<em>sensitive data, PII</em>を探します。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">その他よく出る数値</span>
+      <div class="tbl"><table>
+        <tr><th>サービス</th><th>数値</th><th>ひっかけポイント</th></tr>
+        <tr><td>ECS / Fargate</td><td class="num">Fargate: EC2の管理不要、vCPUとGBの秒単位で課金</td><td>Task role（containerの権限）とexecution role（imageのpull、logの書き込みの権限）は別物。設問に<em>Kubernetes</em>、<em>portable to on-premises</em>とあればEKS。オンプレミスにはECS Anywhere、EKS Anywhere。</td></tr>
+        <tr><td>CloudFormation / Elastic Beanstalk</td><td class="num">複数accountとRegionにはStackSets</td><td>Beanstalk: appを素早くdeployでき、EC2も見え、サービス自体は無料（resource分だけ支払う）。CloudFormationにはDrift detection。template内のAMI IDにはSSM Parameter Storeがよく使われます。</td></tr>
+        <tr><td>DR: Backup &amp; Restore / Pilot Light / Warm Standby / Multi-site</td><td class="num">RPO/RTOは時間 / 10分 / 分 / 秒</td><td>Pilot light: DBは稼働、appは停止。Warm standby: すべてが小規模で稼働。設問がRTOと予算を示したら、RTOを満たす最も安いレベルを選びます。</td></tr>
+        <tr><td>AWS Backup</td><td class="num">EBS、RDS、DynamoDB、EFS、FSx、S3、VMwareを一元管理</td><td>Backup plan、vault lock（WORM）、cross-Regionとcross-accountのcopy。設問: <em>centralized backup policy across accounts</em>。</td></tr>
+        <tr><td>DataSync</td><td class="num">agentあたり最大10 Gbps（要確認）</td><td>NFS/SMB/HDFS/S3 → S3/EFS/FSx、定期実行、metadataを保持。Storage Gateway（継続的なhybridアクセス）やTransfer Family（S3/EFSへのSFTP/FTPS/FTP）とは別物。</td></tr>
+        <tr><td>Storage Gateway</td><td class="num">File（NFS/SMB → S3）、Volume（iSCSI、cached / stored）、Tape（VTL）</td><td>Volume cached: 主データはS3、ローカルにcache。Stored: 主データはローカル、S3へbackup。Tapeはテープライブラリの代替で、Glacierに保存します。</td></tr>
+        <tr><td>Athena / Glue / EMR / QuickSight / OpenSearch</td><td class="num">SQLでS3をquery / serverless ETL / Hadoop Spark / BI / log検索</td><td>Athenaはスキャンしたデータ量で課金されるため、圧縮、Parquet、partitionで安くなります。Glue Data CatalogはAthena、EMR、Redshift Spectrumと共有。設問: <em>ad-hoc SQL on S3 logs</em> → Athena。</td></tr>
+        <tr><td>Cognito</td><td class="num">User Pool（サインイン、JWT）、Identity Pool（一時的なAWS credential）</td><td>appのユーザー → Cognito。社員 → IAM Identity Center。User Poolはsocial login、SAML、MFA、hosted UIに対応。</td></tr>
+        <tr><td>Organizations</td><td class="num">consolidated billing、volume discount、RIの共有</td><td>SCPはAll features modeでのみ使えます。Tag policy、backup policy。設問: <em>centrally manage multiple accounts</em>、<em>restrict Regions for all accounts</em> → SCP。</td></tr>
+        <tr><td>Trusted Advisor</td><td class="num">5カテゴリ: cost、performance、security、fault tolerance、service limits</td><td>Core checkは無料、すべて使うにはBusiness / Enterprise supportが必要。Compute OptimizerはEC2、EBS、Lambda、ASGのright-sizeをより詳しく提案します。</td></tr>
+        <tr><td>Data transfer</td><td class="num">AWSへの受信は無料、Internetへの送信は課金、AZ間は双方向で課金、同一AZのprivate IPは無料</td><td>Internetへの送信料を下げる: CloudFront（S3からCloudFrontへのdata transferは無料）。Region間は課金。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">3. アプリケーションがSQSに400 KBのmessageを送るとエラーになります。<em>least operational overhead</em>での修正方法は？</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>SQS Extended Client Libraryを使ってpayloadをS3に保存し、SQSにはpointerだけを載せます。</b>従来の上限は256 KBです（AWSは2025年に1 MBへ引き上げました、要確認。ただし試験では古い数値で問われる可能性があります）。よくある誤答: Kinesisへの移行（recordは1 MBまで扱えますが、アーキテクチャ全体の変更になりleast overheadではない）や、messageを手作業で分割すること。</p></div>
+      <div class="q"><p class="qt">4. objectを10日後にS3 StandardからStandard-IAへ、20日後にGlacier Deep Archiveへ移すlifecycle ruleを作ると、Consoleがエラーを出します。なぜですか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>StandardからStandard-IAへの移行はobject作成から最低30日が必要</b>なので、「10日」は無効です。さらに、IAに入ったobjectは次のGlacierへ移る前に少なくとも30日そこに置く必要があります（20日目の移行は、IAに入ってから10日しか経っていない）。修正: IAは30日目、Deep Archiveは60日目以降。ひっかけ: Glacier Deep Archiveのmin duration 180日は課金の話で、lifecycleの条件ではありません。</p></div>
+      <div class="q"><p class="qt">5. Aurora MySQLを別RegionへDRし、RPOは5秒未満、RTOは1分未満が必要です。何を選びますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Aurora Global Database。</b>RPOは約1秒、secondaryをpromoteしたときのRTOは1分未満です。よくある誤答: RDSのcross-Region read replica（lagが数分になることがあり、promoteも遅い）や、snapshotのcross-Region copy（RPOが数時間）。DynamoDB Global TablesはDynamoDB用で、Aurora用ではありません。</p></div>
+      <div class="q"><p class="qt">6. DynamoDBのtableで毎秒100回のstrongly consistent readが必要で、各itemは6 KBです。RCUはいくつ必要ですか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>200 RCU。</b>6 KBのitemは4 KB単位で2つに切り上げ、strongly consistentでは1単位あたり1 RCU → 1 readあたり2 RCU、毎秒100 readを掛けて200。eventually consistentならその半分の100です。ひっかけ: 切り上げを忘れること（6/4 = 1.5で、1ではない）。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. BẢNG TỪ KHÓA CUỐI CÙNG ============ -->
+<section id="cheat-sheet-tu-khoa">
+  <span class="eyebrow">試験準備 3 / 6</span>
+  <h2>最終キーワード表（すぐ引けるようABC順）</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">使い方</span>
+      <p><code>AWS-SAA-checklist.md</code>のキーワード表に、第1〜11週で出会った定番フレーズを加えてまとめたものです。キーワードは1行に1つ、英語キーワードの頭文字順に並べています。5日目に上から一通り読みます。試験当日は持ち込めませんが、問題文で表のフレーズを見かけたら、すぐに右の列が頭に浮かぶようにしておきます。3秒以上考え込んだフレーズには印を付け、その週の教材の該当部分を読み直してください。</p>
+    </div>
+    <div class="tbl"><table>
+      <tr><th>試験キーワード</th><th>すぐ思い浮かべるもの</th></tr>
+      <tr><td><em>active-active multi-Region, low latency read and write</em></td><td>DynamoDB Global Tables、Aurora Global Database（writeはprimary）+ Route 53 latency</td></tr>
+      <tr><td><em>ad-hoc SQL queries on data in S3</em></td><td>Athena（+ Glue Data Catalog）、コスト削減には圧縮、Parquet、partition</td></tr>
+      <tr><td><em>archive, retrieve within hours, lowest cost</em></td><td>S3 Glacier Flexible Retrieval（3〜5時間）またはDeep Archive（12時間、最安）</td></tr>
+      <tr><td><em>audit API calls, who did what</em></td><td>CloudTrail（90日を超えて保存するにはS3に書き込むTrail）</td></tr>
+      <tr><td><em>block a specific IP address</em></td><td>NACLのDeny rule（Security GroupではDenyできない）、ALB/CloudFront経由ならWAFのIP set</td></tr>
+      <tr><td><em>BYOL, license per socket / per core</em></td><td>EC2 Dedicated Host</td></tr>
+      <tr><td><em>cache database reads, microsecond latency</em></td><td>DAX（DynamoDB、code変更不要） / ElastiCache Redis（RDS、session、leaderboard）</td></tr>
+      <tr><td><em>centralized backup across accounts and services</em></td><td>AWS Backup + Organizations、backup policy、vault lock</td></tr>
+      <tr><td><em>centrally manage multiple accounts, restrict services or Regions</em></td><td>Organizations + SCP</td></tr>
+      <tr><td><em>compliance, configuration drift, who changed the Security Group</em></td><td>AWS Config（rule + remediation）、API callを問われたらCloudTrail</td></tr>
+      <tr><td><em>connection pooling, too many database connections from Lambda</em></td><td>RDS Proxy</td></tr>
+      <tr><td><em>consistent network performance, private, not over the Internet</em></td><td>Direct Connect（暗号化が必要ならVPN over DX、HAにはVPN backup）</td></tr>
+      <tr><td><em>cost-effective compute, interruption acceptable, batch, fault-tolerant</em></td><td>Spot Instances（Spot Fleet、ASGのmixed instances policy）</td></tr>
+      <tr><td><em>cross-account access</em></td><td>IAM role + sts:AssumeRole、またはresource-based policy（S3、KMS、SQS、Lambda）</td></tr>
+      <tr><td><em>decouple, buffer, asynchronous, spiky workload</em></td><td>SQS（Standard、順序とexactly-onceが必要ならFIFO）</td></tr>
+      <tr><td><em>DNS failover, route to healthy endpoint</em></td><td>Route 53 failover routing + health check</td></tr>
+      <tr><td><em>encrypt data at rest, manage and audit keys</em></td><td>KMS（SSE-KMS）、CloudTrailがkeyの使用をすべて記録、key policyで誰が使えるかを制御</td></tr>
+      <tr><td><em>encrypt data in transit</em></td><td>ALB/CloudFront/API GatewayでACM certificateによるTLS/HTTPS、VPN、instance間の通信にはNitro instances</td></tr>
+      <tr><td><em>event-driven, react to AWS service events, cron schedule, SaaS events</em></td><td>EventBridge（rule → Lambda、SQS、Step Functions）</td></tr>
+      <tr><td><em>exactly-once processing, preserve message order</em></td><td>SQS FIFO（+ SNS FIFO）、Kinesisはpartition keyごとに順序を保持</td></tr>
+      <tr><td><em>fan-out one message to many consumers</em></td><td>SNS → 複数のSQS queue（attributeによるmessage filtering）</td></tr>
+      <tr><td><em>global users, low latency, static and dynamic content</em></td><td>CloudFront（Edgeでcache、originはS3 / ALB）</td></tr>
+      <tr><td><em>HPC, high throughput parallel file system, machine learning training data</em></td><td>FSx for Lustre（S3と連携）、EC2 cluster placement group + EFA</td></tr>
+      <tr><td><em>hybrid storage, on-premises access to S3 with local cache</em></td><td>Storage Gateway（File Gateway NFS/SMB、Volume Gateway iSCSI、Tape Gateway）</td></tr>
+      <tr><td><em>immutable, WORM, regulatory retention, cannot be deleted even by root</em></td><td>S3 Object Lock Compliance mode、Glacier Vault Lock、AWS Backup vault lock</td></tr>
+      <tr><td><em>infrequent but instant access, lower cost than Standard</em></td><td>S3 Standard-IA（AZ障害時の消失を許容できるならOne Zone-IA、四半期ごとのアクセスならGlacier Instant Retrieval）</td></tr>
+      <tr><td><em>IoT / time-series data, telemetry</em></td><td>取り込みはKinesis Data Streams / IoT Core、保存はTimestream、Firehose → S3</td></tr>
+      <tr><td><em>Kubernetes, portable, existing container orchestration</em></td><td>EKS（Fargateまたはmanaged node group）、Kubernetesが不要ならECS</td></tr>
+      <tr><td><em>least operational overhead, minimal administrative effort</em></td><td>Managed / serverless: Aurora Serverless、DynamoDB、Lambda、Fargate、Firehose、Secrets Manager</td></tr>
+      <tr><td><em>least privilege, unused permissions, publicly shared resources</em></td><td>IAM Access Analyzer、Access Advisor、credential report</td></tr>
+      <tr><td><em>load streaming data into S3 / Redshift / OpenSearch with least effort</em></td><td>Kinesis Data Firehose（near real-time、自動scale、Lambdaで変換）</td></tr>
+      <tr><td><em>long-running workflow, retry, human approval, orchestrate Lambda functions</em></td><td>Step Functions（Standardは最大1年、Expressは最大5分）</td></tr>
+      <tr><td><em>migrate database with minimal downtime, change engine</em></td><td>DMS（+ Schema Conversion Tool）、継続的なCDC</td></tr>
+      <tr><td><em>migrate petabytes, limited bandwidth, weeks to transfer over network</em></td><td>Snowball Edge（複数台）、回線が十分速ければDataSync</td></tr>
+      <tr><td><em>migrate existing message broker (MQTT, AMQP, JMS) without code change</em></td><td>Amazon MQ（ActiveMQ / RabbitMQ）</td></tr>
+      <tr><td><em>MongoDB-compatible / Cassandra-compatible / graph / ledger</em></td><td>DocumentDB / Keyspaces / Neptune / QLDB</td></tr>
+      <tr><td><em>Multi-AZ, high availability, automatic failover for RDS</em></td><td>RDS Multi-AZ（同期standby）、Read ReplicaはHA用では「ない」</td></tr>
+      <tr><td><em>no public IP, private access to AWS services from VPC</em></td><td>VPC endpoint: Gateway（S3、DynamoDB、無料）またはInterface / PrivateLink</td></tr>
+      <tr><td><em>on-premises Active Directory, single sign-on, many accounts</em></td><td>IAM Identity Center + AD Connector / AWS Managed Microsoft AD、SAML 2.0 federation</td></tr>
+      <tr><td><em>personally identifiable information (PII) in S3, sensitive data discovery</em></td><td>Macie</td></tr>
+      <tr><td><em>predictable traffic spike at known time</em></td><td>ASG scheduled scaling、繰り返しのpatternがあればpredictive scaling</td></tr>
+      <tr><td><em>private connectivity to a SaaS / service in another VPC without peering</em></td><td>PrivateLink（NLB + Interface endpoint）</td></tr>
+      <tr><td><em>process data in real time, multiple consumers, replay</em></td><td>Kinesis Data Streams（retentionは最大365日、enhanced fan-out）</td></tr>
+      <tr><td><em>protect against SQL injection, XSS, rate limiting, geo blocking</em></td><td>CloudFront / ALB / API Gateway上のAWS WAF</td></tr>
+      <tr><td><em>protect against DDoS, 24/7 response team, cost protection</em></td><td>Shield Advanced（Standardは無料で最初から有効）</td></tr>
+      <tr><td><em>RPO of seconds and RTO under a minute for cross-Region database</em></td><td>Aurora Global Database、DynamoDB Global Tables</td></tr>
+      <tr><td><em>rotate credentials, database password automatically</em></td><td>Secrets Manager（Parameter Storeは自動rotationしない）</td></tr>
+      <tr><td><em>serverless REST API / WebSocket API, throttling, API keys</em></td><td>API Gateway + Lambda（timeout 29秒、usage plan）</td></tr>
+      <tr><td><em>shared file system for Linux, multiple EC2 across AZs, POSIX</em></td><td>EFS（lifecycleでIAへ移して安く）</td></tr>
+      <tr><td><em>single-digit millisecond key-value, unlimited scale, serverless database</em></td><td>DynamoDB（負荷が読めなければon-demand）</td></tr>
+      <tr><td><em>static IP for application, TCP/UDP, fast regional failover, gaming / VoIP</em></td><td>Global Accelerator（anycast IP 2つ）、1 Region内でstatic IPだけ必要ならNLB</td></tr>
+      <tr><td><em>static website, hosting with HTTPS and custom domain</em></td><td>S3 static website + CloudFront（OAC）+ ACM（us-east-1）+ Route 53 alias</td></tr>
+      <tr><td><em>steady-state workload, 1 or 3 years commitment, reduce cost</em></td><td>Reserved Instances / Savings Plans（Compute SPが最も柔軟）</td></tr>
+      <tr><td><em>sticky sessions, session state</em></td><td>最善はElastiCache / DynamoDBにsessionを保存（stateless化）、ALB stickinessは一時的な解決策</td></tr>
+      <tr><td><em>temporary credentials, no long-term access keys on EC2</em></td><td>IAM role（instance profile）、STS</td></tr>
+      <tr><td><em>third-party virtual firewall / IDS appliance inline</em></td><td>Gateway Load Balancer</td></tr>
+      <tr><td><em>threat detection, compromised credentials, unusual API calls, crypto mining</em></td><td>GuardDuty（Inspectorは脆弱性スキャン、Detectiveは調査用）</td></tr>
+      <tr><td><em>unknown or changing access pattern for S3 objects</em></td><td>S3 Intelligent-Tiering</td></tr>
+      <tr><td><em>upload large files faster from distant locations</em></td><td>S3 Transfer Acceleration + multipart upload</td></tr>
+      <tr><td><em>users of a web / mobile application sign up and sign in, social login</em></td><td>Cognito User Pool（一時的なAWS credentialにはIdentity Pool）</td></tr>
+      <tr><td><em>Windows file share, SMB, NTFS permissions, Active Directory integration</em></td><td>FSx for Windows File Server</td></tr>
+      <tr><td><em>workload larger than 15 minutes, container batch jobs</em></td><td>ECS/Fargate、AWS Batch、またはStep Functionsで分割。Lambdaではない</td></tr>
+    </table></div>
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">7. 設問に<em>"an application needs a static IP address that clients can whitelist; traffic is UDP; users are worldwide"</em>とあります。何を選びますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>Global Accelerator。</b><em>static IP</em>と<em>UDP</em>の2つのキーワードが同時にあるので、CloudFront（HTTPのみ、static IPなし）とALB（static IPなし、HTTPのみ）は外れます。NLBはstatic IPを持てますが1 Region内だけで、<em>worldwide</em>には最適ではありません。</p></div>
+      <div class="q"><p class="qt">8. 設問に<em>"determine who modified the security group rule last week"</em>とあります。CloudTrailとConfigのどちらを選びますか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>CloudTrail</b>は「誰が、いつ、どのAPIを呼んだか」に答えます（<code>AuthorizeSecurityGroupIngress</code>のuser、IP、時刻）。<b>Config</b>は「変更前後で設定がどう変わったか、準拠しているか」に答え、CloudTrailのeventへのリンクも示せます。問いが「who」を強調していればCloudTrail、「what changed / compliant」を強調していればConfigです。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. CHIẾN THUẬT NGÀY THI ============ -->
+<section id="chien-thuat">
+  <span class="eyebrow">試験準備 4 / 6</span>
+  <h2>試験当日の戦略</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">時間配分</span>
+      <div class="tbl"><table>
+        <tr><th>区切り</th><th>ESLなし（130分）</th><th>ESLあり（160分）</th><th>やること</th></tr>
+        <tr><td>1周目</td><td>0〜100分</td><td>0〜120分</td><td>65問を最後まで解きます。1問最大2分。自信のない問題は仮の答えを選んで<b>flag</b>し、2分以上考え込まないこと。</td></tr>
+        <tr><td>進捗チェック</td><td>50分時点で32問目以降にいること</td><td>60分時点で32問目以降</td><td>5問以上遅れていたら読み方を速めます。最後の問いを読み、選択肢を流し読みし、選んでflagします。</td></tr>
+        <tr><td>2周目</td><td>100〜125分</td><td>120〜150分</td><td>flagした問題に順番に戻り、1問1〜2分。急ぐと点を落としやすい「2つ選ぶ」問題を優先します。</td></tr>
+        <tr><td>予備</td><td>最後の5分</td><td>最後の10分</td><td>review画面で<b>空欄が1つもない</b>ことを確認します。自信のある問題は読み直しません。</td></tr>
+      </table></div>
+      <p style="font-size:.92rem">残り時間は画面の隅にカウントダウン表示されます。1周目で15〜20問をflagするのはよくあることです。flagした問題の多くは15問の試行問題か、誰もが落とす難問なので、それで気持ちを乱されないようにしましょう。</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">1問を2分で読む手順</span>
+      <ol class="steps">
+        <li><div><p><b>最後の問いを先に読みます</b>（疑問符で終わる行）: 「Which solution meets these requirements <em>with the least operational overhead</em>?」何を問われているか（解決策を選ぶのか、手順を選ぶのか、2つ選ぶのか）と、制約が何かを先に把握します。</p></div></li>
+        <li><div><p><b>シナリオを読み</b>、制約に手で（または目で）下線を引きます: 数値（TB、ms、ユーザー数）、キーワード（<em>must</em>、<em>cannot</em>、<em>existing</em>、<em>without code changes</em>、<em>multi-Region</em>）、既存のアーキテクチャにすでにあるサービス。</p></div></li>
+        <li><div><p><b>選択肢を見る前に答えを予想します</b>（「たぶんSQS + Lambdaだな」）。選択肢は確認のために見るもので、誘導されるためではありません。</p></div></li>
+        <li><div><p><b>まず誤答を2つ消します</b>: たいてい1つは技術的に誤り（そのサービスではできない、例: ALBのstatic IP）、もう1つは技術的には正しいが制約に反するもの（高い、運用の手間が多い、downtimeがある）です。</p></div></li>
+        <li><div><p><b>残った2つを問いの制約キーワードで比べます</b>: <em>least operational overhead</em>ならよりmanagedなほう、<em>most cost-effective</em>なら要件を満たしたうえで安いほう、<em>highly available</em>ならsingle point of failureのないほうを選びます。</p></div></li>
+        <li><div><p>選んで、迷いが残るならflagし、<b>次の問題へ</b>進みます。flagしても空欄にはしないこと。</p></div></li>
+      </ol>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">制約キーワードと対処法</span>
+        <ul>
+          <li><em>least operational overhead</em>、<em>minimal effort</em>、<em>minimal changes</em>: managed、serverless、標準機能が自前の構築に勝ちます。同じく正しい解決策が2つあれば、手順の少ないほうを選びます。</li>
+          <li><em>most cost-effective</em>、<em>lowest cost</em>: まず要件を満たすことが前提で、そのうえで安いもの。Spot、S3 IA/Glacier、Reserved、right-size、Gateway endpoint、HAが不要ならsingle AZ。</li>
+          <li><em>highly available</em>、<em>fault tolerant</em>、<em>minimal downtime</em>: Multi-AZ、ASG、複数のNAT、Route 53 failover。instance 1台やAZ 1つの解決策は選びません。</li>
+          <li><em>improve performance</em>、<em>reduce latency</em>: cache（CloudFront、ElastiCache、DAX）、read replica、Global Accelerator、適切なstorageの種類（io2、FSx Lustre）。</li>
+          <li><em>most secure</em>: least privilege、userではなくrole、KMSによる暗号化、private subnet + endpoint、公開しない。</li>
+          <li><em>without code changes</em>、<em>existing application</em>: インフラ側の解決策（RDS Proxy、DAX、Storage Gateway、Amazon MQ）。「appを修正して...」は選びません。</li>
+          <li><em>in the future</em>、<em>expected to grow</em>: 自動でscaleするもの（DynamoDB on-demand、Aurora Serverless、Fargate）を選びます。</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">2つ（または3つ）選ぶ問題</span>
+        <ul>
+          <li>問題文に「(Choose two.)」や「(Select TWO.)」と明記されています。必要数を選ばないと次へ進めませんが、問題を離れる前に選んだ数をもう一度確認します。</li>
+          <li>2つの型があります: (a) <b>独立した</b>2つの答えで、それぞれが要件の一部を解決するもの（例: 1つはセキュリティ、1つはHA）。(b) <b>同じ解決策の2つの手順</b>（例: VPC endpointを作成し、bucket policyをそのendpointに限定するよう修正する）。</li>
+          <li>たいてい、技術的には正しいが残りの答えとは別の解決策に属する「おとり」の選択肢があります。選ぶ2つは<b>互いにかみ合っている</b>必要があります。</li>
+          <li>部分点はありません。2つのうち1つだけ正解でも、その問題は0点です。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">知らないサービスや難しすぎる問題に出会ったら</span>
+      <ul>
+        <li>ある選択肢に聞いたことのないサービスがあり、他の選択肢には知っているサービスがあってそのうち1つが妥当なら、<b>知らないサービスは外します</b>。SAAの問題には惑わせるための見慣れないサービスがよく入ります（例: AWS Wavelength、AWS Panorama、Amazon Braket）。</li>
+        <li>逆に、知っているサービスの選択肢がすべて明らかに誤り（制約に反する、または実現できない）なら、知らないサービスが正解かもしれません。こちらのケースはまれです。</li>
+        <li>半ページある長い問題: 最後の問いを読み、先に4つの選択肢を読んでから、選択肢を分ける制約を探してシナリオを流し読みします。一語ずつ読まないこと。</li>
+        <li>まったく分からない問題: 2つ消して残り2つから1つ選び、flagして先へ進みます。採点対象外の問題が15問あるので、これもその1つかもしれません。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">答えを変えるときの3つのルール</span>
+      <ul>
+        <li><b>新しい根拠がない限り答えを変えません</b>（見落としたキーワードに気づいた、技術的な制限を思い出した、など）。2周目に「なんとなく」で変えると、正解から不正解に変えてしまうことが多いです。</li>
+        <li>問いを読み違えていたと気づいたら変えます（例: <em>most cost-effective</em>を問われているのに<em>best performance</em>で選んでいた）。</li>
+        <li>2周目でも1周目と同じ2つで迷うなら、最初の選択のままにします。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">メンタルと体調</span>
+      <ul>
+        <li>試験前日: <b>新しいことは学ばず</b>、新しい模試も解きません（新しい模試で低い点を取ると気持ちが崩れます）。このページの2つのcheat sheetと間違いノートに軽く目を通すだけにします。</li>
+        <li>7時間はしっかり寝ます。午前の試験なら試験開始の2時間前に起きて頭をはっきりさせ、午後の試験なら軽めに食べ、直前に満腹にしないこと。</li>
+        <li>水分はほどほどに: online受験では130〜160分の間<b>席を離れられません</b>（休憩なし）。test centerでは退出を申し出られますが、時計は止まりません。</li>
+        <li>最初の5問は、まだ「エンジンがかかっていない」ため実際より難しく感じがちです。10問目までは「難しすぎる」と結論を出さないこと。</li>
+        <li>難問が3問続いたときに自分にかける言葉を用意しておきます: 「flagして次へ、採点対象外が15問ある」。これは戦略であって、あきらめではありません。</li>
+        <li>最後まで解くと、終了するかを尋ねる画面が出ます。終了を押し、短いアンケートに答えると、結果画面（またはメールを待つよう案内する画面）が表示されます。</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>least operational overhead <b>→ managed / serverless</b></span><span>most cost-effective <b>→ 要件を満たす中で最も安いもの</b></span><span>highly available <b>→ Multi-AZ、SPOFなし</b></span><span>minimal downtime <b>→ オンライン移行、DMS、blue/green</b></span><span>without code changes <b>→ インフラ側の解決策</b></span><span>Choose two <b>→ 2つの答えがかみ合うこと</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ（2分の手順を練習）</span>
+      <div class="q"><p class="qt">9. 次の問題を手順どおりに読んでください: "A company runs a web application on EC2 instances behind an ALB in one AZ. The application experiences downtime when the AZ has issues. The company wants to improve availability <em>with the least amount of changes</em>. What should a solutions architect recommend?" (A) Migrate to Lambda; (B) Add instances in a second AZ and configure the ALB and Auto Scaling group to span both AZs; (C) Deploy to a second Region with Route 53 failover; (D) Use a NLB instead of the ALB. 消去の手順を説明してください。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>B。</b>最後の問いは、improve availabilityと<em>least changes</em>です。Aを外します（appの書き直しで、変更が最も大きい）。Dを外します（load balancerの種類を変えてもAZ障害は解決しない）。残るBとC: Cはavailabilityがより高いものの、multi-Regionで変更が大きく高価です。Bは既存のアーキテクチャにAZを追加するだけです。制約<em>least changes</em>でBに決まります。</p></div>
+      <div class="q"><p class="qt">10. "A company must ensure that objects uploaded to an S3 bucket are encrypted with a key that the company manages and that all key usage is logged. Which combination of steps meets these requirements? (Choose two.)" (A) Enable SSE-S3 default encryption; (B) Create a customer managed KMS key and set it as default encryption with SSE-KMS; (C) Add a bucket policy that denies PutObject requests without the <code>x-amz-server-side-encryption: aws:kms</code> header; (D) Enable S3 Transfer Acceleration; (E) Use SSE-C with keys stored on-premises. 2つ選んでください。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>BとC。</b>「Key that the company manages」+「usage logged」→ customer managed KMS key（CloudTrailがkeyの使用をすべて記録）。CはすべてのuploadにSSE-KMSを強制し、Bとかみ合います。おとり: A（SSE-S3はAWSのkeyで、keyごとのlogが残らない）、E（SSE-Cは確かに「company manages」だが、KMSを使わないのでKMSでlogされず、Cともかみ合わない）。Dは無関係です。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. 48 GIỜ TRƯỚC VÀ NGÀY THI ============ -->
+<section id="ngay-truoc-thi">
+  <span class="eyebrow">試験準備 5 / 6</span>
+  <h2>48時間前と試験当日</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">48時間前（両形式共通）</span>
+      <ul>
+        <li>Pearson VUEの確認メールを開き、<b>日付、時刻（タイムゾーンに注意）、形式、言語、試験時間</b>（ESLありなら160分）を再確認します。表示されるタイムゾーンは予約時に選んだもので、通常はAsia/Tokyoです。</li>
+        <li>AWS Certificationアカウントに再ログインし、問題なく入れることを確認します。「Launch exam」のリンク（online）はここか、Pearson VUEのアカウントにあります。</li>
+        <li>身分証: 2種類を用意し、有効期限を確認し、CertMetricsのプロフィールと氏名を最後にもう一度照合します。</li>
+        <li>2つのcheat sheetと間違いノートに一通り目を通します。新しい模試は解きません。</li>
+        <li>AWS accountを片付けておきます（第12週の予定のタスク4を参照）。試験後に覚えておく必要がなくなります。</li>
+      </ul>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Online proctored（OnVUE）</span>
+        <ul>
+          <li><b>前日</b>: 本番と同じPC、回線、部屋でsystem testをもう一度実行します。OnVUE appを事前にインストールしておきます（メール内のリンクからダウンロード）。appがブロックされる場合はantivirusや会社のVPNを切ります。</li>
+          <li><b>部屋</b>: 一人きりでドアを閉め、試験中は誰も出入りしないこと。机の上は完全に空にします。紙、ペン、本、サブモニター、ヘッドホン、スマートウォッチは置きません。背後の壁にメモを書いたボードがないこと。proctorは部屋の写真4枚を確認し、webcamを回すよう求めることもあります。</li>
+          <li><b>PC</b>: 電源につなぎ、他のapp（Teams、Slack、Discord、cloud sync、画面管理ツール）をすべて終了し、通知を切ります。モニターは1台だけ。policyでロックされた会社PCは使いません。</li>
+          <li><b>回線</b>: 有線LANを優先します。Wi-Fiなら、その時間は家族に動画のstreamingを控えてもらいます。接続が切れたときにsupportとchatできるよう、4G/5Gが使えるスマートフォンを用意しておきます。</li>
+          <li><b>Check-in</b>: 試験開始30分前から、Pearson VUEのアカウントで「Begin exam」を押します。案内に従い、スマートフォンで顔写真、身分証の写真、部屋の写真4枚を撮影します。送信後はスマートフォンを手の届かない場所に置き（proctorの指示）、proctorの接続を待ちます。5〜20分かかることがあります。</li>
+          <li><b>試験中</b>: 席を離れない（休憩なし）。問題を声に出して読まない、つぶやかない。画面を見続け、長く画面外を見ない。webcamをふさがない。誰も部屋に入れない。違反するとproctorが試験を中断し、結果を無効にすることがあります。</li>
+          <li><b>接続が切れたら</b>: appは通常自動で再接続し、進捗も保持されます。そうならなければすぐにPearson VUE supportへ電話します。状況によっては無料で予約し直せる場合があります（要確認）。</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Test center</span>
+        <ul>
+          <li><b>前日</b>: 住所、階、道順、電車の時刻を確認します。東京の会場の多くはオフィスビル内にあり看板も小さいので、事前に地図で探しておきます。</li>
+          <li><b>15分前に到着</b>（Pearson VUEの推奨は15〜30分前）。予約時刻から15分を超えて遅れると、受験を拒否され受験料を失うことがあります。</li>
+          <li><b>Check-in</b>: 身分証を提示し、署名し、写真を撮ります。会場によっては手のひら静脈（palm vein）のスキャンもあります。試験規則に署名します。</li>
+          <li><b>Locker</b>: 私物（スマートフォン、財布、腕時計、鍵、厚手の上着）はすべてlockerへ。試験室には身分証とlockerの鍵以外は持ち込めません。会場から小さなホワイトボードかメモ用紙とペンが配られ、試験後に回収されます。</li>
+          <li><b>試験室内</b>: 別々の試験を受ける受験者が多く、タイピング音がします。たいてい防音のイヤーマフがあるので、音が気になるなら使います。退出したいときは手を挙げるとスタッフが付き添いますが、時計は止まりません。</li>
+          <li><b>終了を押した後</b>: スタッフが受験完了を示す用紙を印刷して渡します（その時点のAWSのポリシーにより、pass/failが書かれている場合も、「completed」だけの場合もあります）。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">提出後: 結果、score report、badge</span>
+      <div class="tbl"><table>
+        <tr><th>項目</th><th>いつ</th><th>メモ</th></tr>
+        <tr><td>pass / failの結果</td><td>ほとんどの試験では最後の画面にすぐ表示され、そうでなければ<b>5営業日</b>以内にメールで届きます（AWSがすぐに表示しない時期もあったため要確認）</td><td>その時点では点数は出ず、pass/failだけです。終了を押してすぐPCを切らず、結果画面か通知を待ちます。</td></tr>
+        <tr><td>詳細なscore report</td><td>AWS Certificationアカウント（CertMetrics）に最大5営業日以内</td><td>100〜1000のscaled scoreと、domainごとに「Meets competencies」または「Needs improvement」が記された表。不合格だった場合に最も貴重な資料です。</td></tr>
+        <tr><td>Credlyのbadge</td><td>合格から数日以内にCredlyからメール</td><td>badgeをacceptし、LinkedIn（Licenses &amp; certificationsの欄）やメール署名に追加します。badgeには公開の検証リンクがあります。</td></tr>
+        <tr><td>認定証PDF</td><td>CertMetricsでダウンロード</td><td>発行日と有効期限（3年）が記載されています。</td></tr>
+        <tr><td>合格後の特典</td><td>アカウントのBenefits</td><td>次回試験用の<b>50% voucher</b>、無料の模擬試験voucher、AWS Certified storeとロゴの利用権。voucherには期限があるので日付を控えておきます。</td></tr>
+        <tr><td>認定の有効期間</td><td>合格日から3年</td><td>最新版のSAAを再受験して更新するか、SAP（Professional）に合格してもSAAが更新されます。</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">確認クイズ</span>
+      <div class="q"><p class="qt">11. 自宅でonline受験中に喉が渇きましたが、水のボトルは台所にあります。取りに行ってもよいですか。</p><button type="button" data-reveal>答えを見る</button><p class="ans" hidden><b>いけません。</b>OnVUEでは試験中に席を離れることも、webcamの視界から外れることもできず、離れると試験が無効になる可能性があります。机は空にする必要があるので、水を事前に用意しておくのも基本的にはできません（ラベルなしの透明なボトルを認めるproctorもいますが、当てにしないこと。現行の規則は要確認）。対策: 1時間前までに十分水分をとり、check-inの直前にトイレを済ませておきます。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. SAU KHI THI ============ -->
+<section id="sau-khi-thi">
+  <span class="eyebrow">試験準備 6 / 6</span>
+  <h2>試験のあと: 合格したら、不合格だったら</h2>
+  <div class="card">
+    <div class="block"><span class="eyebrow">合格したら</span>
+      <ol class="steps">
+        <li><div><p><b>証拠を保存</b>: CertMetricsから認定証PDFとscore reportをダウンロードし、個人のフォルダとcloudに保存します（会社PCだけに置かないこと）。有効期限をカレンダーに書き、6か月前にリマインダーを設定します。</p></div></li>
+        <li><div><p><b>CredlyとLinkedIn</b>: Credlyでbadgeをacceptし、「Add to LinkedIn profile」を押して検証リンク付きのLicenses &amp; certifications欄を作ります。12週間のロードマップを紹介する短い投稿をしてもよいでしょう。多くの採用担当者が「AWS Certified Solutions Architect」というキーワードで検索しています。</p></div></li>
+        <li><div><p>会社に受験料補助や資格手当の制度があれば、<b>会社に報告</b>します（日本の会社の多くに資格手当や受験料の払い戻しがあり、Pearson VUEの領収書と認定証が必要です）。</p></div></li>
+        <li><div><p><code>AWS-SAA-checklist.md</code>とこのページのチェックリストで<b>「THI ĐỖ」（合格）にチェック</b>を入れます。sessionでClaudeに伝えれば、チェックを入れて合格日を記録してくれます。</p></div></li>
+        <li><div><p><b>次のステップを選ぶ</b>（すぐ決める必要はなく、まず1〜2週間休みます）:</p>
+          <div class="tbl"><table>
+            <tr><th>方向性</th><th>向いている人</th><th>メモ</th></tr>
+            <tr><td><b>Developer Associate（DVA）</b></td><td>日常的にcodeを書き、Lambda、API Gateway、DynamoDB、CI/CDを扱う人</td><td>SAAと知識が約40%重なり、追加で4〜6週間の学習。50% voucherはここで使えます。</td></tr>
+            <tr><td><b>SysOps Administrator Associate（SOA）</b></td><td>運用、monitoring、CloudWatch、Systems Managerの担当者</td><td>実技のlabがあり（版によるので要確認）、DVAより難しめです。</td></tr>
+            <tr><td><b>Solutions Architect Professional（SAP）</b></td><td>実際のアーキテクチャ設計を1〜2年経験し、重みのある資格がほしい人</td><td>SAAよりはるかに難しく、先に6〜12か月の実務経験を積むのがおすすめです。SAPに合格するとSAAも更新されます。</td></tr>
+            <tr><td><b>CDKで本格的なHands-on</b></td><td>試験の知識を仕事のスキルに変えたい人</td><td>3層アーキテクチャ（VPC、ALB、ASG、RDS）やserverless APIをAWS CDK TypeScriptで、test付き、CI/CD付きで構築し直します。2つ目の資格よりも今の仕事に役立ちます。</td></tr>
+          </table></div></div></li>
+        <li><div><p><b>AWS accountを最後に片付ける</b>: 残ったresourceを削除し、Budget（1 USDと10 USD）とMFA付きのIAM admin userは残します。今後使わないならaccountを閉じることもできます（Account → Close account）が、残っているFree Tierのcreditは失われます。</p></div></li>
+      </ol>
+    </div>
+
+    <div class="block"><span class="eyebrow">不合格だったら</span>
+      <div class="note">SAAに1回目で不合格になるのは珍しくなく、英語で受験した場合はなおさらです。650〜719点ならあと数問足りなかっただけです。最初から学び直すのではなく、体系的に対処しましょう。</div>
+      <ol class="steps">
+        <li><div><p><b>score reportをdomain別に読みます</b>。届いたらすぐ（最大5日）、どのdomainが「Needs improvement」かを確認します。配分が30/26/24/20なので、SECかRESが弱いと最も多く点を失います。</p></div></li>
+        <li><div><p><b>24時間以内に</b>覚えている問題（サービス、シナリオ、迷った2つの選択肢）をすべて<code>so-ghi-cau-sai.md</code>に書き、週の欄に「本番」と印を付けます。問題の記憶はすぐに薄れます。</p></div></li>
+        <li><div><p><b>14日間の待機</b>は必須です。リズムを保つため、15〜21日目に再受験をすぐ予約します。accommodationがまだ有効ならESLの再申請は不要です（CertMetricsで確認）。</p></div></li>
+        <li><div><p><b>弱いdomainだけを復習します</b>: 該当する週の教材を開き直し（SEC: 第1、4、8週、RES: 第5、6、9週、PERF: 第3、5、6、7週、COST: 第1、2、3、9週）、「混同しやすい点」と「試験キーワード」を読み直します。全体は読み直しません。</p></div></li>
+        <li><div><p><b>模試を解き直します</b>: 弱いdomainについてTDのreview modeで学び、2週目にtimedで2回分を解きます。本番の2回目は問題セットが違う可能性があるので、目標は85%超です。</p></div></li>
+        <li><div><p><b>あきらめないこと</b>: 受験料150 USDと14日間は、費やした12週間に比べれば小さなコストです。1回目に650点以上で不合格だった人の大半は、2回目で合格しています。</p></div></li>
+      </ol>
+    </div>
+
+    <div class="block"><span class="eyebrow">試験キーワード</span>
+      <div class="kw"><span>Needs improvement <b>→ 復習すべきdomain</b></span><span>14日 <b>→ 再受験までの待機期間</b></span><span>3年 <b>→ 認定の有効期間</b></span><span>50% voucher <b>→ 次の試験</b></span><span>Credly <b>→ badge、LinkedIn</b></span><span>SAPでSAAも更新 <b>→ Professional</b></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LỊCH TUẦN 12 ============ -->
+<section id="handson">
+  <span class="eyebrow">第12週の予定</span>
+  <h2>第12週の予定: 4つのタスク</h2>
+  <p>hands-onの代わりです。タスク1と2は模試、タスク3は試験の予約（第11週で予約済みなら省略）、タスク4は試験後に課金されるresourceが残らないようaccountを片付けることです。</p>
+
+  <div class="card">
+    <h3>タスク1. Tutorials Dojo模試6（timed）</h3>
+    <ol class="steps">
+      <li><div><p>Tutorials Dojo → SAA-C03 Practice Exams → <b>Practice Test 6</b> → <b>Timed</b>モードを開きます。ESLを申請済みでも、プレッシャーに慣れるため130分で解きます。本番の追加30分は余裕分です。</p></div></li>
+      <li><div><p>項目4の戦略どおりに解きます。最後の問いを先に読み、難問はflagし、空欄を残さず、50分時点で進捗を確認します。</p></div></li>
+      <li><div><p>提出したら、<b>%</b>を下のチェックリストと、<code>AWS-SAA-checklist.md</code>の「Tutorials Dojo đề 6: ____%」の行に記録します。</p></div></li>
+      <li><div><p><b>正解した問題も</b>解説を読みます（TDは他の選択肢がなぜ誤りかを説明しており、ここが最も価値のある部分です）。間違えた問題は1問につき1行、<code>so-ghi-cau-sai.md</code>に記録します: 日付、第12週、サービス、自分の選択、正解、間違えた理由、キーワード。</p></div></li>
+      <li><div><p>TDのdomain別スコア表を確認します。70%未満のdomainは、2日目までに該当する週の教材の「混同しやすい点」を読み直します。</p></div></li>
+    </ol>
+    <div class="note ok">模試6が最後の模試です。80%を超え、模試5も80%を超えていれば、予約の条件を満たしています。模試6が80%未満なら、模試6もタスク2の解き直しリストに入れます。</div>
+  </div>
+
+  <div class="card">
+    <h3>タスク2. 80%未満の模試を解き直す</h3>
+    <ol class="steps">
+      <li><div><p>第10〜12週に解いた模試のうち80%未満だったものをすべて書き出します: TD模試1〜6、AWS Official Practice Question Set、メイン講座の模試、<code>AWS-SAA-quiz-01.md</code>。</p></div></li>
+      <li><div><p>解き直す前に、<code>so-ghi-cau-sai.md</code>からその模試の行を読みます。復習せずに解き直すと、点が上がっても答えを覚えていただけで、理解したからではありません。</p></div></li>
+      <li><div><p>1回目から少なくとも5〜7日あけて、timedモードで解き直します（1回目が第10週か第11週なら十分あいています）。<b>2回目は80%超えが必須です。</b></p></div></li>
+      <li><div><p>1回目にも2回目にも間違えた問題は本当の弱点です。ノートに「2回ミス」と印を付け、<code>PROMPT-session-tuan.md</code>のprompt「Ôn lại chỗ yếu」（弱点の復習）を使ってClaudeにその部分を説明し直してもらいます。</p></div></li>
+      <li><div><p>2回目も80%未満なら: 試験日を1週間延期し（Pearson VUEの日程変更は24時間前まで、要確認）、弱いdomainを3日間復習して3回目に挑みます。希望的観測で試験に行かないこと。</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>タスク3. 試験の予約（未予約の場合）</h3>
+    <ol class="steps">
+      <li><div><p><b>AWS Certificationアカウントを作成または確認</b>: <a href="https://www.aws.training/certification" target="_blank" rel="noopener">aws.training/certification</a> → Sign in → CertMetricsへ。氏名が身分証と一致しているか、個人のメール、住所を確認します。他の認定を持っていれば、Benefitsで50% voucherを取得します。</p></div></li>
+      <li><div><p><b>ESL +30 minutesを申請</b>（英語で受験する場合のみ）: Request Exam Accommodations → ESL +30 MINUTESを選択 → Submit。この手順より前にステップ4を行わないこと。</p></div></li>
+      <li><div><p><b>承認を待つ</b>: 通常は数時間から数営業日で、アカウントにApprovedと表示され、メールも届きます。待っている間にタスク1と2を進めます。</p></div></li>
+      <li><div><p><b>Pearson VUEで予約</b>: AWS Certificationアカウント → Schedule → SAA-C03を選択 → 言語（English）を選択 → <b>OnVUE online</b>または<b>Test center</b>を選択 → 日時を選択（タイムゾーンはAsia/Tokyo） → 150 USDを支払う（voucherがあれば入力）。ESLが適用されていれば確認画面に160分と表示されるはずです。130分と表示されたら手を止め、支払わずにaccommodationを確認し直します。</p></div></li>
+      <li><div><p><b>system testを実行</b>（online）: 確認メール内のリンク、またはPearson VUEのOnVUEページから。本番で使うPC、回線、部屋で実行します。appがwebcam、マイク、回線速度、appの動作を確認します。試験前日の夜にもう一度実行します。Test centerの場合は、代わりに道順と電車の時刻を確認します。</p></div></li>
+      <li><div><p><code>AWS-SAA-checklist.md</code>冒頭の「Ngày thi dự kiến」（試験予定日）の行と個人のカレンダーに試験日を書き、48時間前にリマインダーを設定します。</p></div></li>
+    </ol>
+    <div class="note">日程変更やキャンセルは、試験開始まで24時間以上あれば通常は無料です（予約時に現行ポリシーを要確認）。それより直前だと受験料を失います。</div>
+  </div>
+
+  <div class="card">
+    <h3>タスク4. 試験前にAWSアカウントを片付ける</h3>
+    <p style="font-size:.94rem">目標: 試験後、accountに時間課金されるresourceが残っておらず、Budget、IAM admin user、いくつかの無料のものだけが残っている状態にします。5日目に行い、6日目のBillsで0になったことを確認します。</p>
+    <ol class="steps">
+      <li><div><p><b>まず全体像を見ます</b>: Billing and Cost Management → <b>Bills</b>（今月どのサービスに料金が出ているか）と<b>Cost Explorer</b>（直近7日で絞り込み、Serviceでgroup by、次にRegionでgroup by）。まだ表示されるサービスにはresourceが残っています。Business supportがあれば<b>Trusted Advisor → Cost Optimization</b>も確認します（idle load balancer、unassociated EIP、underutilized EBS）。</p></div></li>
+      <li><div><p>使ったことのある<b>Regionを1つずつ確認</b>します（少なくとも<code>ap-northeast-1</code>と、CloudFront/ACM/WAFのglobal設定がある<code>us-east-1</code>）。Consoleの<b>Resource Groups &amp; Tag Editor → Tag Editor</b>で、All regions、All resource typesを選んでSearchすると、ほぼすべてのresourceを一覧できます。またはCLIで、料金の高いものから順に確認します:</p>
+<pre><code>$env:AWS_PROFILE = "saa"
+foreach ($r in @("ap-northeast-1","us-east-1","ap-southeast-1")) {
+  Write-Host "== $r =="
+  aws ec2 describe-instances --region $r --query "Reservations[].Instances[?State.Name!='terminated'].[InstanceId,State.Name]" --output text
+  aws ec2 describe-volumes --region $r --query "Volumes[].[VolumeId,State,Size]" --output text
+  aws ec2 describe-addresses --region $r --query "Addresses[].[PublicIp,AssociationId]" --output text
+  aws ec2 describe-nat-gateways --region $r --query "NatGateways[?State!='deleted'].[NatGatewayId,State]" --output text
+  aws elbv2 describe-load-balancers --region $r --query "LoadBalancers[].[LoadBalancerName,Type]" --output text
+  aws rds describe-db-instances --region $r --query "DBInstances[].[DBInstanceIdentifier,DBInstanceStatus]" --output text
+  aws rds describe-db-clusters --region $r --query "DBClusters[].[DBClusterIdentifier,Status]" --output text
+  aws ecs list-clusters --region $r --output text
+  aws eks list-clusters --region $r --output text
+  aws kms list-keys --region $r --query "Keys[].KeyId" --output text
+  aws secretsmanager list-secrets --region $r --query "SecretList[].Name" --output text
+  aws ec2 describe-vpc-endpoints --region $r --query "VpcEndpoints[?VpcEndpointType=='Interface'].[VpcEndpointId,ServiceName]" --output text
+  aws efs describe-file-systems --region $r --query "FileSystems[].[FileSystemId,SizeInBytes.Value]" --output text
+}
+aws cloudfront list-distributions --query "DistributionList.Items[].[Id,Status]" --output text
+aws s3 ls</code></pre><p>結果が出た行にはresourceが残っています。出力が空なら片付いています。</p></div></li>
+      <li><div><p><b>順番に削除します</b>（依存されているresourceから先に）: RDS instanceとcluster（不要ならfinal snapshotを省略し、古い手動snapshotも削除）、ECS serviceとcluster、EKS（ロードマップでは使っていないが確認）、ALB/NLBの次にtarget group、NAT Gatewayの次にElastic IPのrelease（NATがdeletedになるまで待たないとreleaseできない）、EC2 instanceの次に残ったEBS volumeとsnapshot、Interface VPC endpoint、EFS file system、CloudFront distribution（disableし、Deployedになるのを待ってからdelete）、LambdaとAPI Gateway（呼ばなければ無料だが整理のため削除）、Secrets Managerのsecret（7日後に削除を予約）、KMS customer managed key（7日後に削除を予約。<b>そのkeyで暗号化されたデータが残っていないと確信できる場合のみ削除</b>）、S3 bucket（空にしてからdelete。versioningが有効なbucketは古いversionも削除）。</p></div></li>
+      <li><div><p><b>残すもの</b>: AWS Budgets（1 USDと10 USD）、MFA付きのIAM admin user、CloudTrail Event history（無料）、default VPC（無料）、履歴を残したいならlog用bucket（数MBで、ほぼ0円）。</p></div></li>
+      <li><div><p><b>翌日に再確認</b>: BillsとCost Explorerで直近の日のコストがほぼ0になっていること（削除待ちのKMS keyや、release前のpublic IPv4で数セント残ることはある）。最後にステップ2のscriptをもう一度実行します。</p></div></li>
+    </ol>
+    <div class="note">最も消し忘れやすい時間課金のresource: <b>NAT Gateway、ALB/NLB、RDS、未アタッチのElastic IP、未アタッチのEBS volume、Interface endpoint、EFS、OpenSearch domain</b>。KMS customer managed keyはkeyごとに月1 USD、Secrets Managerはsecretごとに月0.40 USDかかります。第12週のlabでは新しく何も作らないため、費用は0 USDです。</div>
+  </div>
+</section>
+
+<!-- ============ MỐC KIỂM TRA ============ -->
+<section id="moc">
+  <span class="eyebrow">確認ポイント</span>
+  <h2>最終週の3つの確認ポイント</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>1. 試験を予約し、システムチェックを済ませた</h3>
+      <p style="font-size:.94rem">自己チェックの目安:</p>
+      <ul style="font-size:.94rem">
+        <li>Pearson VUEの確認メールに、日付、時刻、タイムゾーン、形式、言語、試験時間（ESLありなら160分）がすべて記載されている。</li>
+        <li>CertMetricsの氏名が、持参する身分証と一致している。</li>
+        <li>online: 本番と同じPC、回線、部屋でsystem testがPassした。test center: 道順と出発時刻を把握している。</li>
+        <li>試験日を<code>AWS-SAA-checklist.md</code>と個人のカレンダーに書いた。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>2. 資料を見ずに数値表を思い出せる</h3>
+      <p style="font-size:.94rem">自己チェックの方法（「数値」列を隠す）:</p>
+      <ul style="font-size:.94rem">
+        <li>よく出る「ひっかけ」の数値10個を言える: S3 single PUT 5 GB、SQS 256 KB、Lambda 15分、API Gateway 29秒、Spot 2分、Kinesisはshardあたり1 MB/s、DynamoDB 400 KB、RDS backup 35日、Auroraは3 AZに6コピー、CloudTrail 90日。</li>
+        <li>VPCの数値5つを言える: /16〜/28、予約IP 5つ、NATはAZごと、peeringはtransitiveではない、VPNはtunnelあたり1.25 Gbps。</li>
+        <li>試験の数値を言える: 65問、130分、720/1000、採点対象外15問、再受験は14日後、有効期間3年。</li>
+        <li>2周目の隠しテストで、表全体の誤りが5行未満なら合格。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>3. 合格</h3>
+      <p style="font-size:.94rem">12週間の最後の確認ポイント:</p>
+      <ul style="font-size:.94rem">
+        <li>画面またはメールで<b>Pass</b>と通知され、score reportが720以上。</li>
+        <li>Credlyのbadgeをacceptし、認定証PDFを保存し、LinkedInを更新した。</li>
+        <li><code>AWS-SAA-checklist.md</code>の「THI ĐỖ」（合格）にチェックを入れ、合格日を記録した。</li>
+        <li>AWS accountを片付け、Billsが0になり、Budgetは有効なまま。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TỪ KHÓA: CỤM MỞ ĐẦU → DOMAIN ============ -->
+<section id="tukhoa">
+  <span class="eyebrow">クイックレビュー</span>
+  <h2>設問の書き出し → domain → 考え方</h2>
+  <p style="font-size:.94rem">SAAの問題は、シナリオの後に要件を述べる結びの一文が続く型で書かれています。結びの一文のフレーズに気づけば、domainと、残った2つの選択肢を比べる「物差し」が分かります。</p>
+  <div class="tbl"><table>
+    <tr><th>設問に含まれるフレーズ</th><th>Domain</th><th>選択肢を比べるときの考え方</th></tr>
+    <tr><td><em>A solutions architect must ensure data is encrypted at rest / in transit</em></td><td>SEC</td><td>KMS、SSE-KMS、ACMによるTLS。暗号化に触れていない選択肢は外す</td></tr>
+    <tr><td><em>must not be accessible from the Internet / must remain private</em></td><td>SEC</td><td>Private subnet、VPC endpoint、PrivateLink、inboundを絞ったSecurity Group。public IPは使わない</td></tr>
+    <tr><td><em>grant access with least privilege / temporary access</em></td><td>SEC</td><td>IAM role、STS、最小限のpolicy、resource-based policy。長期のaccess keyを使う選択肢は外す</td></tr>
+    <tr><td><em>protect the application from common web exploits / DDoS</em></td><td>SEC</td><td>WAF（L7）、Shield Advanced（DDoS）、前段にCloudFront</td></tr>
+    <tr><td><em>detect / audit / investigate / comply with regulations</em></td><td>SEC</td><td>CloudTrail（誰が）、Config（設定）、GuardDuty（脅威）、Macie（PII）、Security Hub（集約）</td></tr>
+    <tr><td><em>with minimal downtime / highly available / survive AZ failure</em></td><td>RES</td><td>Multi-AZ、複数AZにまたがるASG、AZごとのNAT、RDS Multi-AZ。single point of failureのある選択肢は外す</td></tr>
+    <tr><td><em>disaster recovery with RPO of X and RTO of Y</em></td><td>RES</td><td>RTOを満たす最も安いDRレベルを選ぶ: backup/restore、pilot light、warm standby、multi-site。Aurora Global、Global Tables</td></tr>
+    <tr><td><em>decouple / handle traffic spikes / messages must not be lost</em></td><td>RES</td><td>producerとconsumerの間にSQS、SNS fan-out、DLQ。queue depthに応じたASG</td></tr>
+    <tr><td><em>stateless / session persistence across instances</em></td><td>RES</td><td>sessionはElastiCache/DynamoDBへ、fileはEFS/S3へ。instance上に保存しない</td></tr>
+    <tr><td><em>improve performance / reduce latency / users complain about slow</em></td><td>PERF</td><td>cache（CloudFront、ElastiCache、DAX）、read replica、Global Accelerator、適切なstorageの種類。まずボトルネックを探す</td></tr>
+    <tr><td><em>handle millions of requests / scale automatically / unpredictable traffic</em></td><td>PERF</td><td>自動でscaleするserverless（Lambda、DynamoDB on-demand、Fargate、Aurora Serverless）、ASG target tracking</td></tr>
+    <tr><td><em>process / analyze data in real time / near real time</em></td><td>PERF</td><td>Kinesis Data Streams（real time、replay） vs Firehose（near real time、S3へ）。SQSではない</td></tr>
+    <tr><td><em>choose the storage / database for this workload</em></td><td>PERF</td><td>patternで照合: key-value → DynamoDB、relational → RDS/Aurora、Linuxの共有file → EFS、Windows → FSx、object → S3、HPC → Lustre</td></tr>
+    <tr><td><em>run SQL queries on logs / data warehouse / BI dashboards</em></td><td>PERF</td><td>Athena（S3でad-hoc）、Redshift（warehouse）、QuickSight（BI）、OpenSearch（log検索）</td></tr>
+    <tr><td><em>reduce cost / most cost-effective / lower the monthly bill</em></td><td>COST</td><td>まず要件を満たすこと。そのうえでSpot、Reserved/Savings Plans、S3 IA/Glacier/Intelligent-Tiering、right-size、Gateway endpoint、idleの削除</td></tr>
+    <tr><td><em>data is rarely accessed / accessed once a quarter / must be retained for 7 years</em></td><td>COST</td><td>S3 lifecycleでIA → Glacier Instant/Flexible → Deep Archive。min durationの30/90/180日を忘れない</td></tr>
+    <tr><td><em>track / allocate / alert on spending across teams or accounts</em></td><td>COST</td><td>Cost allocation tags、Cost Explorer、Budgets、CUR、Organizationsのconsolidated billing</td></tr>
+    <tr><td><em>interruptions are acceptable / batch / can be restarted</em></td><td>COST</td><td>Spot（ASGのmixed instancesでOn-Demandと混在可）。短期の負荷にReservedを使う選択肢は外す</td></tr>
+    <tr><td><em>with the least operational overhead / minimal administrative effort</em></td><td>全domain</td><td>managedとserverlessが勝つ。手順が少ないほうが勝つ。AWSに任せるほうが自前構築に勝つ</td></tr>
+    <tr><td><em>Which combination of steps... (Choose two.)</em></td><td>全domain</td><td>2つの答えは同じ解決策に属するか、互いを補うこと。技術的には正しいが筋違いの「おとり」を外す</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ CHECKLIST ============ -->
+<section id="checklist">
+  <span class="eyebrow">進捗</span>
+  <h2>第12週チェックリスト</h2>
+  <p style="font-size:.94rem;color:var(--muted)">ここでのチェックは、このPC上で自分の進捗を追うためのものです。項目を終えたらsessionでClaudeに伝え、<code>AWS-SAA-checklist.md</code>（第10〜12週の「Luyện đề」（模試演習）と「Đặt lịch và thi」（予約と受験）の部分）にチェックを入れてもらいます。</p>
+  <div class="card">
+    <h4>模試演習</h4>
+    <label class="check"><input type="checkbox" id="c1" data-ck><span>Tutorials Dojo模試6（timed）: ____%</span></label>
+    <label class="check"><input type="checkbox" id="c2" data-ck><span>80%未満の模試を解き直し、2回目で80%超え</span></label>
+    <label class="check"><input type="checkbox" id="c3" data-ck><span>模試で2回連続80%超え</span></label>
+    <h4>試験の予約</h4>
+    <label class="check"><input type="checkbox" id="c4" data-ck><span>accommodation ESL +30 minutesを申請し（英語で受験する場合）、Approved済み</span></label>
+    <label class="check"><input type="checkbox" id="c5" data-ck><span>Pearson VUEに登録（onlineまたはtest center）、言語を選択</span></label>
+    <label class="check"><input type="checkbox" id="c6" data-ck><span>OnVUE system testを実行（またはtest centerへの道順を確認）</span></label>
+    <h4>準備</h4>
+    <label class="check"><input type="checkbox" id="c7" data-ck><span>AWS resourceを片付け、Billsが0、Budgetは維持</span></label>
+    <label class="check"><input type="checkbox" id="c8" data-ck><span>数値表を暗記（隠してチェックし、誤りが5行未満）</span></label>
+    <h4>試験当日</h4>
+    <label class="check"><input type="checkbox" id="c9" data-ck><span>試験当日: 難問はflagして後で戻る</span></label>
+    <label class="check"><input type="checkbox" id="c10" data-ck><span>試験当日: 選ぶ前に誤答を2つ消す</span></label>
+    <label class="check"><input type="checkbox" id="c11" data-ck><span>試験当日: 空欄を1問も残さない</span></label>
+    <label class="check"><input type="checkbox" id="c12" data-ck><span>合格</span></label>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  // Xem đáp án
+  document.querySelectorAll('[data-reveal]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var a=b.parentElement.querySelector('.ans');
+      a.hidden=!a.hidden; b.textContent=a.hidden?'答えを見る':'答えを隠す';
+    });
+  });
+  // Checklist lưu trên máy này
+  var boxes=document.querySelectorAll('[data-ck]'), KEY='saa-tuan-12';
+  var saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  function update(){
+    var n=0; boxes.forEach(function(c){ c.closest('.check').classList.toggle('done',c.checked); if(c.checked)n++; });
+    document.getElementById('bar').style.width=(n/boxes.length*100)+'%';
+    document.getElementById('pct').textContent=n+'/'+boxes.length;
+  }
+  boxes.forEach(function(c){
+    if(saved[c.id])c.checked=true;
+    c.addEventListener('change',function(){ saved[c.id]=c.checked; try{ localStorage.setItem(KEY,JSON.stringify(saved)); }catch(e){} update(); });
+  });
+  update();
+  // Đánh dấu mục đang đọc
+  var links=document.querySelectorAll('.toc a'), secs=[];
+  links.forEach(function(l){ var s=document.querySelector(l.getAttribute('href')); if(s)secs.push([s,l]); });
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ links.forEach(function(l){l.classList.remove('active')}); secs.forEach(function(p){ if(p[0]===e.target)p[1].classList.add('active'); }); } }); },{rootMargin:'-20% 0px -70% 0px'});
+    secs.forEach(function(p){ io.observe(p[0]); });
+  }
+})();
+</script>

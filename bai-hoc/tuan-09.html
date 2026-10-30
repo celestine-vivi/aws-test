@@ -1,0 +1,941 @@
+<title>SAA Tuần 9 Kiến trúc Well-Architected</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky mục lục bên trái (desktop), cột nội dung 760px bên phải; xếp một cột ở màn hẹp. */
+:root{
+  --bg:#f2f4f7; --surface:#ffffff; --surface-2:#e9edf2; --line:#d3dae3;
+  --fg:#172030; --muted:#5a6676; --accent:#1c6e8c; --accent-soft:#dcecf3;
+  --warm:#b35a00; --warm-soft:#fbe9d6; --ok:#2a7d4f; --ok-soft:#dcf0e4; --bad:#b3362b; --bad-soft:#f8dedb;
+  --display:"Manrope","IBM Plex Sans",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+a{color:var(--accent)}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:800}
+h2{font-size:1.5rem;font-weight:800;padding-top:8px}
+h3{font-size:1.12rem;font-weight:700}
+h4{font-size:.95rem;font-weight:700}
+p{margin:0}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+pre{font-family:var(--mono);font-size:.84rem;line-height:1.5;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:0}
+pre code{background:none;padding:0;font-size:inherit}
+em{color:var(--warm);font-style:italic}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* Header */
+.hero{max-width:1120px;margin:0 auto;padding-block:36px 20px;display:flex;flex-direction:column;gap:12px}
+.hero .lead{max-width:62ch;color:var(--muted);font-size:1.02rem}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.88rem;color:var(--muted)}
+.meta b{color:var(--fg);font-weight:600}
+.progress{display:flex;align-items:center;gap:12px;font-size:.88rem;color:var(--muted)}
+.bar{flex:1;max-width:320px;height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+
+/* Two columns */
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;align-items:start}
+.toc{position:sticky;top:max(12px,env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:2px;font-size:.9rem}
+.toc a{color:var(--muted);text-decoration:none;padding:6px 10px;border-left:2px solid var(--line);display:block}
+.toc a:hover,.toc a.active{color:var(--fg);border-left-color:var(--accent)}
+.toc .grp{margin-top:10px}
+main{display:flex;flex-direction:column;gap:56px;min-width:0;max-width:780px}
+section{display:flex;flex-direction:column;gap:18px;scroll-margin-top:16px}
+@media (max-width:860px){ .wrap{grid-template-columns:1fr;gap:24px} .toc{position:static;flex-direction:row;flex-wrap:wrap;gap:6px} .toc a{border:1px solid var(--line);border-radius:99px;padding:4px 10px} .toc .grp{margin:0} .toc a.active{border-color:var(--accent)} }
+
+/* Blocks */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.block{display:flex;flex-direction:column;gap:8px}
+.block > .eyebrow{color:var(--accent)}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:5px}
+li::marker{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.kw{display:flex;flex-wrap:wrap;gap:8px}
+.kw span{background:var(--warm-soft);color:var(--warm);border-radius:4px;padding:3px 9px;font-size:.86rem;font-style:italic}
+.kw span b{font-style:normal;font-weight:600;color:var(--fg)}
+.note{border-left:3px solid var(--warm);background:var(--warm-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.94rem}
+.note.ok{border-color:var(--ok);background:var(--ok-soft)}
+.note.bad{border-color:var(--bad);background:var(--bad-soft)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;font-size:.84rem}
+tr:last-child td{border-bottom:0}
+td.c{text-align:center}
+
+/* Checklist */
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:6px;cursor:pointer}
+.check:hover{background:var(--surface-2)}
+.check input{margin-top:5px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.check.done{color:var(--muted);text-decoration:line-through}
+
+/* Quiz reveal */
+.q{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.q .qt{font-weight:500}
+.q button{align-self:flex-start;font:inherit;font-size:.86rem;padding:5px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer}
+.q button:hover{background:var(--accent);color:var(--surface)}
+.q button:focus-visible,.check input:focus-visible,.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.q .ans{font-size:.94rem;border-top:1px dashed var(--line);padding-top:8px}
+.q .ans b{color:var(--ok)}
+
+/* Steps */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:12px;padding:0;list-style:none}
+.steps li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:start}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--mono);font-size:.8rem;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:500;margin-top:2px}
+.steps li > div{display:flex;flex-direction:column;gap:6px;min-width:0}
+
+/* Flow diagram */
+.flow{display:flex;flex-direction:column;gap:0;align-items:stretch;max-width:520px}
+.flow .n{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:.94rem}
+.flow .n .tag{font-family:var(--mono);font-size:.74rem;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.tag.deny{background:var(--bad-soft);color:var(--bad)} .tag.allow{background:var(--ok-soft);color:var(--ok)} .tag.next{background:var(--surface-2);color:var(--muted)}
+.flow .arrow{height:22px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--mono);font-size:.78rem}
+.flow .arrow::before{content:"";width:1px;height:100%;background:var(--line);position:absolute}
+.flow .arrow{position:relative} .flow .arrow span{background:var(--bg);padding:0 6px;position:relative}
+
+svg text{font-family:var(--body)}
+.diag{overflow-x:auto}
+.diag svg{width:100%;max-width:700px;height:auto;display:block}
+.sv-region{fill:var(--surface);stroke:var(--accent)} .sv-az{fill:var(--accent-soft);stroke:var(--accent)} .sv-edge{fill:var(--warm-soft);stroke:var(--warm)}
+.sv-t{fill:var(--fg);font-size:13px} .sv-m{fill:var(--muted);font-size:11px} .sv-line{stroke:var(--line)}
+.sv-bad{fill:var(--bad-soft);stroke:var(--bad)} .sv-ok{fill:var(--ok-soft);stroke:var(--ok)}
+@media (prefers-reduced-motion: reduce){ .bar i{transition:none} }
+</style>
+
+<header class="hero">
+  <span class="eyebrow">AWS SAA-C03 · Lộ trình 12 tuần · Tuần 9</span>
+  <h1>Kiến trúc tổng hợp và Well-Architected</h1>
+  <p class="lead">Tuần cuối của phần học kiến thức. Gom mọi dịch vụ đã học vào khung Well-Architected 6 trụ cột, học 4 chiến lược disaster recovery theo RPO và RTO, nhận diện bộ công cụ migration, analytics, ML, rồi tự dựng và xóa một kiến trúc 3-tier bằng CDK trong cùng một ngày. Mục tiêu cuối tuần: nói được 4 chiến lược DR kèm chi phí, và nhìn một sơ đồ là chỉ ra ngay single point of failure. Sau tuần này là giai đoạn luyện đề tuần 10 đến 12.</p>
+  <div class="meta"><span>Nhịp học: <b>1,5 đến 2 giờ/ngày</b></span><span>Domain liên quan: <b>RES 26%</b>, <b>COST 20%</b>, có ôn SEC và PERF</span><span>Chi phí lab tuần này: <b>2 đến 5 USD</b> nếu xóa stack trong ngày</span></div>
+  <div class="progress"><span>Tiến độ checklist</span><div class="bar"><i id="bar"></i></div><span id="pct">0/14</span></div>
+</header>
+
+<div class="wrap">
+<nav class="toc" aria-label="Mục lục">
+  <a href="#ke-hoach">Kế hoạch 7 ngày</a>
+  <span class="grp eyebrow">Lý thuyết</span>
+  <a href="#war">1. Well-Architected 6 trụ cột</a>
+  <a href="#dr">2. Disaster recovery, RPO, RTO</a>
+  <a href="#migration">3. Migration 7R, MGN</a>
+  <a href="#analytics">4. Analytics nhận diện</a>
+  <a href="#ml">5. ML services nhận diện</a>
+  <a href="#kientruc">6. Kiến trúc 3-tier và cách đọc đề</a>
+  <span class="grp eyebrow">Thực hành</span>
+  <a href="#handson">Hands-on 5 lab</a>
+  <a href="#moc">Mốc kiểm tra</a>
+  <a href="#tukhoa">Bảng từ khóa đề thi</a>
+  <a href="#checklist">Checklist tuần</a>
+</nav>
+
+<main>
+
+<section id="ke-hoach">
+  <h2>Kế hoạch 7 ngày</h2>
+  <p>Tuần này lý thuyết nhiều mục "nhận diện" nên học nhanh, dành sức cho lab CDK. Lab 1, 2 và 5 phải làm trong cùng một ngày vì RDS Multi-AZ, ALB và NAT Gateway tính tiền theo giờ.</p>
+  <div class="tbl"><table>
+    <tr><th>Ngày</th><th>Lý thuyết</th><th>Hands-on</th></tr>
+    <tr><td>1</td><td>Well-Architected Framework 6 trụ cột, 6 nguyên tắc chung</td><td>Cài Node.js và CDK, <code>cdk bootstrap</code>, đọc hiểu khung code Lab 1 (chưa deploy)</td></tr>
+    <tr><td>2</td><td>Disaster recovery: RPO, RTO, 4 chiến lược</td><td>Lab 1 deploy stack 3-tier, Lab 2 vẽ diagram đối chiếu console, Lab 5 <code>cdk destroy</code> ngay trong ngày</td></tr>
+    <tr><td>3</td><td>Migration 7R, Migration Hub, MGN, Discovery, DMS, Snow, DataSync</td><td>Lab 3 viết 3 cách tối ưu chi phí cho kiến trúc vừa dựng</td></tr>
+    <tr><td>4</td><td>Analytics: Athena, Glue, QuickSight, EMR, OpenSearch, Lake Formation</td><td>Lab 4 viết 3 điểm cần sửa để tăng tính chịu lỗi</td></tr>
+    <tr><td>5</td><td>ML services nhận diện, kiến trúc 3-tier và cách đọc đề</td><td>Kiểm tra Billing và Cost Explorer, xác nhận không còn resource sót</td></tr>
+    <tr><td>6 đến 7</td><td>Ôn hai mốc kiểm tra, đọc lại từ khóa, xem lại sổ câu sai tuần 1 đến 8</td><td>Nói "cho quiz" trong session để nhận <code>quiz/tuan-09.md</code> (30 câu), cần đạt 80%</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ 1. WELL-ARCHITECTED ============ -->
+<section id="war">
+  <span class="eyebrow">Lý thuyết 1 / 6</span>
+  <h2>Well-Architected Framework: 6 trụ cột</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <p><b>AWS Well-Architected Framework</b> là bộ câu hỏi và best practice AWS dùng để đánh giá một workload, chia thành <b>6 trụ cột (pillars)</b>. Ban đầu có 5, trụ cột <b>Sustainability</b> được thêm cuối năm 2021. Đề SAA không hỏi định nghĩa khô mà hỏi tình huống, nhưng 4 domain của đề được xây đúng theo 4 trong 6 trụ cột, nên thuộc khung này là có "bản đồ" để đọc đề.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">6 trụ cột và nguyên tắc thiết kế chính</span>
+      <div class="tbl"><table>
+        <tr><th>Trụ cột</th><th>Câu hỏi cốt lõi</th><th>Nguyên tắc thiết kế hay ra đề</th><th>Dịch vụ tiêu biểu</th></tr>
+        <tr><td><b>Operational Excellence</b></td><td>Vận hành, theo dõi, cải tiến quy trình thế nào?</td><td>Operations as code (IaC); thay đổi nhỏ, thường xuyên, hoàn tác được; dự đoán lỗi (game day); học từ mọi sự cố</td><td>CloudFormation, CDK, Systems Manager, CloudWatch, CloudTrail, Config</td></tr>
+        <tr><td><b>Security</b></td><td>Bảo vệ dữ liệu, hệ thống, danh tính thế nào?</td><td>Nền tảng danh tính mạnh (least privilege, không dùng root); truy vết được (traceability); bảo mật mọi lớp; tự động hóa; mã hóa in transit và at rest; giữ người xa dữ liệu; chuẩn bị cho sự cố</td><td>IAM, Organizations, KMS, GuardDuty, Security Hub, WAF, Shield</td></tr>
+        <tr><td><b>Reliability</b></td><td>Workload có tự phục hồi và scale đúng không?</td><td>Tự phục hồi sau lỗi; <b>kiểm thử quy trình phục hồi</b>; scale ngang để tăng availability tổng; <b>stop guessing capacity</b>; quản lý thay đổi bằng automation</td><td>Multi-AZ, Auto Scaling, Route 53, RDS Multi-AZ, SQS, Backup</td></tr>
+        <tr><td><b>Performance Efficiency</b></td><td>Dùng đúng loại và đúng cỡ resource chưa?</td><td>Dân chủ hóa công nghệ cao (dùng managed); <b>go global in minutes</b>; dùng serverless; thử nghiệm nhiều hơn; mechanical sympathy (chọn công nghệ hợp bài toán)</td><td>Lambda, CloudFront, ElastiCache, DynamoDB, Aurora, instance type đúng</td></tr>
+        <tr><td><b>Cost Optimization</b></td><td>Có trả tiền cho thứ không dùng không?</td><td>Cloud financial management; <b>consumption model</b> (trả theo dùng); đo hiệu quả tổng; bỏ "undifferentiated heavy lifting"; phân tích và gán chi phí (tag)</td><td>Cost Explorer, Budgets, Savings Plans, Spot, S3 lifecycle, Compute Optimizer</td></tr>
+        <tr><td><b>Sustainability</b></td><td>Giảm tác động môi trường thế nào?</td><td>Hiểu tác động; đặt mục tiêu; <b>tối đa hóa utilization</b>; đón hardware/software mới hiệu quả hơn (Graviton); dùng managed service; giảm tác động downstream</td><td>Graviton, Spot, S3 lifecycle, serverless, Auto Scaling, Region sạch</td></tr>
+      </table></div>
+      <p style="font-size:.9rem;color:var(--muted)">Danh sách nguyên tắc rút từ whitepaper AWS Well-Architected Framework; AWS cập nhật câu chữ theo thời gian nên đề có thể diễn đạt hơi khác, chỉ cần nhận ra ý.</p>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Đề SAA map vào trụ cột thế nào</span>
+        <div class="tbl"><table>
+          <tr><th>Domain SAA-C03</th><th>Tỷ trọng</th><th>Trụ cột</th></tr>
+          <tr><td>1. Design Secure Architectures (SEC)</td><td class="c">30%</td><td>Security</td></tr>
+          <tr><td>2. Design Resilient Architectures (RES)</td><td class="c">26%</td><td>Reliability</td></tr>
+          <tr><td>3. Design High-Performing Architectures (PERF)</td><td class="c">24%</td><td>Performance Efficiency</td></tr>
+          <tr><td>4. Design Cost-Optimized Architectures (COST)</td><td class="c">20%</td><td>Cost Optimization</td></tr>
+        </table></div>
+        <p style="font-size:.9rem">Operational Excellence và Sustainability rải trong cả 4 domain (IaC, <em>least operational overhead</em>, Graviton, Spot).</p>
+      </div>
+      <div class="block"><span class="eyebrow">AWS Well-Architected Tool</span>
+        <ul>
+          <li>Dịch vụ <b>miễn phí</b> trong Console: khai workload, trả lời bộ câu hỏi theo từng trụ cột, nhận danh sách <b>High Risk Issues (HRI)</b> và Medium Risk, kèm improvement plan.</li>
+          <li>Có <b>milestone</b> để so sánh trước và sau khi sửa, <b>lens</b> chuyên ngành (Serverless Lens, SaaS Lens, Machine Learning Lens) và custom lens tự viết.</li>
+          <li>Đề hỏi <em>review architecture against AWS best practices</em>, <em>identify high risk issues</em> → Well-Architected Tool, không phải Trusted Advisor (Trusted Advisor quét resource đang chạy, không hỏi về thiết kế).</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">6 nguyên tắc chung xuyên suốt mọi đề thi</span>
+      <div class="tbl"><table>
+        <tr><th>Nguyên tắc</th><th>Nghĩa là</th><th>Hiện ra trong đề thế nào</th></tr>
+        <tr><td><b>Design for failure</b></td><td>Giả định mọi thứ đều có thể hỏng: instance, AZ, cả Region. Không có thành phần nào là duy nhất.</td><td>Multi-AZ, nhiều instance sau ALB, RDS standby, Route 53 health check. Đáp án có "single" thường sai.</td></tr>
+        <tr><td><b>Loose coupling</b></td><td>Các thành phần nói chuyện qua hàng đợi hoặc load balancer, không gọi trực tiếp IP của nhau.</td><td><em>decouple</em> → SQS, SNS, EventBridge; ALB giữa tier; Kinesis cho stream.</td></tr>
+        <tr><td><b>Elasticity</b></td><td>Scale ra khi tải tăng, scale vào khi tải giảm, trả tiền theo dùng.</td><td>Auto Scaling, DynamoDB on-demand, Aurora Serverless, Lambda. <em>unpredictable traffic</em> → serverless.</td></tr>
+        <tr><td><b>Stateless</b></td><td>Instance không giữ session hay file người dùng; ai nhận request cũng xử lý được.</td><td>Session → ElastiCache hoặc DynamoDB; file → S3 hoặc EFS; <em>sticky session</em> thường là đáp án sai khi hỏi scale.</td></tr>
+        <tr><td><b>Cache</b></td><td>Đặt kết quả gần người dùng, giảm tải backend.</td><td>CloudFront cho static, ElastiCache cho DB đọc nhiều, DAX cho DynamoDB, API Gateway cache.</td></tr>
+        <tr><td><b>Managed service</b></td><td>Để AWS lo patch, backup, scale.</td><td><em>least operational overhead</em>, <em>minimize administrative effort</em> → RDS thay DB trên EC2, Fargate thay EC2 cho container, Lambda.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Cặp</th><th>Khác nhau ở chỗ</th></tr>
+        <tr><td>Well-Architected Tool với Trusted Advisor</td><td>WA Tool: tự trả lời câu hỏi về thiết kế, ra HRI theo trụ cột, miễn phí. Trusted Advisor: tự động quét resource thật (idle, security group mở, service limit), đủ check cần Business/Enterprise support.</td></tr>
+        <tr><td>Reliability với Performance Efficiency</td><td>Reliability: chịu lỗi, phục hồi, đủ capacity. Performance: chọn đúng loại resource, độ trễ, throughput. Multi-AZ là Reliability; đổi sang Graviton hay thêm cache là Performance.</td></tr>
+        <tr><td>Operational Excellence với Cost Optimization</td><td>Operational: quy trình, IaC, quan sát. Cost: tiền. CloudFormation để deploy lặp lại là Operational; tag để gán chi phí là Cost.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>review against best practices, high risk issues <b>→ Well-Architected Tool</b></span><span>stop guessing capacity <b>→ Auto Scaling (Reliability)</b></span><span>operations as code <b>→ CloudFormation / CDK</b></span><span>test recovery procedures <b>→ game day, DR drill</b></span><span>undifferentiated heavy lifting <b>→ managed service</b></span><span>go global in minutes <b>→ CloudFront, Global Accelerator, multi-Region IaC</b></span><span>maximize utilization, Graviton <b>→ Sustainability</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">1. Một công ty muốn kiểm tra kiến trúc ứng dụng mới trước khi lên production theo đúng best practice của AWS, liệt kê các rủi ro cao và theo dõi tiến độ sửa qua từng đợt. Dùng gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>AWS Well-Architected Tool</b>, tạo workload, trả lời câu hỏi 6 trụ cột, dùng milestone theo dõi. Trusted Advisor hay bị chọn nhầm nhưng nó quét resource đã chạy, không đánh giá thiết kế và không có khái niệm rủi ro theo trụ cột.</p></div>
+      <div class="q"><p class="qt">2. Đề nói ứng dụng web lưu session người dùng trong bộ nhớ của từng EC2, khi scale in thì người dùng bị đăng xuất. Nguyên tắc nào bị vi phạm và sửa thế nào?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Stateless.</b> Đưa session ra ElastiCache (Redis) hoặc DynamoDB để mọi instance đọc chung. Bật sticky session trên ALB chỉ che triệu chứng, instance bị terminate vẫn mất session nên khi đề hỏi <em>scale</em> hay <em>resilient</em> thì không chọn.</p></div>
+      <div class="q"><p class="qt">3. Chọn 2 hành động thuộc trụ cột Cost Optimization: (A) chuyển sang Graviton để giảm điện năng, (B) mua Savings Plans cho tải nền, (C) bật Multi-AZ cho RDS, (D) gắn tag để phân bổ chi phí theo phòng ban.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>B và D.</b> A nói về điện năng là Sustainability (dù cũng rẻ hơn), C là Reliability. Đề thường cho hai đáp án đều "có vẻ tiết kiệm" để xem bạn có đọc lý do đề nêu hay không.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. DISASTER RECOVERY ============ -->
+<section id="dr">
+  <span class="eyebrow">Lý thuyết 2 / 6</span>
+  <h2>Disaster recovery: RPO, RTO và 4 chiến lược</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <ul>
+        <li><b>RPO (Recovery Point Objective)</b>: chấp nhận <b>mất bao nhiêu dữ liệu</b>, tính bằng thời gian lùi về điểm backup gần nhất. Ví dụ: snapshot mỗi đêm 2 giờ sáng, sự cố lúc 14 giờ → mất 12 giờ dữ liệu, RPO = 12 giờ. Muốn RPO 1 giờ thì backup mỗi giờ; muốn RPO vài giây thì phải replicate liên tục.</li>
+        <li><b>RTO (Recovery Time Objective)</b>: hệ thống được phép <b>ngừng bao lâu</b> từ lúc sự cố đến lúc chạy lại. Ví dụ: dựng lại EC2 từ AMI và restore RDS từ snapshot mất 3 giờ → RTO = 3 giờ. Muốn RTO vài phút thì hạ tầng ở site DR phải đang chạy sẵn.</li>
+        <li>Hai số này do <b>nghiệp vụ</b> đặt, kiến trúc sư chọn chiến lược rẻ nhất đạt được cả hai. RPO và RTO càng nhỏ thì càng đắt. Đây là toàn bộ logic của đề DR.</li>
+        <li>Phân biệt với <b>High Availability</b>: HA (Multi-AZ) chống lỗi một AZ, tự động, trong một Region. DR chống mất cả Region, thường là Region khác, có thể cần người bấm nút.</li>
+      </ul>
+    </div>
+
+    <div class="block diag"><span class="eyebrow">Hình dung: thang chi phí của 4 chiến lược</span>
+      <svg viewBox="0 0 700 290" role="img" aria-label="Bốn chiến lược DR xếp theo chi phí tăng dần từ Backup and restore tới Multi-site active-active, RPO và RTO giảm dần">
+        <line x1="40" y1="230" x2="680" y2="230" class="sv-line" stroke-width="2"/>
+        <text x="40" y="256" class="sv-m">Chi phí thường trực tăng dần →</text>
+        <text x="680" y="256" text-anchor="end" class="sv-m">RPO, RTO giảm dần →</text>
+        <rect x="50" y="180" width="130" height="50" rx="6" class="sv-az" stroke-width="1.5"/>
+        <rect x="210" y="140" width="130" height="90" rx="6" class="sv-az" stroke-width="1.5"/>
+        <rect x="370" y="95" width="130" height="135" rx="6" class="sv-az" stroke-width="1.5"/>
+        <rect x="530" y="40" width="130" height="190" rx="6" class="sv-edge" stroke-width="1.5"/>
+        <text x="115" y="160" text-anchor="middle" class="sv-t" font-weight="600">Backup and restore</text>
+        <text x="115" y="176" text-anchor="middle" class="sv-m">RPO / RTO: giờ</text>
+        <text x="275" y="120" text-anchor="middle" class="sv-t" font-weight="600">Pilot light</text>
+        <text x="275" y="136" text-anchor="middle" class="sv-m">RPO phút, RTO vài chục phút</text>
+        <text x="435" y="75" text-anchor="middle" class="sv-t" font-weight="600">Warm standby</text>
+        <text x="435" y="91" text-anchor="middle" class="sv-m">RPO giây, RTO phút</text>
+        <text x="595" y="22" text-anchor="middle" class="sv-t" font-weight="600">Multi-site active-active</text>
+        <text x="595" y="36" text-anchor="middle" class="sv-m">RPO, RTO gần 0</text>
+        <text x="115" y="200" text-anchor="middle" class="sv-m">chỉ lưu backup</text>
+        <text x="115" y="216" text-anchor="middle" class="sv-m">ở Region DR</text>
+        <text x="275" y="165" text-anchor="middle" class="sv-m">DB replicate sẵn</text>
+        <text x="275" y="181" text-anchor="middle" class="sv-m">app tắt, bật khi cần</text>
+        <text x="275" y="197" text-anchor="middle" class="sv-m">(core "lõi" luôn cháy)</text>
+        <text x="435" y="120" text-anchor="middle" class="sv-m">bản thu nhỏ</text>
+        <text x="435" y="136" text-anchor="middle" class="sv-m">đang chạy đủ chức năng</text>
+        <text x="435" y="152" text-anchor="middle" class="sv-m">khi sự cố thì scale out</text>
+        <text x="595" y="70" text-anchor="middle" class="sv-m">2 Region cùng</text>
+        <text x="595" y="86" text-anchor="middle" class="sv-m">phục vụ traffic</text>
+        <text x="595" y="102" text-anchor="middle" class="sv-m">dữ liệu sync hai chiều</text>
+        <text x="595" y="118" text-anchor="middle" class="sv-m">(Global Table, Aurora)</text>
+      </svg>
+    </div>
+
+    <div class="block"><span class="eyebrow">4 chiến lược theo whitepaper "Disaster Recovery of Workloads on AWS"</span>
+      <div class="tbl"><table>
+        <tr><th>Chiến lược</th><th>Ở Region DR có gì đang chạy</th><th>RPO</th><th>RTO</th><th>Chi phí</th><th>Khi sự cố phải làm gì</th></tr>
+        <tr><td><b>Backup and restore</b></td><td>Không có gì chạy, chỉ có backup (snapshot, S3 object) đã copy sang</td><td>Giờ (bằng chu kỳ backup)</td><td>Giờ tới 24 giờ</td><td>Thấp nhất</td><td>Restore dữ liệu, dựng hạ tầng bằng CloudFormation, đổi DNS</td></tr>
+        <tr><td><b>Pilot light</b></td><td>Chỉ phần "lõi" (database replica, AMI, template sẵn), compute tắt hoặc 0 instance</td><td>Phút</td><td>Vài chục phút</td><td>Thấp</td><td>Promote replica, bật ASG từ 0 lên đủ, đổi DNS</td></tr>
+        <tr><td><b>Warm standby</b></td><td>Bản thu nhỏ <b>đang chạy và phục vụ được</b> (ít instance, DB replica)</td><td>Giây</td><td>Phút</td><td>Trung bình</td><td>Scale out lên full size, đổi DNS (Route 53 failover tự làm)</td></tr>
+        <tr><td><b>Multi-site active-active</b></td><td>Full size, hai Region cùng nhận traffic</td><td>Gần 0</td><td>Gần 0 (real time)</td><td>Cao nhất, gần gấp đôi</td><td>Hầu như không, Route 53 ngừng gửi về Region hỏng</td></tr>
+      </table></div>
+      <p style="font-size:.9rem;color:var(--muted)">Whitepaper AWS ghi: Backup and restore RPO/RTO tính bằng giờ; Pilot light và Warm standby tính bằng phút tới vài chục phút; Multi-site real time. Ranh giới giữa pilot light và warm standby: <b>pilot light không phục vụ được request khi chưa bật thêm</b>, warm standby thì phục vụ được ngay với công suất thấp.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dịch vụ hỗ trợ từng chiến lược</span>
+      <div class="tbl"><table>
+        <tr><th>Dịch vụ</th><th>Làm gì cho DR</th><th>Hợp chiến lược</th></tr>
+        <tr><td><b>AWS Backup</b></td><td>Backup tập trung EBS, RDS, DynamoDB, EFS, FSx, S3 theo backup plan; <b>copy cross-Region và cross-account</b>; Vault Lock chống xóa</td><td>Backup and restore (và nền cho mọi chiến lược)</td></tr>
+        <tr><td><b>S3 Cross-Region Replication (CRR)</b></td><td>Replicate object sang bucket ở Region khác, cần bật Versioning; chỉ áp dụng cho object mới sau khi bật (object cũ dùng Batch Replication)</td><td>Mọi chiến lược, cho dữ liệu file</td></tr>
+        <tr><td><b>AMI copy cross-Region</b></td><td>Copy AMI "vàng" sang Region DR để launch nhanh; kết hợp CloudFormation hoặc CDK để dựng hạ tầng</td><td>Backup and restore, Pilot light</td></tr>
+        <tr><td><b>RDS cross-Region read replica</b></td><td>Replica bất đồng bộ ở Region khác, khi sự cố <b>promote</b> thành standalone (việc promote là thủ công hoặc script)</td><td>Pilot light, Warm standby</td></tr>
+        <tr><td><b>Aurora Global Database</b></td><td>1 primary Region + tới 5 secondary Region, replication lag thường dưới 1 giây, <b>RPO khoảng 1 giây, RTO dưới 1 phút</b> khi promote; có managed failover và write forwarding</td><td>Warm standby, Multi-site (đọc ở secondary)</td></tr>
+        <tr><td><b>DynamoDB Global Tables</b></td><td>Bảng replicate <b>active-active</b> nhiều Region, ghi ở đâu cũng được, last writer wins</td><td>Multi-site active-active</td></tr>
+        <tr><td><b>Route 53 failover routing</b></td><td>Health check primary, lỗi thì trả DNS record của secondary; kết hợp TTL thấp để chuyển nhanh</td><td>Mọi chiến lược có Region DR</td></tr>
+        <tr><td><b>AWS Elastic Disaster Recovery (DRS)</b></td><td>Cài agent trên server (on-premises, cloud khác, hay EC2), replicate <b>liên tục ở mức block</b> vào staging area rẻ tiền ở Region DR; khi sự cố launch instance thật trong vài phút; hỗ trợ failback; <b>RPO giây, RTO phút</b></td><td>Pilot light được "managed hóa" cho server kiểu lift-and-shift</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Bẫy đề hay gặp</span>
+      <div class="note"><b>"Chi phí thấp nhất nhưng RTO vài phút"</b>: đọc kỹ con số. RTO <em>minutes</em> và hệ thống phải phục vụ được ngay → <b>warm standby</b>. RTO <em>tens of minutes</em>, hoặc đề nhấn mạnh "chỉ dữ liệu phải luôn sẵn sàng, app bật sau cũng được" → <b>pilot light</b>. Đề cho RTO <em>hours</em> và nói <em>lowest cost</em> → backup and restore, đừng chọn pilot light vì "cẩn thận hơn". Đề đòi <em>RPO near zero and RTO near zero</em>, hoặc <em>users in both regions</em> → multi-site active-active, dù đắt.</div>
+      <ul>
+        <li><b>RPO giây nhưng RTO giờ</b> vẫn hợp lý: replicate liên tục (RDS replica, DRS) nhưng không dựng compute sẵn. Đề tách hai số để bẫy; chọn theo từng số một.</li>
+        <li><em>Single Region</em> trong đề nghĩa là chỉ cần HA: Multi-AZ, không cần DR Region.</li>
+        <li>Snapshot EBS, RDS <b>nằm trong Region</b>; DR Region khác thì phải <b>copy snapshot</b> sang (AWS Backup làm tự động).</li>
+        <li>Đề nói <em>on-premises servers</em> cần DR lên AWS với <em>minimal RPO</em> → Elastic Disaster Recovery. Nói <em>migrate</em> (chuyển hẳn) → Application Migration Service (mục 3).</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>DB phục hồi ở Region khác trong 1 phút, <em>least operational overhead</em></td><td>Aurora Global Database (managed failover)</td><td>RDS cross-Region replica (phải promote thủ công, mất vài phút)</td></tr>
+        <tr><td>Ghi dữ liệu ở cả hai Region cùng lúc</td><td>DynamoDB Global Tables</td><td>Aurora Global Database (secondary chỉ đọc, trừ write forwarding)</td></tr>
+        <tr><td>Backup định kỳ nhiều dịch vụ, copy sang Region khác, chống xóa</td><td>AWS Backup + Vault Lock</td><td>Tự viết Lambda chụp snapshot</td></tr>
+        <tr><td>Chuyển traffic sang site DR khi primary hỏng</td><td>Route 53 failover + health check</td><td>Route 53 weighted (chia tải, không tự failover)</td></tr>
+        <tr><td>Server vật lý cần DR lên AWS, RPO giây</td><td>Elastic Disaster Recovery</td><td>Storage Gateway (chỉ dữ liệu, không bật được server)</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>RPO <b>→ mất bao nhiêu dữ liệu</b></span><span>RTO <b>→ ngừng bao lâu</b></span><span>lowest cost, RTO hours <b>→ backup and restore</b></span><span>core services running, scale when needed <b>→ pilot light</b></span><span>scaled-down fully functional copy <b>→ warm standby</b></span><span>near-zero RPO and RTO, both regions serve <b>→ multi-site active-active</b></span><span>cross-Region copy of backups <b>→ AWS Backup</b></span><span>continuous block-level replication, failback <b>→ Elastic Disaster Recovery</b></span><span>global database, sub-second lag <b>→ Aurora Global Database</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">4. Ứng dụng nội bộ chạy trên EC2 và RDS MySQL ở Tokyo. Nghiệp vụ chấp nhận ngừng tối đa 24 giờ và mất tối đa 12 giờ dữ liệu nếu Region sập, yêu cầu <em>most cost-effective</em>. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Backup and restore:</b> AWS Backup chụp snapshot RDS và AMI mỗi 12 giờ, copy sang Osaka; khi cần thì restore và dựng bằng CloudFormation. Pilot light hay bị chọn vì "an toàn hơn" nhưng tốn tiền replica chạy liên tục trong khi nghiệp vụ không đòi hỏi.</p></div>
+      <div class="q"><p class="qt">5. Website thương mại điện tử phải tiếp tục nhận đơn trong vòng vài phút nếu Region chính sập, mất dữ liệu không quá vài giây, chi phí thường trực thấp nhất có thể. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Warm standby:</b> Region DR chạy bản thu nhỏ (ASG min nhỏ, Aurora Global Database hoặc RDS replica), Route 53 failover; khi sự cố thì scale out. Pilot light sai vì RTO là vài chục phút (phải bật và chờ instance lên). Multi-site đạt nhưng đề nói chi phí thấp nhất.</p></div>
+      <div class="q"><p class="qt">6. Công ty có 200 server vật lý trong data center riêng, muốn có khả năng khôi phục lên AWS với RPO vài giây, RTO vài phút, không muốn trả tiền 200 EC2 chạy sẵn. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>AWS Elastic Disaster Recovery:</b> agent replicate liên tục vào staging area rẻ (EC2 nhỏ + EBS), chỉ launch instance thật khi drill hoặc sự cố. Application Migration Service dùng cùng công nghệ nhưng mục đích là chuyển hẳn (cutover) chứ không giữ replicate dài hạn và failback.</p></div>
+      <div class="q"><p class="qt">7. Chọn 2 dịch vụ cho kiến trúc active-active hai Region, người dùng ở Region nào ghi ở Region đó: (A) DynamoDB Global Tables, (B) RDS Multi-AZ, (C) Route 53 latency routing kèm health check, (D) S3 One Zone-IA.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>A và C.</b> RDS Multi-AZ chỉ trong một Region (HA, không phải DR). S3 One Zone-IA nằm ở một AZ, ngược hoàn toàn với yêu cầu. Nếu đề cho Aurora Global Database cũng được nhưng ghi chỉ ở primary (trừ write forwarding), nên khi đề nhấn "ghi ở cả hai" thì DynamoDB Global Tables là lựa chọn chắc nhất.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. MIGRATION ============ -->
+<section id="migration">
+  <span class="eyebrow">Lý thuyết 3 / 6</span>
+  <h2>Migration: 7R, Migration Hub, Application Migration Service</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn: 7 chiến lược (7R)</span>
+      <div class="tbl"><table>
+        <tr><th>R</th><th>Nghĩa</th><th>Ví dụ</th><th>Công sức / lợi ích</th></tr>
+        <tr><td><b>Rehost</b></td><td>Lift and shift: bê nguyên server lên EC2, không đổi code</td><td>VM Windows chạy app .NET cũ → EC2 bằng Application Migration Service</td><td>Nhanh nhất, rẻ công nhất, chưa tận dụng cloud</td></tr>
+        <tr><td><b>Replatform</b></td><td>Lift, tinker and shift: đổi vài thành phần sang managed, code gần như giữ nguyên</td><td>MySQL trên VM → RDS MySQL; app Java → Elastic Beanstalk; container → ECS</td><td>Vừa phải, bớt vận hành</td></tr>
+        <tr><td><b>Repurchase</b></td><td>Bỏ phần mềm cũ, mua SaaS hoặc Marketplace</td><td>CRM tự host → Salesforce; email server → Microsoft 365</td><td>Bỏ hẳn vận hành, mất tùy biến</td></tr>
+        <tr><td><b>Refactor / Re-architect</b></td><td>Viết lại kiến trúc để dùng cloud-native</td><td>Monolith → microservices trên Lambda, DynamoDB, SQS</td><td>Đắt và lâu nhất, lợi ích lớn nhất về scale và chi phí dài hạn</td></tr>
+        <tr><td><b>Retire</b></td><td>Tắt hẳn vì không còn ai dùng</td><td>Hệ thống báo cáo cũ đã có bản thay thế</td><td>Tiết kiệm ngay, thường 10 đến 20% portfolio</td></tr>
+        <tr><td><b>Retain</b></td><td>Giữ nguyên tại chỗ, chưa chuyển</td><td>Mainframe, app cần độ trễ thấp với thiết bị nhà máy, chưa hết khấu hao</td><td>Không làm gì, xem lại sau</td></tr>
+        <tr><td><b>Relocate</b></td><td>Chuyển ở mức hypervisor hoặc giữa account/Region, không cài lại</td><td>vSphere on-premises → VMware Cloud on AWS; chuyển workload sang account khác</td><td>Rất nhanh, không đổi gì về app</td></tr>
+      </table></div>
+      <p style="font-size:.9rem">Đề thường hỏi theo kiểu "công ty muốn chuyển lên AWS <em>as quickly as possible with minimal changes</em>" → rehost; "<em>take advantage of managed database without changing application code</em>" → replatform; "<em>modernize to serverless</em>" → refactor. Chữ "relocate" gần như chỉ đi với VMware Cloud on AWS.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Bộ công cụ migration</span>
+      <div class="tbl"><table>
+        <tr><th>Dịch vụ</th><th>Làm gì</th><th>Nhận diện trong đề</th></tr>
+        <tr><td><b>AWS Migration Hub</b></td><td>Bảng điều khiển trung tâm theo dõi tiến độ migration của mọi công cụ (MGN, DMS, partner tool); có Strategy Recommendations gợi ý R nào cho app nào</td><td><em>single place to track migrations</em>, <em>portfolio</em></td></tr>
+        <tr><td><b>Application Discovery Service</b></td><td>Thu thập thông tin server on-premises để lập kế hoạch: <b>Agentless Collector</b> (OVA cài vào VMware vCenter, lấy cấu hình, utilization) hoặc <b>Discovery Agent</b> (cài vào từng server, lấy thêm process và kết nối mạng, cả Windows lẫn Linux). Dữ liệu đổ về Migration Hub, xuất được ra S3 để query bằng Athena</td><td><em>inventory</em>, <em>dependencies between servers</em>, <em>utilization data before migration</em></td></tr>
+        <tr><td><b>Application Migration Service (MGN)</b></td><td>Công cụ rehost chính thức (thay CloudEndure Migration và Server Migration Service đã ngừng). Cài replication agent trên server nguồn, replicate <b>liên tục ở mức block</b> vào staging area (EC2 nhỏ + EBS) ở Region đích; test launch bất cứ lúc nào; <b>cutover</b> với downtime vài phút; có post-launch action để replatform nhẹ</td><td><em>lift-and-shift</em>, <em>minimal downtime</em>, <em>physical, virtual, or cloud servers</em></td></tr>
+        <tr><td><b>Migration Evaluator</b></td><td>Trước đây là TSO Logic. Thu thập dữ liệu sử dụng on-premises (agentless) và xây <b>business case, so sánh TCO</b> on-premises với AWS</td><td><em>business case</em>, <em>total cost of ownership</em>, <em>projected cost savings</em></td></tr>
+        <tr><td><b>Database Migration Service (DMS)</b> (ôn tuần 6)</td><td>Chuyển database: <b>homogeneous</b> (Oracle → Oracle trên RDS) hay <b>heterogeneous</b> (Oracle → Aurora PostgreSQL, cần <b>Schema Conversion Tool</b> trước); replication instance chạy liên tục, hỗ trợ <b>CDC</b> (change data capture) để downtime gần 0; nguồn có thể vẫn chạy trong khi chuyển</td><td><em>migrate database with minimal downtime</em>, <em>continuous replication</em>, <em>different database engine</em></td></tr>
+        <tr><td><b>Snow Family</b> (ôn tuần 3)</td><td>Chuyển dữ liệu lớn bằng thiết bị vật lý khi mạng không đủ: <b>Snowball Edge</b> Storage Optimized khoảng 80 TB usable, Compute Optimized có GPU; <b>Snowcone</b> 8 TB (nhỏ, có pin); <b>Snowmobile</b> 100 PB trong container xe tải. Quy tắc: nếu truyền qua mạng mất hơn khoảng một tuần thì cân nhắc Snow. Thiết bị chỉ đổ vào S3, muốn vào Glacier thì dùng S3 lifecycle. AWS đã ngừng Snowmobile và một số model cũ (cần kiểm tra lại), đề SAA-C03 vẫn có thể hỏi</td><td><em>limited bandwidth</em>, <em>petabytes</em>, <em>no internet connectivity</em>, <em>edge computing</em></td></tr>
+        <tr><td><b>DataSync</b> (ôn tuần 3)</td><td>Chuyển file online có agent: NFS, SMB, HDFS, object storage ↔ S3, EFS, FSx; chạy theo lịch, mã hóa, kiểm tra toàn vẹn, giữ metadata; 1 agent khoảng 10 Gbps (cần kiểm tra lại); dùng cả cho sync định kỳ giữa EFS hai Region</td><td><em>transfer file data</em>, <em>NFS / SMB</em>, <em>scheduled</em>, <em>preserve metadata</em></td></tr>
+        <tr><td><b>Transfer Family, Storage Gateway</b></td><td>Transfer Family: SFTP/FTPS/FTP managed đổ vào S3 hay EFS. Storage Gateway: hybrid lâu dài (File, Volume, Tape Gateway), không phải công cụ migration một lần</td><td><em>SFTP</em>; <em>hybrid</em>, <em>on-premises keeps using local cache</em></td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">MGN với Elastic Disaster Recovery</span>
+      <div class="tbl"><table>
+        <tr><th></th><th>Application Migration Service (MGN)</th><th>Elastic Disaster Recovery (DRS)</th></tr>
+        <tr><td>Công nghệ</td><td colspan="2">Giống nhau: agent, replicate block liên tục vào staging area, launch template để bật instance</td></tr>
+        <tr><td>Mục đích</td><td>Chuyển hẳn: test, cutover, rồi tắt replicate</td><td>Giữ replicate lâu dài, drill định kỳ, failover khi sự cố, <b>failback</b> về nguồn</td></tr>
+        <tr><td>Thời gian replicate</td><td>Ngắn, tới ngày cutover</td><td>Liên tục, nhiều tháng năm</td></tr>
+        <tr><td>Từ khóa</td><td><em>migrate</em>, <em>cutover</em>, <em>lift-and-shift</em></td><td><em>disaster recovery</em>, <em>RPO seconds</em>, <em>failback</em>, <em>point-in-time recovery</em></td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Chọn công cụ theo loại workload</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>Chuyển 500 VM lên EC2 với downtime tối thiểu, không đổi app</td><td>Application Migration Service</td><td>DataSync (chỉ file), AMI import thủ công (chậm, downtime dài)</td></tr>
+        <tr><td>Chuyển Oracle on-premises sang Aurora PostgreSQL</td><td>SCT để đổi schema, DMS với CDC để chuyển dữ liệu</td><td>DMS một mình (không đổi được schema giữa engine khác nhau)</td></tr>
+        <tr><td>Chuyển 500 TB file từ NAS sang S3, mạng 1 Gbps, deadline 2 tuần</td><td>Snowball Edge (nhiều thiết bị)</td><td>DataSync (500 TB qua 1 Gbps mất hơn 45 ngày)</td></tr>
+        <tr><td>Đồng bộ 20 TB file từ NFS lên EFS mỗi đêm, giữ permission</td><td>DataSync</td><td>Snowball (một lần, không định kỳ), S3 CLI (không giữ metadata POSIX)</td></tr>
+        <tr><td>Biết server nào nói chuyện với server nào trước khi chuyển</td><td>Application Discovery Service với Discovery Agent</td><td>Agentless Collector (không thấy kết nối mạng ở mức process), Migration Evaluator (chỉ chi phí)</td></tr>
+        <tr><td>Chuyển VMware mà không muốn động vào từng VM</td><td>Relocate sang VMware Cloud on AWS</td><td>Rehost bằng MGN (vẫn phải cài agent từng VM)</td></tr>
+        <tr><td>Lãnh đạo cần báo cáo tiết kiệm bao nhiêu nếu lên AWS</td><td>Migration Evaluator</td><td>Cost Explorer (chỉ chi phí AWS đã phát sinh), Pricing Calculator (chỉ ước giá AWS, không so TCO)</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>lift-and-shift, minimal changes <b>→ rehost, MGN</b></span><span>managed database, no code change <b>→ replatform, RDS</b></span><span>SaaS replaces on-premises software <b>→ repurchase</b></span><span>VMware Cloud on AWS <b>→ relocate</b></span><span>track all migrations in one place <b>→ Migration Hub</b></span><span>server dependencies, utilization <b>→ Application Discovery Service</b></span><span>business case, TCO <b>→ Migration Evaluator</b></span><span>heterogeneous database <b>→ SCT + DMS</b></span><span>petabytes, limited bandwidth <b>→ Snowball</b></span><span>NFS / SMB to S3 / EFS, scheduled <b>→ DataSync</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">8. Công ty muốn chuyển 300 server Windows và Linux từ data center lên EC2 trong 3 tháng, ứng dụng không được sửa, downtime mỗi app không quá 15 phút. Dùng gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>AWS Application Migration Service:</b> cài agent, replicate liên tục, test launch, cutover trong cửa sổ ngắn. DataSync hay bị chọn nhầm nhưng nó chỉ chuyển file chứ không chuyển được cả server đang chạy.</p></div>
+      <div class="q"><p class="qt">9. Trước khi migration, CIO muốn có danh sách mọi server on-premises, mức CPU và RAM thực dùng, cùng sơ đồ phụ thuộc giữa các server, với <em>minimal effort</em>. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Application Discovery Service</b> (Discovery Agent để có kết nối mạng, hoặc Agentless Collector nếu toàn VMware và chỉ cần cấu hình), xem trong Migration Hub. Migration Evaluator cho business case chứ không vẽ phụ thuộc. Config và Inspector chỉ làm việc với resource đã ở AWS.</p></div>
+      <div class="q"><p class="qt">10. Đề: Oracle Database 20 TB on-premises cần chuyển sang Amazon Aurora PostgreSQL, hệ thống nguồn phải tiếp tục nhận ghi cho tới lúc chuyển đổi. Chọn 2 dịch vụ.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>AWS Schema Conversion Tool và AWS DMS (full load + CDC).</b> SCT chuyển schema và code PL/SQL, DMS chuyển dữ liệu rồi bắt thay đổi liên tục. Snowball không cần vì 20 TB qua Direct Connect hoặc VPN vẫn ổn và DMS cần kết nối mạng để CDC; nếu đề bắt chuyển dữ liệu khổng lồ offline thì có kết hợp DMS với Snowball Edge nhưng vẫn cần SCT.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. ANALYTICS ============ -->
+<section id="analytics">
+  <span class="eyebrow">Lý thuyết 4 / 6</span>
+  <h2>Analytics nhận diện: Athena, Glue, QuickSight, EMR, OpenSearch, Lake Formation</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <p>Đề SAA không bắt viết query hay chỉnh cluster, chỉ cần nhận ra <b>dịch vụ nào cho bài toán nào</b> và vài mẹo giảm chi phí. Mạch chung của một hệ thống phân tích: <b>thu thập</b> (Kinesis, DMS, DataSync) → <b>lưu</b> (S3 data lake, Redshift) → <b>biến đổi và catalog</b> (Glue) → <b>query</b> (Athena, Redshift, EMR, OpenSearch) → <b>trực quan hóa</b> (QuickSight). Quyền trên data lake quản bằng Lake Formation.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từng dịch vụ</span>
+      <div class="tbl"><table>
+        <tr><th>Dịch vụ</th><th>Là gì</th><th>Điểm đề hay hỏi</th></tr>
+        <tr><td><b>Athena</b></td><td>Query <b>SQL trực tiếp trên S3</b>, serverless, không cần load dữ liệu, trả tiền theo <b>lượng dữ liệu quét</b> (khoảng 5 USD/TB, cần kiểm tra lại)</td><td>Giảm chi phí và tăng tốc: chuyển sang <b>Parquet hoặc ORC</b> (columnar, chỉ đọc cột cần), <b>nén</b>, và <b>partition</b> theo ngày hoặc Region để quét ít hơn. <b>Federated Query</b> dùng Lambda connector để query cả RDS, DynamoDB, CloudWatch Logs trong một câu SQL. Hợp với log phân tích thỉnh thoảng (VPC Flow Logs, CloudTrail, ALB log trên S3)</td></tr>
+        <tr><td><b>Glue</b></td><td>Dịch vụ <b>ETL serverless</b> (chạy Spark hoặc Python shell), có <b>Data Catalog</b> là metastore chung (bảng, schema, vị trí trên S3) cho Athena, EMR, Redshift Spectrum; <b>Crawler</b> quét S3 tự suy ra schema và điền catalog</td><td>Đề nói <em>transform CSV to Parquet</em>, <em>catalog data in S3</em>, <em>discover schema automatically</em> → Glue. Glue DataBrew là bản kéo thả cho người không viết code. Glue Studio để vẽ job. Có Glue Data Quality và Glue Streaming ETL (đọc Kinesis, Kafka)</td></tr>
+        <tr><td><b>QuickSight</b></td><td>Dịch vụ <b>BI</b> serverless: dashboard, biểu đồ, embedded vào ứng dụng; tính tiền theo người dùng (author, reader)</td><td><b>SPICE</b> là engine in-memory tăng tốc, nhập dữ liệu vào đó thay vì query trực tiếp. Nguồn: Athena, Redshift, RDS, S3, file. Có Q (hỏi bằng ngôn ngữ tự nhiên) và ML insight. Đề nói <em>visualize</em>, <em>dashboards for business users</em> → QuickSight</td></tr>
+        <tr><td><b>EMR</b></td><td>Cluster <b>Hadoop, Spark, Hive, Presto, HBase</b> managed; có EMR Serverless và EMR on EKS</td><td>Cluster gồm <b>primary (master)</b>, <b>core</b> (có HDFS, chạy task) và <b>task</b> (chỉ tính toán, không giữ dữ liệu). Giảm chi phí: <b>task node dùng Spot</b> vì mất node không mất dữ liệu; core nên On-Demand hoặc Reserved; dữ liệu để trên S3 qua EMRFS để cluster tắt được. Đề nói <em>Spark job</em>, <em>Hadoop</em>, <em>big data processing framework</em> → EMR</td></tr>
+        <tr><td><b>OpenSearch Service</b></td><td>Managed OpenSearch (fork từ Elasticsearch): <b>full-text search</b>, <b>log analytics</b>, dashboard bằng OpenSearch Dashboards (từng là Kibana)</td><td>Hay đứng cuối pipeline log: CloudWatch Logs hoặc Kinesis Data Firehose → OpenSearch. Có Multi-AZ, dedicated master node, UltraWarm và cold storage cho log cũ, OpenSearch Serverless. Dùng khi cần search tự do, autocomplete, phân tích log nhiều chiều với dashboard</td></tr>
+        <tr><td><b>Lake Formation</b></td><td>Xây data lake trên S3 nhanh: blueprint nhập dữ liệu, và quan trọng nhất là <b>quyền truy cập chi tiết tới cột, hàng, cell</b> trên bảng trong Glue Data Catalog, áp dụng chung cho Athena, Redshift Spectrum, EMR, QuickSight</td><td>Đề nói <em>centralized fine-grained access control for data lake</em>, <em>column-level permissions</em>, <em>share data across accounts</em> → Lake Formation, không phải viết hàng chục bucket policy</td></tr>
+        <tr><td><b>Kinesis</b> (ôn tuần 7)</td><td><b>Data Streams</b>: stream real-time, shard, giữ 24 giờ tới 365 ngày, nhiều consumer đọc lại được. <b>Data Firehose</b>: near real-time, không code, đổ thẳng vào S3, Redshift, OpenSearch, Splunk, có buffer và transform bằng Lambda. <b>Managed Service for Apache Flink</b>: xử lý stream bằng SQL hoặc Flink. <b>Video Streams</b></td><td><em>real-time, replay, multiple consumers</em> → Data Streams; <em>load streaming data into S3 with no code, near real-time</em> → Firehose; <em>windowed aggregation on stream</em> → Flink</td></tr>
+        <tr><td><b>Redshift</b> (ôn tuần 6)</td><td><b>Data warehouse</b> petabyte, columnar, OLAP, cluster leader + compute node; có Redshift Serverless</td><td><b>Redshift Spectrum</b> query thẳng S3 từ Redshift không cần load. Snapshot tự động, copy cross-Region cho DR. Đề nói <em>complex analytical queries, joins across TB</em>, <em>BI on structured data</em> → Redshift; <em>ad hoc query on S3 without infrastructure</em> → Athena</td></tr>
+        <tr><td><b>MSK</b> (nhận diện)</td><td>Managed Streaming for <b>Apache Kafka</b>, có MSK Serverless</td><td>Chỉ chọn khi đề nói rõ <em>Kafka</em>, <em>existing Kafka producers and consumers</em>. Kinesis Data Streams là lựa chọn mặc định của AWS cho stream</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Pipeline mẫu: S3 → Glue → Athena → QuickSight</span>
+      <div class="flow">
+        <div class="n"><span>Log hoặc file CSV, JSON đổ vào <b>S3</b> (ALB log, CloudTrail, export từ app)</span><span class="tag next">raw</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span><b>Glue Crawler</b> quét S3, suy schema, tạo bảng trong <b>Glue Data Catalog</b></span><span class="tag next">catalog</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span><b>Glue ETL job</b> chuyển sang <b>Parquet</b>, nén, ghi theo partition <code>year=/month=/day=</code></span><span class="tag allow">rẻ hơn 10 lần khi query</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span><b>Athena</b> query SQL trên bảng catalog, trả tiền theo dữ liệu quét</span><span class="tag next">query</span></div>
+        <div class="arrow"><span>↓</span></div>
+        <div class="n"><span><b>QuickSight</b> nhập vào SPICE, dựng dashboard cho business user</span><span class="tag allow">BI</span></div>
+      </div>
+      <p style="font-size:.9rem;color:var(--muted)">Toàn bộ pipeline serverless, không có server nào phải patch. Đây là đáp án mặc định khi đề nói <em>serverless analytics</em>, <em>least operational overhead</em>, <em>occasional queries on data in S3</em>.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Đề nói gì → chọn gì</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>Query SQL vài lần mỗi ngày trên log trong S3, không muốn quản lý server</td><td>Athena</td><td>Redshift (phải có cluster và load dữ liệu), EMR</td></tr>
+        <tr><td>Giảm chi phí Athena đang quét quá nhiều dữ liệu</td><td>Chuyển sang Parquet, nén, partition</td><td>Tăng cỡ cluster (Athena không có cluster)</td></tr>
+        <tr><td>Chuyển CSV thành Parquet hàng đêm, serverless</td><td>Glue ETL job</td><td>EMR (phải quản cluster), Lambda (giới hạn 15 phút, bộ nhớ)</td></tr>
+        <tr><td>Metadata, schema chung cho nhiều công cụ query</td><td>Glue Data Catalog</td><td>DynamoDB tự xây</td></tr>
+        <tr><td>Dashboard cho phòng kinh doanh, hỏi bằng ngôn ngữ tự nhiên</td><td>QuickSight (Q)</td><td>CloudWatch dashboard (cho metric vận hành)</td></tr>
+        <tr><td>Chạy Spark job lớn với chi phí thấp, chấp nhận chậm khi bị thu hồi</td><td>EMR với task node Spot</td><td>Core node Spot (mất HDFS), Glue (hợp ETL hơn là job tùy biến nặng)</td></tr>
+        <tr><td>Tìm kiếm toàn văn và dashboard trên log ứng dụng</td><td>OpenSearch Service</td><td>CloudWatch Logs Insights (đủ cho query ad hoc trên CloudWatch Logs, nhưng không phải search engine)</td></tr>
+        <tr><td>Query nhanh log đang ở CloudWatch Logs, không dựng thêm gì</td><td>CloudWatch Logs Insights</td><td>OpenSearch (phải export, tốn thêm cluster)</td></tr>
+        <tr><td>Chỉ cho team tài chính thấy một số cột trong data lake</td><td>Lake Formation column-level permission</td><td>IAM policy trên bucket (không hiểu cột)</td></tr>
+        <tr><td>Data warehouse cho báo cáo phức tạp trên TB dữ liệu có cấu trúc</td><td>Redshift</td><td>RDS (OLTP), Athena (không tối ưu join lớn, lặp lại)</td></tr>
+        <tr><td>Stream clickstream vào S3 gần thời gian thực, không viết consumer</td><td>Kinesis Data Firehose</td><td>Kinesis Data Streams (phải tự viết consumer)</td></tr>
+        <tr><td>Đã có hệ thống Kafka, muốn bỏ vận hành</td><td>MSK</td><td>Kinesis (phải viết lại producer, consumer)</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>SQL on S3, serverless, pay per query <b>→ Athena</b></span><span>columnar format, partition to reduce scanned data <b>→ Parquet + partition</b></span><span>query across S3 and RDS in one SQL <b>→ Athena Federated Query</b></span><span>ETL, crawler, data catalog <b>→ Glue</b></span><span>BI dashboard, SPICE <b>→ QuickSight</b></span><span>Hadoop, Spark, task nodes <b>→ EMR (+ Spot)</b></span><span>full-text search, log analytics, Kibana <b>→ OpenSearch</b></span><span>fine-grained data lake permissions <b>→ Lake Formation</b></span><span>Kafka <b>→ MSK</b></span><span>data warehouse <b>→ Redshift</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">11. Công ty lưu 50 TB log JSON trên S3 và dùng Athena query vài lần mỗi ngày theo ngày cụ thể. Hóa đơn Athena tăng mạnh. Chọn 2 cách giảm chi phí <em>without changing the query tool</em>.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Chuyển JSON sang Parquet (nén) và partition theo ngày</b> (dùng Glue job), rồi query có <code>WHERE</code> theo partition. Chuyển sang Redshift hay bị chọn nhưng đề nói không đổi công cụ; mua Reserved cho Athena thì không tồn tại.</p></div>
+      <div class="q"><p class="qt">12. Team dữ liệu cần chạy Spark job 6 giờ mỗi đêm trên dữ liệu ở S3, muốn <em>most cost-effective</em> mà không mất dữ liệu trung gian khi instance bị thu hồi. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>EMR với core node On-Demand và task node Spot</b>, dữ liệu đọc ghi trên S3 (EMRFS), cluster tắt sau job (transient cluster). Đặt toàn bộ cluster lên Spot là bẫy: core node giữ HDFS, mất là hỏng job.</p></div>
+      <div class="q"><p class="qt">13. Một data lake trên S3 phục vụ 5 phòng ban qua Athena và QuickSight. Yêu cầu: mỗi phòng chỉ thấy một số cột, quản lý tập trung, <em>least operational overhead</em>. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Lake Formation</b> đăng ký bucket, cấp quyền theo cột trên bảng trong Glue Data Catalog. Tách bucket và bucket policy cho từng phòng vừa nhân bản dữ liệu vừa không chặn được theo cột.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. ML SERVICES ============ -->
+<section id="ml">
+  <span class="eyebrow">Lý thuyết 5 / 6</span>
+  <h2>ML services nhận diện</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <p>Đề SAA chỉ có vài câu ML và đều ở mức "từ khóa → tên dịch vụ". Các dịch vụ AI managed (Rekognition, Comprehend, Transcribe, Polly, Translate, Textract, Lex, Kendra, Personalize, Forecast) gọi qua API, <b>không cần biết ML</b>, chọn chúng khi đề nói <em>no machine learning expertise</em> hay <em>least operational overhead</em>. <b>SageMaker</b> là khi đề muốn <b>tự xây, train, deploy model riêng</b>. <b>Bedrock</b> là khi đề nói <em>generative AI</em>, <em>foundation model</em>.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Bảng từ khóa → dịch vụ</span>
+      <div class="tbl"><table>
+        <tr><th>Dịch vụ</th><th>Làm gì</th><th>Đề bài có chữ</th></tr>
+        <tr><td><b>Rekognition</b></td><td>Phân tích <b>ảnh và video</b>: nhận diện vật thể, khuôn mặt, so khớp mặt, text trong ảnh, người nổi tiếng, <b>content moderation</b> (lọc nội dung không phù hợp), Custom Labels để train nhãn riêng</td><td><em>detect objects in images</em>, <em>facial analysis</em>, <em>moderate user-uploaded images</em>, <em>video analysis</em></td></tr>
+        <tr><td><b>Comprehend</b></td><td><b>NLP</b> trên văn bản: sentiment, entity, key phrase, ngôn ngữ, topic, <b>phát hiện và che PII</b>; Comprehend Medical cho văn bản y tế</td><td><em>sentiment of customer reviews</em>, <em>extract entities from text</em>, <em>detect PII in documents</em></td></tr>
+        <tr><td><b>Transcribe</b></td><td><b>Speech to text</b>: file hoặc stream, nhận diện người nói, custom vocabulary, <b>PII redaction</b> trong bản ghi; Transcribe Medical</td><td><em>convert call recordings to text</em>, <em>subtitles</em>, <em>redact credit card numbers from transcripts</em></td></tr>
+        <tr><td><b>Polly</b></td><td><b>Text to speech</b>, nhiều giọng, neural voice, SSML để chỉnh ngắt, phát âm, lexicon cho từ chuyên ngành</td><td><em>read text aloud</em>, <em>generate audio from articles</em>, <em>IVR voice</em></td></tr>
+        <tr><td><b>Translate</b></td><td>Dịch máy giữa các ngôn ngữ, batch và real-time, custom terminology</td><td><em>translate content into multiple languages</em>, <em>localization</em></td></tr>
+        <tr><td><b>Textract</b></td><td><b>OCR thông minh</b>: ngoài chữ còn lấy được <b>form (key-value)</b> và <b>bảng</b> từ scan, PDF, ảnh; có Queries, phân tích giấy tờ tùy thân, hóa đơn</td><td><em>extract text and data from scanned forms</em>, <em>invoices</em>, <em>tables in PDF</em>, <em>ID documents</em></td></tr>
+        <tr><td><b>Lex</b></td><td>Xây <b>chatbot và voice bot</b>: nhận dạng giọng nói (ASR) và hiểu ý (NLU), cùng công nghệ với Alexa; tích hợp Connect cho call center, Lambda để xử lý logic</td><td><em>conversational interface</em>, <em>chatbot</em>, <em>voice assistant</em>, <em>call center self-service</em></td></tr>
+        <tr><td><b>Kendra</b></td><td><b>Enterprise search</b> bằng ML: hỏi bằng ngôn ngữ tự nhiên trên tài liệu nội bộ (S3, SharePoint, Confluence, Salesforce qua connector), trả đúng đoạn câu trả lời</td><td><em>search across internal documents</em>, <em>natural language questions</em>, <em>knowledge base search</em></td></tr>
+        <tr><td><b>Personalize</b></td><td><b>Gợi ý cá nhân hóa</b> theo hành vi (cùng công nghệ Amazon.com), real-time, không cần ML</td><td><em>product recommendations</em>, <em>personalized ranking</em>, <em>"customers who bought"</em></td></tr>
+        <tr><td><b>Forecast</b></td><td><b>Dự báo chuỗi thời gian</b>: nhu cầu, tồn kho, lưu lượng. AWS đã ngừng nhận khách hàng mới cho Forecast (cần kiểm tra lại), đề SAA-C03 vẫn có thể hỏi</td><td><em>demand forecasting</em>, <em>time series</em>, <em>inventory planning</em></td></tr>
+        <tr><td><b>SageMaker</b></td><td>Nền tảng ML đầy đủ: notebook, chuẩn bị dữ liệu, <b>train</b> (có built-in algorithm, managed Spot training), tune, <b>deploy endpoint</b> real-time hoặc batch, Ground Truth để gán nhãn, Canvas kéo thả; Studio là IDE</td><td><em>build and train custom model</em>, <em>data scientists</em>, <em>deploy model as endpoint</em>, <em>label training data</em></td></tr>
+        <tr><td><b>Bedrock</b> (nhận diện)</td><td>Gọi <b>foundation model</b> (Claude, Llama, Titan và nhiều model khác) qua API, không quản hạ tầng; Knowledge Bases cho RAG, Agents, Guardrails</td><td><em>generative AI</em>, <em>foundation models</em>, <em>build chatbot on company documents with LLM</em></td></tr>
+        <tr><td><b>Augmented AI (A2I)</b> (nhận diện)</td><td>Đưa kết quả ML có độ tin cậy thấp cho <b>người duyệt</b></td><td><em>human review of low-confidence predictions</em></td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Cặp</th><th>Khác nhau ở chỗ</th></tr>
+        <tr><td>Textract với Rekognition (text in image)</td><td>Rekognition đọc chữ trên biển hiệu, áo, ảnh đời thường. Textract đọc <b>tài liệu</b>: giữ cấu trúc form, bảng. Đề nói <em>forms</em>, <em>invoices</em>, <em>scanned documents</em> → Textract.</td></tr>
+        <tr><td>Kendra với OpenSearch</td><td>Kendra: search ngữ nghĩa, hỏi bằng câu, có connector sẵn, đắt hơn. OpenSearch: search từ khóa và log analytics, tự index. Đề nói <em>natural language questions over documents</em> → Kendra.</td></tr>
+        <tr><td>Lex với Connect với Polly</td><td>Lex là bộ não bot. Connect là call center cloud. Polly chỉ đọc chữ thành giọng. Call center tự phục vụ bằng giọng nói thường dùng cả ba.</td></tr>
+        <tr><td>Comprehend với Transcribe (PII)</td><td>Cả hai che được PII: Transcribe che trong bản ghi từ audio, Comprehend che trong văn bản có sẵn. Audio → Transcribe trước rồi Comprehend để phân tích sentiment.</td></tr>
+        <tr><td>Managed AI với SageMaker</td><td>Nếu đề không nói "custom model", "data scientist", "train", chọn dịch vụ managed. SageMaker tốn công và đắt hơn, là đáp án sai khi đề hỏi <em>least operational overhead</em>.</td></tr>
+        <tr><td>Personalize với Forecast</td><td>Personalize gợi ý cho <b>từng người</b>. Forecast dự báo <b>con số theo thời gian</b>. "Sản phẩm nên hiện cho khách A" là Personalize; "tháng sau bán được bao nhiêu" là Forecast.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>image, video, face, moderation <b>→ Rekognition</b></span><span>sentiment, entities, PII in text <b>→ Comprehend</b></span><span>speech to text <b>→ Transcribe</b></span><span>text to speech <b>→ Polly</b></span><span>translate <b>→ Translate</b></span><span>OCR forms, tables, invoices <b>→ Textract</b></span><span>chatbot, voice bot <b>→ Lex</b></span><span>enterprise search, natural language <b>→ Kendra</b></span><span>recommendations <b>→ Personalize</b></span><span>demand forecast <b>→ Forecast</b></span><span>train and deploy custom model <b>→ SageMaker</b></span><span>generative AI, foundation model <b>→ Bedrock</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">14. Một ứng dụng cho khách tải ảnh lên, cần tự động chặn ảnh có nội dung không phù hợp trước khi hiển thị, <em>no ML expertise</em>. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Rekognition content moderation</b> (DetectModerationLabels) gọi từ Lambda khi object vào S3. SageMaker hay bị chọn khi thấy chữ "ML" nhưng phải tự train và deploy, trái với yêu cầu.</p></div>
+      <div class="q"><p class="qt">15. Call center ghi âm cuộc gọi, muốn chuyển thành văn bản, xóa số thẻ tín dụng khỏi bản ghi, rồi phân tích khách hàng đang hài lòng hay bực. Chọn 2 dịch vụ.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Transcribe (có PII redaction) và Comprehend (sentiment).</b> Polly là chiều ngược lại (chữ thành giọng). Lex là xây bot, không phân tích bản ghi sẵn có.</p></div>
+      <div class="q"><p class="qt">16. Phòng kế toán nhận hàng nghìn hóa đơn scan PDF mỗi tháng, cần lấy số hóa đơn, ngày, bảng chi tiết dòng hàng vào database. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Textract</b> (AnalyzeExpense hoặc AnalyzeDocument với FORMS và TABLES). Rekognition chỉ trả về chuỗi chữ rời, không giữ cấu trúc key-value và bảng; Comprehend cần văn bản sẵn, không đọc được ảnh.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. KIẾN TRÚC 3-TIER ============ -->
+<section id="kientruc">
+  <span class="eyebrow">Lý thuyết 6 / 6</span>
+  <h2>Kiến trúc 3-tier chuẩn và cách đọc đề</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <p>Hơn nửa số câu SAA mô tả một biến thể của cùng một kiến trúc: <b>web tier</b> (ALB), <b>app tier</b> (EC2 trong Auto Scaling group ở private subnet), <b>data tier</b> (RDS Multi-AZ, ElastiCache, S3), bọc ngoài bằng Route 53, CloudFront, WAF, và nối với nhau bằng SQS. Thuộc sơ đồ "chuẩn" này thì mỗi câu đề chỉ còn là: <b>thành phần nào đang thiếu, thiếu "2" ở đâu, hoặc chỗ nào đang trả tiền thừa</b>.</p>
+    </div>
+
+    <div class="block diag"><span class="eyebrow">Hình dung: kiến trúc 3-tier chuẩn ở 2 AZ</span>
+      <svg viewBox="0 0 700 430" role="img" aria-label="Luồng Route 53, CloudFront, WAF vào ALB ở public subnet hai AZ, xuống Auto Scaling group EC2 ở private subnet, xuống RDS Multi-AZ, cùng ElastiCache, S3, SQS, CloudWatch">
+        <rect x="20" y="14" width="90" height="34" rx="6" class="sv-edge" stroke-width="1.5"/>
+        <text x="65" y="36" text-anchor="middle" class="sv-t" font-weight="600">Route 53</text>
+        <rect x="130" y="14" width="100" height="34" rx="6" class="sv-edge" stroke-width="1.5"/>
+        <text x="180" y="36" text-anchor="middle" class="sv-t" font-weight="600">CloudFront</text>
+        <rect x="250" y="14" width="70" height="34" rx="6" class="sv-edge" stroke-width="1.5"/>
+        <text x="285" y="36" text-anchor="middle" class="sv-t" font-weight="600">WAF</text>
+        <line x1="110" y1="31" x2="130" y2="31" class="sv-line" stroke-width="2"/>
+        <line x1="230" y1="31" x2="250" y2="31" class="sv-line" stroke-width="2"/>
+        <line x1="320" y1="31" x2="350" y2="31" class="sv-line" stroke-width="2"/>
+        <line x1="350" y1="31" x2="350" y2="76" class="sv-line" stroke-width="2" stroke-dasharray="4 4"/>
+        <text x="420" y="36" class="sv-m">Edge: DNS, cache static, chặn SQLi / bot</text>
+        <rect x="20" y="76" width="500" height="340" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="34" y="98" class="sv-t" font-weight="600">VPC ap-northeast-1 (2 AZ)</text>
+        <rect x="40" y="110" width="220" height="296" rx="8" class="sv-az" stroke-width="1.5"/>
+        <rect x="280" y="110" width="220" height="296" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="150" y="130" text-anchor="middle" class="sv-t" font-weight="600">AZ 1a</text>
+        <text x="390" y="130" text-anchor="middle" class="sv-t" font-weight="600">AZ 1c</text>
+        <rect x="52" y="142" width="196" height="64" rx="6" class="sv-region" stroke-width="1"/>
+        <rect x="292" y="142" width="196" height="64" rx="6" class="sv-region" stroke-width="1"/>
+        <text x="60" y="158" class="sv-m">Public subnet</text>
+        <text x="300" y="158" class="sv-m">Public subnet</text>
+        <text x="150" y="178" text-anchor="middle" class="sv-t">ALB node</text>
+        <text x="390" y="178" text-anchor="middle" class="sv-t">ALB node</text>
+        <text x="150" y="196" text-anchor="middle" class="sv-m">NAT Gateway</text>
+        <text x="390" y="196" text-anchor="middle" class="sv-m">NAT Gateway</text>
+        <line x1="248" y1="174" x2="292" y2="174" class="sv-line" stroke-width="2" stroke-dasharray="3 3"/>
+        <text x="270" y="168" text-anchor="middle" class="sv-m">1 ALB</text>
+        <rect x="52" y="222" width="196" height="74" rx="6" class="sv-region" stroke-width="1"/>
+        <rect x="292" y="222" width="196" height="74" rx="6" class="sv-region" stroke-width="1"/>
+        <text x="60" y="238" class="sv-m">Private subnet (app)</text>
+        <text x="300" y="238" class="sv-m">Private subnet (app)</text>
+        <text x="150" y="260" text-anchor="middle" class="sv-t">EC2 × n (ASG)</text>
+        <text x="390" y="260" text-anchor="middle" class="sv-t">EC2 × n (ASG)</text>
+        <text x="150" y="280" text-anchor="middle" class="sv-m">stateless, role IAM</text>
+        <text x="390" y="280" text-anchor="middle" class="sv-m">stateless, role IAM</text>
+        <line x1="150" y1="206" x2="150" y2="222" class="sv-line" stroke-width="2"/>
+        <line x1="390" y1="206" x2="390" y2="222" class="sv-line" stroke-width="2"/>
+        <rect x="52" y="312" width="196" height="84" rx="6" class="sv-region" stroke-width="1"/>
+        <rect x="292" y="312" width="196" height="84" rx="6" class="sv-region" stroke-width="1"/>
+        <text x="60" y="328" class="sv-m">Private subnet (data)</text>
+        <text x="300" y="328" class="sv-m">Private subnet (data)</text>
+        <text x="150" y="350" text-anchor="middle" class="sv-t">RDS primary</text>
+        <text x="390" y="350" text-anchor="middle" class="sv-t">RDS standby</text>
+        <text x="150" y="370" text-anchor="middle" class="sv-m">ElastiCache node</text>
+        <text x="390" y="370" text-anchor="middle" class="sv-m">ElastiCache replica</text>
+        <text x="270" y="386" text-anchor="middle" class="sv-m">sync replication</text>
+        <line x1="248" y1="346" x2="292" y2="346" class="sv-line" stroke-width="2"/>
+        <line x1="150" y1="296" x2="150" y2="312" class="sv-line" stroke-width="2"/>
+        <line x1="390" y1="296" x2="390" y2="312" class="sv-line" stroke-width="2"/>
+        <rect x="540" y="110" width="140" height="56" rx="6" class="sv-region" stroke-width="1.5"/>
+        <text x="610" y="132" text-anchor="middle" class="sv-t" font-weight="600">S3</text>
+        <text x="610" y="150" text-anchor="middle" class="sv-m">static, upload, log</text>
+        <rect x="540" y="182" width="140" height="56" rx="6" class="sv-region" stroke-width="1.5"/>
+        <text x="610" y="204" text-anchor="middle" class="sv-t" font-weight="600">SQS</text>
+        <text x="610" y="222" text-anchor="middle" class="sv-m">decouple worker</text>
+        <rect x="540" y="254" width="140" height="56" rx="6" class="sv-region" stroke-width="1.5"/>
+        <text x="610" y="276" text-anchor="middle" class="sv-t" font-weight="600">CloudWatch</text>
+        <text x="610" y="294" text-anchor="middle" class="sv-m">alarm → ASG, SNS</text>
+        <rect x="540" y="326" width="140" height="56" rx="6" class="sv-region" stroke-width="1.5"/>
+        <text x="610" y="348" text-anchor="middle" class="sv-t" font-weight="600">Gateway endpoint</text>
+        <text x="610" y="366" text-anchor="middle" class="sv-m">S3, DynamoDB bỏ qua NAT</text>
+        <line x1="488" y1="260" x2="540" y2="210" class="sv-line" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="488" y1="260" x2="540" y2="138" class="sv-line" stroke-width="1.5" stroke-dasharray="3 3"/>
+      </svg>
+      <p style="font-size:.9rem;color:var(--muted)">Mọi tầng đều có "2": 2 AZ, 2 subnet mỗi loại, ALB tự có node ở 2 AZ, ASG rải instance 2 AZ, RDS có standby, ElastiCache có replica, 2 NAT Gateway. Chỉ CloudFront, Route 53, S3, SQS, CloudWatch là dịch vụ Regional hoặc Global tự có HA.</p>
+    </div>
+
+    <div class="block"><span class="eyebrow">Single point of failure thường gặp và cách sửa</span>
+      <div class="tbl"><table>
+        <tr><th>Dấu hiệu trong đề hoặc sơ đồ</th><th>Vì sao hỏng</th><th>Sửa</th></tr>
+        <tr><td><b>1 NAT Gateway</b> cho cả VPC (hoặc NAT instance)</td><td>AZ chứa NAT sập thì instance ở AZ kia mất Internet dù vẫn chạy; NAT instance là một EC2 không tự phục hồi</td><td>Mỗi AZ một NAT Gateway, route table của private subnet trỏ về NAT cùng AZ; S3 và DynamoDB đi qua Gateway endpoint</td></tr>
+        <tr><td><b>1 AZ</b>: mọi subnet nằm trong cùng AZ</td><td>Mất AZ là mất tất cả, ALB và ASG không giúp được</td><td>Thêm subnet ở AZ thứ hai, ASG và ALB chọn cả hai, RDS Multi-AZ</td></tr>
+        <tr><td><b>1 instance</b> (không có ASG hoặc ASG min = 1)</td><td>Instance hỏng hoặc đang deploy là downtime; min 1 nghĩa là "1 = 0" khi lỗi</td><td>ASG min 2 trải 2 AZ sau ALB, health check của ALB và ASG</td></tr>
+        <tr><td><b>RDS Single-AZ</b></td><td>Bảo trì, hỏng storage, mất AZ đều downtime; restore từ snapshot mất hàng chục phút và mất dữ liệu kể từ snapshot</td><td>Bật Multi-AZ (standby đồng bộ, failover tự động 1 đến 2 phút, cùng endpoint); read replica <b>không</b> thay được Multi-AZ</td></tr>
+        <tr><td><b>Hard-coded IP</b> của instance hoặc database trong code</td><td>Instance thay thế có IP mới, RDS failover đổi IP ngầm; app vẫn gọi IP cũ</td><td>Dùng DNS: endpoint RDS, tên ALB, Route 53 private hosted zone; nếu bắt buộc IP thì Elastic IP hoặc NLB static IP</td></tr>
+        <tr><td>Session hoặc file lưu trên instance</td><td>Scale in hoặc thay instance là mất</td><td>Session ra ElastiCache hoặc DynamoDB, file ra S3 hoặc EFS</td></tr>
+        <tr><td>1 ElastiCache node, 1 EFS mount target</td><td>Node hỏng là app lỗi vì cache miss ồ ạt hoặc không mount được</td><td>Redis cluster mode với replica và Multi-AZ auto failover; EFS mount target ở mỗi AZ</td></tr>
+        <tr><td>Worker gọi thẳng API của nhau (đồng bộ)</td><td>Một service chậm kéo cả chuỗi sập</td><td>SQS giữa các tier, retry và DLQ, ASG scale theo độ dài queue</td></tr>
+        <tr><td>Chỉ một Region nhưng đề đòi survive Region failure</td><td>Không có DR</td><td>Chọn chiến lược DR mục 2 theo RPO và RTO</td></tr>
+      </table></div>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Tối ưu chi phí cho kiến trúc này</span>
+        <ul>
+          <li><b>Compute</b>: Savings Plans hoặc Reserved cho phần tải nền ổn định, <b>Spot</b> cho worker đọc SQS chịu được gián đoạn (mixed instances policy trong ASG), scale in theo lịch ngoài giờ, <b>right sizing</b> theo Compute Optimizer, đổi sang Graviton (t4g, m7g).</li>
+          <li><b>Storage</b>: S3 Intelligent-Tiering hoặc lifecycle sang IA và Glacier cho log cũ, gp2 → gp3, xóa snapshot và volume mồ côi.</li>
+          <li><b>Database</b>: Aurora Serverless v2 cho tải thất thường, dừng RDS môi trường dev ngoài giờ, đọc nhiều thì cache bằng ElastiCache trước khi scale DB.</li>
+          <li><b>Mạng</b>: CloudFront giảm data transfer out từ Region, Gateway endpoint để S3 và DynamoDB không đi qua NAT (NAT tính tiền theo GB), gom resource cùng AZ khi trao đổi nhiều.</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Checklist nhìn một sơ đồ trong 60 giây</span>
+        <ol>
+          <li><b>Đọc từ ngoài vào trong</b>: người dùng → DNS → CDN/WAF → load balancer → compute → cache → database → storage → hàng đợi.</li>
+          <li>Ở mỗi tầng hỏi: <b>có "2" không?</b> 2 AZ, 2 instance, 2 NAT, Multi-AZ, replica. Chỗ nào có "1" là ứng viên đáp án RES.</li>
+          <li>Hỏi: <b>cái gì nằm ở public</b> mà không cần (RDS, EC2 app có public IP) → câu SEC.</li>
+          <li>Hỏi: <b>cái gì đang chạy 24/7 mà tải thay đổi</b> hoặc đang trả On-Demand cho tải ổn định → câu COST.</li>
+          <li>Hỏi: <b>điểm nghẽn</b> ở đâu khi tải tăng 10 lần (DB đọc, data transfer, Lambda concurrency) → câu PERF.</li>
+          <li>Đọc lại từ khóa in nghiêng của đề và chọn đáp án đổi <b>ít nhất</b> mà đạt yêu cầu.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>single point of failure <b>→ tìm chỗ có "1"</b></span><span>highly available web tier <b>→ ALB + ASG 2 AZ</b></span><span>database failover automatic <b>→ RDS Multi-AZ</b></span><span>instances in private subnet need internet <b>→ NAT Gateway mỗi AZ</b></span><span>application tightly coupled <b>→ SQS</b></span><span>reduce NAT data processing cost <b>→ Gateway endpoint</b></span><span>protect from SQL injection, DDoS <b>→ WAF + Shield + CloudFront</b></span><span>sticky sessions causing uneven load <b>→ stateless + ElastiCache</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">17. Sơ đồ: ALB ở 2 AZ, ASG min 2 ở 2 private subnet, 1 NAT Gateway ở AZ 1a, RDS Multi-AZ. Khi AZ 1a sập, hiện tượng gì xảy ra và sửa thế nào?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Instance ở AZ 1c vẫn nhận traffic từ ALB nhưng mất kết nối ra Internet (gọi API bên ngoài, tải package) vì NAT duy nhất nằm ở 1a.</b> Sửa: thêm NAT Gateway ở 1c, route table private subnet 1c trỏ về NAT 1c. Nhiều người chọn "thêm ALB" nhưng ALB đã HA.</p></div>
+      <div class="q"><p class="qt">18. Ứng dụng kết nối database bằng IP private của RDS ghi trong file cấu hình. Sau một lần RDS Multi-AZ failover, app không kết nối được dù RDS đã chạy. Vì sao?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Failover chuyển endpoint DNS sang standby có IP khác; app dùng IP cũ.</b> Sửa bằng cách dùng endpoint DNS của RDS và đặt TTL cache DNS trong app ngắn. Đây là bẫy "hard-coded IP" của mốc kiểm tra 2.</p></div>
+      <div class="q"><p class="qt">19. Kiến trúc chạy ổn định 20 instance m5.large On-Demand 24/7 cả năm, cộng 30 instance worker xử lý ảnh từ SQS. Chọn 2 cách <em>most cost-effective</em> không giảm độ tin cậy.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Compute Savings Plans (hoặc Reserved) cho 20 instance nền, Spot cho 30 worker đọc SQS.</b> Spot cho tầng web là sai vì bị thu hồi làm giảm availability; Reserved cho worker là lãng phí vì tải worker thay đổi.</p></div>
+      <div class="q"><p class="qt">20. Đề cho sơ đồ web app ở một AZ: 1 EC2 public, RDS Single-AZ cùng subnet public. Yêu cầu <em>highly available and secure</em> với thay đổi tối thiểu. Liệt kê các việc cần làm.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Thêm AZ thứ hai với public và private subnet; ALB ở public; EC2 vào ASG min 2 ở private subnet; RDS chuyển sang private subnet và bật Multi-AZ; Security Group của RDS chỉ nhận từ SG của EC2.</b> Đáp án nhiễu hay gặp: "tạo read replica" (không phải HA) hay "dùng Elastic IP" (vẫn 1 instance).</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HANDS-ON ============ -->
+<section id="handson">
+  <span class="eyebrow">Thực hành</span>
+  <h2>Hands-on: 5 lab</h2>
+  <p>Lab 1 dựng cả kiến trúc 3-tier bằng CDK (TypeScript). Cách khác là CloudFormation: lệnh <code>cdk synth</code> ở Lab 1 xuất ra đúng template CloudFormation, bạn có thể deploy template đó bằng Console nếu muốn thấy tận mắt. <b>Lab 1, 2 và 5 làm trong cùng một ngày</b>: RDS Multi-AZ, ALB, NAT Gateway đều tính tiền theo giờ. Dựng 2 đến 3 giờ rồi xóa thì tốn dưới 1 USD; để quên qua đêm thì khoảng 4 đến 5 USD mỗi ngày.</p>
+
+  <div class="card">
+    <h3>Lab 1. Dựng kiến trúc 3-tier bằng CDK (TypeScript)</h3>
+    <ol class="steps">
+      <li><div><p>Cài Node.js LTS và CDK, bootstrap account (chỉ làm một lần, tạo bucket và role cho CDK):</p>
+<pre><code>winget install --id OpenJS.NodeJS.LTS -e
+npm install -g aws-cdk
+cdk --version
+$env:AWS_PROFILE = "saa"
+aws sts get-caller-identity --query Account --output text
+cdk bootstrap aws://&lt;account-id&gt;/ap-northeast-1</code></pre><p>Bootstrap tạo stack <code>CDKToolkit</code> (S3 bucket, ECR repo, vài IAM role), không tốn tiền đáng kể, giữ lại dùng cho các lần sau.</p></div></li>
+      <li><div><p>Tạo project:</p>
+<pre><code>mkdir saa-3tier; cd saa-3tier
+cdk init app --language typescript</code></pre><p>Mở <code>lib/saa-3tier-stack.ts</code>, thay toàn bộ bằng khung dưới. Đọc từng khối và đối chiếu với sơ đồ ở mục 6 trước khi deploy.</p></div></li>
+      <li><div><p>Khung code (VPC 2 AZ, 1 NAT để tiết kiệm, ALB, ASG private, RDS Multi-AZ nhỏ nhất, S3, CloudWatch alarm):</p>
+<pre><code>import * as cdk from 'aws-cdk-lib';
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
+import * as autoscaling from 'aws-cdk-lib/aws-autoscaling';
+import * as rds from 'aws-cdk-lib/aws-rds';
+import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
+
+export class Saa3TierStack extends cdk.Stack {
+  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    // 1. VPC: 2 AZ, 3 lớp subnet. natGateways: 1 là SPOF cố ý, Lab 4 sẽ sửa.
+    const vpc = new ec2.Vpc(this, 'Vpc', {
+      maxAzs: 2, natGateways: 1,
+      subnetConfiguration: [
+        { name: 'public', subnetType: ec2.SubnetType.PUBLIC, cidrMask: 24 },
+        { name: 'app', subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS, cidrMask: 24 },
+        { name: 'db', subnetType: ec2.SubnetType.PRIVATE_ISOLATED, cidrMask: 24 },
+      ],
+    });
+
+    // 2. App tier: ASG ở private subnet, user data cài web server
+    const userData = ec2.UserData.forLinux();
+    userData.addCommands(
+      'dnf install -y httpd',
+      'echo "&lt;h1&gt;SAA 3-tier: $(hostname -f)&lt;/h1&gt;" &gt; /var/www/html/index.html',
+      'systemctl enable --now httpd');
+    const asg = new autoscaling.AutoScalingGroup(this, 'Asg', {
+      vpc, vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MICRO),
+      machineImage: ec2.MachineImage.latestAmazonLinux2023(),
+      minCapacity: 2, maxCapacity: 4, userData,
+    });
+    asg.scaleOnCpuUtilization('Cpu', { targetUtilizationPercent: 60 });
+
+    // 3. Web tier: ALB internet-facing ở public subnet (tự rải 2 AZ)
+    const alb = new elbv2.ApplicationLoadBalancer(this, 'Alb', { vpc, internetFacing: true });
+    const listener = alb.addListener('Http', { port: 80 });
+    listener.addTargets('Web', { port: 80, targets: [asg], healthCheck: { path: '/' } });
+
+    // 4. Data tier: RDS MySQL Multi-AZ nhỏ nhất, subnet isolated, xóa không giữ snapshot
+    const db = new rds.DatabaseInstance(this, 'Db', {
+      engine: rds.DatabaseInstanceEngine.mysql({ version: rds.MysqlEngineVersion.VER_8_0 }),
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MICRO),
+      vpc, vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_ISOLATED },
+      multiAz: true, allocatedStorage: 20,
+      removalPolicy: cdk.RemovalPolicy.DESTROY, deleteAutomatedBackups: true,
+    });
+    db.connections.allowDefaultPortFrom(asg);   // SG của DB chỉ nhận từ SG của ASG
+
+    // 5. S3: autoDeleteObjects để cdk destroy không kẹt vì bucket còn object
+    const bucket = new s3.Bucket(this, 'Assets', {
+      removalPolicy: cdk.RemovalPolicy.DESTROY, autoDeleteObjects: true,
+    });
+    bucket.grantRead(asg);
+
+    // 6. CloudWatch alarm: ALB trả 5xx quá 5 lần trong 2 phút liên tiếp
+    new cloudwatch.Alarm(this, 'Alb5xx', {
+      metric: alb.metrics.httpCodeElb(elbv2.HttpCodeElb.ELB_5XX_COUNT,
+        { period: cdk.Duration.minutes(1) }),
+      threshold: 5, evaluationPeriods: 2,
+    });
+
+    new cdk.CfnOutput(this, 'AlbDns', { value: alb.loadBalancerDnsName });
+  }
+}</code></pre><p>Nếu tên class trong <code>bin/saa-3tier.ts</code> khác, sửa cho khớp <code>Saa3TierStack</code>. Nếu <code>MysqlEngineVersion.VER_8_0</code> báo lỗi ở phiên bản CDK của bạn, dùng một hằng cụ thể mà editor gợi ý (ví dụ <code>VER_8_0_39</code>) hoặc <code>MysqlEngineVersion.of('8.0', '8.0')</code>.</p></div></li>
+      <li><div><p>Xem template và deploy:</p>
+<pre><code>cdk synth &gt; template.yaml      # xem CloudFormation sinh ra, đếm số resource
+cdk diff
+cdk deploy --require-approval never</code></pre><p>Thời gian deploy khoảng <b>15 đến 20 phút</b>, phần lớn là RDS Multi-AZ (10 đến 15 phút). Ghi lại giờ bắt đầu để tính tiền. Khi xong, Output <code>AlbDns</code> hiện ra.</p></div></li>
+      <li><div><p>Kiểm tra: mở <code>http://&lt;AlbDns&gt;</code> trong trình duyệt, refresh vài lần để thấy hostname đổi giữa 2 instance (ALB round robin qua 2 AZ). Vào Console: <b>EC2 → Auto Scaling Groups</b> thấy 2 instance ở 2 AZ, không có public IP; <b>RDS</b> thấy Multi-AZ: Yes; <b>CloudWatch → Alarms</b> thấy alarm ở trạng thái OK hoặc Insufficient data.</p></div></li>
+      <li><div><p>Thử tính chịu lỗi: trong EC2 terminate một instance của ASG. Sau 1 đến 2 phút ASG tự tạo instance mới, trang web vẫn mở được suốt thời gian đó. Thử RDS: chọn instance → Actions → <b>Reboot with failover</b>, xem endpoint DNS không đổi nhưng AZ của primary đổi.</p></div></li>
+    </ol>
+    <div class="note"><b>Tiền đang chạy từ lúc deploy xong:</b> NAT Gateway (khoảng 0,062 USD/giờ), ALB (khoảng 0,024 USD/giờ + LCU), RDS db.t3.micro Multi-AZ (khoảng 0,05 USD/giờ), 2 EC2 t3.micro (khoảng 0,027 USD/giờ), 3 địa chỉ IPv4 public (0,015 USD/giờ). Tổng khoảng <b>0,18 USD/giờ</b>, tức 4 đến 5 USD mỗi ngày (giá Tokyo, cần kiểm tra lại). Làm xong Lab 2 thì chạy Lab 5 ngay.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 2. Vẽ diagram kiến trúc vừa dựng, đối chiếu với Console</h3>
+    <ol class="steps">
+      <li><div><p>Mở <a href="https://app.diagrams.net/" target="_blank" rel="noopener">app.diagrams.net</a> (draw.io), chọn thư viện shape <b>AWS</b> (More Shapes → AWS 2023), hoặc vẽ tay trên giấy. Vẽ theo thứ tự ngoài vào trong: Internet → ALB → ASG → RDS, mỗi AZ một cột như sơ đồ ở mục 6.</p></div></li>
+      <li><div><p>Đối chiếu từng thành phần với Console và điền <b>số thật</b> vào hình: <b>VPC → Subnets</b> (6 subnet, 2 AZ, CIDR nào), <b>Route tables</b> (private app subnet nào trỏ về NAT nào), <b>NAT gateways</b> (1 cái, ở AZ nào), <b>Load Balancers</b> (2 AZ), <b>Target groups</b> (2 target healthy), <b>RDS</b> (subnet group, Multi-AZ, AZ của primary và standby), <b>Security Groups</b> (chuỗi ALB SG → ASG SG → DB SG, vẽ mũi tên kèm port).</p></div></li>
+      <li><div><p>Mở <code>template.yaml</code> từ Lab 1, đếm số resource (<code>Type: AWS::</code>). Khoảng 40 đến 50 resource cho một kiến trúc "đơn giản". Đây là lý do đề luôn ưu tiên IaC hơn làm tay.</p></div></li>
+      <li><div><p>Tô màu đỏ lên hình <b>mọi chỗ chỉ có một</b>: NAT Gateway. Đây là đầu vào cho Lab 4. Lưu file <code>saa-3tier.drawio</code> hoặc chụp ảnh giấy vào thư mục <code>bai-hoc</code>.</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Lab 3. Tự viết 3 cách tối ưu chi phí cho kiến trúc đó</h3>
+    <ol class="steps">
+      <li><div><p>Giả định kiến trúc này chạy production: 4 instance nền ổn định, có thêm worker xử lý ảnh từ SQS, 2 TB log trên S3 mỗi tháng, tải thấp ban đêm. Viết vào file <code>bai-hoc/tuan-09-lab3.md</code> ít nhất 3 cách, mỗi cách gồm: <b>thành phần</b>, <b>thay đổi</b>, <b>tiết kiệm ước lượng</b>, <b>đánh đổi</b>.</p></div></li>
+      <li><div><p>Gợi ý để tự kiểm tra sau khi viết (đừng nhìn trước): Savings Plans cho 4 instance nền; Spot với mixed instances cho worker SQS; Graviton t4g; scheduled scaling giảm min về 1 ban đêm (nhớ đây là đánh đổi với HA); S3 lifecycle cho log sang IA sau 30 ngày, Glacier sau 90 ngày; Gateway endpoint S3 để bớt phí NAT; gp3; Aurora Serverless v2 nếu tải DB thất thường.</p></div></li>
+      <li><div><p>Dùng <a href="https://calculator.aws/" target="_blank" rel="noopener">AWS Pricing Calculator</a> ước tính kiến trúc hiện tại và sau khi tối ưu trong một tháng, ghi hai con số vào file. Trong Console mở <b>Cost Explorer → Savings Plans → Recommendations</b> để thấy AWS gợi ý thế nào (cần có vài ngày dữ liệu nên có thể trống).</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Lab 4. Tự viết 3 điểm cần sửa để tăng tính chịu lỗi</h3>
+    <ol class="steps">
+      <li><div><p>Nhìn diagram ở Lab 2, viết vào <code>bai-hoc/tuan-09-lab4.md</code> ít nhất 3 điểm, mỗi điểm: <b>thành phần</b>, <b>tình huống làm nó hỏng</b>, <b>hậu quả</b>, <b>cách sửa</b>, <b>chi phí tăng thêm</b>.</p></div></li>
+      <li><div><p>Gợi ý để tự kiểm tra: NAT Gateway thứ hai (<code>natGateways: 2</code>); ElastiCache cho session nếu app có session; CloudFront + WAF phía trước ALB để chặn tấn công và cache; health check của ALB sâu hơn (<code>/health</code> kiểm tra cả DB); ASG scale theo request per target thay vì CPU; alarm nối vào SNS gửi email; backup plan trong AWS Backup copy sang Osaka; DLQ cho SQS; Route 53 health check nếu có domain.</p></div></li>
+      <li><div><p>Sửa đúng một dòng trong code: <code>natGateways: 1</code> thành <code>2</code>, chạy <code>cdk diff</code> (không deploy) để thấy CDK thêm NAT, Elastic IP và sửa route table. Đọc diff để hiểu "sửa SPOF" nghĩa là gì ở mức resource. Không deploy lại để khỏi tốn thêm.</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Lab 5. Xóa toàn bộ stack và kiểm tra Billing</h3>
+    <ol class="steps">
+      <li><div><p>Xóa stack ngay sau Lab 2 (cùng ngày với Lab 1):</p>
+<pre><code>cdk destroy
+# gõ y để xác nhận; mất khoảng 10 đến 15 phút, RDS xóa lâu nhất</code></pre><p>Nếu deploy bằng CloudFormation Console: <b>CloudFormation → Stacks → chọn stack → Delete</b>.</p></div></li>
+      <li><div><p>Nếu stack ở trạng thái <b>DELETE_FAILED</b>, mở tab Events xem resource nào lỗi. Hai lỗi hay gặp:</p>
+        <ul>
+          <li><b>Bucket còn object</b> ("The bucket you tried to delete is not empty"): xảy ra khi không bật <code>autoDeleteObjects</code> hoặc đã tắt Versioning dở. Dọn rồi xóa lại: <code>aws s3 rm s3://&lt;bucket&gt; --recursive</code> (bucket có Versioning thì vào Console → Empty bucket), sau đó <code>cdk destroy</code> lần nữa, hoặc trong Console chọn Delete và tick "retain" bucket đó rồi xóa bucket tay.</li>
+          <li><b>RDS có deletion protection hoặc còn snapshot</b>: tắt Deletion protection trong Modify rồi xóa lại; snapshot thủ công không tự xóa, vào RDS → Snapshots xóa tay.</li>
+        </ul></div></li>
+      <li><div><p>Kiểm tra bằng CLI rằng không còn resource tính tiền theo giờ:</p>
+<pre><code>aws ec2 describe-nat-gateways --filter Name=state,Values=available --query "NatGateways[].NatGatewayId"
+aws elbv2 describe-load-balancers --query "LoadBalancers[].LoadBalancerName"
+aws rds describe-db-instances --query "DBInstances[].DBInstanceIdentifier"
+aws ec2 describe-instances --filters Name=instance-state-name,Values=running --query "Reservations[].Instances[].InstanceId"
+aws ec2 describe-addresses --query "Addresses[?AssociationId==null].PublicIp"
+aws ec2 describe-volumes --filters Name=status,Values=available --query "Volumes[].VolumeId"
+aws rds describe-db-snapshots --snapshot-type manual --query "DBSnapshots[].DBSnapshotIdentifier"</code></pre><p>Tất cả phải trả về <code>[]</code>. Elastic IP không gắn vào gì và EBS volume "available" là hai thứ hay sót nhất.</p></div></li>
+      <li><div><p>Giữ lại stack <code>CDKToolkit</code> (bootstrap) vì gần như không tốn tiền; nếu muốn dọn sạch thì xóa stack đó và empty bucket <code>cdk-hnb659fds-assets-...</code> trước.</p></div></li>
+      <li><div><p>Hôm sau mở <b>Billing and Cost Management → Bills</b> và <b>Cost Explorer</b> (lọc theo ngày, group by Service): thấy EC2-Other (NAT, EBS), Elastic Load Balancing, RDS, VPC. Tổng tuần này phải dưới 5 USD. Nếu ngày hôm sau vẫn có phí RDS hay NAT thì còn resource sót, quay lại bước 3.</p></div></li>
+    </ol>
+    <div class="note ok">Đây là lab tốn tiền cuối cùng của lộ trình. Tuần 10 đến 12 chỉ luyện đề, không cần dựng gì nữa. Sau khi xác nhận hóa đơn, có thể hạ Budget về 1 USD để phát hiện ngay nếu có resource nào còn sót.</div>
+  </div>
+</section>
+
+<!-- ============ MỐC KIỂM TRA ============ -->
+<section id="moc">
+  <span class="eyebrow">Mốc kiểm tra</span>
+  <h2>Hai câu phải tự nói được không nhìn tài liệu</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>1. Giải thích 4 chiến lược DR và chi phí tương ứng</h3>
+      <p style="font-size:.94rem">Gợi ý khung trả lời (che lại rồi tự nói):</p>
+      <ul style="font-size:.94rem">
+        <li>Mở đầu bằng định nghĩa <b>RPO</b> (mất bao nhiêu dữ liệu) và <b>RTO</b> (ngừng bao lâu), hai số do nghiệp vụ đặt.</li>
+        <li><b>Backup and restore</b>: chỉ có backup ở Region DR, RPO và RTO tính bằng giờ, rẻ nhất. Dịch vụ: AWS Backup, S3 CRR, AMI copy, CloudFormation.</li>
+        <li><b>Pilot light</b>: DB replicate sẵn, compute tắt; RPO phút, RTO vài chục phút; chi phí thấp. Dịch vụ: RDS cross-Region replica, Elastic Disaster Recovery.</li>
+        <li><b>Warm standby</b>: bản thu nhỏ đang chạy và phục vụ được; RPO giây, RTO phút; chi phí trung bình. Dịch vụ: Aurora Global Database, ASG nhỏ, Route 53 failover.</li>
+        <li><b>Multi-site active-active</b>: hai Region cùng phục vụ; RPO và RTO gần 0; đắt nhất. Dịch vụ: DynamoDB Global Tables, Route 53 latency hoặc weighted kèm health check.</li>
+        <li>Kết bằng quy tắc chọn: lấy chiến lược <b>rẻ nhất</b> thỏa cả RPO lẫn RTO đề cho.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>2. Nhìn một kiến trúc, chỉ ra single point of failure</h3>
+      <p style="font-size:.94rem">Gợi ý khung trả lời:</p>
+      <ul style="font-size:.94rem">
+        <li>Đọc <b>từ ngoài vào trong</b>: DNS → CDN/WAF → load balancer → compute → cache → DB → storage → queue.</li>
+        <li>Ở mỗi tầng hỏi "<b>có 2 không</b>": 2 AZ, 2 instance (ASG min 2), 2 NAT Gateway, RDS Multi-AZ, cache có replica, EFS mount target mỗi AZ.</li>
+        <li>Kể được 5 SPOF kinh điển: 1 NAT, 1 AZ, 1 instance, RDS Single-AZ, hard-coded IP; cộng thêm session trên instance và gọi đồng bộ giữa service.</li>
+        <li>Với mỗi SPOF nói ngay cách sửa và cái giá: NAT mỗi AZ (thêm tiền giờ), Multi-AZ (gấp đôi RDS), ASG min 2 (thêm 1 instance).</li>
+        <li>Phân biệt HA (Multi-AZ, tự động) với DR (Multi-Region, theo RPO/RTO) khi đề hỏi "survive Region failure".</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TỪ KHÓA ============ -->
+<section id="tukhoa">
+  <span class="eyebrow">Ôn nhanh</span>
+  <h2>Bảng từ khóa tuần 9</h2>
+  <div class="tbl"><table>
+    <tr><th>Đề bài có chữ</th><th>Nghĩ ngay tới</th></tr>
+    <tr><td><em>review workload against best practices</em>, <em>high risk issues</em></td><td>AWS Well-Architected Tool</td></tr>
+    <tr><td><em>RPO</em> / <em>RTO</em></td><td>Lượng dữ liệu chấp nhận mất (chu kỳ backup, replicate) / thời gian ngừng chấp nhận được (hạ tầng DR chạy sẵn tới đâu)</td></tr>
+    <tr><td><em>lowest cost</em>, RPO và RTO tính bằng giờ</td><td>Backup and restore (AWS Backup, S3 CRR, AMI copy)</td></tr>
+    <tr><td><em>minimal core running</em>, RTO vài chục phút</td><td>Pilot light</td></tr>
+    <tr><td><em>scaled-down but fully functional</em>, RTO phút</td><td>Warm standby</td></tr>
+    <tr><td><em>near-zero RPO/RTO</em>, <em>serve users from both regions</em></td><td>Multi-site active-active (DynamoDB Global Tables, Route 53)</td></tr>
+    <tr><td><em>cross-Region database, sub-second replication, fast failover</em></td><td>Aurora Global Database</td></tr>
+    <tr><td><em>continuous block-level replication, failback, on-premises servers</em></td><td>AWS Elastic Disaster Recovery</td></tr>
+    <tr><td><em>lift-and-shift</em>, <em>minimal downtime</em>, hàng trăm server</td><td>Rehost với Application Migration Service</td></tr>
+    <tr><td><em>managed database without code change</em></td><td>Replatform (RDS, Elastic Beanstalk)</td></tr>
+    <tr><td><em>track migration progress centrally</em></td><td>Migration Hub</td></tr>
+    <tr><td><em>server inventory, dependencies, utilization</em></td><td>Application Discovery Service</td></tr>
+    <tr><td><em>business case, TCO</em></td><td>Migration Evaluator</td></tr>
+    <tr><td><em>heterogeneous database migration</em></td><td>SCT + DMS (CDC)</td></tr>
+    <tr><td><em>petabytes, limited bandwidth, offline</em></td><td>Snowball Edge</td></tr>
+    <tr><td><em>NFS/SMB to S3/EFS, scheduled, preserve metadata</em></td><td>DataSync</td></tr>
+    <tr><td><em>SQL on S3, serverless, pay per data scanned</em></td><td>Athena (+ Parquet, partition để rẻ)</td></tr>
+    <tr><td><em>ETL</em>, <em>crawler</em>, <em>data catalog</em></td><td>Glue</td></tr>
+    <tr><td><em>BI dashboards</em>, <em>SPICE</em></td><td>QuickSight</td></tr>
+    <tr><td><em>Hadoop, Spark</em>, <em>task nodes on Spot</em></td><td>EMR</td></tr>
+    <tr><td><em>full-text search, log analytics dashboards</em></td><td>OpenSearch Service</td></tr>
+    <tr><td><em>column-level permissions on data lake</em></td><td>Lake Formation</td></tr>
+    <tr><td><em>images, video, content moderation</em></td><td>Rekognition</td></tr>
+    <tr><td><em>sentiment, entities, PII in text</em></td><td>Comprehend</td></tr>
+    <tr><td><em>speech to text</em> / <em>text to speech</em></td><td>Transcribe / Polly</td></tr>
+    <tr><td><em>forms, tables, invoices from scans</em></td><td>Textract</td></tr>
+    <tr><td><em>chatbot</em> / <em>enterprise search</em> / <em>recommendations</em></td><td>Lex / Kendra / Personalize</td></tr>
+    <tr><td><em>train and deploy custom model</em> / <em>foundation models</em></td><td>SageMaker / Bedrock</td></tr>
+    <tr><td><em>single point of failure</em></td><td>Tìm chỗ có "1": NAT, AZ, instance, RDS Single-AZ, hard-coded IP</td></tr>
+    <tr><td><em>reduce NAT Gateway data processing charges</em></td><td>Gateway endpoint cho S3, DynamoDB</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ CHECKLIST ============ -->
+<section id="checklist">
+  <span class="eyebrow">Theo dõi</span>
+  <h2>Checklist tuần 9</h2>
+  <p style="font-size:.94rem;color:var(--muted)">Tick ở đây để tự theo dõi trên máy này. Khi xong mục nào, nói với Claude trong session để tick vào <code>AWS-SAA-checklist.md</code>.</p>
+  <div class="card">
+    <h4>Lý thuyết</h4>
+    <label class="check"><input type="checkbox" id="c1" data-ck><span>Well-Architected Framework: 6 trụ cột, Well-Architected Tool, 6 nguyên tắc chung</span></label>
+    <label class="check"><input type="checkbox" id="c2" data-ck><span>Disaster recovery: RPO, RTO, 4 chiến lược và dịch vụ hỗ trợ</span></label>
+    <label class="check"><input type="checkbox" id="c3" data-ck><span>Migration 7R, Migration Hub, Application Migration Service, Discovery, DMS, Snow, DataSync</span></label>
+    <label class="check"><input type="checkbox" id="c4" data-ck><span>Analytics nhận diện: Athena, Glue, QuickSight, EMR, OpenSearch, Lake Formation</span></label>
+    <label class="check"><input type="checkbox" id="c5" data-ck><span>ML services nhận diện: Rekognition, Comprehend, Transcribe, Polly, Textract, SageMaker, Bedrock</span></label>
+    <label class="check"><input type="checkbox" id="c6" data-ck><span>Kiến trúc 3-tier chuẩn, SPOF thường gặp, checklist đọc sơ đồ</span></label>
+    <h4>Hands-on</h4>
+    <label class="check"><input type="checkbox" id="c7" data-ck><span>Dựng kiến trúc 3-tier bằng CDK hoặc CloudFormation: ALB, ASG private, RDS Multi-AZ, S3, CloudWatch alarm</span></label>
+    <label class="check"><input type="checkbox" id="c8" data-ck><span>Vẽ diagram kiến trúc vừa dựng, đối chiếu với Console</span></label>
+    <label class="check"><input type="checkbox" id="c9" data-ck><span>Tự viết 3 cách tối ưu chi phí cho kiến trúc đó</span></label>
+    <label class="check"><input type="checkbox" id="c10" data-ck><span>Tự viết 3 điểm cần sửa để tăng tính chịu lỗi</span></label>
+    <label class="check"><input type="checkbox" id="c11" data-ck><span>Xóa toàn bộ stack, kiểm tra CLI và Billing không còn resource sót</span></label>
+    <h4>Mốc kiểm tra</h4>
+    <label class="check"><input type="checkbox" id="c12" data-ck><span>Giải thích được 4 chiến lược DR và chi phí tương ứng</span></label>
+    <label class="check"><input type="checkbox" id="c13" data-ck><span>Nhìn một kiến trúc, chỉ ra được single point of failure</span></label>
+    <h4>Khác</h4>
+    <label class="check"><input type="checkbox" id="c14" data-ck><span>Quiz tuần 9 đạt từ 80%</span></label>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  // Xem đáp án
+  document.querySelectorAll('[data-reveal]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var a=b.parentElement.querySelector('.ans');
+      a.hidden=!a.hidden; b.textContent=a.hidden?'Xem đáp án':'Ẩn đáp án';
+    });
+  });
+  // Checklist lưu trên máy này
+  var boxes=document.querySelectorAll('[data-ck]'), KEY='saa-tuan-09';
+  var saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  function update(){
+    var n=0; boxes.forEach(function(c){ c.closest('.check').classList.toggle('done',c.checked); if(c.checked)n++; });
+    document.getElementById('bar').style.width=(n/boxes.length*100)+'%';
+    document.getElementById('pct').textContent=n+'/'+boxes.length;
+  }
+  boxes.forEach(function(c){
+    if(saved[c.id])c.checked=true;
+    c.addEventListener('change',function(){ saved[c.id]=c.checked; try{ localStorage.setItem(KEY,JSON.stringify(saved)); }catch(e){} update(); });
+  });
+  update();
+  // Đánh dấu mục đang đọc
+  var links=document.querySelectorAll('.toc a'), secs=[];
+  links.forEach(function(l){ var s=document.querySelector(l.getAttribute('href')); if(s)secs.push([s,l]); });
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ links.forEach(function(l){l.classList.remove('active')}); secs.forEach(function(p){ if(p[0]===e.target)p[1].classList.add('active'); }); } }); },{rootMargin:'-20% 0px -70% 0px'});
+    secs.forEach(function(p){ io.observe(p[0]); });
+  }
+})();
+</script>

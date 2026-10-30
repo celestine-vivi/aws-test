@@ -1,0 +1,241 @@
+<title>SAA Lộ trình 12 tuần</title>
+<meta charset="utf-8">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: hero tổng quan + lưới card tuần (3 cột desktop, 1 cột mobile), dùng chung token màu với các bài tuần. */
+:root{
+  --bg:#f2f4f7; --surface:#ffffff; --surface-2:#e9edf2; --line:#d3dae3;
+  --fg:#172030; --muted:#5a6676; --accent:#1c6e8c; --accent-soft:#dcecf3;
+  --warm:#b35a00; --warm-soft:#fbe9d6; --ok:#2a7d4f; --ok-soft:#dcf0e4; --bad:#b3362b; --bad-soft:#f8dedb;
+  --display:"Manrope","IBM Plex Sans",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+a{color:var(--accent)}
+h1,h2,h3{font-family:var(--display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.7rem,4vw,2.4rem);font-weight:800}
+h2{font-size:1.35rem;font-weight:800}
+h3{font-size:1.05rem;font-weight:700}
+p{margin:0}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:36px}
+
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-top:16px;font-size:.88rem;flex-wrap:wrap}
+.lang{display:flex;gap:4px}
+.lang button{font:inherit;font-size:.84rem;padding:4px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer}
+.lang button.on{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
+.lang button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.hero{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:24px;align-items:stretch}
+.hero .intro{display:flex;flex-direction:column;gap:12px}
+.hero .lead{color:var(--muted);max-width:60ch}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.stat b{font-family:var(--display);font-size:1.5rem;font-weight:800;font-variant-numeric:tabular-nums}
+.stat span{font-size:.8rem;color:var(--muted)}
+.exam{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.exam table{border-collapse:collapse;width:100%;font-size:.88rem}
+.exam td{padding:4px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.exam tr:last-child td{border-bottom:0}
+.exam td:last-child{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;padding-left:12px}
+.dom{display:inline-block;font-family:var(--mono);font-size:.72rem;padding:1px 7px;border-radius:4px;background:var(--surface-2);color:var(--muted);margin-right:4px}
+
+.overall{display:flex;align-items:center;gap:12px;font-size:.9rem;color:var(--muted);flex-wrap:wrap}
+.bar{flex:1;min-width:160px;height:10px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+.bar i.done{background:var(--ok)}
+
+.phase{display:flex;flex-direction:column;gap:14px}
+.phase > p{color:var(--muted);font-size:.94rem;max-width:70ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:10px;min-width:0;position:relative}
+.card.done{border-color:var(--ok)}
+.card .num{font-family:var(--mono);font-size:.78rem;color:var(--accent);display:flex;justify-content:space-between;gap:8px;align-items:center}
+.card .num .state{font-size:.72rem;padding:1px 8px;border-radius:99px;background:var(--surface-2);color:var(--muted)}
+.card .num .state.now{background:var(--warm-soft);color:var(--warm)}
+.card .num .state.ok{background:var(--ok-soft);color:var(--ok)}
+.card .topics{font-size:.9rem;color:var(--muted)}
+.card .meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.8rem;color:var(--muted)}
+.card .meta code{font-family:var(--mono);font-size:.78rem;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+.card .prog{display:flex;align-items:center;gap:10px;font-size:.82rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.card .prog .bar{height:8px}
+.card .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:4px}
+.btn{font:inherit;font-size:.86rem;padding:6px 14px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#fff;text-decoration:none;display:inline-block}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn[aria-disabled="true"]{opacity:.45;pointer-events:none}
+
+.kw{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.kw .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:4px 18px;font-size:.9rem}
+.kw .list div{display:flex;gap:8px;padding:4px 0;border-bottom:1px dashed var(--line)}
+.kw .list em{color:var(--warm);font-style:italic;flex:1}
+.kw .list b{font-weight:600;white-space:nowrap}
+.note{border-left:3px solid var(--warm);background:var(--warm-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.9rem}
+footer{font-size:.82rem;color:var(--muted)}
+
+@media (max-width:860px){ .hero{grid-template-columns:1fr} .stats{grid-template-columns:repeat(3,minmax(0,1fr))} }
+@media (max-width:480px){ .stats{grid-template-columns:1fr 1fr} }
+@media (prefers-reduced-motion: reduce){ .bar i{transition:none} }
+</style>
+
+<div class="wrap">
+
+<div class="top">
+  <span class="eyebrow" data-ja="AWS SAA-C03 · 12週間の学習ロードマップ">AWS SAA-C03 · Lộ trình 12 tuần</span>
+  <div class="lang" role="group" aria-label="Ngôn ngữ"><button type="button" data-lang="vi" class="on">Tiếng Việt</button><button type="button" data-lang="ja">日本語</button></div>
+</div>
+
+<header class="hero">
+  <div class="intro">
+    <h1 data-ja="Solutions Architect Associate 12週間">Lộ trình Solutions Architect Associate 12 tuần</h1>
+    <p class="lead" data-ja="週ごとに1ページの詳しい教材があります。理論、ハンズオン、確認ポイント、キーワード表、チェックリストが入っています。カードを押して開き、各ページの右上でベトナム語と日本語を切り替えられます。チェックリストの進捗はこの端末に保存され、ここに集計されます。">Mỗi tuần một trang bài học chi tiết: lý thuyết, hands-on, mốc kiểm tra, bảng từ khóa và checklist. Bấm vào card để mở, góc trên mỗi trang có nút chuyển tiếng Việt và tiếng Nhật. Tiến độ checklist lưu trên máy này và gộp về đây.</p>
+    <div class="stats">
+      <div class="stat"><b id="st-weeks">0/12</b><span data-ja="週 完了">tuần đã xong</span></div>
+      <div class="stat"><b id="st-items">0</b><span data-ja="チェック済み項目">mục đã tick</span></div>
+      <div class="stat"><b id="st-pct">0%</b><span data-ja="全体の進捗">tiến độ chung</span></div>
+    </div>
+    <div class="overall"><span data-ja="全体">Tổng</span><div class="bar"><i id="ov-bar"></i></div><span id="ov-txt">0/0</span></div>
+  </div>
+  <aside class="exam">
+    <span class="eyebrow" data-ja="試験情報">Thông tin kỳ thi</span>
+    <table>
+      <tr><td data-ja="試験コード">Mã đề</td><td>SAA-C03</td></tr>
+      <tr><td data-ja="問題数 / 時間">Số câu / thời gian</td><td data-ja="65問 / 130分">65 câu / 130 phút</td></tr>
+      <tr><td data-ja="合格点">Điểm đỗ</td><td>720 / 1000</td></tr>
+      <tr><td data-ja="受験料">Lệ phí</td><td>150 USD</td></tr>
+      <tr><td><span class="dom">SEC</span><span data-ja="安全なアーキテクチャの設計">Design Secure Architectures</span></td><td>30%</td></tr>
+      <tr><td><span class="dom">RES</span><span data-ja="弾力性のあるアーキテクチャの設計">Design Resilient Architectures</span></td><td>26%</td></tr>
+      <tr><td><span class="dom">PERF</span><span data-ja="高性能なアーキテクチャの設計">Design High-Performing Architectures</span></td><td>24%</td></tr>
+      <tr><td><span class="dom">COST</span><span data-ja="コスト最適化アーキテクチャの設計">Design Cost-Optimized Architectures</span></td><td>20%</td></tr>
+    </table>
+    <p class="note" data-ja="英語で受験する場合は、予約前に「ESL +30 minutes」の配慮を申請してください。">Nếu thi tiếng Anh: xin accommodation "ESL +30 minutes" trước khi đặt lịch.</p>
+  </aside>
+</header>
+
+<section class="phase">
+  <h2 data-ja="フェーズ1：学習とラボ（第1〜9週）">Giai đoạn 1: Học và lab (tuần 1 đến 9)</h2>
+  <p data-ja="毎週、理論を1項目学んだらすぐにラボで作り、作ったらすぐ削除します。週末にClaudeがクイズを出し、80%以上で次の週へ進みます。">Mỗi tuần học lý thuyết xong dựng ngay lab, dựng xong xóa ngay. Cuối tuần Claude sinh quiz, đạt từ 80% mới sang tuần sau.</p>
+  <div class="grid" id="grid-1"></div>
+</section>
+
+<section class="phase">
+  <h2 data-ja="フェーズ2：模擬試験と本番（第10〜12週）">Giai đoạn 2: Luyện đề và thi (tuần 10 đến 12)</h2>
+  <p data-ja="サービス比較表で総復習し、Tutorials Dojoの模擬試験を6回と公式練習問題を解き、間違えた問題をノートに記録します。2回連続で80%以上なら試験を予約します。">Ôn bảng so sánh dịch vụ, làm 6 đề Tutorials Dojo và đề chính thức, ghi câu sai vào sổ. Hai đề liên tiếp từ 80% thì đặt lịch thi.</p>
+  <div class="grid" id="grid-2"></div>
+</section>
+
+<section class="kw">
+  <span class="eyebrow" data-ja="暗記必須のキーワード">Bảng từ khóa cần thuộc</span>
+  <div class="list">
+    <div><em>least operational overhead</em><b>managed / serverless</b></div>
+    <div><em>decouple</em><b>SQS</b></div>
+    <div><em>real-time streaming</em><b>Kinesis</b></div>
+    <div><em>single-digit millisecond key-value</em><b>DynamoDB</b></div>
+    <div><em>microsecond latency</em><b>DAX / ElastiCache</b></div>
+    <div><em>shared file system Linux</em><b>EFS</b></div>
+    <div><em>Windows file share</em><b>FSx for Windows</b></div>
+    <div><em>HPC / high throughput file</em><b>FSx for Lustre</b></div>
+    <div><em>global users low latency</em><b>CloudFront / Global Accelerator</b></div>
+    <div><em>static IP, TCP/UDP, fast failover</em><b>Global Accelerator</b></div>
+    <div><em>hybrid storage on-premises</em><b>Storage Gateway</b></div>
+    <div><em>infrequent but instant access</em><b>S3 Standard-IA</b></div>
+    <div><em>archive, retrieve in hours</em><b>Glacier Flexible / Deep Archive</b></div>
+    <div><em>cost-effective compute, interruption OK</em><b>Spot</b></div>
+    <div><em>steady workload 1 to 3 years</em><b>Reserved / Savings Plans</b></div>
+    <div><em>DNS failover</em><b>Route 53 failover + health check</b></div>
+    <div><em>private access to AWS service</em><b>VPC endpoint</b></div>
+    <div><em>rotate credentials</em><b>Secrets Manager</b></div>
+    <div><em>audit API calls</em><b>CloudTrail</b></div>
+    <div><em>compliance, config drift</em><b>AWS Config</b></div>
+  </div>
+</section>
+
+<footer data-ja="進捗はこのブラウザのlocalStorageにのみ保存されます。別の端末では表示されません。各週のソースはリポジトリの bai-hoc フォルダーにあります。">Tiến độ chỉ lưu trong localStorage của trình duyệt này, máy khác không thấy. File nguồn từng tuần nằm trong thư mục bai-hoc của repo.</footer>
+
+</div>
+
+<script>
+(function(){
+  /* WEEKS: build script thay thế dòng dưới bằng số mục checklist thật và cờ có bản tiếng Nhật. */
+  var WEEKS = /*WEEKS*/[]/*/WEEKS*/;
+  var META = {
+    "tuan-01":{n:"1",vi:"Nền tảng và dựng môi trường",ja:"基礎と環境構築",tvi:"Region, AZ, Shared responsibility, IAM, thứ tự đánh giá policy, Free Tier",tja:"Region、AZ、Shared responsibility、IAM、policy評価順序、Free Tier",dom:"SEC COST",quiz:"quiz/tuan-01.md",cost:"0 USD"},
+    "tuan-02-03":{n:"2",vi:"Compute và Storage (khối 2 đến 3)",ja:"ComputeとStorage（第2〜3週ブロック）",tvi:"EC2, pricing, placement group, EBS, AMI, instance store, EFS, FSx, tổng quan S3",tja:"EC2、料金モデル、placement group、EBS、AMI、instance store、EFS、FSx、S3概要",dom:"RES PERF COST",quiz:"quiz/tuan-02-03.md",cost:"~1 USD"},
+    "tuan-03":{n:"3",vi:"S3 và chuyển dữ liệu",ja:"S3とデータ移行",tvi:"S3 storage class, lifecycle, versioning, replication, bảo mật, presigned URL, Storage Gateway, Snow, DataSync, Backup",tja:"S3 storage class、lifecycle、versioning、replication、セキュリティ、presigned URL、Storage Gateway、Snow、DataSync、Backup",dom:"RES COST SEC",quiz:"quiz/tuan-02-03.md",cost:"~0 USD"},
+    "tuan-04":{n:"4",vi:"VPC và kết nối mạng",ja:"VPCとネットワーク接続",tvi:"VPC, subnet, route table, IGW, NAT, Security Group với NACL, VPC endpoint, peering, Transit Gateway, VPN, Direct Connect",tja:"VPC、subnet、route table、IGW、NAT、Security GroupとNACL、VPC endpoint、peering、Transit Gateway、VPN、Direct Connect",dom:"SEC RES",quiz:"quiz/tuan-04-05.md",cost:"1-2 USD"},
+    "tuan-05":{n:"5",vi:"ELB, Auto Scaling, Route 53, CloudFront",ja:"ELB、Auto Scaling、Route 53、CloudFront",tvi:"ALB/NLB/GWLB, scaling policy, routing policy, health check, OAC, signed URL, Global Accelerator",tja:"ALB/NLB/GWLB、scaling policy、routing policy、health check、OAC、signed URL、Global Accelerator",dom:"RES PERF",quiz:"quiz/tuan-04-05.md",cost:"1-3 USD"},
+    "tuan-06":{n:"6",vi:"Database",ja:"データベース",tvi:"RDS Multi-AZ với Read Replica, Aurora, DynamoDB, ElastiCache, Redshift, DMS, nhận diện Neptune/DocumentDB/Timestream/QLDB",tja:"RDS Multi-AZとRead Replica、Aurora、DynamoDB、ElastiCache、Redshift、DMS、Neptune/DocumentDB/Timestream/QLDBの識別",dom:"RES PERF",quiz:"quiz/tuan-06.md",cost:"1-3 USD"},
+    "tuan-07":{n:"7",vi:"Serverless, tích hợp, container",ja:"サーバーレス、連携、コンテナ",tvi:"Lambda, API Gateway, Step Functions, SQS, SNS, EventBridge, Kinesis, ECS, EKS, Fargate, ECR, App Runner",tja:"Lambda、API Gateway、Step Functions、SQS、SNS、EventBridge、Kinesis、ECS、EKS、Fargate、ECR、App Runner",dom:"PERF RES",quiz:"quiz/tuan-07.md",cost:"<2 USD"},
+    "tuan-08":{n:"8",vi:"Bảo mật, giám sát, quản trị",ja:"セキュリティ、監視、ガバナンス",tvi:"KMS, Secrets Manager, WAF/Shield, GuardDuty/Inspector/Macie, Cognito, Organizations/SCP, CloudTrail, CloudWatch, SSM, CloudFormation, chi phí",tja:"KMS、Secrets Manager、WAF/Shield、GuardDuty/Inspector/Macie、Cognito、Organizations/SCP、CloudTrail、CloudWatch、SSM、CloudFormation、コスト管理",dom:"SEC COST",quiz:"quiz/tuan-08.md",cost:"1-2 USD"},
+    "tuan-09":{n:"9",vi:"Kiến trúc tổng hợp và Well-Architected",ja:"総合アーキテクチャとWell-Architected",tvi:"6 trụ cột, 4 chiến lược DR theo RPO/RTO, migration 7R, analytics, ML, kiến trúc 3-tier bằng CDK",tja:"6つの柱、RPO/RTO別の4つのDR戦略、移行の7R、分析、ML、CDKで3層構成",dom:"RES COST",quiz:"quiz/tuan-09.md",cost:"2-5 USD"},
+    "tuan-10":{n:"10",vi:"Ôn tổng hợp và 3 đề đầu",ja:"総復習と最初の模擬試験3回",tvi:"Cách luyện đề, kỹ thuật đọc câu hỏi, 4 bảng so sánh dịch vụ, từ khóa theo domain, quiz-01, đề chính thức, TD đề 1",tja:"模擬試験の進め方、設問の読み方、サービス比較表4種、ドメイン別キーワード、quiz-01、公式練習問題、TD模試1",dom:"SEC RES PERF COST",quiz:"AWS-SAA-quiz-01.md",cost:"0 USD"},
+    "tuan-11":{n:"11",vi:"Luyện đề theo domain",ja:"ドメイン別の模擬試験",tvi:"Fact phải thuộc và bẫy hay gặp cho 4 domain, phân tích câu sai, TD đề 2 đến 5, làm lại đề dưới 80%",tja:"4ドメインの必須事項とよくあるひっかけ、誤答分析、TD模試2〜5、80%未満の再挑戦",dom:"SEC RES PERF COST",quiz:"Tutorials Dojo",cost:"0 USD"},
+    "tuan-12":{n:"12",vi:"Đặt lịch và ngày thi",ja:"試験予約と当日",tvi:"Pearson VUE, ESL +30 phút, cheat sheet con số, cheat sheet từ khóa, chiến thuật làm bài, dọn account",tja:"Pearson VUE、ESL +30分、数値チートシート、キーワードチートシート、本番の戦略、アカウント整理",dom:"SEC RES PERF COST",quiz:"TD đề 6",cost:"150 USD"}
+  };
+  var T = {
+    vi:{open:"Mở bài học",ja:"Bản tiếng Nhật",quiz:"Quiz",cost:"Lab",items:"mục",week:"Tuần",done:"Xong",now:"Đang học",todo:"Chưa bắt đầu"},
+    ja:{open:"教材を開く",ja:"ベトナム語版",quiz:"クイズ",cost:"ラボ費用",items:"項目",week:"第",done:"完了",now:"学習中",todo:"未開始"}
+  };
+  var lang='vi';
+  try{ var p=localStorage.getItem('saa-lang'); if(p==='ja')lang='ja'; }catch(e){}
+
+  function readProg(key){ try{ var s=JSON.parse(localStorage.getItem(key)||'{}'); var n=0; for(var k in s) if(s[k]) n++; return n; }catch(e){ return 0; } }
+
+  function render(){
+    document.documentElement.lang=lang;
+    document.querySelectorAll('[data-ja]').forEach(function(el){
+      if(!el.dataset.vi) el.dataset.vi=el.textContent;
+      el.textContent = lang==='ja' ? el.dataset.ja : el.dataset.vi;
+    });
+    document.querySelectorAll('.lang button').forEach(function(b){ b.classList.toggle('on', b.dataset.lang===lang); });
+    var t=T[lang], g1=document.getElementById('grid-1'), g2=document.getElementById('grid-2');
+    g1.innerHTML=''; g2.innerHTML='';
+    var totalAll=0, doneAll=0, weeksDone=0;
+    WEEKS.forEach(function(w){
+      var m=META[w.file]; if(!m) return;
+      var done=readProg('saa-'+w.file), total=w.total||0, pct=total?Math.round(done/total*100):0;
+      totalAll+=total; doneAll+=done;
+      var state = done>=total&&total>0 ? 'ok' : (done>0 ? 'now' : '');
+      if(state==='ok') weeksDone++;
+      var stateTxt = state==='ok'?t.done:(state==='now'?t.now:t.todo);
+      var wk = lang==='ja' ? '第'+m.n+'週' : 'Tuần '+m.n;
+      var href = (lang==='ja'&&w.ja) ? w.file+'.ja.html' : w.file+'.html';
+      var alt  = (lang==='ja') ? w.file+'.html' : (w.ja ? w.file+'.ja.html' : null);
+      var card=document.createElement('article'); card.className='card'+(state==='ok'?' done':'');
+      card.innerHTML =
+        '<div class="num"><span>'+wk+' · '+m.dom.split(' ').map(function(d){return '<span class="dom">'+d+'</span>'}).join('')+'</span><span class="state '+state+'">'+stateTxt+'</span></div>'+
+        '<h3>'+(lang==='ja'?m.ja:m.vi)+'</h3>'+
+        '<p class="topics">'+(lang==='ja'?m.tja:m.tvi)+'</p>'+
+        '<div class="meta"><span>'+t.quiz+': <code>'+m.quiz+'</code></span><span>'+t.cost+': '+m.cost+'</span></div>'+
+        '<div class="prog"><div class="bar"><i class="'+(state==='ok'?'done':'')+'" style="width:'+pct+'%"></i></div><span>'+done+'/'+total+' '+t.items+'</span></div>'+
+        '<div class="acts"><a class="btn" href="'+href+'">'+t.open+'</a>'+(alt?'<a class="btn ghost" href="'+alt+'">'+t.ja+'</a>':'')+'</div>';
+      (parseInt(m.n,10)<=9?g1:g2).appendChild(card);
+    });
+    var pctAll = totalAll?Math.round(doneAll/totalAll*100):0;
+    document.getElementById('st-weeks').textContent=weeksDone+'/'+WEEKS.length;
+    document.getElementById('st-items').textContent=doneAll;
+    document.getElementById('st-pct').textContent=pctAll+'%';
+    document.getElementById('ov-bar').style.width=pctAll+'%';
+    document.getElementById('ov-txt').textContent=doneAll+'/'+totalAll;
+  }
+  document.querySelectorAll('.lang button').forEach(function(b){
+    b.addEventListener('click',function(){ lang=b.dataset.lang; try{ localStorage.setItem('saa-lang',lang); }catch(e){} render(); });
+  });
+  window.addEventListener('focus',render);
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden) render(); });
+  render();
+})();
+</script>

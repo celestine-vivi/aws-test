@@ -1,0 +1,942 @@
+<title>SAA Tuần 5 ELB Route 53 CloudFront</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky mục lục bên trái (desktop), cột nội dung 760px bên phải; xếp một cột ở màn hẹp. */
+:root{
+  --bg:#f2f4f7; --surface:#ffffff; --surface-2:#e9edf2; --line:#d3dae3;
+  --fg:#172030; --muted:#5a6676; --accent:#1c6e8c; --accent-soft:#dcecf3;
+  --warm:#b35a00; --warm-soft:#fbe9d6; --ok:#2a7d4f; --ok-soft:#dcf0e4; --bad:#b3362b; --bad-soft:#f8dedb;
+  --display:"Manrope","IBM Plex Sans",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f151d; --surface:#171f2a; --surface-2:#1f2936; --line:#303b4a;
+  --fg:#e5eaf0; --muted:#9aa6b4; --accent:#63b4cf; --accent-soft:#17323e;
+  --warm:#f0a456; --warm-soft:#3a2a16; --ok:#6cc594; --ok-soft:#173224; --bad:#ef8b80; --bad-soft:#3d1e1a; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+a{color:var(--accent)}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:800}
+h2{font-size:1.5rem;font-weight:800;padding-top:8px}
+h3{font-size:1.12rem;font-weight:700}
+h4{font-size:.95rem;font-weight:700}
+p{margin:0}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+pre{font-family:var(--mono);font-size:.84rem;line-height:1.5;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:0}
+pre code{background:none;padding:0;font-size:inherit}
+em{color:var(--warm);font-style:italic}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* Header */
+.hero{max-width:1120px;margin:0 auto;padding-block:36px 20px;display:flex;flex-direction:column;gap:12px}
+.hero .lead{max-width:62ch;color:var(--muted);font-size:1.02rem}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.88rem;color:var(--muted)}
+.meta b{color:var(--fg);font-weight:600}
+.progress{display:flex;align-items:center;gap:12px;font-size:.88rem;color:var(--muted)}
+.bar{flex:1;max-width:320px;height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+
+/* Two columns */
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;align-items:start}
+.toc{position:sticky;top:max(12px,env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:2px;font-size:.9rem}
+.toc a{color:var(--muted);text-decoration:none;padding:6px 10px;border-left:2px solid var(--line);display:block}
+.toc a:hover,.toc a.active{color:var(--fg);border-left-color:var(--accent)}
+.toc .grp{margin-top:10px}
+main{display:flex;flex-direction:column;gap:56px;min-width:0;max-width:780px}
+section{display:flex;flex-direction:column;gap:18px;scroll-margin-top:16px}
+@media (max-width:860px){ .wrap{grid-template-columns:1fr;gap:24px} .toc{position:static;flex-direction:row;flex-wrap:wrap;gap:6px} .toc a{border:1px solid var(--line);border-radius:99px;padding:4px 10px} .toc .grp{margin:0} .toc a.active{border-color:var(--accent)} }
+
+/* Blocks */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.block{display:flex;flex-direction:column;gap:8px}
+.block > .eyebrow{color:var(--accent)}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:5px}
+li::marker{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.kw{display:flex;flex-wrap:wrap;gap:8px}
+.kw span{background:var(--warm-soft);color:var(--warm);border-radius:4px;padding:3px 9px;font-size:.86rem;font-style:italic}
+.kw span b{font-style:normal;font-weight:600;color:var(--fg)}
+.note{border-left:3px solid var(--warm);background:var(--warm-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.94rem}
+.note.ok{border-color:var(--ok);background:var(--ok-soft)}
+.note.bad{border-color:var(--bad);background:var(--bad-soft)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;font-size:.84rem}
+tr:last-child td{border-bottom:0}
+td.c{text-align:center}
+
+/* Checklist */
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:6px;cursor:pointer}
+.check:hover{background:var(--surface-2)}
+.check input{margin-top:5px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.check.done{color:var(--muted);text-decoration:line-through}
+
+/* Quiz reveal */
+.q{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.q .qt{font-weight:500}
+.q button{align-self:flex-start;font:inherit;font-size:.86rem;padding:5px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer}
+.q button:hover{background:var(--accent);color:var(--surface)}
+.q button:focus-visible,.check input:focus-visible,.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.q .ans{font-size:.94rem;border-top:1px dashed var(--line);padding-top:8px}
+.q .ans b{color:var(--ok)}
+
+/* Steps */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:12px;padding:0;list-style:none}
+.steps li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:start}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--mono);font-size:.8rem;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:500;margin-top:2px}
+.steps li > div{display:flex;flex-direction:column;gap:6px;min-width:0}
+
+/* Flow diagram */
+.flow{display:flex;flex-direction:column;gap:0;align-items:stretch;max-width:520px}
+.flow .n{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:.94rem}
+.flow .n .tag{font-family:var(--mono);font-size:.74rem;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.tag.deny{background:var(--bad-soft);color:var(--bad)} .tag.allow{background:var(--ok-soft);color:var(--ok)} .tag.next{background:var(--surface-2);color:var(--muted)}
+.flow .arrow{height:22px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--mono);font-size:.78rem}
+.flow .arrow::before{content:"";width:1px;height:100%;background:var(--line);position:absolute}
+.flow .arrow{position:relative} .flow .arrow span{background:var(--bg);padding:0 6px;position:relative}
+
+svg text{font-family:var(--body)}
+.diag{overflow-x:auto}
+.diag svg{width:100%;max-width:700px;height:auto;display:block}
+.sv-region{fill:var(--surface);stroke:var(--accent)} .sv-az{fill:var(--accent-soft);stroke:var(--accent)} .sv-edge{fill:var(--warm-soft);stroke:var(--warm)}
+.sv-t{fill:var(--fg);font-size:13px} .sv-m{fill:var(--muted);font-size:11px} .sv-line{stroke:var(--line)}
+@media (prefers-reduced-motion: reduce){ .bar i{transition:none} }
+</style>
+
+<header class="hero">
+  <span class="eyebrow">AWS SAA-C03 · Lộ trình 12 tuần · Tuần 5</span>
+  <h1>ELB, Auto Scaling, Route 53, CloudFront, Global Accelerator</h1>
+  <p class="lead">Nửa sau của khối Networking. Tuần 4 đã dựng được VPC với subnet, NAT, Security Group, endpoint và các cách nối VPC. Tuần này học cách đưa traffic từ người dùng vào VPC đó một cách chịu lỗi và tự co giãn: Route 53 trả lời DNS, CloudFront cache ở Edge, ALB chia tải vào Auto Scaling Group chạy EC2 ở private subnet. Mục tiêu cuối tuần: kể được luồng request đi qua từng lớp, chọn đúng routing policy của Route 53 và chọn đúng ALB, NLB hay Global Accelerator theo từ khóa đề.</p>
+  <div class="meta"><span>Nhịp học: <b>1,5 đến 2 giờ/ngày</b></span><span>Domain liên quan: <b>RES 26%</b>, <b>PERF 24%</b></span><span>Chi phí lab tuần này: <b>1 đến 3 USD</b> nếu xóa ALB và NAT Gateway trong ngày</span></div>
+  <div class="progress"><span>Tiến độ checklist</span><div class="bar"><i id="bar"></i></div><span id="pct">0/17</span></div>
+</header>
+
+<div class="wrap">
+<nav class="toc" aria-label="Mục lục">
+  <a href="#ke-hoach">Kế hoạch 7 ngày</a>
+  <span class="grp eyebrow">Lý thuyết</span>
+  <a href="#elb">1. ELB: ALB, NLB, GWLB</a>
+  <a href="#asg">2. Auto Scaling</a>
+  <a href="#route53">3. Route 53</a>
+  <a href="#cloudfront">4. CloudFront</a>
+  <a href="#ga">5. Global Accelerator</a>
+  <span class="grp eyebrow">Thực hành</span>
+  <a href="#handson">Hands-on 5 lab</a>
+  <a href="#moc">Mốc kiểm tra</a>
+  <a href="#tukhoa">Bảng từ khóa đề thi</a>
+  <a href="#checklist">Checklist tuần</a>
+</nav>
+
+<main>
+
+<section id="ke-hoach">
+  <h2>Kế hoạch 7 ngày</h2>
+  <p>Tuần này lab dính nhau: Lab 1 dựng ALB và ASG, Lab 2 stress test trên chính ASG đó, Lab 3 và 4 dùng lại EC2 và S3 đã có. Nên làm Lab 1 ở ngày 2 rồi giữ đến ngày 5, nhưng xóa ALB và NAT ngay khi xong lab cuối. Mỗi giờ ALB tốn khoảng 0,02 đến 0,03 USD, NAT Gateway 0,045 đến 0,062 USD (cần kiểm tra lại giá vùng Tokyo).</p>
+  <div class="tbl"><table>
+    <tr><th>Ngày</th><th>Lý thuyết</th><th>Hands-on</th></tr>
+    <tr><td>1</td><td>ELB: ALB, NLB, Gateway Load Balancer, sticky session, cross-zone, health check, SSL</td><td>Chuẩn bị launch template có user data cài web server (nửa đầu Lab 1)</td></tr>
+    <tr><td>2</td><td>Auto Scaling: launch template, scaling policy, cooldown, lifecycle hook, warm pool</td><td>Lab 1: ALB trước ASG 2 AZ, target tracking CPU 50%</td></tr>
+    <tr><td>3</td><td>Route 53: record, alias, routing policy, health check, Resolver</td><td>Lab 2: stress-ng xem scale out rồi scale in; Lab 3: Route 53 failover với health check</td></tr>
+    <tr><td>4</td><td>CloudFront: origin, OAC, signed URL / cookie, cache policy, Lambda@Edge</td><td>Lab 4: CloudFront trước S3 private bằng OAC, truy cập thẳng S3 bị 403</td></tr>
+    <tr><td>5</td><td>Global Accelerator so với CloudFront, ôn bảng chọn ALB / NLB / GA</td><td>Lab 5: dọn dẹp ALB, ASG, NAT, CloudFront, Elastic IP, kiểm tra Billing</td></tr>
+    <tr><td>6 đến 7</td><td>Ôn 3 mốc tuần 5 và 3 mốc tuần 4, đọc lại bảng từ khóa cả khối</td><td>Nói "cho quiz" trong session để nhận <code>quiz/tuan-04-05.md</code> (40 câu cho cả khối), cần đạt 80%</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ 1. ELB ============ -->
+<section id="elb">
+  <span class="eyebrow">Lý thuyết 1 / 5</span>
+  <h2>Elastic Load Balancing: ALB, NLB, Gateway Load Balancer</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <p>Load balancer là một điểm vào duy nhất (DNS name) nhận request rồi chia cho nhiều target (EC2, IP, Lambda, container) ở nhiều AZ. Nó che đi việc một instance chết, che IP private, và là chỗ gắn chứng chỉ TLS. ELB là dịch vụ managed: AWS tự scale node của load balancer, bạn chỉ chọn loại, listener, target group và health check.</p>
+      <ul>
+        <li><b>Application Load Balancer (ALB)</b>: layer 7, hiểu HTTP/HTTPS, gRPC, WebSocket. Route theo <b>host</b> (<code>api.example.com</code>), <b>path</b> (<code>/images/*</code>), <b>query string</b>, <b>HTTP header</b>, <b>method</b>, <b>source IP</b>. Target group có thể là EC2, IP, ECS task, hoặc <b>Lambda function</b>. Hỗ trợ <b>authentication</b> ngay trên listener bằng Cognito User Pool hoặc OIDC (Google, Okta) trước khi request tới app. ALB chèn header <code>X-Forwarded-For</code> để app biết IP thật của client. Có security group.</li>
+        <li><b>Network Load Balancer (NLB)</b>: layer 4, TCP/UDP/TLS, chịu được hàng triệu request mỗi giây với độ trễ rất thấp (khoảng 100 ms so với khoảng 400 ms của ALB, cần kiểm tra lại). Mỗi AZ có một <b>IP tĩnh</b>, gắn được <b>Elastic IP</b> của bạn. Đây là loại duy nhất có static IP. <b>Preserve source IP</b> của client khi target là instance. Là điểm vào cho <b>PrivateLink</b> (endpoint service). Có thể đặt ALB làm target của NLB để vừa có IP tĩnh vừa có route layer 7. NLB từ 2023 cũng có security group (cần kiểm tra lại).</li>
+        <li><b>Gateway Load Balancer (GWLB)</b>: layer 3, dùng giao thức <b>GENEVE</b> port 6081 để đẩy toàn bộ gói tin qua một đội <b>appliance bên thứ ba</b> (firewall, IDS/IPS, deep packet inspection của Palo Alto, Fortinet…) rồi trả lại. Deploy "bump in the wire", transparent với app. Dùng với Gateway Load Balancer endpoint ở VPC khác.</li>
+        <li><b>Classic Load Balancer (CLB)</b>: thế hệ cũ, layer 4 và 7 sơ sài, một target group, không host/path routing. Đề thi chỉ cần nhận diện: khi thấy CLB trong đáp án thì gần như luôn là đáp án sai, chọn ALB hoặc NLB.</li>
+      </ul>
+    </div>
+
+    <div class="block diag"><span class="eyebrow">Hình dung</span>
+      <svg viewBox="0 0 700 290" role="img" aria-label="Sơ đồ ALB ở public subnet hai AZ nhận request từ Internet, route theo path tới hai target group ở private subnet">
+        <rect x="10" y="20" width="680" height="260" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="26" y="44" class="sv-t" font-weight="600">VPC 10.0.0.0/16</text>
+        <rect x="30" y="60" width="300" height="205" rx="8" class="sv-az" stroke-width="1.5"/>
+        <rect x="370" y="60" width="300" height="205" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="180" y="82" text-anchor="middle" class="sv-t" font-weight="600">AZ 1a</text>
+        <text x="520" y="82" text-anchor="middle" class="sv-t" font-weight="600">AZ 1c</text>
+        <rect x="50" y="95" width="260" height="46" rx="6" class="sv-edge" stroke-width="1.5"/>
+        <rect x="390" y="95" width="260" height="46" rx="6" class="sv-edge" stroke-width="1.5"/>
+        <text x="180" y="114" text-anchor="middle" class="sv-t">Public subnet: ALB node</text>
+        <text x="180" y="131" text-anchor="middle" class="sv-m">SG: cho 443 từ 0.0.0.0/0</text>
+        <text x="520" y="114" text-anchor="middle" class="sv-t">Public subnet: ALB node</text>
+        <text x="520" y="131" text-anchor="middle" class="sv-m">cùng một DNS name</text>
+        <rect x="50" y="165" width="120" height="85" rx="6" class="sv-region" stroke-width="1.5"/>
+        <rect x="190" y="165" width="120" height="85" rx="6" class="sv-region" stroke-width="1.5"/>
+        <rect x="390" y="165" width="120" height="85" rx="6" class="sv-region" stroke-width="1.5"/>
+        <rect x="530" y="165" width="120" height="85" rx="6" class="sv-region" stroke-width="1.5"/>
+        <text x="110" y="188" text-anchor="middle" class="sv-t" font-weight="600">TG web</text>
+        <text x="110" y="208" text-anchor="middle" class="sv-m">EC2 private</text>
+        <text x="110" y="226" text-anchor="middle" class="sv-m">SG: 80 từ SG-ALB</text>
+        <text x="250" y="188" text-anchor="middle" class="sv-t" font-weight="600">TG api</text>
+        <text x="250" y="208" text-anchor="middle" class="sv-m">ECS task / Lambda</text>
+        <text x="250" y="226" text-anchor="middle" class="sv-m">/api/* tới đây</text>
+        <text x="450" y="188" text-anchor="middle" class="sv-t" font-weight="600">TG web</text>
+        <text x="450" y="208" text-anchor="middle" class="sv-m">EC2 private</text>
+        <text x="450" y="226" text-anchor="middle" class="sv-m">cross-zone bật</text>
+        <text x="590" y="188" text-anchor="middle" class="sv-t" font-weight="600">TG api</text>
+        <text x="590" y="208" text-anchor="middle" class="sv-m">ECS task / Lambda</text>
+        <text x="590" y="226" text-anchor="middle" class="sv-m">health check /health</text>
+        <line x1="110" y1="141" x2="110" y2="165" class="sv-line" stroke-width="2"/>
+        <line x1="250" y1="141" x2="250" y2="165" class="sv-line" stroke-width="2"/>
+        <line x1="450" y1="141" x2="450" y2="165" class="sv-line" stroke-width="2"/>
+        <line x1="590" y1="141" x2="590" y2="165" class="sv-line" stroke-width="2"/>
+        <line x1="180" y1="141" x2="450" y2="165" class="sv-line" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <text x="350" y="272" text-anchor="middle" class="sv-m">Listener 443 → rule: path /api/* → TG api, mặc định → TG web. Nét đứt: cross-zone gửi sang AZ khác.</text>
+      </svg>
+    </div>
+
+    <div class="block"><span class="eyebrow">Các khái niệm dùng chung</span>
+      <div class="tbl"><table>
+        <tr><th>Khái niệm</th><th>Nội dung</th><th>Bẫy đề</th></tr>
+        <tr><td><b>Listener và rule</b></td><td>Listener nghe một port/protocol (80, 443). ALB có rule theo thứ tự ưu tiên, rule cuối là default. NLB mỗi listener trỏ một target group.</td><td>Muốn một ALB phục vụ nhiều domain / nhiều microservice → host-based và path-based rule, không cần nhiều ALB.</td></tr>
+        <tr><td><b>Target group</b></td><td>Nhóm target cùng loại: instance, IP (kể cả on-premises qua VPN/DX), Lambda (chỉ ALB), ALB (chỉ NLB). Health check cấu hình ở target group.</td><td>Target type IP cho phép trỏ tới máy on-premises, instance type thì không.</td></tr>
+        <tr><td><b>Health check</b></td><td>ALB: HTTP/HTTPS tới path (<code>/health</code>), mã 200 là healthy. NLB: TCP, HTTP hoặc HTTPS. Target unhealthy thì ngừng nhận traffic nhưng ELB không tự terminate instance; ASG mới làm việc đó nếu bật health check type ELB.</td><td>App trả 200 ở <code>/</code> nhưng health check path đặt <code>/health</code> không tồn tại → mọi target unhealthy → 502/503.</td></tr>
+        <tr><td><b>Sticky session</b></td><td>Gửi cùng client tới cùng target. ALB: cookie <code>AWSALB</code> (duration-based) hoặc cookie do app tạo (application-based). NLB: theo source IP. Chỉ nên dùng khi app giữ session trong bộ nhớ instance.</td><td>Đề hỏi <em>stateless</em>, <em>evenly distribute</em>, <em>session loss when instance fails</em> → đúng là chuyển session ra ElastiCache / DynamoDB, không phải bật sticky.</td></tr>
+        <tr><td><b>Cross-zone load balancing</b></td><td>Mỗi node ELB chia đều cho mọi target ở mọi AZ thay vì chỉ AZ của nó. <b>ALB: mặc định bật</b>, không tính phí data giữa AZ. <b>NLB và GWLB: mặc định tắt</b>, bật thì tính phí data transfer giữa AZ.</td><td>AZ 1a có 2 instance, AZ 1c có 8: tắt cross-zone thì 2 máy ở 1a gánh 50% traffic (mỗi máy 25%), 8 máy ở 1c mỗi máy 6,25%.</td></tr>
+        <tr><td><b>Deregistration delay</b> (tên cũ connection draining)</td><td>Khi gỡ target, ELB ngừng gửi request mới nhưng chờ request đang xử lý kết thúc, mặc định 300 giây, 0 đến 3600. Đặt thấp cho request ngắn, cao cho upload lớn.</td><td>Đề nói người dùng bị lỗi khi scale in → tăng deregistration delay hoặc dùng lifecycle hook.</td></tr>
+        <tr><td><b>SSL termination, SNI</b></td><td>Gắn chứng chỉ từ <b>ACM</b> (miễn phí, tự gia hạn) vào listener HTTPS. ELB giải mã rồi gửi HTTP vào trong (giảm tải CPU cho EC2) hoặc HTTPS lại (end-to-end). <b>SNI</b> cho phép một listener gắn nhiều chứng chỉ cho nhiều domain, client gửi hostname khi handshake. ALB và NLB hỗ trợ SNI, CLB không.</td><td>Nhiều domain trên một load balancer với chứng chỉ riêng từng domain → SNI, không phải nhiều load balancer.</td></tr>
+        <tr><td><b>Security group của ALB</b></td><td>ALB có SG riêng: inbound 80/443 từ Internet. SG của EC2 phía sau chỉ cho inbound từ <b>SG của ALB</b> (source là SG id), không mở 0.0.0.0/0. Đây là pattern đề thi hỏi rất nhiều.</td><td>NLB kiểu cũ không có SG nên SG của target phải cho IP client (vì preserve source IP). NLB tạo sau 8/2023 có SG (cần kiểm tra lại).</td></tr>
+        <tr><td><b>Scheme</b></td><td><b>Internet-facing</b> có public IP, đặt ở public subnet. <b>Internal</b> chỉ private IP, dùng giữa các tầng trong VPC (web → app).</td><td>Internet-facing ALB vẫn gửi được tới target ở private subnet, EC2 không cần public IP.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Khi nào dùng</span>
+      <ul>
+        <li>Web app, microservice, container, cần route theo URL hay host, cần HTTP header, cần xác thực người dùng ở biên → <b>ALB</b>.</li>
+        <li>Cần IP tĩnh để whitelist ở firewall khách hàng, hiệu năng cực cao, TCP/UDP không phải HTTP (game, MQTT, syslog, SMTP), TLS passthrough, PrivateLink → <b>NLB</b>.</li>
+        <li>Chèn firewall / IDS bên thứ ba vào đường đi của mọi gói tin, quản lý tập trung cho nhiều VPC → <b>GWLB</b>.</li>
+        <li>Muốn chạy Lambda phía sau một URL có path routing mà không cần API Gateway → ALB với Lambda target. Nếu cần throttling, API key, usage plan thì API Gateway (tuần 7).</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm: chọn ALB, NLB hay GWLB theo từ khóa</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td><em>path-based</em>, <em>host-based routing</em>, nhiều microservice sau một load balancer</td><td>ALB</td><td>NLB (không hiểu HTTP)</td></tr>
+        <tr><td><em>static IP</em>, <em>Elastic IP</em>, khách hàng whitelist IP</td><td>NLB</td><td>ALB (DNS name, IP đổi)</td></tr>
+        <tr><td><em>millions of requests per second</em>, <em>ultra-low latency</em>, <em>TCP/UDP</em></td><td>NLB</td><td>ALB</td></tr>
+        <tr><td>Cần cả static IP lẫn path routing</td><td>NLB → ALB target</td><td>Chỉ một trong hai</td></tr>
+        <tr><td><em>third-party firewall appliance</em>, <em>inspect all traffic</em>, <em>GENEVE</em></td><td>Gateway Load Balancer</td><td>NLB, Network Firewall (managed của AWS, không phải appliance bên thứ ba)</td></tr>
+        <tr><td><em>authenticate users</em> trước khi tới app, Cognito/OIDC</td><td>ALB listener authentication</td><td>Tự viết code ở EC2</td></tr>
+        <tr><td><em>WebSocket</em>, <em>gRPC</em>, HTTP/2</td><td>ALB</td><td>CLB</td></tr>
+        <tr><td><em>preserve client source IP</em> ở tầng mạng</td><td>NLB (giữ IP ở gói tin)</td><td>ALB (phải đọc <code>X-Forwarded-For</code>)</td></tr>
+        <tr><td><em>expose service to other VPCs privately</em></td><td>NLB + PrivateLink</td><td>VPC peering (học tuần 4, không scale với nhiều khách)</td></tr>
+        <tr><td>Uneven traffic giữa các AZ với NLB</td><td>Bật cross-zone load balancing</td><td>Thêm instance</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>path-based / host-based routing <b>→ ALB</b></span><span>static IP / Elastic IP <b>→ NLB</b></span><span>millions of requests, ultra-low latency <b>→ NLB</b></span><span>third-party appliance, GENEVE <b>→ GWLB</b></span><span>Lambda behind load balancer <b>→ ALB</b></span><span>Cognito / OIDC at load balancer <b>→ ALB authentication</b></span><span>multiple certificates one listener <b>→ SNI</b></span><span>only allow traffic from load balancer <b>→ SG source = SG của ALB</b></span><span>in-flight requests complete before scale in <b>→ deregistration delay</b></span><span>session kept on instance <b>→ sticky session (cookie)</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">1. Một công ty có app chạy trên EC2 phía sau ALB. Đối tác yêu cầu whitelist IP của app trên firewall của họ, nhưng IP của ALB thay đổi. Giải pháp <em>least operational overhead</em>?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Đặt NLB với Elastic IP ở trước, dùng ALB làm target của NLB.</b> Giữ được path routing của ALB mà vẫn có IP tĩnh. Thay ALB bằng NLB hoàn toàn thì mất rule layer 7. Global Accelerator cũng cho 2 IP tĩnh và là đáp án đúng nếu đề nói người dùng toàn cầu, nhưng với "đối tác whitelist" thì NLB + EIP là đủ và rẻ hơn.</p></div>
+      <div class="q"><p class="qt">2. Security Group của EC2 phía sau ALB nên có inbound rule nào để <em>most secure</em>?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Cho port 80 (hoặc 443) với source là Security Group của ALB.</b> Mở 0.0.0.0/0 là sai vì ai biết private IP qua VPN cũng truy cập thẳng được. Dùng CIDR của public subnet cũng không chặt bằng SG id vì mọi máy trong subnet đó đều lọt.</p></div>
+      <div class="q"><p class="qt">3. NLB có 2 target ở AZ 1a và 6 target ở AZ 1c, cross-zone đang tắt. Người dùng phàn nàn một số request chậm. Vì sao và sửa thế nào?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Mỗi node NLB chỉ gửi tới target trong AZ của nó, nên 2 target ở 1a gánh 50% traffic. Bật cross-zone load balancing</b> (chấp nhận phí data transfer giữa AZ) hoặc cân lại số instance. Với ALB câu này không xảy ra vì cross-zone mặc định bật.</p></div>
+      <div class="q"><p class="qt">4. Công ty muốn mọi traffic ra vào các VPC đều đi qua firewall của Palo Alto chạy trên EC2, quản lý tập trung, trong suốt với ứng dụng. Chọn dịch vụ nào?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Gateway Load Balancer với Gateway Load Balancer endpoint ở mỗi VPC.</b> NLB cũng chia tải được nhưng không có GENEVE để trả gói tin về đúng chỗ, phải sửa route phức tạp. AWS Network Firewall là firewall managed của AWS, không chạy appliance bên thứ ba.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. AUTO SCALING ============ -->
+<section id="asg">
+  <span class="eyebrow">Lý thuyết 2 / 5</span>
+  <h2>EC2 Auto Scaling</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <p>Auto Scaling Group (ASG) giữ cho số EC2 luôn nằm giữa <b>min</b> và <b>max</b>, hướng tới <b>desired</b>. Nó tự thay instance hỏng (self-healing), rải instance đều qua các AZ đã chọn, và tăng giảm số máy theo scaling policy. ASG miễn phí, chỉ trả tiền EC2. ASG cần một bản mô tả máy để tạo instance: <b>launch template</b>.</p>
+      <ul>
+        <li><b>Launch template</b> so với <b>launch configuration</b>: launch configuration là loại cũ, bất biến, mỗi lần đổi phải tạo cái mới, không hỗ trợ mixed instance type và Spot kết hợp, AWS đã ngừng cho tạo mới trong console từ 2023 (cần kiểm tra lại). <b>Launch template</b> có version, hỗ trợ nhiều instance type, Spot + On-Demand trộn trong một ASG, T2/T3 Unlimited, placement group, dedicated host. Đề thi: luôn chọn launch template.</li>
+        <li><b>min / desired / max</b>: ví dụ 2 / 2 / 10. Desired là số ASG đang cố giữ; scaling policy thay đổi desired trong khoảng [min, max]. Đặt min 2 ở 2 AZ để chịu lỗi một AZ.</li>
+        <li><b>Health check</b>: mặc định kiểu <b>EC2</b> (instance status check). Khi ASG đứng sau ELB, bật thêm kiểu <b>ELB</b> để ASG thay cả instance mà app treo nhưng OS vẫn sống. Instance unhealthy bị terminate và tạo mới, không sửa.</li>
+        <li><b>AZ rebalance</b>: nếu một AZ có nhiều instance hơn (do AZ khác từng hỏng), ASG tạo máy ở AZ ít trước rồi mới terminate ở AZ nhiều, nên có lúc tạm vượt desired tối đa 10%.</li>
+        <li><b>Termination policy</b> mặc định khi scale in: chọn AZ có nhiều instance nhất → instance dùng launch template cũ nhất → instance gần giờ tính tiền tiếp theo nhất. Có thể đổi sang OldestInstance, NewestInstance, hoặc <b>scale-in protection</b> cho instance đang xử lý job dài.</li>
+      </ul>
+    </div>
+
+    <div class="block diag"><span class="eyebrow">Hình dung: ALB phía trước ASG trải 2 AZ</span>
+      <svg viewBox="0 0 700 300" role="img" aria-label="Người dùng gửi request tới ALB, ALB chia cho các EC2 do Auto Scaling Group quản lý ở hai AZ, CloudWatch alarm làm ASG thêm bớt instance">
+        <rect x="20" y="20" width="130" height="50" rx="8" class="sv-edge" stroke-width="1.5"/>
+        <text x="85" y="42" text-anchor="middle" class="sv-t" font-weight="600">Người dùng</text>
+        <text x="85" y="60" text-anchor="middle" class="sv-m">HTTPS tới DNS của ALB</text>
+        <rect x="285" y="20" width="130" height="50" rx="8" class="sv-edge" stroke-width="1.5"/>
+        <text x="350" y="42" text-anchor="middle" class="sv-t" font-weight="600">ALB</text>
+        <text x="350" y="60" text-anchor="middle" class="sv-m">listener 443, ACM cert</text>
+        <line x1="150" y1="45" x2="285" y2="45" class="sv-line" stroke-width="2"/>
+        <rect x="550" y="20" width="130" height="50" rx="8" class="sv-region" stroke-width="1.5"/>
+        <text x="615" y="42" text-anchor="middle" class="sv-t" font-weight="600">CloudWatch</text>
+        <text x="615" y="60" text-anchor="middle" class="sv-m">CPU trung bình ASG</text>
+        <rect x="20" y="100" width="660" height="185" rx="10" class="sv-region" stroke-width="2"/>
+        <text x="36" y="122" class="sv-t" font-weight="600">Auto Scaling Group: min 2, desired 2, max 6, target tracking CPU 50%</text>
+        <rect x="40" y="135" width="300" height="135" rx="8" class="sv-az" stroke-width="1.5"/>
+        <rect x="360" y="135" width="300" height="135" rx="8" class="sv-az" stroke-width="1.5"/>
+        <text x="190" y="155" text-anchor="middle" class="sv-t" font-weight="600">AZ 1a, private subnet</text>
+        <text x="510" y="155" text-anchor="middle" class="sv-t" font-weight="600">AZ 1c, private subnet</text>
+        <rect x="55" y="170" width="125" height="80" rx="6" class="sv-region" stroke-width="1.5"/>
+        <rect x="200" y="170" width="125" height="80" rx="6" class="sv-region" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <rect x="375" y="170" width="125" height="80" rx="6" class="sv-region" stroke-width="1.5"/>
+        <rect x="520" y="170" width="125" height="80" rx="6" class="sv-region" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <text x="117" y="195" text-anchor="middle" class="sv-t">EC2 #1</text>
+        <text x="117" y="214" text-anchor="middle" class="sv-m">từ launch template v3</text>
+        <text x="117" y="232" text-anchor="middle" class="sv-m">InService</text>
+        <text x="262" y="195" text-anchor="middle" class="sv-t">EC2 #3</text>
+        <text x="262" y="214" text-anchor="middle" class="sv-m">thêm khi scale out</text>
+        <text x="262" y="232" text-anchor="middle" class="sv-m">warm-up 120 s</text>
+        <text x="437" y="195" text-anchor="middle" class="sv-t">EC2 #2</text>
+        <text x="437" y="214" text-anchor="middle" class="sv-m">từ launch template v3</text>
+        <text x="437" y="232" text-anchor="middle" class="sv-m">InService</text>
+        <text x="582" y="195" text-anchor="middle" class="sv-t">EC2 #4</text>
+        <text x="582" y="214" text-anchor="middle" class="sv-m">thêm khi scale out</text>
+        <text x="582" y="232" text-anchor="middle" class="sv-m">AZ rebalance giữ đều</text>
+        <line x1="350" y1="70" x2="117" y2="170" class="sv-line" stroke-width="2"/>
+        <line x1="350" y1="70" x2="437" y2="170" class="sv-line" stroke-width="2"/>
+        <line x1="350" y1="70" x2="262" y2="170" class="sv-line" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <line x1="350" y1="70" x2="582" y2="170" class="sv-line" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <line x1="615" y1="70" x2="615" y2="100" class="sv-line" stroke-width="2" stroke-dasharray="4 4"/>
+        <text x="607" y="90" text-anchor="end" class="sv-m">alarm → ±desired</text>
+      </svg>
+    </div>
+
+    <div class="block"><span class="eyebrow">Scaling policy</span>
+      <div class="tbl"><table>
+        <tr><th>Loại</th><th>Cách hoạt động</th><th>Chọn khi đề nói</th></tr>
+        <tr><td><b>Target tracking</b></td><td>Bạn đặt mục tiêu (CPU trung bình 50%, request per target 1000, network in), ASG tự tạo 2 CloudWatch alarm và tự tính thêm bớt bao nhiêu. Đơn giản nhất, nên dùng mặc định.</td><td><em>maintain average CPU at X%</em>, <em>least effort</em>, <em>simplest</em></td></tr>
+        <tr><td><b>Step scaling</b></td><td>Bạn gắn alarm và định nhiều bậc: CPU 60 đến 70% thêm 1, 70 đến 90% thêm 2, trên 90% thêm 4. Phản ứng theo mức độ vi phạm, không chờ cooldown giữa các bậc.</td><td><em>add more instances the higher the metric</em>, nhiều ngưỡng</td></tr>
+        <tr><td><b>Simple scaling</b></td><td>Một alarm, một hành động, rồi chờ hết cooldown mới làm tiếp. Loại cũ, chậm.</td><td>Hiếm khi là đáp án đúng</td></tr>
+        <tr><td><b>Scheduled</b></td><td>Đổi min/desired/max theo lịch cron: 8 giờ sáng thứ hai desired 10, 22 giờ về 2.</td><td><em>predictable traffic</em>, <em>known schedule</em>, giờ làm việc, batch cuối tháng</td></tr>
+        <tr><td><b>Predictive</b></td><td>Machine learning học 14 ngày lịch sử, dự báo và scale out trước khi traffic tới. Thường kết hợp với target tracking để sửa sai số.</td><td><em>recurring daily pattern</em>, <em>scale ahead of demand</em>, <em>forecast</em></td></tr>
+      </table></div>
+      <ul>
+        <li><b>Metric tùy chỉnh</b>: app đẩy metric riêng lên CloudWatch (số job trong hàng đợi, số kết nối active), rồi target tracking hoặc step scaling theo metric đó. Ví dụ kinh điển: scale worker theo <b>số message trong SQS chia cho số instance</b> (backlog per instance). Đề nói <em>queue depth</em> → metric tùy chỉnh từ SQS <code>ApproximateNumberOfMessagesVisible</code>.</li>
+        <li><b>Cooldown</b>: sau một lần scale (simple scaling), ASG chờ mặc định 300 giây trước khi scale tiếp để metric kịp ổn định. Target tracking và step scaling dùng <b>instance warm-up</b> thay cho cooldown.</li>
+        <li><b>Instance warm-up</b>: thời gian instance mới chưa được tính vào metric trung bình (vì lúc khởi động CPU cao giả tạo) và chưa làm ASG scale tiếp. Đặt bằng thời gian app khởi động xong, ví dụ 120 đến 300 giây. Từ 2021 có <b>default instance warmup</b> ở mức ASG.</li>
+      </ul>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Lifecycle hook</span>
+        <ul>
+          <li>Chèn một trạng thái chờ vào vòng đời: <code>Pending:Wait</code> khi tạo, <code>Terminating:Wait</code> khi xóa. Instance đứng ở đó tối đa 1 giờ (mặc định, có thể tới 48 giờ) chờ bạn gọi <code>complete-lifecycle-action</code> hoặc hết giờ.</li>
+          <li>Dùng khi: cài phần mềm, tải cấu hình, đăng ký vào hệ thống khác trước khi nhận traffic; hoặc <b>đẩy log ra S3</b>, rút khỏi cluster, hoàn tất job trước khi terminate.</li>
+          <li>Thông báo hook qua EventBridge, SNS, SQS; xử lý bằng Lambda hoặc Systems Manager.</li>
+          <li>Khác deregistration delay: hook là của ASG (toàn bộ instance), deregistration delay là của ELB (chỉ chờ request HTTP đang mở).</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Warm pool</span>
+        <ul>
+          <li>Bể instance đã khởi tạo sẵn ở trạng thái <b>Stopped</b> (không tốn compute, chỉ tốn EBS), <b>Hibernated</b> hoặc Running. Khi scale out, ASG lấy từ pool nên vào service trong vài chục giây thay vì vài phút.</li>
+          <li>Dùng khi đề nói <em>application takes long to initialize</em>, <em>reduce scale-out latency</em>, <em>pre-initialized instances</em>.</li>
+          <li>Khác predictive scaling: warm pool giảm thời gian mỗi lần scale, predictive giảm việc scale muộn bằng dự báo.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Cặp</th><th>Khác nhau ở chỗ</th></tr>
+        <tr><td>Target tracking với step scaling</td><td>Target tracking: nêu mục tiêu, AWS tự tính. Step: bạn tự định bậc. Đề hỏi <em>simplest</em> → target tracking; đề cho nhiều ngưỡng với số instance khác nhau → step.</td></tr>
+        <tr><td>Scheduled với predictive</td><td>Scheduled: bạn biết lịch chính xác và tự đặt. Predictive: AWS học lịch sử và tự dự báo. Đề có chữ <em>forecast</em> / <em>machine learning</em> → predictive.</td></tr>
+        <tr><td>Cooldown với warm-up</td><td>Cooldown chặn hành động scale tiếp theo (simple scaling). Warm-up chặn instance mới tham gia metric (target tracking, step).</td></tr>
+        <tr><td>Health check EC2 với ELB</td><td>EC2: chỉ biết máy sống. ELB: biết app trả lời đúng. ASG sau ELB mà không bật ELB health check thì instance app chết vẫn nằm trong nhóm.</td></tr>
+        <tr><td>Scale-in protection với termination policy</td><td>Protection: đánh dấu instance cụ thể không bị terminate khi scale in (job dài). Termination policy: quy tắc chọn máy nào xóa trong số còn lại.</td></tr>
+        <tr><td>Mixed instances policy với Spot Fleet</td><td>ASG mixed policy: một ASG trộn On-Demand base + Spot nhiều loại instance, có ELB và lifecycle đầy đủ. Spot Fleet là dịch vụ riêng, không có scaling policy phong phú. Đề nói web app chịu lỗi + giảm chi phí → ASG mixed.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>maintain CPU at 50% <b>→ target tracking</b></span><span>known schedule, office hours <b>→ scheduled scaling</b></span><span>recurring pattern, forecast <b>→ predictive scaling</b></span><span>queue depth / SQS messages <b>→ custom metric + target tracking</b></span><span>run script before instance terminates <b>→ lifecycle hook</b></span><span>long application startup <b>→ warm pool</b></span><span>replace instance when app fails but OS ok <b>→ ELB health check cho ASG</b></span><span>Spot + On-Demand in one group <b>→ launch template + mixed instances</b></span><span>instance running long job must not be terminated <b>→ scale-in protection</b></span><span>metrics spike after scale out <b>→ instance warm-up</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">5. Một web app có traffic tăng mạnh mỗi sáng từ 9 giờ và giảm sau 18 giờ, ngày nào cũng vậy. ASG hiện dùng target tracking nhưng sáng nào người dùng cũng bị chậm trong 15 phút đầu. Cách sửa <em>most cost-effective</em>?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Thêm scheduled scaling tăng desired lúc 8:45 (hoặc predictive scaling kết hợp target tracking).</b> Tăng min lên cao cả ngày thì tốn tiền ban đêm. Giảm cooldown không giúp vì vấn đề là scale muộn chứ không phải scale chậm. Warm pool cũng giảm thời gian vào service nhưng với lịch cố định thì scheduled đơn giản và rẻ hơn.</p></div>
+      <div class="q"><p class="qt">6. Instance trong ASG phải upload log cục bộ lên S3 trước khi bị terminate khi scale in. Làm thế nào?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Lifecycle hook ở trạng thái Terminating:Wait, script hoặc Lambda upload log rồi gọi complete-lifecycle-action.</b> Tăng deregistration delay của ALB chỉ giữ kết nối HTTP, không chạy script. Scale-in protection thì instance không bao giờ bị xóa, sai mục đích.</p></div>
+      <div class="q"><p class="qt">7. ASG đứng sau ALB. Một instance có process web bị treo, OS vẫn chạy bình thường. ALB báo target unhealthy nhưng ASG không thay instance. Vì sao?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>ASG đang dùng health check type EC2 (mặc định), chỉ nhìn status check của instance. Đổi sang health check type ELB</b> (kèm grace period đủ dài để app khởi động) thì ASG sẽ terminate và thay instance mà ALB báo unhealthy.</p></div>
+      <div class="q"><p class="qt">8. Worker đọc job từ SQS. Số job biến động, CPU của worker không phản ánh đúng tải. Scale ASG theo gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Metric tùy chỉnh "backlog per instance" = ApproximateNumberOfMessagesVisible chia số instance InService, rồi target tracking theo metric này.</b> Scale theo CPU là sai vì đề đã nói CPU không phản ánh. Scheduled sai vì tải không theo lịch.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. ROUTE 53 ============ -->
+<section id="route53">
+  <span class="eyebrow">Lý thuyết 3 / 5</span>
+  <h2>Route 53: DNS, routing policy, health check</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <p>Route 53 là DNS managed của AWS, dịch vụ global, SLA 100%. Nó làm ba việc: <b>đăng ký domain</b> (registrar), <b>hosted zone</b> chứa record trả lời truy vấn DNS, và <b>health check</b> để đổi câu trả lời khi endpoint hỏng. Tên "53" là port của DNS.</p>
+      <ul>
+        <li><b>Public hosted zone</b>: trả lời cho Internet (<code>example.com</code>). <b>Private hosted zone</b>: chỉ trả lời cho truy vấn từ trong các VPC đã gắn (<code>db.internal</code>), cần VPC bật <code>enableDnsHostnames</code> và <code>enableDnsSupport</code>. Mỗi hosted zone khoảng 0,50 USD/tháng (cần kiểm tra lại).</li>
+        <li><b>Record type</b>: <b>A</b> (tên → IPv4), <b>AAAA</b> (tên → IPv6), <b>CNAME</b> (tên → tên khác, <b>không dùng được ở apex</b> như <code>example.com</code>), <b>NS</b> (name server của zone, Route 53 cấp 4 cái), <b>SOA</b> (thông tin zone), MX, TXT (xác minh domain, SPF), SRV, PTR.</li>
+        <li><b>Alias record</b>: mở rộng riêng của Route 53, trỏ tên tới <b>resource AWS</b> (ALB, NLB, CloudFront, API Gateway, S3 website endpoint, Elastic Beanstalk, Global Accelerator, record khác cùng zone). Ưu điểm: dùng được ở <b>apex domain</b>, <b>miễn phí truy vấn</b>, tự theo IP của resource khi đổi, có thể bật <b>Evaluate target health</b>. Nhược: không trỏ được tới EC2 DNS name hay DNS ngoài AWS, không đặt TTL (lấy TTL của resource).</li>
+        <li><b>TTL</b>: thời gian resolver cache câu trả lời. TTL cao (24 giờ) giảm tiền truy vấn nhưng đổi IP mất lâu; TTL thấp (60 giây) đổi nhanh, tốn tiền hơn. Trước khi migrate, giảm TTL trước vài ngày rồi mới đổi record.</li>
+        <li><b>Domain registration</b>: Route 53 mua được domain, tự tạo hosted zone. Domain mua ở GoDaddy vẫn dùng Route 53 làm DNS bằng cách đổi NS ở registrar sang 4 NS của hosted zone. Ngược lại domain mua ở Route 53 cũng trỏ NS sang DNS khác được.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Routing policy: bảng phải thuộc</span>
+      <div class="tbl"><table>
+        <tr><th>Policy</th><th>Trả lời thế nào</th><th>Health check</th><th>Chọn khi đề nói</th></tr>
+        <tr><td><b>Simple</b></td><td>Một record, một hoặc nhiều giá trị, client tự chọn ngẫu nhiên. Không có health check.</td><td class="c">Không</td><td>Một server, không cần thông minh</td></tr>
+        <tr><td><b>Weighted</b></td><td>Nhiều record cùng tên, mỗi cái một trọng số 0 đến 255. Trọng số 0 = tắt. Tỷ lệ = weight / tổng.</td><td class="c">Có</td><td><em>blue/green</em>, <em>canary 10% traffic to new version</em>, <em>A/B testing</em>, chia tải giữa Region theo tỷ lệ</td></tr>
+        <tr><td><b>Latency</b></td><td>Trả lời record ở Region có độ trễ thấp nhất tới người dùng (đo bằng dữ liệu của AWS, không phải khoảng cách địa lý). Mỗi record gắn một Region.</td><td class="c">Có</td><td><em>lowest latency</em>, <em>best performance for global users</em>, nhiều Region</td></tr>
+        <tr><td><b>Failover</b></td><td>Hai record PRIMARY và SECONDARY. Primary phải có health check; khi fail thì trả secondary. Secondary hay là trang tĩnh S3 hoặc Region DR.</td><td class="c">Bắt buộc ở primary</td><td><em>active-passive</em>, <em>disaster recovery</em>, <em>static maintenance page when down</em></td></tr>
+        <tr><td><b>Geolocation</b></td><td>Theo <b>vị trí của người dùng</b> (lục địa, quốc gia, bang ở Mỹ). Nên có record Default cho nơi không khớp.</td><td class="c">Có</td><td><em>content localization</em>, <em>comply with regulation per country</em>, <em>restrict distribution</em>, người Nhật vào server Nhật</td></tr>
+        <tr><td><b>Geoproximity</b></td><td>Theo <b>vị trí của resource</b> và một <b>bias</b> (−99 đến +99) để nới rộng hay thu hẹp vùng phục vụ của mỗi resource. Phải dùng Traffic Flow. Resource ngoài AWS thì khai tọa độ.</td><td class="c">Có</td><td><em>shift more traffic to one Region</em>, <em>bias</em>, <em>expand the geographic area</em></td></tr>
+        <tr><td><b>Multi-value answer</b></td><td>Trả tối đa 8 giá trị healthy, client chọn. Giống simple nhưng có health check. Không thay được load balancer.</td><td class="c">Có</td><td><em>return multiple healthy IPs</em>, <em>simple client-side load balancing</em>, không muốn dùng ELB</td></tr>
+        <tr><td><b>IP-based</b> (nhận diện)</td><td>Theo CIDR của resolver phía người dùng, bạn tự khai danh sách CIDR. Dùng khi biết ISP nào nên đi route nào.</td><td class="c">Có</td><td><em>based on client IP ranges</em>, <em>ISP</em></td></tr>
+      </table></div>
+      <div class="note">Bẫy hay gặp nhất: <b>geolocation</b> dựa vào chỗ người dùng đứng (luật, ngôn ngữ), <b>latency</b> dựa vào độ trễ đo được (hiệu năng). Người ở Hà Nội có thể được latency routing đưa sang Singapore, nhưng geolocation thì đưa đúng record gắn cho Việt Nam dù chậm hơn. Đề nói <em>performance</em> → latency; đề nói <em>country</em>, <em>language</em>, <em>legal</em> → geolocation.</div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Health check</span>
+      <ul>
+        <li><b>Endpoint health check</b>: khoảng 15 health checker toàn cầu gọi IP hoặc domain của bạn qua HTTP/HTTPS/TCP mỗi 30 giây (hoặc 10 giây, đắt hơn). Healthy nếu trên 18% checker báo OK (cần kiểm tra lại). Chỉ kiểm được endpoint public; endpoint private thì checker không với tới, phải dùng cách dưới. Firewall / SG phải cho IP của health checker.</li>
+        <li><b>Calculated health check</b>: gộp nhiều health check con bằng AND / OR / "ít nhất N trong M healthy". Dùng cho hệ thống nhiều thành phần.</li>
+        <li><b>CloudWatch alarm health check</b>: healthy theo trạng thái một alarm. Đây là cách kiểm tra <b>resource private</b> (RDS, EC2 trong private subnet): tạo alarm trên metric rồi health check theo alarm.</li>
+        <li>Health check có thể gửi SNS khi fail. Có thể kiểm tra chuỗi text trong 5120 byte đầu của response.</li>
+        <li><b>Evaluate target health</b> ở alias record: thay cho health check riêng, Route 53 hỏi trạng thái của ALB/NLB (healthy khi có ít nhất một target healthy). Không cần tạo health check tốn tiền.</li>
+      </ul>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Active-active với active-passive</span>
+        <ul>
+          <li><b>Active-active</b>: mọi resource cùng nhận traffic. Làm bằng weighted, latency, geolocation hoặc multi-value, mỗi record gắn health check để tự loại cái hỏng.</li>
+          <li><b>Active-passive</b>: chỉ primary nhận, secondary đứng chờ. Làm bằng <b>failover</b> routing. Secondary có thể là S3 static website (trang "đang bảo trì"), hoặc stack ở Region khác (DR pilot light, warm standby, học tuần 9).</li>
+          <li>Lồng nhau: failover ở ngoài, trong primary lại dùng weighted giữa hai ALB. Route 53 cho phép record trỏ tới record khác (alias cùng zone) để xây cây.</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Route 53 Resolver cho hybrid DNS</span>
+        <ul>
+          <li>Trong VPC, DNS mặc định là <code>VPC CIDR + 2</code> (ví dụ 10.0.0.2), tên là Amazon-provided DNS / Route 53 Resolver, phân giải tên AWS và private hosted zone, nhưng on-premises không gọi được nó và nó không biết tên on-premises.</li>
+          <li><b>Inbound endpoint</b>: ENI trong VPC có IP, để DNS server on-premises forward truy vấn tên AWS (<code>db.internal</code>) vào VPC qua VPN/DX.</li>
+          <li><b>Outbound endpoint</b> + <b>Resolver rule</b> (forward rule): VPC forward truy vấn <code>corp.local</code> tới DNS server on-premises.</li>
+          <li>Đề nói <em>resolve on-premises hostnames from VPC</em> → outbound; <em>on-premises servers resolve AWS private names</em> → inbound; hai chiều → cả hai.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>Trỏ <code>example.com</code> (apex) tới ALB</td><td>Alias A record</td><td>CNAME (DNS cấm CNAME ở apex)</td></tr>
+        <tr><td>Trỏ <code>www.example.com</code> tới domain của bên thứ ba</td><td>CNAME</td><td>Alias (chỉ trỏ resource AWS)</td></tr>
+        <tr><td>Đưa 5% người dùng sang phiên bản mới</td><td>Weighted 95/5</td><td>Latency, geolocation</td></tr>
+        <tr><td>Người dùng mỗi nước phải vào server trong nước (luật)</td><td>Geolocation</td><td>Latency (có thể đưa sang nước khác)</td></tr>
+        <tr><td>Người dùng toàn cầu, hiệu năng tốt nhất, nhiều Region</td><td>Latency</td><td>Geolocation</td></tr>
+        <tr><td>Muốn đẩy thêm 30% traffic về Region Tokyo đang dư công suất</td><td>Geoproximity với bias dương ở Tokyo</td><td>Geolocation (không có bias)</td></tr>
+        <tr><td>Trang bảo trì tĩnh khi app chết</td><td>Failover, secondary là S3 static website qua alias</td><td>Weighted</td></tr>
+        <tr><td>Health check cho RDS / EC2 private</td><td>CloudWatch alarm health check</td><td>Endpoint health check (checker không vào private được)</td></tr>
+        <tr><td>Chia tải mà không muốn trả tiền ELB</td><td>Multi-value answer + health check</td><td>Simple (không loại được IP hỏng)</td></tr>
+        <tr><td>On-premises phân giải tên trong private hosted zone</td><td>Resolver inbound endpoint</td><td>Outbound endpoint</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>apex / root domain to ALB <b>→ alias record</b></span><span>blue/green, percentage of traffic <b>→ weighted</b></span><span>lowest latency <b>→ latency routing</b></span><span>based on user location / country <b>→ geolocation</b></span><span>bias, shift traffic toward a Region <b>→ geoproximity</b></span><span>active-passive, DR site <b>→ failover</b></span><span>multiple healthy IPs <b>→ multi-value answer</b></span><span>private resource health <b>→ CloudWatch alarm health check</b></span><span>hybrid DNS, on-premises resolve AWS names <b>→ Resolver inbound endpoint</b></span><span>VPC resolve on-premises names <b>→ Resolver outbound endpoint + rule</b></span><span>only VPC can resolve <b>→ private hosted zone</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">9. Công ty muốn <code>example.com</code> (không có www) trỏ tới ALB. Record nào?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Alias A record trỏ tới ALB.</b> CNAME không được phép ở apex domain theo chuẩn DNS. A record thường với IP của ALB cũng sai vì IP của ALB thay đổi.</p></div>
+      <div class="q"><p class="qt">10. App chạy ở Tokyo và Frankfurt. Luật EU yêu cầu người dùng ở EU chỉ được phục vụ từ Frankfurt, kể cả khi Tokyo nhanh hơn. Routing policy nào?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Geolocation: record cho lục địa Europe → Frankfurt, Default → Tokyo.</b> Latency có thể đưa người EU sang Tokyo khi đường mạng tốt, vi phạm luật. Geoproximity cũng dựa vị trí nhưng là vị trí resource cộng bias, không đảm bảo ranh giới hành chính.</p></div>
+      <div class="q"><p class="qt">11. Web app ở một Region, cần hiện trang tĩnh "đang bảo trì" khi ALB không còn target healthy, <em>least cost</em>. Thiết kế?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Failover routing: primary alias tới ALB với Evaluate target health, secondary alias tới S3 static website hosting bucket.</b> Dựng Region thứ hai là tốn tiền. Weighted không tự chuyển khi hỏng nếu không có health check và vẫn chia một phần traffic sang trang bảo trì khi app bình thường.</p></div>
+      <div class="q"><p class="qt">12. Máy chủ on-premises cần phân giải <code>api.internal</code> nằm trong private hosted zone của VPC qua Direct Connect. Cần gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Route 53 Resolver inbound endpoint trong VPC, DNS server on-premises forward zone <code>internal</code> tới IP của endpoint.</b> Outbound là chiều ngược lại (VPC hỏi on-premises). Public hosted zone sẽ lộ tên nội bộ ra Internet và vẫn không giải được private IP một cách an toàn.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. CLOUDFRONT ============ -->
+<section id="cloudfront">
+  <span class="eyebrow">Lý thuyết 4 / 5</span>
+  <h2>CloudFront: CDN ở Edge location</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <p>CloudFront là CDN của AWS: một <b>distribution</b> có DNS name dạng <code>d123.cloudfront.net</code>, nhận request ở <b>Edge location</b> gần người dùng (hơn 600 điểm, cần kiểm tra lại), trả từ cache nếu có, không thì về <b>origin</b> lấy rồi cache lại. Lợi ích: giảm độ trễ, giảm tải và chi phí data transfer của origin, chặn DDoS lớp 3/4 bằng Shield Standard, gắn WAF cho lớp 7. Dịch vụ global, cấu hình ở us-east-1.</p>
+      <ul>
+        <li><b>Origin</b>: <b>S3 bucket</b> (phổ biến nhất, kể cả S3 static website endpoint nhưng khi đó coi là custom origin), <b>ALB</b>, <b>EC2</b> với public IP, <b>API Gateway</b>, <b>MediaStore</b>, bất kỳ HTTP server nào (<b>custom origin</b>, kể cả on-premises). Một distribution nhiều origin, chọn origin theo <b>path pattern</b> của cache behavior (<code>/api/*</code> → ALB, <code>/*</code> → S3).</li>
+        <li><b>Origin group</b>: primary và secondary origin, CloudFront tự chuyển sang secondary khi primary trả lỗi 500/502/503/504 hoặc 403/404 (tùy chọn). Dùng cho <b>origin failover</b> giữa hai bucket ở hai Region (kết hợp S3 Cross-Region Replication).</li>
+        <li><b>Cache behavior</b>: quy tắc cho một path pattern: origin nào, viewer protocol (redirect HTTP → HTTPS), method cho phép (GET/HEAD hay cả PUT/POST), cache policy, origin request policy, có cần signed URL không, gắn function nào.</li>
+        <li><b>TTL</b>: origin gửi <code>Cache-Control: max-age</code> thì CloudFront theo, trong giới hạn min/max TTL của cache policy. Không có header thì dùng default TTL (24 giờ). Muốn bỏ cache ngay: <b>invalidation</b> (<code>/images/*</code>, tính tiền sau 1000 path mỗi tháng) hoặc đổi tên file có version (<code>app.v2.js</code>, cách khuyến nghị).</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Bảo vệ origin và nội dung</span>
+      <div class="tbl"><table>
+        <tr><th>Cơ chế</th><th>Là gì</th><th>Dùng khi</th></tr>
+        <tr><td><b>OAC</b> (Origin Access Control)</td><td>CloudFront ký request tới S3 bằng SigV4; bucket policy chỉ cho principal <code>cloudfront.amazonaws.com</code> với condition <code>AWS:SourceArn</code> là ARN distribution. Bucket giữ Block Public Access bật. Thay thế <b>OAI</b> (Origin Access Identity, cách cũ, không hỗ trợ SSE-KMS và một số Region mới).</td><td>Mọi trường hợp S3 là origin và không muốn ai truy cập thẳng bucket. Đề mới: chọn OAC, OAI là đáp án cũ.</td></tr>
+        <tr><td><b>Custom origin header</b></td><td>Với ALB hoặc custom origin: CloudFront thêm header bí mật (<code>X-Origin-Verify</code>), WAF hoặc app ở origin chặn request thiếu header. Hoặc SG của ALB chỉ cho prefix list managed của CloudFront.</td><td><em>only accept traffic from CloudFront</em> với origin là ALB.</td></tr>
+        <tr><td><b>Signed URL</b></td><td>URL có chữ ký và hạn, ký bằng <b>key pair</b> trong <b>key group</b> (cách mới) hoặc CloudFront key pair của root (cũ). Policy canned (một file, hạn) hoặc custom (nhiều file, IP, thời gian bắt đầu).</td><td>Một file riêng lẻ: link tải phần mềm, video trả tiền.</td></tr>
+        <tr><td><b>Signed cookie</b></td><td>Cookie ký thay vì URL, giữ URL gốc. Một cookie cho phép truy cập nhiều file.</td><td>Nhiều file (cả thư mục video HLS, khu vực thành viên) mà không muốn đổi URL.</td></tr>
+        <tr><td><b>Geo restriction</b></td><td>Allow list hoặc block list theo quốc gia (dựa GeoIP). Áp cho cả distribution.</td><td><em>copyright</em>, <em>licensing</em>, <em>block country</em>.</td></tr>
+        <tr><td><b>Field-level encryption</b></td><td>Mã hóa một số field của POST (số thẻ) bằng public key ngay ở Edge, chỉ app giữ private key giải được, kể cả ALB và log cũng không thấy.</td><td><em>sensitive fields</em>, <em>protect specific form data end-to-end</em>.</td></tr>
+        <tr><td><b>WAF</b> + <b>Shield</b></td><td>Web ACL gắn vào distribution (WAF cho CloudFront tạo ở us-east-1). Shield Standard miễn phí, Shield Advanced trả tiền cho DDoS lớn và hỗ trợ 24/7.</td><td><em>SQL injection</em>, <em>rate limiting</em>, <em>block IP</em>, <em>DDoS</em>.</td></tr>
+      </table></div>
+      <div class="note">So sánh ba thứ dễ lẫn: <b>S3 presigned URL</b> (tuần 3) ký bằng credential IAM của người tạo, truy cập thẳng S3, không qua CDN, hạn tối đa 7 ngày. <b>CloudFront signed URL</b> ký bằng key pair của CloudFront, truy cập qua Edge có cache, bucket vẫn private nhờ OAC, chặn được theo IP. <b>Signed cookie</b> giống signed URL nhưng áp cho nhiều file. Đề nói <em>premium content</em>, <em>paid subscribers</em>, <em>global</em> → CloudFront signed URL/cookie; đề nói <em>temporary upload/download one object</em> → S3 presigned.</div>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Cache policy và origin request policy</span>
+        <ul>
+          <li><b>Cache policy</b> quyết định <b>cache key</b>: URL cộng những header, cookie, query string nào. Cache key càng nhiều thành phần thì càng ít cache hit. Dùng managed policy <code>CachingOptimized</code> cho tĩnh, <code>CachingDisabled</code> cho API động.</li>
+          <li><b>Origin request policy</b>: những header/cookie/query string được <b>chuyển tiếp tới origin</b> nhưng không nằm trong cache key. Ví dụ forward <code>Authorization</code> hay <code>CloudFront-Viewer-Country</code> cho app mà không làm vỡ cache.</li>
+          <li><b>Response headers policy</b>: thêm CORS, security header (HSTS, CSP) ở Edge.</li>
+          <li>Đề nói <em>cache hit ratio low</em> → bỏ bớt header/cookie/query khỏi cache key, tăng TTL, hợp nhất origin.</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">Chạy code ở Edge</span>
+        <ul>
+          <li><b>CloudFront Functions</b>: JavaScript cực nhẹ, chạy ở hơn 200 Edge location, dưới 1 ms, chỉ ở viewer request / viewer response. Dùng cho rewrite URL, redirect, thêm header, kiểm tra JWT đơn giản, chuẩn hóa cache key. Rẻ hơn Lambda@Edge nhiều.</li>
+          <li><b>Lambda@Edge</b>: Lambda (Node.js, Python) chạy ở Regional Edge Cache, tới 5 giây (viewer) hoặc 30 giây (origin), có 4 điểm: viewer request, origin request, origin response, viewer response. Có thể gọi dịch vụ khác, đọc body. Tạo ở <b>us-east-1</b> rồi replicate.</li>
+          <li>Chọn: xử lý nhẹ, tần suất cao → CloudFront Functions. Cần network call, thao tác body, origin request/response → Lambda@Edge.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">HTTPS, chứng chỉ, price class</span>
+      <ul>
+        <li>Dùng domain riêng (<code>cdn.example.com</code>) cần <b>alternate domain name (CNAME)</b> trong distribution và chứng chỉ <b>ACM phải ở us-east-1</b> dù bucket ở Tokyo. Route 53 alias trỏ tên tới distribution.</li>
+        <li><b>Viewer protocol policy</b>: HTTP and HTTPS / Redirect HTTP to HTTPS / HTTPS only. <b>Origin protocol policy</b>: HTTP only (S3 bucket origin luôn HTTPS), HTTPS only, match viewer.</li>
+        <li><b>Price class</b>: All (mọi Edge), 200 (bỏ nhóm đắt nhất như Nam Mỹ, Úc), 100 (chỉ Bắc Mỹ và châu Âu). Đề nói <em>reduce CloudFront cost, users mostly in US and Europe</em> → Price Class 100.</li>
+        <li>Data transfer từ S3 / EC2 ra CloudFront <b>miễn phí</b>; CloudFront ra người dùng tính tiền nhưng rẻ hơn S3 ra Internet trực tiếp. Nên đặt CloudFront trước S3 cả khi không cần cache chỉ để giảm phí egress và chống DDoS.</li>
+        <li>Hỗ trợ HTTP/2, HTTP/3 (QUIC), IPv6, WebSocket, gRPC. Có thể dùng cho nội dung động (API) với TTL 0 để tận dụng mạng backbone AWS từ Edge về origin.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>S3 là origin, chặn truy cập thẳng bucket</td><td>OAC + bucket policy cho distribution</td><td>Bucket public, hoặc OAI (cũ)</td></tr>
+        <tr><td>Chỉ người trả tiền xem được video, nhiều file</td><td>Signed cookie</td><td>S3 presigned URL (không qua CDN, một object)</td></tr>
+        <tr><td>Link tải một file có hạn, qua CDN</td><td>Signed URL</td><td>Signed cookie</td></tr>
+        <tr><td>Chặn người dùng ở một số nước</td><td>Geo restriction</td><td>WAF geo match (cũng được nhưng phức tạp hơn), Route 53 geolocation (chỉ đổi câu trả lời DNS, không chặn)</td></tr>
+        <tr><td>Nội dung cập nhật nhưng người dùng vẫn thấy bản cũ</td><td>Invalidation hoặc đổi tên file có version</td><td>Xóa distribution</td></tr>
+        <tr><td>Rewrite URL đơn giản, tần suất cao, rẻ</td><td>CloudFront Functions</td><td>Lambda@Edge</td></tr>
+        <tr><td>Gọi DynamoDB để cá nhân hóa ở Edge</td><td>Lambda@Edge</td><td>CloudFront Functions (không gọi mạng được)</td></tr>
+        <tr><td>Hai bucket ở hai Region, tự chuyển khi một cái lỗi</td><td>Origin group (origin failover)</td><td>Route 53 failover (CloudFront là một origin thôi)</td></tr>
+        <tr><td>Chứng chỉ cho domain riêng trên CloudFront</td><td>ACM ở us-east-1</td><td>ACM ở Region của bucket</td></tr>
+        <tr><td>Mã hóa riêng số thẻ trong form POST</td><td>Field-level encryption</td><td>HTTPS (ALB vẫn thấy plaintext)</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>S3 origin, no direct access <b>→ OAC</b></span><span>premium / paid content <b>→ signed URL / cookie</b></span><span>many files, keep URLs <b>→ signed cookie</b></span><span>block countries, licensing <b>→ geo restriction</b></span><span>low cache hit ratio <b>→ sửa cache policy, bỏ header khỏi cache key</b></span><span>lightweight edge logic, header rewrite <b>→ CloudFront Functions</b></span><span>edge logic with network call <b>→ Lambda@Edge</b></span><span>custom domain HTTPS on CloudFront <b>→ ACM us-east-1</b></span><span>reduce CDN cost for regional users <b>→ Price Class</b></span><span>origin failover <b>→ origin group</b></span><span>protect credit card fields <b>→ field-level encryption</b></span><span>SQL injection, rate limit <b>→ WAF on CloudFront</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">13. Công ty phát video trả phí cho thuê bao toàn cầu, mỗi phim gồm hàng trăm segment HLS trong S3. Bucket phải private, URL segment không được đổi. Giải pháp?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>CloudFront với OAC trước S3, cấp signed cookie cho người dùng đã đăng nhập.</b> Signed URL sẽ phải ký từng segment và đổi URL. S3 presigned URL không qua CDN, người dùng toàn cầu chậm và bucket phải cho phép truy cập thẳng.</p></div>
+      <div class="q"><p class="qt">14. Sau khi deploy CSS mới lên S3, người dùng vẫn thấy giao diện cũ qua CloudFront nhiều giờ. Cách sửa ngay và cách phòng lâu dài?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Ngay: tạo invalidation cho <code>/css/*</code>. Lâu dài: đặt tên file có version (<code>style.a1b2.css</code>) để mỗi bản là cache key mới.</b> Đặt TTL 0 cho mọi thứ thì mất tác dụng CDN. Xóa và tạo lại distribution mất hàng chục phút và đổi DNS name.</p></div>
+      <div class="q"><p class="qt">15. Cần chuyển hướng người dùng từ <code>/old/*</code> sang <code>/new/*</code> ở Edge cho hàng triệu request mỗi giây, <em>most cost-effective</em>. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>CloudFront Functions ở viewer request.</b> Việc này chỉ là đọc URL và trả 301, không cần network. Lambda@Edge làm được nhưng đắt hơn và chậm hơn. ALB redirect rule cũng được nhưng request phải về Region, không tận dụng Edge.</p></div>
+      <div class="q"><p class="qt">16. Một ALB là origin của CloudFront. Kẻ tấn công tìm ra DNS name của ALB và gọi thẳng, bỏ qua WAF gắn ở CloudFront. Cách chặn <em>least operational overhead</em>?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Security Group của ALB chỉ cho inbound từ AWS-managed prefix list của CloudFront origin-facing IP; kết hợp custom origin header bí mật mà WAF ở ALB kiểm tra.</b> OAC chỉ dùng cho S3 (và vài origin AWS khác như Lambda URL, MediaStore), không dùng cho ALB. Đổi ALB sang internal thì CloudFront không gọi được.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. GLOBAL ACCELERATOR ============ -->
+<section id="ga">
+  <span class="eyebrow">Lý thuyết 5 / 5</span>
+  <h2>Global Accelerator so với CloudFront</h2>
+
+  <div class="card">
+    <div class="block"><span class="eyebrow">Giải thích ngắn</span>
+      <p>AWS Global Accelerator (GA) cấp cho ứng dụng <b>2 địa chỉ IP tĩnh anycast</b> được quảng bá từ mọi Edge location. Người dùng kết nối tới Edge gần nhất, rồi traffic đi trên <b>mạng backbone của AWS</b> (không qua Internet công cộng) tới <b>endpoint</b> ở Region: ALB, NLB, EC2, Elastic IP. GA không cache, không hiểu HTTP, chỉ chuyển gói <b>TCP/UDP</b> nhanh và ổn định hơn.</p>
+      <ul>
+        <li><b>Accelerator</b> → <b>listener</b> (port, TCP/UDP) → <b>endpoint group</b> theo Region (có traffic dial 0 đến 100% để chia hoặc tắt một Region) → <b>endpoint</b> với weight. Health check liên tục, endpoint hỏng thì chuyển trong khoảng dưới 30 giây đến 1 phút, không phụ thuộc TTL DNS của client (cần kiểm tra lại số giây).</li>
+        <li>Vì IP không đổi nên khách hàng <b>whitelist</b> một lần. Có thể <b>mang IP của bạn</b> (BYOIP). Hai IP thuộc hai network zone độc lập, một IP sập thì client dùng IP còn lại.</li>
+        <li><b>Client IP preservation</b>: với ALB và EC2 endpoint, GA giữ IP thật của client; với NLB thì tùy cấu hình (cần kiểm tra lại).</li>
+        <li>Tích hợp Shield Standard. Giá: phí cố định theo giờ cộng phí theo GB vượt qua, cao hơn CloudFront cho nội dung tĩnh.</li>
+        <li>Phù hợp: <b>gaming</b> (UDP), <b>VoIP</b>, <b>IoT</b> (MQTT qua TCP), API nội dung động, ứng dụng cần <em>deterministic failover</em> giữa nhiều Region, ứng dụng không HTTP.</li>
+      </ul>
+    </div>
+
+    <div class="block"><span class="eyebrow">Bảng so sánh phải thuộc</span>
+      <div class="tbl"><table>
+        <tr><th>Tiêu chí</th><th>CloudFront</th><th>Global Accelerator</th></tr>
+        <tr><td>Tầng</td><td>Layer 7, HTTP/HTTPS (cả WebSocket, gRPC)</td><td>Layer 4, TCP và UDP</td></tr>
+        <tr><td>Cache</td><td>Có, đây là giá trị chính</td><td>Không, chỉ proxy</td></tr>
+        <tr><td>Địa chỉ</td><td>DNS name <code>d123.cloudfront.net</code>, IP đổi</td><td>2 IP tĩnh anycast (hoặc BYOIP)</td></tr>
+        <tr><td>Cải thiện hiệu năng cho</td><td>Nội dung tĩnh và động có thể cache được, video, website</td><td>Mọi kết nối TCP/UDP, nhất là nội dung không cache được, kết nối dài</td></tr>
+        <tr><td>Failover</td><td>Origin group trong một distribution</td><td>Health check endpoint, chuyển giữa Region trong vài chục giây, không chờ DNS</td></tr>
+        <tr><td>Bảo mật</td><td>WAF, Shield, signed URL/cookie, geo restriction, OAC</td><td>Shield; WAF gắn ở ALB phía sau</td></tr>
+        <tr><td>Endpoint phía sau</td><td>S3, ALB, EC2, API Gateway, custom origin</td><td>ALB, NLB, EC2, Elastic IP</td></tr>
+        <tr><td>Dùng khi đề nói</td><td><em>static content</em>, <em>cache</em>, <em>video streaming</em>, <em>reduce load on origin</em>, <em>S3</em></td><td><em>static IP</em>, <em>UDP</em>, <em>gaming / VoIP / IoT</em>, <em>non-HTTP</em>, <em>fast regional failover</em>, <em>whitelist IP</em></td></tr>
+      </table></div>
+    </div>
+
+    <div class="grid2">
+      <div class="block"><span class="eyebrow">Kết hợp với ELB</span>
+        <ul>
+          <li><b>GA → ALB</b> ở nhiều Region: app HTTP nhiều Region, cần IP tĩnh và failover nhanh hơn Route 53 (DNS cache ở client có thể giữ IP cũ lâu hơn TTL).</li>
+          <li><b>GA → NLB</b>: game server UDP, MQTT broker, cần IP tĩnh toàn cầu thay vì mỗi Region một EIP.</li>
+          <li><b>CloudFront → ALB</b>: website có cả tĩnh lẫn API; CloudFront cache tĩnh, chuyển động về ALB qua backbone.</li>
+          <li>Có thể dùng cả hai: CloudFront cho web, GA cho API UDP/TCP riêng. Không đặt CloudFront phía sau GA hay ngược lại.</li>
+        </ul>
+      </div>
+      <div class="block"><span class="eyebrow">So với Route 53 latency / failover</span>
+        <ul>
+          <li>Route 53 chỉ trả lời DNS; client, ISP cache câu trả lời theo TTL nên failover thực tế có thể mất vài phút. GA chuyển ở tầng mạng, client không cần làm gì.</li>
+          <li>Route 53 latency routing miễn phí hơn nhiều, đủ cho web thường. GA đáng tiền khi đề nhấn <em>minimize failover time</em>, <em>static IP</em>, <em>UDP</em>.</li>
+          <li>Đề nói <em>DNS caching causes slow failover</em> → Global Accelerator.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Dễ nhầm: chọn ALB, NLB, CloudFront hay Global Accelerator</span>
+      <div class="tbl"><table>
+        <tr><th>Đề bài muốn</th><th>Chọn</th><th>Không phải</th></tr>
+        <tr><td>Game online UDP, người chơi toàn cầu, độ trễ thấp</td><td>Global Accelerator → NLB</td><td>CloudFront (không UDP)</td></tr>
+        <tr><td>Website tĩnh và video toàn cầu, giảm tải S3</td><td>CloudFront</td><td>Global Accelerator (không cache)</td></tr>
+        <tr><td>Khách hàng doanh nghiệp whitelist IP, app ở 2 Region</td><td>Global Accelerator (2 IP tĩnh cho cả hai Region)</td><td>NLB với EIP (mỗi Region một bộ IP), CloudFront</td></tr>
+        <tr><td>API HTTP một Region, cần route theo path</td><td>ALB</td><td>GA (chỉ thêm chi phí nếu người dùng một vùng)</td></tr>
+        <tr><td>Hàng triệu kết nối TCP, IP tĩnh trong một Region</td><td>NLB</td><td>ALB</td></tr>
+        <tr><td>Failover giữa Region trong vài chục giây, không phụ thuộc DNS cache</td><td>Global Accelerator</td><td>Route 53 failover</td></tr>
+        <tr><td>Nội dung động không cache được, HTTP, toàn cầu</td><td>CloudFront với TTL 0 hoặc GA → ALB (cả hai đều dùng backbone; CloudFront nếu cần WAF/HTTP features, GA nếu cần IP tĩnh)</td><td>Chỉ Route 53</td></tr>
+      </table></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Từ khóa trong đề</span>
+      <div class="kw"><span>static anycast IP <b>→ Global Accelerator</b></span><span>UDP, gaming, VoIP, IoT <b>→ Global Accelerator</b></span><span>non-HTTP global application <b>→ Global Accelerator</b></span><span>fast failover between Regions <b>→ Global Accelerator</b></span><span>cache static content <b>→ CloudFront</b></span><span>video streaming, S3 origin <b>→ CloudFront</b></span><span>whitelist a fixed set of IPs globally <b>→ Global Accelerator</b></span><span>bring your own IP <b>→ Global Accelerator BYOIP</b></span></div>
+    </div>
+
+    <div class="block"><span class="eyebrow">Kiểm tra nhanh</span>
+      <div class="q"><p class="qt">17. Game mobile dùng UDP, server ở Tokyo và Frankfurt sau NLB. Người chơi phàn nàn độ trễ và giật khi một Region bảo trì. Giải pháp?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Global Accelerator với endpoint group ở hai Region trỏ tới hai NLB.</b> CloudFront không hỗ trợ UDP. Route 53 latency cải thiện độ trễ nhưng failover chậm vì DNS cache. ALB không làm UDP.</p></div>
+      <div class="q"><p class="qt">18. Chọn 2 lý do để dùng CloudFront thay vì Global Accelerator: (A) cần cache ảnh và video, (B) cần IP tĩnh, (C) cần signed URL cho nội dung trả phí, (D) cần UDP.</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>A và C.</b> Cache và signed URL/cookie là tính năng của CloudFront. B và D là lý do chọn Global Accelerator.</p></div>
+      <div class="q"><p class="qt">19. Ứng dụng HTTPS ở hai Region, mỗi Region một ALB. Yêu cầu: client dùng một địa chỉ cố định, khi một Region sập thì chuyển sang Region kia trong dưới 1 phút. Chọn gì?</p><button type="button" data-reveal>Xem đáp án</button><p class="ans" hidden><b>Global Accelerator với 2 endpoint group, mỗi cái trỏ ALB của Region đó.</b> Route 53 failover cho địa chỉ cố định dạng tên nhưng thời gian chuyển phụ thuộc TTL và cache của resolver, thường quá 1 phút. CloudFront với origin group cũng failover nhưng không có IP tĩnh.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HANDS-ON ============ -->
+<section id="handson">
+  <span class="eyebrow">Thực hành</span>
+  <h2>Hands-on: 5 lab</h2>
+  <p>Dùng lại VPC <code>saa-vpc</code> của tuần 4 (2 AZ, public và private subnet, NAT Gateway). Nếu đã xóa NAT thì tạo lại trước Lab 1 vì EC2 ở private subnet cần ra Internet để cài web server. Mọi lệnh chạy trong PowerShell với profile <code>saa</code>, Region <code>ap-northeast-1</code>. Lab 1 và 2 làm trên Console cho quen màn hình, có kèm lệnh CLI để kiểm tra.</p>
+
+  <div class="card">
+    <h3>Lab 1. ALB trước Auto Scaling Group 2 AZ, target tracking CPU 50%</h3>
+    <ol class="steps">
+      <li><div><p>Tạo Security Group cho ALB (<code>saa-alb-sg</code>: inbound HTTP 80 từ 0.0.0.0/0) và cho web server (<code>saa-web-sg</code>: inbound HTTP 80 với source là <code>saa-alb-sg</code>, không mở 0.0.0.0/0):</p>
+<pre><code>$env:AWS_PROFILE = "saa"
+$VPC = (aws ec2 describe-vpcs --filters Name=tag:Name,Values=saa-vpc --query "Vpcs[0].VpcId" --output text)
+$ALBSG = aws ec2 create-security-group --group-name saa-alb-sg --description "ALB" --vpc-id $VPC --query GroupId --output text
+aws ec2 authorize-security-group-ingress --group-id $ALBSG --protocol tcp --port 80 --cidr 0.0.0.0/0
+$WEBSG = aws ec2 create-security-group --group-name saa-web-sg --description "web behind ALB" --vpc-id $VPC --query GroupId --output text
+aws ec2 authorize-security-group-ingress --group-id $WEBSG --protocol tcp --port 80 --source-group $ALBSG</code></pre></div></li>
+      <li><div><p>Tạo file <code>userdata.sh</code> cài Apache và in ra AZ của instance (lấy từ IMDSv2):</p>
+<pre><code>#!/bin/bash
+dnf install -y httpd stress-ng
+TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 60")
+AZ=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/placement/availability-zone)
+ID=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
+echo "&lt;h1&gt;Hello from $ID in $AZ&lt;/h1&gt;" &gt; /var/www/html/index.html
+systemctl enable --now httpd</code></pre><p>Lưu file với line ending LF (trong VS Code chọn LF ở góc phải dưới), nếu CRLF thì script lỗi ở dòng đầu.</p></div></li>
+      <li><div><p>Console → <b>EC2 → Launch Templates → Create launch template</b>. Name <code>saa-web-lt</code>, tick <b>Provide guidance to help me set up a template that I can use with EC2 Auto Scaling</b>. AMI: Amazon Linux 2023, instance type <code>t3.micro</code>, key pair của tuần 2 (hoặc không cần vì sẽ dùng Session Manager), <b>không</b> chọn subnet (ASG sẽ chọn), Security group <code>saa-web-sg</code>. Advanced details: IAM instance profile là role có <code>AmazonSSMManagedInstanceCore</code> (tạo ở tuần 2, nếu chưa có thì tạo), <b>User data</b> dán nội dung <code>userdata.sh</code>. Create.</p></div></li>
+      <li><div><p><b>EC2 → Target Groups → Create</b>: type <b>Instances</b>, name <code>saa-web-tg</code>, HTTP 80, VPC <code>saa-vpc</code>, Health check path <code>/</code>, Advanced: healthy threshold 2, interval 10 giây để lab chạy nhanh. Không đăng ký instance nào, Create.</p></div></li>
+      <li><div><p><b>EC2 → Load Balancers → Create → Application Load Balancer</b>: name <code>saa-alb</code>, Internet-facing, IPv4, VPC <code>saa-vpc</code>, chọn <b>2 public subnet</b> ở 2 AZ, Security group <code>saa-alb-sg</code> (bỏ default), Listener HTTP 80 → forward <code>saa-web-tg</code>. Create. Ghi lại DNS name dạng <code>saa-alb-xxxx.ap-northeast-1.elb.amazonaws.com</code>.</p></div></li>
+      <li><div><p><b>EC2 → Auto Scaling Groups → Create</b>: name <code>saa-web-asg</code>, launch template <code>saa-web-lt</code>. Network: VPC <code>saa-vpc</code>, chọn <b>2 private subnet</b>. Load balancing: Attach to an existing load balancer → chọn <code>saa-web-tg</code>. Health checks: tick <b>Turn on Elastic Load Balancing health checks</b>, grace period 120. Group size: desired 2, min 2, max 4. Scaling policies: <b>Target tracking</b>, metric Average CPU utilization, target value <b>50</b>, instance warmup 120. Create.</p></div></li>
+      <li><div><p>Chờ 2 đến 3 phút rồi kiểm tra:</p>
+<pre><code>aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names saa-web-asg --query "AutoScalingGroups[0].Instances[].[InstanceId,AvailabilityZone,HealthStatus,LifecycleState]" --output table
+$TG = aws elbv2 describe-target-groups --names saa-web-tg --query "TargetGroups[0].TargetGroupArn" --output text
+aws elbv2 describe-target-health --target-group-arn $TG --query "TargetHealthDescriptions[].[Target.Id,TargetHealth.State]" --output table</code></pre><p>Mong đợi: 2 instance ở 2 AZ khác nhau, cả hai <code>healthy</code>. Nếu <code>unhealthy</code> lâu: kiểm tra NAT Gateway (instance không cài được httpd), SG <code>saa-web-sg</code> có cho từ <code>saa-alb-sg</code>, user data có bị CRLF.</p></div></li>
+      <li><div><p>Mở DNS name của ALB trên trình duyệt, bấm F5 nhiều lần: dòng chữ đổi giữa hai instance id và hai AZ. Đây là bằng chứng ALB chia tải qua 2 AZ và cross-zone đang bật. Thử mở private IP của một instance thì không vào được, vì SG chỉ cho từ ALB.</p></div></li>
+      <li><div><p>Thí nghiệm self-healing: terminate một instance bằng tay (<code>aws ec2 terminate-instances --instance-ids i-xxx</code>). Sau 1 đến 2 phút ASG tạo instance mới ở đúng AZ bị thiếu. Xem tab <b>Activity</b> của ASG để thấy dòng "launching a new EC2 instance" với lý do.</p></div></li>
+    </ol>
+    <div class="note">ALB tính tiền theo giờ ngay cả khi không có traffic (khoảng 0,02 đến 0,03 USD/giờ cộng LCU). Giữ ALB cho Lab 2 và 3 nhưng phải xóa ở Lab 5 trong ngày. EC2 t3.micro x2 cũng tính giờ.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 2. Stress test bằng stress-ng, xem ASG scale out rồi scale in</h3>
+    <ol class="steps">
+      <li><div><p>Vào một instance bằng <b>Session Manager</b> (EC2 → chọn instance → Connect → Session Manager, cần role SSM ở Lab 1; không cần bastion hay mở port 22). Chạy tải CPU 100% trong 10 phút:</p>
+<pre><code>sudo stress-ng --cpu 2 --timeout 600s &amp;
+top    # thấy CPU gần 100%, bấm q để thoát</code></pre><p>Nếu chưa cài <code>stress-ng</code> (user data lỗi): <code>sudo dnf install -y stress-ng</code>.</p></div></li>
+      <li><div><p>Làm tương tự trên instance thứ hai để CPU <b>trung bình</b> của ASG vượt 50% (target tracking tính trung bình toàn nhóm, một máy 100% và một máy 0% chỉ là 50%).</p></div></li>
+      <li><div><p>Xem CloudWatch: <b>CloudWatch → Alarms</b> có 2 alarm tự tạo tên dạng <code>TargetTracking-saa-web-asg-AlarmHigh-...</code> và <code>AlarmLow-...</code>. AlarmHigh cần 3 datapoint liên tiếp trên 50% (mỗi datapoint 1 phút) mới In alarm. Hoặc theo dõi bằng CLI:</p>
+<pre><code>aws cloudwatch get-metric-statistics --namespace AWS/EC2 --metric-name CPUUtilization --dimensions Name=AutoScalingGroupName,Value=saa-web-asg --start-time (Get-Date).AddMinutes(-15).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ") --end-time (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ") --period 60 --statistics Average --query "Datapoints[].[Timestamp,Average]" --output table</code></pre></div></li>
+      <li><div><p>Sau khoảng 3 đến 5 phút, tab <b>Activity</b> của ASG hiện "Launching a new EC2 instance ... in response to alarm AlarmHigh". Desired tăng từ 2 lên 3 hoặc 4. Quan sát instance mới đi qua <code>Pending</code> → <code>InService</code>, và trong 120 giây warm-up không bị tính vào metric.</p>
+<pre><code>aws autoscaling describe-scaling-activities --auto-scaling-group-name saa-web-asg --max-items 5 --query "Activities[].[StartTime,StatusCode,Cause]" --output table</code></pre></div></li>
+      <li><div><p>Khi stress-ng hết 600 giây, CPU về gần 0. AlarmLow cần 15 datapoint liên tiếp dưới ngưỡng (khoảng 15 phút) để tránh scale in vội. Sau đó ASG terminate instance về desired 2, chọn theo termination policy mặc định (AZ có nhiều instance hơn trước). Xem lại Activity và mục <b>Instance management</b>.</p></div></li>
+      <li><div><p>Ghi lại vào sổ tay: thời gian từ lúc bắt đầu stress tới lúc instance mới healthy (thường 4 đến 7 phút), thời gian từ lúc hết tải tới lúc scale in (khoảng 15 phút). Đây là lý do đề thi nói <em>scale out fast, scale in slow</em> và vì sao có warm pool, predictive scaling.</p></div></li>
+    </ol>
+    <div class="note">Nếu không thấy scale out: kiểm tra max của ASG lớn hơn desired, CPU trung bình thật sự vượt 50% (chạy stress cả 2 máy), và alarm đã sang trạng thái In alarm. Target tracking dùng alarm 3 phút nên không phản ứng tức thì.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 3. Route 53 failover với health check</h3>
+    <p style="font-size:.94rem">Lab này có hai cách. <b>Cách A</b> cần một domain đang do Route 53 quản lý (mua trên Route 53 khoảng 13 USD/năm cho <code>.com</code>, hoặc domain có sẵn trỏ NS về Route 53). <b>Cách B</b> không cần domain: chỉ tạo health check và quan sát trạng thái đổi, đủ để hiểu cơ chế nhưng không thấy DNS chuyển. Nếu không có domain thì làm cách B và ghi rõ trong checklist.</p>
+    <ol class="steps">
+      <li><div><p>Chuẩn bị hai endpoint public: <b>primary</b> là DNS name của ALB ở Lab 1. <b>secondary</b> là một S3 bucket bật static website hosting với <code>index.html</code> ghi "Site under maintenance" (tên bucket phải trùng tên record nếu dùng cách A, ví dụ <code>www.example.com</code>; với cách B đặt tên tùy ý). Bucket phải tắt Block Public Access và có bucket policy cho <code>s3:GetObject</code> public, đây là ngoại lệ hiếm hoi được phép public.</p></div></li>
+      <li><div><p>Tạo health check cho primary: <b>Route 53 → Health checks → Create</b>. Name <code>saa-alb-hc</code>, Monitor an endpoint, Specify endpoint by <b>Domain name</b>, protocol HTTP, domain là DNS name của ALB, port 80, path <code>/</code>. Advanced: Request interval <b>Fast (10 seconds)</b>, Failure threshold 2 để lab chuyển nhanh. Tạo thêm alarm SNS nếu muốn nhận email. Chờ 1 đến 2 phút, trạng thái phải là <b>Healthy</b>, tab Health checkers cho thấy từng checker toàn cầu báo OK.</p></div></li>
+      <li><div><p><b>Cách A (có domain)</b>: vào hosted zone, tạo record <code>www</code> type A, routing policy <b>Failover</b>, Failover record type <b>Primary</b>, Alias → Application Load Balancer → chọn <code>saa-alb</code>, Health check <code>saa-alb-hc</code> (hoặc bật Evaluate target health), Record ID <code>primary</code>. Tạo record <code>www</code> thứ hai, Failover <b>Secondary</b>, Alias → S3 website endpoint → chọn bucket, Record ID <code>secondary</code>. Mở <code>http://www.example.com</code> thấy trang từ ALB.</p>
+<pre><code>nslookup www.example.com 8.8.8.8    # IP của ALB
+Resolve-DnsName www.example.com -Server 8.8.8.8 -Type A</code></pre></div></li>
+      <li><div><p>Làm primary hỏng: cách nhanh nhất là bỏ rule inbound 80 khỏi <code>saa-alb-sg</code> (health checker bị chặn), hoặc đặt desired/min của ASG về 0 để ALB không còn target. Không terminate instance bằng tay vì ASG sẽ tạo lại trong 1 phút.</p>
+<pre><code>aws ec2 revoke-security-group-ingress --group-id $ALBSG --protocol tcp --port 80 --cidr 0.0.0.0/0</code></pre></div></li>
+      <li><div><p>Sau 20 đến 40 giây health check sang <b>Unhealthy</b>. <b>Cách A</b>: chạy lại <code>nslookup</code>, câu trả lời đổi sang IP của S3 website; trình duyệt mở lại thấy "Site under maintenance" (có thể phải chờ TTL 60 giây của alias và xóa cache DNS bằng <code>ipconfig /flushdns</code>). <b>Cách B</b>: chỉ quan sát trạng thái health check và thời gian chuyển, ghi lại số giây, rồi đọc kỹ mô tả cách A để hình dung DNS đổi.</p></div></li>
+      <li><div><p>Khôi phục: thêm lại rule 80 cho <code>saa-alb-sg</code> (hoặc đưa desired về 2). Health check về Healthy và DNS quay lại primary. Route 53 luôn ưu tiên primary khi nó healthy, không có "failback thủ công".</p></div></li>
+      <li><div><p>Thử thêm: tạo health check loại <b>CloudWatch alarm</b> gắn với alarm <code>AlarmHigh</code> của ASG để thấy cách kiểm tra resource private. Rồi xóa các health check không dùng (mỗi cái khoảng 0,50 đến 1 USD/tháng, cần kiểm tra lại).</p></div></li>
+    </ol>
+    <div class="note">Xóa health check và record thử nghiệm khi xong. Bucket public ở bước 1 chỉ để lab, xóa ở Lab 5. Nếu đã mua domain thì giữ, domain không tốn thêm tiền ngoài hosted zone 0,50 USD/tháng.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 4. CloudFront trước S3 private bằng OAC, truy cập thẳng S3 phải bị 403</h3>
+    <ol class="steps">
+      <li><div><p>Tạo bucket private (giữ Block Public Access bật, không bật static website hosting) và upload một file:</p>
+<pre><code>$B = "saa-cf-quy-2026"    # đổi hậu tố cho duy nhất
+aws s3 mb s3://$B --region ap-northeast-1
+"&lt;h1&gt;Served via CloudFront&lt;/h1&gt;" | Out-File -Encoding ascii index.html
+aws s3 cp index.html s3://$B/index.html --content-type text/html
+curl.exe -I https://$B.s3.ap-northeast-1.amazonaws.com/index.html    # mong đợi HTTP 403</code></pre></div></li>
+      <li><div><p>Console → <b>CloudFront → Create distribution</b>. Origin domain: chọn bucket (dạng <code>saa-cf-quy-2026.s3.ap-northeast-1.amazonaws.com</code>, <b>không</b> chọn website endpoint). Origin access: <b>Origin access control settings (recommended)</b> → Create new OAC, giữ mặc định Sign requests. Viewer protocol policy: Redirect HTTP to HTTPS. Cache policy: CachingOptimized. WAF: tắt để không tốn tiền. Default root object: <code>index.html</code>. Price class: Use only North America and Europe nếu muốn thấy tác dụng của price class (Tokyo sẽ chậm hơn một chút), hoặc All. Create.</p></div></li>
+      <li><div><p>Sau khi tạo, CloudFront hiện banner "The S3 bucket policy needs to be updated" với nút <b>Copy policy</b>. Policy có dạng:</p>
+<pre><code>{
+  "Version": "2008-10-17",
+  "Statement": [{
+    "Sid": "AllowCloudFrontServicePrincipalReadOnly",
+    "Effect": "Allow",
+    "Principal": { "Service": "cloudfront.amazonaws.com" },
+    "Action": "s3:GetObject",
+    "Resource": "arn:aws:s3:::saa-cf-quy-2026/*",
+    "Condition": { "StringEquals": { "AWS:SourceArn": "arn:aws:cloudfront::&lt;account-id&gt;:distribution/E1XXXXXXXX" } }
+  }]
+}</code></pre><p>Dán vào <b>S3 → bucket → Permissions → Bucket policy</b>. Để ý: principal là dịch vụ CloudFront, condition khóa đúng một distribution, bucket vẫn Block Public Access.</p></div></li>
+      <li><div><p>Chờ distribution từ "Deploying" sang "Enabled" (5 đến 10 phút). Kiểm tra:</p>
+<pre><code>$D = "d1234abcd.cloudfront.net"    # Distribution domain name
+curl.exe -I https://$D/index.html     # 200, có header x-cache: Miss from cloudfront
+curl.exe -I https://$D/index.html     # 200, x-cache: Hit from cloudfront
+curl.exe -I https://$B.s3.ap-northeast-1.amazonaws.com/index.html    # vẫn 403</code></pre><p>Hai dòng x-cache Miss rồi Hit là bằng chứng Edge đã cache. Dòng cuối 403 là mốc của lab: chỉ CloudFront đọc được bucket.</p></div></li>
+      <li><div><p>Thử invalidation: sửa <code>index.html</code> thành "v2", upload lại, curl vẫn thấy bản cũ (TTL 24 giờ). Tạo invalidation:</p>
+<pre><code>aws cloudfront create-invalidation --distribution-id E1XXXXXXXX --paths "/index.html"
+curl.exe https://$D/index.html    # sau 1 đến 2 phút thấy v2</code></pre></div></li>
+      <li><div><p>Tùy chọn nâng cao nếu còn thời gian: tạo <b>key group</b> (CloudFront → Key management → Public keys, upload public key RSA 2048 tạo bằng <code>ssh-keygen -t rsa -b 2048 -m PEM</code>), bật <b>Restrict viewer access</b> ở default behavior với key group đó, curl lại thấy 403 MissingKey. Đây là signed URL; không cần làm bước ký URL, chỉ cần thấy cơ chế chặn.</p></div></li>
+    </ol>
+    <div class="note">CloudFront không có phí cố định theo giờ nhưng vẫn tính request và data. Distribution phải <b>Disable</b> rồi chờ Deployed mới <b>Delete</b> được, làm ở Lab 5. Nếu để lại thì gần như không tốn tiền khi không có traffic, nhưng vẫn nên xóa cho sạch.</div>
+  </div>
+
+  <div class="card">
+    <h3>Lab 5. Dọn dẹp và kiểm tra Billing</h3>
+    <ol class="steps">
+      <li><div><p>Xóa ASG (đưa desired và min về 0 trước để instance terminate êm, rồi xóa nhóm) và launch template:</p>
+<pre><code>aws autoscaling update-auto-scaling-group --auto-scaling-group-name saa-web-asg --min-size 0 --desired-capacity 0
+# chờ 1 đến 2 phút cho instance Terminated
+aws autoscaling delete-auto-scaling-group --auto-scaling-group-name saa-web-asg --force-delete
+aws ec2 delete-launch-template --launch-template-name saa-web-lt</code></pre></div></li>
+      <li><div><p>Xóa ALB và target group (ALB phải xóa trước vì target group đang được listener dùng):</p>
+<pre><code>$ALB = aws elbv2 describe-load-balancers --names saa-alb --query "LoadBalancers[0].LoadBalancerArn" --output text
+aws elbv2 delete-load-balancer --load-balancer-arn $ALB
+# chờ 1 phút
+aws elbv2 delete-target-group --target-group-arn $TG
+aws ec2 delete-security-group --group-id $WEBSG
+aws ec2 delete-security-group --group-id $ALBSG</code></pre></div></li>
+      <li><div><p>Xóa NAT Gateway nếu còn, release Elastic IP của nó (EIP không gắn vào gì vẫn tính 0,005 USD/giờ):</p>
+<pre><code>aws ec2 describe-nat-gateways --filter Name=state,Values=available --query "NatGateways[].[NatGatewayId,VpcId]" --output table
+aws ec2 delete-nat-gateway --nat-gateway-id nat-xxxx
+# chờ state Deleted (vài phút) rồi:
+aws ec2 describe-addresses --query "Addresses[?AssociationId==null].[AllocationId,PublicIp]" --output table
+aws ec2 release-address --allocation-id eipalloc-xxxx</code></pre></div></li>
+      <li><div><p>CloudFront: Console → distribution → <b>Disable</b> → chờ trạng thái Deployed (5 đến 15 phút) → <b>Delete</b>. Xóa OAC trong Security → Origin access nếu muốn. Xóa bucket CloudFront và bucket maintenance của Lab 3:</p>
+<pre><code>aws s3 rb s3://$B --force
+aws s3 rb s3://&lt;bucket-maintenance&gt; --force</code></pre></div></li>
+      <li><div><p>Route 53: xóa health check <code>saa-alb-hc</code> và các record failover thử nghiệm. Giữ hosted zone nếu còn dùng domain cho tuần sau, không thì xóa zone để tiết kiệm 0,50 USD/tháng (domain đã mua thì không xóa được, chỉ hết hạn).</p></div></li>
+      <li><div><p>Kiểm tra không còn gì tính giờ:</p>
+<pre><code>aws ec2 describe-instances --query "Reservations[].Instances[?State.Name!='terminated'].[InstanceId,State.Name]" --output table
+aws elbv2 describe-load-balancers --query "LoadBalancers[].LoadBalancerName"
+aws ec2 describe-nat-gateways --filter Name=state,Values=available,pending --query "NatGateways[].NatGatewayId"
+aws ec2 describe-addresses --query "Addresses[].PublicIp"
+aws ec2 describe-volumes --query "Volumes[?State=='available'].[VolumeId,Size]" --output table</code></pre><p>Mọi lệnh phải trả về rỗng. Volume <code>available</code> là EBS còn sót sau terminate.</p></div></li>
+      <li><div><p>Console → <b>Billing and Cost Management → Bills</b> và <b>Cost Explorer</b> lọc theo dịch vụ: tuần này sẽ thấy EC2 (instance, NAT, ALB đều nằm trong "EC2-Other" hoặc "Elastic Load Balancing"), Route 53, CloudFront. Tổng mong đợi 1 đến 3 USD. Ngày hôm sau vào lại Cost Explorer một lần nữa để chắc chi phí theo giờ đã dừng.</p></div></li>
+    </ol>
+    <div class="note ok">Thứ tự xóa quan trọng: ASG trước (nếu xóa instance trước thì ASG tạo lại), ALB trước target group, NAT trước khi release EIP, CloudFront disable trước khi delete. Tuần 6 học Database, lab RDS cũng tính giờ, giữ thói quen này.</div>
+  </div>
+</section>
+
+<!-- ============ MỐC KIỂM TRA ============ -->
+<section id="moc">
+  <span class="eyebrow">Mốc kiểm tra</span>
+  <h2>Ba câu của tuần 5 và ba câu của tuần 4 phải tự nói được</h2>
+  <p style="font-size:.94rem;color:var(--muted)">Mốc kiểm tra trong <code>AWS-SAA-checklist.md</code> tính chung cho cả khối tuần 4 đến 5. Ba mốc đầu là của tuần này, ba mốc sau nhắc lại từ tuần 4, phải nói được cả sáu trước khi làm quiz.</p>
+  <div class="grid2">
+    <div class="card">
+      <h3>1. Luồng request: người dùng → Route 53 → CloudFront → ALB → ASG → EC2 private</h3>
+      <p style="font-size:.94rem">Gợi ý khung trả lời (che lại rồi tự nói):</p>
+      <ul style="font-size:.94rem">
+        <li>Trình duyệt hỏi DNS <code>www.example.com</code>; resolver tới NS của Route 53; record <b>alias</b> trả về IP của Edge CloudFront gần nhất (có thể qua latency / failover policy).</li>
+        <li>Client bắt tay TLS với Edge bằng chứng chỉ <b>ACM us-east-1</b>; CloudFront tra cache theo <b>cache key</b>; hit thì trả ngay.</li>
+        <li>Miss: CloudFront đi backbone AWS về origin <b>ALB</b> (Internet-facing ở public subnet), kèm custom header; SG của ALB chỉ cho CloudFront prefix list.</li>
+        <li>ALB listener 443 chạy rule host/path, chọn <b>target group</b>, chỉ gửi tới target <b>healthy</b>; SG của EC2 chỉ cho từ SG của ALB.</li>
+        <li>EC2 ở <b>private subnet</b> do <b>ASG</b> giữ min 2 ở 2 AZ, scale theo target tracking; không có public IP; ra Internet qua NAT Gateway (tuần 4).</li>
+        <li>Response đi ngược lại, CloudFront cache theo TTL, trả cho client. Nêu được một điểm chịu lỗi ở mỗi lớp: Route 53 health check, origin group, multi-AZ ALB, ASG self-healing.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>2. Chọn đúng routing policy Route 53 theo tình huống</h3>
+      <p style="font-size:.94rem">Gợi ý khung trả lời:</p>
+      <ul style="font-size:.94rem">
+        <li>Hỏi hai câu: đề quan tâm <b>tỷ lệ</b>, <b>hiệu năng</b>, <b>vị trí</b>, hay <b>dự phòng</b>?</li>
+        <li>Tỷ lệ (canary, blue/green, A/B) → <b>weighted</b>. Hiệu năng toàn cầu nhiều Region → <b>latency</b>.</li>
+        <li>Vị trí người dùng (luật, ngôn ngữ) → <b>geolocation</b>. Vị trí resource cộng bias để nắn traffic → <b>geoproximity</b>.</li>
+        <li>Active-passive, DR, trang bảo trì → <b>failover</b>. Nhiều IP healthy không cần ELB → <b>multi-value</b>. Một server → <b>simple</b>.</li>
+        <li>Nhớ kèm: alias cho apex và resource AWS, health check cho private resource là CloudWatch alarm, Evaluate target health với ELB.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>3. Chọn ALB, NLB hay Global Accelerator theo từ khóa đề</h3>
+      <p style="font-size:.94rem">Gợi ý khung trả lời:</p>
+      <ul style="font-size:.94rem">
+        <li>Thấy <em>HTTP</em>, <em>path/host routing</em>, <em>microservices</em>, <em>Lambda target</em>, <em>Cognito</em>, <em>WebSocket</em> → <b>ALB</b>.</li>
+        <li>Thấy <em>static IP</em> trong một Region, <em>TCP/UDP</em>, <em>millions of requests</em>, <em>PrivateLink</em>, <em>preserve source IP</em> → <b>NLB</b>.</li>
+        <li>Thấy <em>global users</em> + <em>static anycast IP</em>, <em>UDP gaming / VoIP</em>, <em>fast failover between Regions</em>, <em>non-HTTP</em> → <b>Global Accelerator</b> (đứng trước ALB/NLB, không thay thế).</li>
+        <li>Thấy <em>cache</em>, <em>static content</em>, <em>S3</em>, <em>signed URL</em> → <b>CloudFront</b>, không phải GA. Thấy <em>third-party appliance</em> → <b>GWLB</b>.</li>
+        <li>Kết hợp: NLB → ALB khi cần cả IP tĩnh lẫn layer 7; GA → ALB khi nhiều Region.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Nhắc lại tuần 4: vẽ VPC, gói tin ra Internet, SG với NACL</h3>
+      <p style="font-size:.94rem">Ba mốc của tuần 4 trong checklist, nói lại ngắn:</p>
+      <ul style="font-size:.94rem">
+        <li><b>Vẽ VPC</b> trên giấy: CIDR, 2 AZ, mỗi AZ một public và một private subnet, IGW gắn VPC, NAT Gateway ở public subnet, route table public (0.0.0.0/0 → IGW) và private (0.0.0.0/0 → NAT), gateway endpoint S3. Tuần này thêm ALB ở public subnet, ASG ở private subnet.</li>
+        <li><b>Gói tin từ EC2 private ra Internet</b>: EC2 → route table private → NAT Gateway (đổi source IP sang EIP của NAT) → route table public → IGW → Internet; chiều về qua NAT nhờ bảng dịch. IPv6 thì dùng Egress-only IGW.</li>
+        <li><b>SG với NACL</b>: SG gắn ENI, stateful, chỉ Allow, đánh giá mọi rule; NACL gắn subnet, stateless (phải mở cả ephemeral port chiều về), có Deny, đánh giá theo số thứ tự. Ví dụ chặn một IP tấn công → NACL Deny; cho ALB vào EC2 → SG source là SG của ALB.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TỪ KHÓA ============ -->
+<section id="tukhoa">
+  <span class="eyebrow">Ôn nhanh</span>
+  <h2>Bảng từ khóa tuần 5</h2>
+  <div class="tbl"><table>
+    <tr><th>Đề bài có chữ</th><th>Nghĩ ngay tới</th></tr>
+    <tr><td><em>path-based</em>, <em>host-based routing</em>, microservices</td><td>ALB với listener rule</td></tr>
+    <tr><td><em>static IP</em>, <em>Elastic IP</em> cho load balancer</td><td>NLB</td></tr>
+    <tr><td><em>millions of requests per second</em>, <em>ultra-low latency</em>, TCP/UDP</td><td>NLB</td></tr>
+    <tr><td><em>third-party firewall appliance</em>, GENEVE</td><td>Gateway Load Balancer</td></tr>
+    <tr><td>Lambda phía sau load balancer</td><td>ALB với Lambda target group</td></tr>
+    <tr><td>Xác thực người dùng ngay ở load balancer</td><td>ALB authentication với Cognito / OIDC</td></tr>
+    <tr><td>Nhiều chứng chỉ trên một listener HTTPS</td><td>SNI</td></tr>
+    <tr><td>Chỉ cho EC2 nhận traffic từ load balancer</td><td>SG của EC2 có source là SG của ALB</td></tr>
+    <tr><td>Session mất khi instance đổi</td><td>Sticky session (cookie), tốt hơn là session ra ElastiCache</td></tr>
+    <tr><td>Traffic lệch giữa AZ với NLB</td><td>Bật cross-zone load balancing</td></tr>
+    <tr><td>Request đang xử lý bị cắt khi scale in</td><td>Deregistration delay (connection draining)</td></tr>
+    <tr><td><em>maintain CPU at X%</em>, simplest scaling</td><td>Target tracking</td></tr>
+    <tr><td>Traffic theo giờ làm việc, lịch cố định</td><td>Scheduled scaling</td></tr>
+    <tr><td><em>recurring pattern</em>, <em>forecast</em>, scale ahead</td><td>Predictive scaling</td></tr>
+    <tr><td>Chạy script trước khi instance bị terminate</td><td>Lifecycle hook</td></tr>
+    <tr><td>App khởi động lâu, cần scale out nhanh</td><td>Warm pool</td></tr>
+    <tr><td>App treo nhưng OS sống, ASG không thay</td><td>Health check type ELB cho ASG</td></tr>
+    <tr><td>Scale theo số message SQS</td><td>Custom metric backlog per instance</td></tr>
+    <tr><td>Spot + On-Demand trong một nhóm</td><td>Launch template, mixed instances policy</td></tr>
+    <tr><td>Apex domain trỏ ALB / CloudFront</td><td>Route 53 alias record</td></tr>
+    <tr><td>Canary, blue/green, % traffic</td><td>Weighted routing</td></tr>
+    <tr><td>Người dùng toàn cầu, hiệu năng, nhiều Region</td><td>Latency routing</td></tr>
+    <tr><td>Theo quốc gia, luật, ngôn ngữ</td><td>Geolocation routing</td></tr>
+    <tr><td>Bias, nắn traffic về một Region</td><td>Geoproximity routing</td></tr>
+    <tr><td>Active-passive, trang bảo trì S3</td><td>Failover routing + health check</td></tr>
+    <tr><td>Health check cho resource private</td><td>Route 53 health check theo CloudWatch alarm</td></tr>
+    <tr><td>Hybrid DNS, on-premises hỏi tên AWS</td><td>Route 53 Resolver inbound endpoint</td></tr>
+    <tr><td>VPC hỏi tên on-premises</td><td>Resolver outbound endpoint + forward rule</td></tr>
+    <tr><td>S3 origin, chặn truy cập thẳng bucket</td><td>CloudFront OAC + bucket policy</td></tr>
+    <tr><td>Nội dung trả phí, nhiều file, giữ URL</td><td>CloudFront signed cookie</td></tr>
+    <tr><td>Một file có hạn qua CDN</td><td>CloudFront signed URL (khác S3 presigned URL)</td></tr>
+    <tr><td>Chặn quốc gia, bản quyền</td><td>CloudFront geo restriction</td></tr>
+    <tr><td>Rewrite URL nhẹ ở Edge, rẻ</td><td>CloudFront Functions</td></tr>
+    <tr><td>Logic ở Edge cần gọi mạng, sửa body</td><td>Lambda@Edge</td></tr>
+    <tr><td>Chứng chỉ domain riêng cho CloudFront</td><td>ACM ở us-east-1</td></tr>
+    <tr><td>Giảm chi phí CDN, người dùng ở vài vùng</td><td>Price class</td></tr>
+    <tr><td>Mã hóa riêng field nhạy cảm trong form</td><td>Field-level encryption</td></tr>
+    <tr><td>UDP, gaming, VoIP, IoT toàn cầu</td><td>Global Accelerator</td></tr>
+    <tr><td>Static anycast IP, failover Region nhanh, không phụ thuộc DNS cache</td><td>Global Accelerator</td></tr>
+    <tr><td>Cache tĩnh, video, S3</td><td>CloudFront (không phải Global Accelerator)</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ CHECKLIST ============ -->
+<section id="checklist">
+  <span class="eyebrow">Theo dõi</span>
+  <h2>Checklist tuần 5</h2>
+  <p style="font-size:.94rem;color:var(--muted)">Tick ở đây để tự theo dõi trên máy này. Khi xong mục nào, nói với Claude trong session để tick vào <code>AWS-SAA-checklist.md</code>.</p>
+  <div class="card">
+    <h4>Lý thuyết</h4>
+    <label class="check"><input type="checkbox" id="c1" data-ck><span>ELB: ALB, NLB, Gateway Load Balancer, sticky session, cross-zone</span></label>
+    <label class="check"><input type="checkbox" id="c2" data-ck><span>Auto Scaling: scaling policy, cooldown, lifecycle hook, warm pool</span></label>
+    <label class="check"><input type="checkbox" id="c3" data-ck><span>Route 53: routing policy, health check, alias</span></label>
+    <label class="check"><input type="checkbox" id="c4" data-ck><span>CloudFront: origin, OAC, signed URL / cookie, cache policy</span></label>
+    <label class="check"><input type="checkbox" id="c5" data-ck><span>Global Accelerator so với CloudFront</span></label>
+    <h4>Hands-on</h4>
+    <label class="check"><input type="checkbox" id="c6" data-ck><span>ALB trước Auto Scaling Group, target tracking theo CPU</span></label>
+    <label class="check"><input type="checkbox" id="c7" data-ck><span>Stress test (stress-ng) để xem ASG scale out rồi scale in</span></label>
+    <label class="check"><input type="checkbox" id="c8" data-ck><span>Route 53 failover với health check, tắt instance chính xem DNS chuyển (hoặc cách B nếu không có domain)</span></label>
+    <label class="check"><input type="checkbox" id="c9" data-ck><span>CloudFront trước S3 private bằng OAC, truy cập thẳng S3 bị 403</span></label>
+    <label class="check"><input type="checkbox" id="c10" data-ck><span>Xóa NAT Gateway, ALB, ASG, CloudFront, Elastic IP ngay sau khi xong, kiểm tra Billing</span></label>
+    <h4>Mốc kiểm tra (tính chung khối tuần 4 đến 5)</h4>
+    <label class="check"><input type="checkbox" id="c11" data-ck><span>Giải thích luồng request Route 53 → CloudFront → ALB → ASG → EC2 private</span></label>
+    <label class="check"><input type="checkbox" id="c12" data-ck><span>Chọn đúng routing policy Route 53 theo tình huống</span></label>
+    <label class="check"><input type="checkbox" id="c13" data-ck><span>Chọn ALB, NLB hay Global Accelerator theo từ khóa đề</span></label>
+    <label class="check"><input type="checkbox" id="c14" data-ck><span>Tuần 4: vẽ lại VPC vừa dựng trên giấy không nhìn console</span></label>
+    <label class="check"><input type="checkbox" id="c15" data-ck><span>Tuần 4: giải thích gói tin từ private EC2 ra Internet đi qua những gì</span></label>
+    <label class="check"><input type="checkbox" id="c16" data-ck><span>Tuần 4: phân biệt Security Group với NACL bằng ví dụ cụ thể</span></label>
+    <h4>Khác</h4>
+    <label class="check"><input type="checkbox" id="c17" data-ck><span>Quiz tuần 4 đến 5 (<code>quiz/tuan-04-05.md</code>, 40 câu) đạt từ 80%</span></label>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  // Xem đáp án
+  document.querySelectorAll('[data-reveal]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var a=b.parentElement.querySelector('.ans');
+      a.hidden=!a.hidden; b.textContent=a.hidden?'Xem đáp án':'Ẩn đáp án';
+    });
+  });
+  // Checklist lưu trên máy này
+  var boxes=document.querySelectorAll('[data-ck]'), KEY='saa-tuan-05';
+  var saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  function update(){
+    var n=0; boxes.forEach(function(c){ c.closest('.check').classList.toggle('done',c.checked); if(c.checked)n++; });
+    document.getElementById('bar').style.width=(n/boxes.length*100)+'%';
+    document.getElementById('pct').textContent=n+'/'+boxes.length;
+  }
+  boxes.forEach(function(c){
+    if(saved[c.id])c.checked=true;
+    c.addEventListener('change',function(){ saved[c.id]=c.checked; try{ localStorage.setItem(KEY,JSON.stringify(saved)); }catch(e){} update(); });
+  });
+  update();
+  // Đánh dấu mục đang đọc
+  var links=document.querySelectorAll('.toc a'), secs=[];
+  links.forEach(function(l){ var s=document.querySelector(l.getAttribute('href')); if(s)secs.push([s,l]); });
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ links.forEach(function(l){l.classList.remove('active')}); secs.forEach(function(p){ if(p[0]===e.target)p[1].classList.add('active'); }); } }); },{rootMargin:'-20% 0px -70% 0px'});
+    secs.forEach(function(p){ io.observe(p[0]); });
+  }
+})();
+</script>
